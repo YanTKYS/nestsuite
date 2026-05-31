@@ -80,7 +80,6 @@
             <TextBlock Text="{Binding EditorFontSize, StringFormat={}{0}pt}" Foreground="#777"/>
             <Separator Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
             <TextBlock Text="{Binding UnsavedIndicatorText}"
-                       Foreground="#E65100" FontWeight="SemiBold"
                        Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
