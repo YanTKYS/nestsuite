@@ -87,11 +87,15 @@ dotnet run --project NoteNest/NoteNest.csproj
 
 ```json
 {
-  "version": "0.1.4",
+  "version": "0.2.0",
   "projectId": "...",
   "projectName": "業務改善プロジェクト",
   "notebooks": [...],
-  "tasks": { "today": [...], "week": [...], "backlog": [...] },
+  "tasks": {
+    "today": [{ "id": "...", "title": "資料作成", "isCompleted": false, "comment": "" }],
+    "week": [...],
+    "backlog": [...]
+  },
   "settings": { "lastOpenedNoteId": "...", "fontFamily": "Yu Gothic UI", "fontSize": 14 }
 }
 ```
@@ -111,7 +115,7 @@ dotnet run --project NoteNest/NoteNest.csproj
 - NoteNest は複数起動に対応しています。複数のウィンドウでそれぞれ別のプロジェクトを開いて同時利用できます
 - **同じ `.notenest` ファイルを複数ウィンドウで同時編集しないでください。** 後から保存した内容で上書きされます
 
-## v0.1.x の制限
+## v0.2.x の制限
 
 | 機能 | 状態 |
 |------|------|
