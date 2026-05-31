@@ -11,6 +11,7 @@ public class MainViewModel : BaseViewModel
     private readonly ProjectFileService _fileService = new();
     private readonly SampleDataService _sampleService = new();
     private readonly MarkerExtractorService _markerService = new();
+    private readonly RecentFilesService _recentFilesService = new();
 
     private string _projectName = "";
     private NoteViewModel? _selectedNote;
@@ -36,6 +37,7 @@ public class MainViewModel : BaseViewModel
     public Func<string, string, bool>? ShowConfirmDialog { get; set; }
     public Action? RequestClose { get; set; }
     public Action<int>? NavigateToLine { get; set; }
+    public Action<MarkerViewModel>? NavigateToMarker { get; set; }
 
     public MainViewModel()
     {
@@ -46,6 +48,12 @@ public class MainViewModel : BaseViewModel
             new("バックログ", "backlog"),
         };
 
+        OpenRecentCommand   = new RelayCommand(param => { if (param is string path) OpenRecentFile(path); });
+
+        foreach (var p in _recentFilesService.Load())
+            RecentFiles.Add(new RecentFileViewModel(p));
+        RecentFiles.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRecentFiles));
+
         NewProjectCommand   = new RelayCommand(NewProject);
         OpenProjectCommand  = new RelayCommand(OpenProject);
         SaveProjectCommand  = new RelayCommand(SaveProject);
@@ -55,7 +63,7 @@ public class MainViewModel : BaseViewModel
         AddTaskCommand      = new RelayCommand(param => AddTask(param as string ?? "today"));
         DeleteTaskCommand   = new RelayCommand(param => { if (param is TaskViewModel t) DeleteTask(t); });
         ToggleGroupCommand  = new RelayCommand(param => { if (param is TaskGroupViewModel g) g.IsExpanded = !g.IsExpanded; });
-        MarkerClickCommand  = new RelayCommand(param => { if (param is MarkerViewModel m) NavigateToLine?.Invoke(m.LineNumber); });
+        MarkerClickCommand  = new RelayCommand(param => { if (param is MarkerViewModel m) NavigateToMarker?.Invoke(m); });
 
         LoadProject(_sampleService.Create(), null);
     }
@@ -203,6 +211,8 @@ public class MainViewModel : BaseViewModel
     public ObservableCollection<NotebookViewModel> Notebooks { get; } = new();
     public ObservableCollection<TaskGroupViewModel> TaskGroups { get; }
     public ObservableCollection<MarkerViewModel> Markers { get; } = new();
+    public ObservableCollection<RecentFileViewModel> RecentFiles { get; } = new();
+    public bool HasRecentFiles => RecentFiles.Count > 0;
 
     // ── Commands ─────────────────────────────────────────────────────────────
 
@@ -216,6 +226,7 @@ public class MainViewModel : BaseViewModel
     public ICommand DeleteTaskCommand   { get; }
     public ICommand ToggleGroupCommand  { get; }
     public ICommand MarkerClickCommand  { get; }
+    public ICommand OpenRecentCommand   { get; }
 
     // ── Public methods called from code-behind ───────────────────────────────
 
@@ -244,10 +255,7 @@ public class MainViewModel : BaseViewModel
         OnPropertyChanged(nameof(EditorTitle));
         OnPropertyChanged(nameof(IsTaskCommentMode));
         _isLoadingNote = false;
-
-        Markers.Clear();
-        OnPropertyChanged(nameof(MarkerCount));
-        RaiseFilteredMarkersChanged();
+        RefreshMarkers();
     }
 
     public void AddNotebookWithTitle(string title)
@@ -274,7 +282,7 @@ public class MainViewModel : BaseViewModel
         }
         Notebooks.Remove(nb);
         IsModified = true;
-        RefreshProjectMarkers();
+        RefreshMarkers();
     }
 
     public void AddNoteToNotebook(NotebookViewModel notebook, string title)
@@ -309,7 +317,7 @@ public class MainViewModel : BaseViewModel
                 nb.Model.Notes.Remove(note.Model);
                 if (SelectedNote == note) ClearEditor();
                 IsModified = true;
-                RefreshProjectMarkers();
+                RefreshMarkers();
                 return;
             }
         }
@@ -462,6 +470,7 @@ public class MainViewModel : BaseViewModel
             IsModified = false;
             IsSampleProject = false;
             StatusMessage = $"保存しました: {System.IO.Path.GetFileName(path)}";
+            RecordRecentFile(path);
             return true;
         }
         catch (Exception ex)
@@ -474,6 +483,31 @@ public class MainViewModel : BaseViewModel
     private void Exit()
     {
         if (ConfirmCloseIfModified()) RequestClose?.Invoke();
+    }
+
+    private void OpenRecentFile(string path)
+    {
+        if (IsModified && ShowConfirmDialog?.Invoke("未保存の変更", "保存されていない変更があります。続けますか？") != true)
+            return;
+        try
+        {
+            var project = _fileService.Load(path);
+            LoadProject(project, path);
+            StatusMessage = $"プロジェクトを開きました: {System.IO.Path.GetFileName(path)}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"ファイルを開けませんでした。\n{ex.Message}", "エラー",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void RecordRecentFile(string path)
+    {
+        _recentFilesService.Add(path);
+        RecentFiles.Clear();
+        foreach (var p in _recentFilesService.Load())
+            RecentFiles.Add(new RecentFileViewModel(p));
     }
 
     private void AddNotebook()
@@ -520,7 +554,7 @@ public class MainViewModel : BaseViewModel
             OnPropertyChanged(nameof(EditorTitle));
             OnPropertyChanged(nameof(IsTaskCommentMode));
             _isLoadingNote = false;
-            if (_selectedNote != null) RefreshMarkers();
+            RefreshMarkers();
         }
 
         foreach (var group in TaskGroups)
@@ -541,6 +575,7 @@ public class MainViewModel : BaseViewModel
         ProjectName = project.ProjectName;
         _currentFilePath = filePath;
         IsSampleProject = filePath == null;
+        if (filePath != null) RecordRecentFile(filePath);
 
         Notebooks.Clear();
         foreach (var nb in project.Notebooks)
@@ -590,7 +625,6 @@ public class MainViewModel : BaseViewModel
 
         IsModified = false;
         OnPropertyChanged(nameof(WindowTitle));
-        RefreshProjectMarkers();
     }
 
     private Project BuildProject()
@@ -600,7 +634,7 @@ public class MainViewModel : BaseViewModel
 
         return new Project
         {
-            Version = "0.2.0",
+            Version = "0.3.0",
             ProjectId = _currentProjectId,
             ProjectName = ProjectName,
             Notebooks = Notebooks.Select(nb => new Notebook
@@ -632,30 +666,25 @@ public class MainViewModel : BaseViewModel
     private void RefreshMarkers()
     {
         Markers.Clear();
-        if (_selectedNote != null)
-        {
-            foreach (var m in _markerService.Extract(_editorContent, _selectedNote.Title))
-                Markers.Add(new MarkerViewModel(m));
-        }
-        OnPropertyChanged(nameof(MarkerCount));
-        RaiseFilteredMarkersChanged();
-        RefreshProjectMarkers();
-    }
-
-    private void RefreshProjectMarkers()
-    {
-        int todo = 0, fixme = 0, note = 0;
+        int todo = 0, fixme = 0, noteCount = 0;
         foreach (var nb in Notebooks)
+        {
             foreach (var n in nb.Notes)
+            {
                 foreach (var m in _markerService.Extract(n.Content, n.Title))
                 {
+                    Markers.Add(new MarkerViewModel(m, n));
                     if (m.Type == "TODO")       todo++;
                     else if (m.Type == "FIXME") fixme++;
-                    else if (m.Type == "NOTE")  note++;
+                    else if (m.Type == "NOTE")  noteCount++;
                 }
+            }
+        }
         _projectTodoCount  = todo;
         _projectFixmeCount = fixme;
-        _projectNoteCount  = note;
+        _projectNoteCount  = noteCount;
+        OnPropertyChanged(nameof(MarkerCount));
         OnPropertyChanged(nameof(ProjectMarkerSummary));
+        RaiseFilteredMarkersChanged();
     }
 }

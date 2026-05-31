@@ -42,6 +42,21 @@ public partial class MainWindow : Window
             EditorBox.CaretIndex = charIdx;
             EditorBox.Focus();
         };
+
+        vm.NavigateToMarker = m =>
+        {
+            bool switched = m.SourceNote != null && m.SourceNote != ViewModel.SelectedNote;
+            if (switched)
+                ViewModel.SelectNote(m.SourceNote!);
+
+            var line = m.LineNumber;
+            if (switched)
+                // Defer navigation until after the TextBox has laid out new content
+                Dispatcher.BeginInvoke(() => ViewModel.NavigateToLine?.Invoke(line),
+                    System.Windows.Threading.DispatcherPriority.Loaded);
+            else
+                ViewModel.NavigateToLine?.Invoke(line);
+        };
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

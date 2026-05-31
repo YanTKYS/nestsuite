@@ -31,6 +31,21 @@
                 <MenuItem Header="プロジェクトを開く(_O)..." Command="{Binding OpenProjectCommand}"
                           InputGestureText="Ctrl+O"/>
                 <Separator/>
+                <MenuItem Header="最近使ったファイル(_R)"
+                          ItemsSource="{Binding RecentFiles}"
+                          IsEnabled="{Binding HasRecentFiles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding FileName}"/>
+                            <Setter Property="ToolTip" Value="{Binding FullPath}"/>
+                            <Setter Property="Command"
+                                    Value="{Binding DataContext.OpenRecentCommand,
+                                            RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            <Setter Property="CommandParameter" Value="{Binding FullPath}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <Separator/>
                 <MenuItem Header="保存(_S)" Command="{Binding SaveProjectCommand}"
                           InputGestureText="Ctrl+S"/>
                 <MenuItem Header="名前を付けて保存(_A)..." Command="{Binding SaveAsProjectCommand}"/>
@@ -266,7 +281,17 @@
                          BorderThickness="0"
                          Padding="16,12"
                          VerticalContentAlignment="Top"
-                         SpellCheck.IsEnabled="False"/>
+                         SpellCheck.IsEnabled="False">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsTaskCommentMode}" Value="True">
+                                    <Setter Property="Background" Value="#FFFDE7"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
 
                 <!-- Marker insertion buttons -->
                 <Border Grid.Row="3"

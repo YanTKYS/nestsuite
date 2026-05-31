@@ -1,5 +1,52 @@
 # リリースノート
 
+## v0.3.0 — 全ノートマーカーナビゲーション・最近使ったファイル・視認性改善
+
+**リリース日：** 2026-05-31
+
+### 追加・改善した機能
+
+#### 全ノート横断マーカーナビゲーション
+- マーカー一覧が「現在のノート」から「全ノート」の表示に変更
+- 別ノートのマーカーをクリックすると自動的にそのノートへ切り替えてジャンプ
+- マーカー一覧の NoteTitle 列で各マーカーがどのノートに属するか確認可能
+- タスクコメント編集中もマーカー一覧が表示されたまま（全ノート表示）
+- プロジェクト全体の集計も RefreshMarkers に統合（処理効率化）
+
+#### 最近使ったファイル一覧
+- ファイルメニューに「最近使ったファイル」サブメニューを追加
+- 直近 5 件の `.notenest` ファイルをメニューから直接開ける
+- ファイルを開いたとき・保存したときに自動的に記録
+- 記録先：`%AppData%\NoteNest\recent-files.json`
+- 1 件もない場合はメニュー項目をグレーアウト
+
+#### タスクコメント編集中の視認性改善
+- タスクコメント編集中、エディタ本体の背景色を淡い黄色（`#FFFDE7`）に変更
+- タイトルバーの背景色変更（`#FFF8E1`）と合わせて、通常のノート編集との区別がより明確に
+
+### コード変更
+
+- `MarkerViewModel`: `SourceNote` プロパティ（NoteViewModel 参照）を追加
+- `MainViewModel`: `RefreshMarkers()` を全ノートスキャン版に変更（RefreshProjectMarkers を統合）
+- `MainViewModel`: `NavigateToMarker` コールバックを追加、`MarkerClickCommand` をコールバック経由に変更
+- `MainViewModel`: `SelectTask()` でマーカーをクリアしないよう変更（全ノート表示を維持）
+- `MainViewModel`: `RecentFiles` コレクション、`HasRecentFiles`、`OpenRecentCommand` を追加
+- `MainViewModel`: `RecordRecentFile()`、`OpenRecentFile()` プライベートメソッドを追加
+- `MainWindow.xaml`: エディタ TextBox に `IsTaskCommentMode` DataTrigger で背景色変更を追加
+- `MainWindow.xaml`: ファイルメニューに「最近使ったファイル」動的サブメニューを追加
+- `MainWindow.xaml.cs`: `NavigateToMarker` コールバックを配線（ノート切替 + Dispatcher 遅延ナビゲーション）
+- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.3.0` に更新
+- `BuildProject()` の保存バージョンを `"0.3.0"` に更新
+
+### 実装しなかった機能
+
+| 機能 | 理由 |
+|------|------|
+| マーカークリック時のツリービュー選択同期 | WPF TreeView の項目を外部から選択するには追加インフラが必要。次バージョンで検討 |
+| 保存忘れ確認の強化（タイムアウト） | DispatcherTimer 方式は実装可能だが、他の改善と優先度を比較して見送り |
+
+---
+
 ## v0.2.0 — UX 改善・並べ替え・マーカーフィルタ
 
 **リリース日：** 2026-05-31
