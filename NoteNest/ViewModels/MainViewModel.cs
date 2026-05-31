@@ -198,6 +198,9 @@ public class MainViewModel : BaseViewModel
         OnPropertyChanged(nameof(EditorTitle));
         OnPropertyChanged(nameof(IsTaskCommentMode));
         _isLoadingNote = false;
+
+        Markers.Clear();
+        OnPropertyChanged(nameof(MarkerCount));
     }
 
     public void AddNotebookWithTitle(string title)
