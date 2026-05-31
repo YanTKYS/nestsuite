@@ -522,7 +522,7 @@ public class MainViewModel : BaseViewModel
 
         return new Project
         {
-            Version = "0.1.3",
+            Version = "0.1.4",
             ProjectId = _currentProjectId,
             ProjectName = ProjectName,
             Notebooks = Notebooks.Select(nb => new Notebook
