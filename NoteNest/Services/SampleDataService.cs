@@ -51,7 +51,9 @@ public class SampleDataService
                     Notes = new()
                     {
                         new Note { Id = "note_006", Title = "アイデアメモ",
-                            Content = "# アイデアメモ\r\n\r\n- ダッシュボードのカスタマイズ機能\r\n- エクスポート機能\r\n\r\n[NOTE] 次バージョンで検討する" }
+                            Content = "# アイデアメモ\r\n\r\n- ダッシュボードのカスタマイズ機能\r\n- エクスポート機能\r\n\r\n[NOTE] 次バージョンで検討する" },
+                        new Note { Id = "note_007", Title = "読書メモ",
+                            Content = "# 読書メモ\r\n\r\n参考書籍のメモ。\r\n\r\n- 設計パターン実践ガイド（読了）\r\n- Clean Architecture（読み中）\r\n- リファクタリング（積読）" }
                     }
                 }
             },

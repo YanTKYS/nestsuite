@@ -201,7 +201,10 @@ public class MainViewModel : BaseViewModel
     {
         note.Title = newTitle;
         if (SelectedNote == note)
+        {
             OnPropertyChanged(nameof(CurrentNoteTitle));
+            RefreshMarkers();
+        }
         IsModified = true;
     }
 
