@@ -107,7 +107,7 @@ dotnet run --project NoteNest/NoteNest.csproj
 
 ```json
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "projectId": "...",
   "projectName": "業務改善プロジェクト",
   "notebooks": [...],
@@ -135,7 +135,7 @@ dotnet run --project NoteNest/NoteNest.csproj
 - NoteNest は複数起動に対応しています。複数のウィンドウでそれぞれ別のプロジェクトを開いて同時利用できます
 - **同じ `.notenest` ファイルを複数ウィンドウで同時編集しないでください。** 後から保存した内容で上書きされます
 
-## v1.0.0 時点の制限
+## v1.1.0 時点の制限
 
 | 機能 | 状態 |
 |------|------|
