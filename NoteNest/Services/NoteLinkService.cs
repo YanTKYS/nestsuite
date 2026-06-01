@@ -11,7 +11,7 @@ public static class NoteLinkService
     {
         foreach (Match m in LinkPattern.Matches(text))
         {
-            if (caretIndex >= m.Index && caretIndex <= m.Index + m.Length)
+            if (caretIndex >= m.Index && caretIndex < m.Index + m.Length)
                 return m.Groups[1].Value;
         }
         return null;
