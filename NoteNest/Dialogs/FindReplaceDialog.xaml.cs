@@ -15,6 +15,7 @@ public partial class FindReplaceDialog : Window
         InitializeComponent();
         _editor = editor;
         Loaded += (_, _) => FindBox.Focus();
+        FindBox.TextChanged += (_, _) => _lastFoundIndex = -1;
     }
 
     private StringComparison Comparison =>
