@@ -1,5 +1,36 @@
 # リリースノート
 
+## v0.8.0 — ノート間リンク・タスクとノートの関連付け
+
+**リリース日：** 2026-06-01
+
+### 追加した機能
+
+#### ノート間リンク（`[[ノート名]]` 記法）
+- ノート本文に `[[ノート名]]` と書くとノート間のリンクとして認識される
+- カーソルをリンク内に置いて `Ctrl+Enter` を押すか、右クリック → ノートリンクを開く でリンク先ノートにジャンプ
+- 右クリック → ノートリンクを挿入... でリンク構文を現在のカーソル位置に挿入
+- リンク先ノートが存在しない場合は「リンク先なし」メッセージを表示
+
+#### タスクとノートの関連付け
+- タスクごとに関連ノートを 1 つ設定可能（タスクコメント編集時の「関連ノート」バーから）
+- 関連ノートは `linked-note-id`（内部 ID）で保存されるため、ノート名を変更しても関連が維持される
+- タスク右クリック → 関連ノートを設定... でノート名指定により設定、クリアも可
+- 関連ノートを設定したタスクには 🔗 アイコンが表示される
+- タスクコメント編集時の上部バーで現在の関連ノートを確認、変更、開く、クリアできる
+
+### コード変更
+
+- `NoteNest/Services/NoteLinkService.cs`: `[[...]]` リンク抽出サービスを新規作成
+- `NoteNest/ViewModels/TaskViewModel.cs`: `HasRelatedNote` プロパティを追加
+- `NoteNest/ViewModels/MainViewModel.cs`: `FindNoteById` / `FindNoteByTitle` / `NavigateToNote` / `SetTaskRelatedNote` / `ClearTaskRelatedNote` / `EditingTaskRelatedNote` / `RelatedNoteChoices` などを追加
+- `NoteNest/MainWindow.xaml`: エディタ右クリックメニュー追加、タスクコメントモード用の関連ノートバー追加、タスク項目の 🔗 インジケーター・コンテキストメニュー拡張
+- `NoteNest/MainWindow.xaml.cs`: `SyncTreeSelectionCallback` / `TryOpenNoteLink` / `InsertNoteLink_Click` / `OpenRelatedNote_Click` / `SetRelatedNote_Click` / `ClearRelatedNote_Click` を追加
+- `NoteNest.Tests/NoteLinkServiceTests.cs`: `NoteLinkService` の単体テスト（9 件）を新規作成
+- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.0` に更新
+
+---
+
 ## v0.7.2 — ダーク / ライトテーマ切り替え
 
 **リリース日：** 2026-06-01

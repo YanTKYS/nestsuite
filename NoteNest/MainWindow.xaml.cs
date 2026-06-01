@@ -88,6 +88,8 @@ public partial class MainWindow : Window
             else
                 ViewModel.NavigateToLine?.Invoke(line);
         };
+
+        vm.SyncTreeSelectionCallback = note => SyncTreeSelection(note);
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -96,6 +98,12 @@ public partial class MainWindow : Window
             (e.Key == Key.F || e.Key == Key.H))
         {
             OpenFindReplace();
+            e.Handled = true;
+            return;
+        }
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Enter)
+        {
+            TryOpenNoteLink();
             e.Handled = true;
         }
     }
@@ -322,6 +330,76 @@ public partial class MainWindow : Window
     private void InsertTodo_Click(object sender, RoutedEventArgs e)  => InsertMarker("[TODO]");
     private void InsertFixme_Click(object sender, RoutedEventArgs e) => InsertMarker("[FIXME]");
     private void InsertNote_Click(object sender, RoutedEventArgs e)  => InsertMarker("[NOTE]");
+
+    // ── Note link navigation ───────────────────────────────────────────────
+
+    private void TryOpenNoteLink()
+    {
+        var linkTitle = NoteLinkService.ExtractLinkAtCursor(EditorBox.Text, EditorBox.CaretIndex);
+        if (linkTitle == null) return;
+        var note = ViewModel.FindNoteByTitle(linkTitle);
+        if (note == null)
+        {
+            MessageBox.Show($"ノート「{linkTitle}」が見つかりません。", "リンク先なし",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        ViewModel.NavigateToNote(note);
+    }
+
+    private void OpenNoteLink_Click(object sender, RoutedEventArgs e) => TryOpenNoteLink();
+
+    private void InsertNoteLink_Click(object sender, RoutedEventArgs e)
+    {
+        var d = new InputDialog("ノートリンク挿入", "リンク先のノート名を入力してください:") { Owner = this };
+        if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
+        var text = $"[[{d.ResultText.Trim()}]]";
+        var caret = EditorBox.CaretIndex;
+        EditorBox.Select(caret, 0);
+        EditorBox.SelectedText = text;
+        EditorBox.CaretIndex = caret + text.Length;
+        EditorBox.Focus();
+    }
+
+    // ── Task related note ──────────────────────────────────────────────────
+
+    private void OpenRelatedNote_Click(object sender, RoutedEventArgs e)
+    {
+        NoteViewModel? note;
+        if (GetDataContext<TaskViewModel>(sender) is { } task)
+            note = ViewModel.FindNoteById(task.LinkedNoteId);
+        else
+            note = ViewModel.EditingTaskRelatedNote;
+
+        if (note != null)
+            ViewModel.NavigateToNote(note);
+        else
+            MessageBox.Show("関連ノートが見つかりません。", "情報", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
+    {
+        var task = GetDataContext<TaskViewModel>(sender);
+        if (task == null) return;
+        var d = new InputDialog("関連ノートを設定", "ノート名を入力してください:") { Owner = this };
+        if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
+        var note = ViewModel.FindNoteByTitle(d.ResultText.Trim());
+        if (note == null)
+        {
+            MessageBox.Show($"ノート「{d.ResultText.Trim()}」が見つかりません。", "エラー",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+        ViewModel.SetTaskRelatedNote(task, note);
+    }
+
+    private void ClearRelatedNote_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetDataContext<TaskViewModel>(sender) is { } task)
+            ViewModel.ClearTaskRelatedNote(task);
+        else
+            ViewModel.EditingTaskRelatedNote = null;
+    }
 
     // ── Edit menu actions ──────────────────────────────────────────────────
 

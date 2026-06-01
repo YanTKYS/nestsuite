@@ -33,6 +33,7 @@ public class MainViewModel : BaseViewModel
     private enum EditorMode { NoteEdit, TaskComment }
     private EditorMode _editorMode = EditorMode.NoteEdit;
     private TaskViewModel? _editingTask = null;
+    private NoteViewModel? _editingTaskRelatedNote = null;
     private bool _isSampleProject = false;
     private bool _showLineNumbers = false;
 
@@ -42,6 +43,7 @@ public class MainViewModel : BaseViewModel
     public Action? RequestClose { get; set; }
     public Action<int>? NavigateToLine { get; set; }
     public Action<MarkerViewModel>? NavigateToMarker { get; set; }
+    public Action<NoteViewModel>? SyncTreeSelectionCallback { get; set; }
 
     public MainViewModel()
     {
@@ -254,6 +256,26 @@ public class MainViewModel : BaseViewModel
             ? $"タスクコメント：{_editingTask.Title}"
             : SelectedNote?.Title ?? "";
 
+    public IEnumerable<NoteViewModel> RelatedNoteChoices =>
+        Notebooks.SelectMany(nb => nb.Notes);
+
+    public NoteViewModel? EditingTaskRelatedNote
+    {
+        get => _editingTaskRelatedNote;
+        set
+        {
+            if (!SetProperty(ref _editingTaskRelatedNote, value)) return;
+            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
+            if (_editingTask != null)
+            {
+                _editingTask.LinkedNoteId = value?.Id;
+                IsModified = true;
+            }
+        }
+    }
+
+    public bool HasEditingTaskRelatedNote => _editingTaskRelatedNote != null;
+
     public ObservableCollection<NotebookViewModel> Notebooks { get; } = new();
     public ObservableCollection<TaskGroupViewModel> TaskGroups { get; }
     public ObservableCollection<MarkerViewModel> Markers { get; } = new();
@@ -302,6 +324,11 @@ public class MainViewModel : BaseViewModel
         OnPropertyChanged(nameof(EditorTitle));
         OnPropertyChanged(nameof(IsTaskCommentMode));
         _isLoadingNote = false;
+
+        _editingTaskRelatedNote = FindNoteById(task.LinkedNoteId);
+        OnPropertyChanged(nameof(EditingTaskRelatedNote));
+        OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
+
         RefreshMarkers();
     }
 
@@ -339,6 +366,7 @@ public class MainViewModel : BaseViewModel
         notebook.Notes.Add(vm);
         notebook.Model.Notes.Add(model);
         IsModified = true;
+        OnPropertyChanged(nameof(RelatedNoteChoices));
         SelectNote(vm);
         StatusMessage = $"ノート「{title}」を追加しました。";
     }
@@ -364,6 +392,7 @@ public class MainViewModel : BaseViewModel
                 nb.Model.Notes.Remove(note.Model);
                 if (SelectedNote == note) ClearEditor();
                 IsModified = true;
+                OnPropertyChanged(nameof(RelatedNoteChoices));
                 RefreshMarkers();
                 return;
             }
@@ -454,6 +483,59 @@ public class MainViewModel : BaseViewModel
         IsModified = true;
     }
 
+    public NoteViewModel? FindNoteById(string? id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        foreach (var nb in Notebooks)
+        {
+            var note = nb.Notes.FirstOrDefault(n => n.Id == id);
+            if (note != null) return note;
+        }
+        return null;
+    }
+
+    public NoteViewModel? FindNoteByTitle(string title)
+    {
+        foreach (var nb in Notebooks)
+        {
+            var note = nb.Notes.FirstOrDefault(n =>
+                string.Equals(n.Title, title, StringComparison.OrdinalIgnoreCase));
+            if (note != null) return note;
+        }
+        return null;
+    }
+
+    public void NavigateToNote(NoteViewModel note)
+    {
+        SelectNote(note);
+        SyncTreeSelectionCallback?.Invoke(note);
+    }
+
+    public void SetTaskRelatedNote(TaskViewModel task, NoteViewModel note)
+    {
+        task.LinkedNoteId = note.Id;
+        if (_editingTask == task)
+        {
+            _editingTaskRelatedNote = note;
+            OnPropertyChanged(nameof(EditingTaskRelatedNote));
+            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
+        }
+        IsModified = true;
+        StatusMessage = $"タスク「{task.Title}」に関連ノート「{note.Title}」を設定しました。";
+    }
+
+    public void ClearTaskRelatedNote(TaskViewModel task)
+    {
+        task.LinkedNoteId = null;
+        if (_editingTask == task)
+        {
+            _editingTaskRelatedNote = null;
+            OnPropertyChanged(nameof(EditingTaskRelatedNote));
+            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
+        }
+        IsModified = true;
+    }
+
     public void ApplyFontSettings(string fontFamily, double fontSize)
     {
         EditorFontFamily = fontFamily;
@@ -473,6 +555,7 @@ public class MainViewModel : BaseViewModel
     {
         _editorMode = EditorMode.NoteEdit;
         _editingTask = null;
+        _editingTaskRelatedNote = null;
         SelectedNote = null;
         _isLoadingNote = true;
         _editorContent = "";
@@ -480,6 +563,8 @@ public class MainViewModel : BaseViewModel
         OnPropertyChanged(nameof(CurrentNoteTitle));
         OnPropertyChanged(nameof(EditorTitle));
         OnPropertyChanged(nameof(IsTaskCommentMode));
+        OnPropertyChanged(nameof(EditingTaskRelatedNote));
+        OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
         _isLoadingNote = false;
         Markers.Clear();
         _projectTodoCount  = 0;
@@ -710,6 +795,7 @@ public class MainViewModel : BaseViewModel
 
         IsModified = false;
         OnPropertyChanged(nameof(WindowTitle));
+        OnPropertyChanged(nameof(RelatedNoteChoices));
     }
 
     private Project BuildProject()
@@ -719,7 +805,7 @@ public class MainViewModel : BaseViewModel
 
         return new Project
         {
-            Version = "0.7.2",
+            Version = "0.8.0",
             ProjectId = _currentProjectId,
             ProjectName = ProjectName,
             Notebooks = Notebooks.Select(nb => new Notebook

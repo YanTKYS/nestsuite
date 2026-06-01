@@ -50,8 +50,15 @@ public class TaskViewModel : BaseViewModel
     public string? LinkedNoteId
     {
         get => _model.LinkedNoteId;
-        set { _model.LinkedNoteId = value; OnPropertyChanged(); }
+        set
+        {
+            _model.LinkedNoteId = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasRelatedNote));
+        }
     }
+
+    public bool HasRelatedNote => !string.IsNullOrEmpty(_model.LinkedNoteId);
 
     public NoteTask Model => _model;
 }
