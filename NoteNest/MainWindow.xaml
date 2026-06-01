@@ -86,11 +86,11 @@
                        Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="#E65100"/>
+                        <Setter Property="Foreground" Value="{StaticResource UnsavedBrush}"/>
                         <Setter Property="FontWeight" Value="SemiBold"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsUnsavedWarning}" Value="True">
-                                <Setter Property="Foreground" Value="#CC0000"/>
+                                <Setter Property="Foreground" Value="{StaticResource UnsavedWarningBrush}"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -187,7 +187,7 @@
                                 </DockPanel.ContextMenu>
                                 <TextBlock DockPanel.Dock="Right"
                                            Text="●"
-                                           Foreground="#E67E22"
+                                           Foreground="{StaticResource TodoBrush}"
                                            FontSize="9"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
@@ -231,8 +231,8 @@
 
                 <!-- Sample project banner -->
                 <Border Grid.Row="0"
-                        Background="#FFF8DC"
-                        BorderBrush="#D4B800"
+                        Background="{StaticResource SampleBannerBg}"
+                        BorderBrush="{StaticResource SampleBannerBorder}"
                         BorderThickness="0,0,0,1"
                         Padding="14,10"
                         Visibility="{Binding IsSampleProject, Converter={StaticResource BoolToVis}}">
@@ -249,7 +249,7 @@
                                     Background="#4A90D9" BorderBrush="#2E6DA4" Foreground="White"/>
                         </StackPanel>
                         <TextBlock Text="サンプルプロジェクトが表示されています。新しいプロジェクトを作成するか、.notenest ファイルとして保存してください。"
-                                   FontSize="11.5" Foreground="#7A6000" TextWrapping="Wrap"
+                                   FontSize="11.5" Foreground="{StaticResource SampleBannerFg}" TextWrapping="Wrap"
                                    VerticalAlignment="Center"/>
                     </DockPanel>
                 </Border>
@@ -262,7 +262,7 @@
                         <Style TargetType="Border">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsTaskCommentMode}" Value="True">
-                                    <Setter Property="Background" Value="#FFF8E1"/>
+                                    <Setter Property="Background" Value="{StaticResource TaskCommentTitleBg}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -274,7 +274,7 @@
                                     <Setter Property="Background" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsModified}" Value="True">
-                                            <Setter Property="Background" Value="#FFE0B2"/>
+                                            <Setter Property="Background" Value="{StaticResource UnsavedSaveBtnBg}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -286,12 +286,12 @@
                                     FontSize="15"/>
                         </Border>
                         <Border DockPanel.Dock="Right"
-                                Background="#FFE082" CornerRadius="3"
+                                Background="{StaticResource CommentBadgeBg}" CornerRadius="3"
                                 Padding="6,2" Margin="8,0,0,0"
                                 VerticalAlignment="Center"
                                 Visibility="{Binding IsTaskCommentMode, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="コメント編集中"
-                                       FontSize="10.5" Foreground="#8C6100"/>
+                                       FontSize="10.5" Foreground="{StaticResource CommentBadgeFg}"/>
                         </Border>
                         <TextBlock Text="{Binding EditorTitle}"
                                    FontSize="14" FontWeight="SemiBold"
@@ -319,8 +319,8 @@
                              BorderThickness="0,0,1,0"
                              BorderBrush="#E0E0E0"
                              Padding="8,12,6,12"
-                             Background="#F8F8F8"
-                             Foreground="#AAAAAA"
+                             Background="{StaticResource LineNumberBg}"
+                             Foreground="{StaticResource LineNumberFg}"
                              TextAlignment="Right"
                              Text="1"
                              MinWidth="36"
@@ -347,7 +347,7 @@
                             <Style TargetType="TextBox">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsTaskCommentMode}" Value="True">
-                                        <Setter Property="Background" Value="#FFFDE7"/>
+                                        <Setter Property="Background" Value="{StaticResource TaskCommentEditorBg}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -487,7 +487,7 @@
                                                                       Margin="0,0,8,0"/>
                                                             <TextBlock DockPanel.Dock="Right"
                                                                        Text="●"
-                                                                       Foreground="#5B9BD5"
+                                                                       Foreground="{StaticResource TaskCommentIndicator}"
                                                                        FontSize="9"
                                                                        VerticalAlignment="Center"
                                                                        Margin="4,0,0,0"
@@ -504,7 +504,7 @@
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding IsCompleted}" Value="True">
                                                                                 <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                                                                <Setter Property="Foreground" Value="#AAAAAA"/>
+                                                                                <Setter Property="Foreground" Value="{StaticResource TaskCompletedFg}"/>
                                                                             </DataTrigger>
                                                                             <DataTrigger Binding="{Binding HasComment}" Value="True">
                                                                                 <Setter Property="ToolTip" Value="ダブルクリックでコメントを編集"/>
@@ -577,11 +577,11 @@
                             Background="#FAFAFA" Padding="10,5">
                         <StackPanel Orientation="Horizontal">
                             <CheckBox Content="TODO"  IsChecked="{Binding FilterTodo}"
-                                      Foreground="#E67E22" FontSize="11" Margin="0,0,10,0"/>
+                                      Foreground="{StaticResource TodoBrush}"  FontSize="11" Margin="0,0,10,0"/>
                             <CheckBox Content="FIXME" IsChecked="{Binding FilterFixme}"
-                                      Foreground="#E53935" FontSize="11" Margin="0,0,10,0"/>
+                                      Foreground="{StaticResource FixmeBrush}" FontSize="11" Margin="0,0,10,0"/>
                             <CheckBox Content="NOTE"  IsChecked="{Binding FilterNote}"
-                                      Foreground="#43A047" FontSize="11"/>
+                                      Foreground="{StaticResource NoteBrush}"  FontSize="11"/>
                         </StackPanel>
                     </Border>
 
@@ -598,7 +598,7 @@
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#F0F4FF"/>
+                                                        <Setter Property="Background" Value="{StaticResource MarkerHoverBg}"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>

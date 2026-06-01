@@ -5,15 +5,44 @@
     <Application.Resources>
         <ResourceDictionary>
 
-            <!-- Brushes -->
+            <!-- Brushes: layout / structure -->
             <SolidColorBrush x:Key="SidebarBg"      Color="#F5F5F5"/>
             <SolidColorBrush x:Key="PaneBorder"     Color="#E0E0E0"/>
             <SolidColorBrush x:Key="GroupHeaderBg"  Color="#EFEFEF"/>
             <SolidColorBrush x:Key="SelectedNoteBg" Color="#DCE8FF"/>
             <SolidColorBrush x:Key="AccentBlue"     Color="#2B5CE6"/>
+
+            <!-- Brushes: marker types -->
             <SolidColorBrush x:Key="TodoBrush"      Color="#E67E22"/>
             <SolidColorBrush x:Key="FixmeBrush"     Color="#E74C3C"/>
             <SolidColorBrush x:Key="NoteBrush"      Color="#27AE60"/>
+
+            <!-- Brushes: task comment mode -->
+            <SolidColorBrush x:Key="TaskCommentEditorBg"  Color="#FFFDE7"/>
+            <SolidColorBrush x:Key="TaskCommentTitleBg"   Color="#FFF8E1"/>
+            <SolidColorBrush x:Key="TaskCommentIndicator" Color="#5B9BD5"/>
+            <SolidColorBrush x:Key="CommentBadgeBg"       Color="#FFE082"/>
+            <SolidColorBrush x:Key="CommentBadgeFg"       Color="#8C6100"/>
+
+            <!-- Brushes: unsaved state -->
+            <SolidColorBrush x:Key="UnsavedBrush"        Color="#E65100"/>
+            <SolidColorBrush x:Key="UnsavedWarningBrush" Color="#CC0000"/>
+            <SolidColorBrush x:Key="UnsavedSaveBtnBg"    Color="#FFE0B2"/>
+
+            <!-- Brushes: sample project banner -->
+            <SolidColorBrush x:Key="SampleBannerBg"     Color="#FFF8DC"/>
+            <SolidColorBrush x:Key="SampleBannerBorder" Color="#D4B800"/>
+            <SolidColorBrush x:Key="SampleBannerFg"     Color="#7A6000"/>
+
+            <!-- Brushes: line number gutter -->
+            <SolidColorBrush x:Key="LineNumberBg" Color="#F8F8F8"/>
+            <SolidColorBrush x:Key="LineNumberFg" Color="#AAAAAA"/>
+
+            <!-- Brushes: task states -->
+            <SolidColorBrush x:Key="TaskCompletedFg" Color="#AAAAAA"/>
+
+            <!-- Brushes: marker list -->
+            <SolidColorBrush x:Key="MarkerHoverBg" Color="#F0F4FF"/>
 
             <!-- Icon button style (flat, no border) -->
             <Style x:Key="IconButton" TargetType="Button">
