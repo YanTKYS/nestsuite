@@ -1,5 +1,41 @@
 # リリースノート
 
+## v0.7.2 — ダーク / ライトテーマ切り替え
+
+**リリース日：** 2026-06-01
+
+### 追加した機能
+
+#### テーマ切り替え（ライト / ダーク）
+- 編集メニューに「ダークテーマ」チェック項目を追加
+- チェックを入れると即座にダークテーマが適用される（再起動不要）
+- テーマ選択は UI 設定ファイル（`%AppData%\NoteNest\ui-settings.json`）に保存され、次回起動時に引き継がれる
+- ライトテーマ適用時の色は v0.7.1 と同一
+
+#### ダークテーマの対象範囲
+- 左ペイン（ノートブックツリー）・中央エディタペイン・右ペイン（タスク・マーカー）
+- ステータスバー・グリッドスプリッター
+- エディタ本文の背景・文字色
+- 行番号ガター・タスクコメントエディタ
+
+#### ダークテーマの対象外（既知の制限）
+- メニューバー・スクロールバー・ダイアログ（OS ネイティブ描画のため）
+- ツリービューの選択ハイライト色
+
+### コード変更
+
+- `NoteNest/Themes/Light.xaml`: ライトテーマブラシリソース辞書（新規）
+- `NoteNest/Themes/Dark.xaml`: ダークテーマブラシリソース辞書（新規）
+- `NoteNest/Models/AppTheme.cs`: `AppTheme` 列挙型（Light / Dark）を新規作成
+- `NoteNest/Services/ThemeService.cs`: 実行時テーマ切り替えサービスを新規作成
+- `NoteNest/App.xaml`: ブラシ定義を `MergedDictionaries` 経由のテーマファイルに移行、`IconButton` スタイルを `DynamicResource` 化
+- `NoteNest/MainWindow.xaml`: 全ブラシ参照を `StaticResource` → `DynamicResource` に変換（58 箇所）、テーマメニュー追加、エディタに明示的な背景・文字色を追加
+- `NoteNest/MainWindow.xaml.cs`: `InitializeComponent` 前にテーマを適用、テーマ切り替えハンドラを追加
+- `NoteNest/Services/UiSettingsService.cs`: `UiSettings` に `Theme` プロパティを追加
+- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.7.2` に更新
+
+---
+
 ## v0.7.1 — 将来機能に備えたリファクタリング
 
 **リリース日：** 2026-06-01

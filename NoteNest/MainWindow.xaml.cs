@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using NoteNest.Dialogs;
+using NoteNest.Models;
 using NoteNest.Services;
 using NoteNest.ViewModels;
 
@@ -13,6 +14,7 @@ public partial class MainWindow : Window
     private MainViewModel ViewModel => (MainViewModel)DataContext;
     private FindReplaceDialog? _findReplaceDialog;
     private readonly UiSettingsService _uiSettingsService = new();
+    private readonly ThemeService _themeService = new();
     private UiSettings _uiSettings = new();
     private bool _suppressTreeSelectionChanged;
 
@@ -30,11 +32,15 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        // Apply theme before InitializeComponent so DynamicResources resolve to the correct values.
+        _uiSettings = _uiSettingsService.Load();
+        _themeService.Apply(_uiSettings.Theme);
+
         InitializeComponent();
         var vm = new MainViewModel();
         DataContext = vm;
 
-        _uiSettings = _uiSettingsService.Load();
+        DarkThemeMenuItem.IsChecked = _uiSettings.Theme == AppTheme.Dark;
         vm.ShowLineNumbers = _uiSettings.ShowLineNumbers;
 
         // Wire up dialog callbacks
@@ -321,6 +327,12 @@ public partial class MainWindow : Window
 
     private void ShowFindReplace_Click(object sender, RoutedEventArgs e) => OpenFindReplace();
 
+    private void DarkTheme_Click(object sender, RoutedEventArgs e)
+    {
+        _uiSettings.Theme = DarkThemeMenuItem.IsChecked ? AppTheme.Dark : AppTheme.Light;
+        _themeService.Apply(_uiSettings.Theme);
+    }
+
     private void ShowFontSettings_Click(object sender, RoutedEventArgs e)
     {
         var d = new FontSettingsDialog(ViewModel.EditorFontFamily, ViewModel.EditorFontSize)
@@ -347,6 +359,7 @@ public partial class MainWindow : Window
             FindReplaceLeft = _findReplaceDialog?.IsLoaded == true ? _findReplaceDialog.Left : _uiSettings.FindReplaceLeft,
             FindReplaceTop  = _findReplaceDialog?.IsLoaded == true ? _findReplaceDialog.Top  : _uiSettings.FindReplaceTop,
             ShowLineNumbers = ViewModel.ShowLineNumbers,
+            Theme           = _uiSettings.Theme,
         });
         if (_findReplaceDialog != null)
         {

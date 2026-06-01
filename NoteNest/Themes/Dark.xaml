@@ -1,0 +1,72 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- layout / structure -->
+    <SolidColorBrush x:Key="SidebarBg"      Color="#252526"/>
+    <SolidColorBrush x:Key="PaneBorder"     Color="#3E3E42"/>
+    <SolidColorBrush x:Key="GroupHeaderBg"  Color="#2D2D30"/>
+    <SolidColorBrush x:Key="SelectedNoteBg" Color="#094771"/>
+    <SolidColorBrush x:Key="AccentBlue"     Color="#6B9FFF"/>
+
+    <!-- marker types -->
+    <SolidColorBrush x:Key="TodoBrush"      Color="#E6903A"/>
+    <SolidColorBrush x:Key="FixmeBrush"     Color="#FF6B6B"/>
+    <SolidColorBrush x:Key="NoteBrush"      Color="#4EC97A"/>
+
+    <!-- task comment mode -->
+    <SolidColorBrush x:Key="TaskCommentEditorBg"  Color="#252218"/>
+    <SolidColorBrush x:Key="TaskCommentTitleBg"   Color="#2D2920"/>
+    <SolidColorBrush x:Key="TaskCommentIndicator" Color="#5B9BD5"/>
+    <SolidColorBrush x:Key="CommentBadgeBg"       Color="#7A5500"/>
+    <SolidColorBrush x:Key="CommentBadgeFg"       Color="#FFD580"/>
+
+    <!-- unsaved state -->
+    <SolidColorBrush x:Key="UnsavedBrush"        Color="#FF8C42"/>
+    <SolidColorBrush x:Key="UnsavedWarningBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="UnsavedSaveBtnBg"    Color="#3D2800"/>
+
+    <!-- sample project banner -->
+    <SolidColorBrush x:Key="SampleBannerBg"     Color="#2D2800"/>
+    <SolidColorBrush x:Key="SampleBannerBorder" Color="#A08800"/>
+    <SolidColorBrush x:Key="SampleBannerFg"     Color="#FFD740"/>
+
+    <!-- line number gutter -->
+    <SolidColorBrush x:Key="LineNumberBg" Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="LineNumberFg" Color="#555555"/>
+
+    <!-- task states -->
+    <SolidColorBrush x:Key="TaskCompletedFg" Color="#555555"/>
+
+    <!-- marker list -->
+    <SolidColorBrush x:Key="MarkerHoverBg" Color="#1A2540"/>
+
+    <!-- text hierarchy -->
+    <SolidColorBrush x:Key="SubtleFg"    Color="#999999"/>
+    <SolidColorBrush x:Key="MutedFg"     Color="#888888"/>
+    <SolidColorBrush x:Key="SecondaryFg" Color="#AAAAAA"/>
+    <SolidColorBrush x:Key="PrimaryFg"   Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="FaintFg"     Color="#666666"/>
+    <SolidColorBrush x:Key="HintFg"      Color="#505050"/>
+
+    <!-- chrome / panes -->
+    <SolidColorBrush x:Key="StatusBarBg"     Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="RightPaneBg"     Color="#252526"/>
+    <SolidColorBrush x:Key="ItemBorderBrush" Color="#3E3E42"/>
+
+    <!-- sample banner action buttons -->
+    <SolidColorBrush x:Key="BannerPrimaryBg"       Color="#A08800"/>
+    <SolidColorBrush x:Key="BannerPrimaryBorder"   Color="#806600"/>
+    <SolidColorBrush x:Key="BannerPrimaryFg"       Color="#FFD740"/>
+    <SolidColorBrush x:Key="BannerSecondaryBg"     Color="#2A5F9A"/>
+    <SolidColorBrush x:Key="BannerSecondaryBorder" Color="#1A4A7A"/>
+    <SolidColorBrush x:Key="BannerSecondaryFg"     Color="White"/>
+
+    <!-- icon button -->
+    <SolidColorBrush x:Key="IconButtonHoverBg" Color="#2A3A5F"/>
+
+    <!-- window / editor -->
+    <SolidColorBrush x:Key="AppBg"    Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="AppFg"    Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="EditorBg" Color="#1E1E1E"/>
+
+</ResourceDictionary>

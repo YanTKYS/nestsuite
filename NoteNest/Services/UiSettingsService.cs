@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using NoteNest.Models;
 
 namespace NoteNest.Services;
 
@@ -10,6 +11,7 @@ public class UiSettings
     public double? FindReplaceLeft { get; set; }
     public double? FindReplaceTop { get; set; }
     public bool ShowLineNumbers { get; set; } = false;
+    public AppTheme Theme { get; set; } = AppTheme.Light;
 }
 
 public class UiSettingsService
