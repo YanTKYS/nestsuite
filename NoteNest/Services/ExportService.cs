@@ -74,8 +74,12 @@ public class ExportService
         if (string.IsNullOrWhiteSpace(safe))
             return "notebook";
 
-        if (ReservedNames.Contains(safe))
-            safe += "_";
+        // Check the stem (part before first dot) against Windows reserved device names.
+        // Windows treats CON.txt, AUX.anything, etc. as reserved devices too.
+        var dotIndex = safe.IndexOf('.');
+        var stem     = dotIndex >= 0 ? safe[..dotIndex] : safe;
+        if (ReservedNames.Contains(stem))
+            safe = dotIndex >= 0 ? stem + "_" + safe[dotIndex..] : safe + "_";
 
         return safe;
     }

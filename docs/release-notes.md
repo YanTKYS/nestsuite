@@ -34,7 +34,7 @@
 - `NoteNest/ViewModels/MainViewModel.cs`: `ExportProjectToText` / `ExportNotebooksToTextFiles` を追加
 - `NoteNest/MainWindow.xaml`: ファイルメニューにエクスポートサブメニューを追加
 - `NoteNest/MainWindow.xaml.cs`: `ExportProjectText_Click` / `ExportNotebooksText_Click` を追加
-- `NoteNest.Tests/ExportServiceTests.cs`: エクスポートサービスの単体テスト（22 件）を新規作成
+- `NoteNest.Tests/ExportServiceTests.cs`: エクスポートサービスの単体テストを新規作成
 - `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.1` に更新
 
 ---
