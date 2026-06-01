@@ -8,6 +8,14 @@ public class ExportService
 {
     private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
+    private static readonly HashSet<string> ReservedNames =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        };
+
     public void ExportProjectToText(Project project, string outputPath)
         => File.WriteAllText(outputPath, BuildProjectText(project), Encoding.UTF8);
 
@@ -62,7 +70,14 @@ public class ExportService
             return "notebook";
 
         var safe = new string(name.Select(c => InvalidFileNameChars.Contains(c) ? '_' : c).ToArray()).Trim();
-        return string.IsNullOrWhiteSpace(safe) ? "notebook" : safe;
+
+        if (string.IsNullOrWhiteSpace(safe))
+            return "notebook";
+
+        if (ReservedNames.Contains(safe))
+            safe += "_";
+
+        return safe;
     }
 
     public static string GetUniqueFilePath(string directory, string baseName, string extension)

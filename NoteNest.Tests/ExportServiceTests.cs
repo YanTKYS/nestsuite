@@ -49,6 +49,20 @@ public class ExportServiceTests : IDisposable
     public void SanitizeFileName_PreservesJapanese()
         => Assert.Equal("会議メモ", ExportService.SanitizeFileName("会議メモ"));
 
+    [Theory]
+    [InlineData("CON")]
+    [InlineData("PRN")]
+    [InlineData("AUX")]
+    [InlineData("NUL")]
+    [InlineData("COM1")]
+    [InlineData("LPT9")]
+    public void SanitizeFileName_AppendsUnderscore_ForWindowsReservedNames(string reserved)
+        => Assert.Equal(reserved + "_", ExportService.SanitizeFileName(reserved));
+
+    [Fact]
+    public void SanitizeFileName_ReservedNameCheck_IsCaseInsensitive()
+        => Assert.Equal("con_", ExportService.SanitizeFileName("con"));
+
     // ── GetUniqueFilePath ──────────────────────────────────────────────────
 
     [Fact]
