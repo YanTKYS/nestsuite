@@ -63,6 +63,14 @@ public class ExportServiceTests : IDisposable
     public void SanitizeFileName_ReservedNameCheck_IsCaseInsensitive()
         => Assert.Equal("con_", ExportService.SanitizeFileName("con"));
 
+    [Theory]
+    [InlineData("CON.txt",     "CON_.txt")]
+    [InlineData("aux.backup",  "aux_.backup")]
+    [InlineData("LPT1.export", "LPT1_.export")]
+    public void SanitizeFileName_DottedReservedName_InsertsUnderscoreAfterStem(
+        string input, string expected)
+        => Assert.Equal(expected, ExportService.SanitizeFileName(input));
+
     // ── GetUniqueFilePath ──────────────────────────────────────────────────
 
     [Fact]
