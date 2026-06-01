@@ -8,6 +8,57 @@
                 <ResourceDictionary Source="Themes/Light.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- CheckBox: custom template so glyph colors use DynamicResource -->
+            <Style TargetType="CheckBox">
+                <Setter Property="Foreground"               Value="{DynamicResource AppFg}"/>
+                <Setter Property="Background"               Value="{DynamicResource AppBg}"/>
+                <Setter Property="BorderBrush"              Value="{DynamicResource SubtleFg}"/>
+                <Setter Property="Padding"                  Value="4,0,0,0"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="FocusVisualStyle"         Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="CheckBorder"
+                                        Width="13" Height="13"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="2"
+                                        VerticalAlignment="Center">
+                                    <Path x:Name="CheckMark"
+                                          Data="M 2 6 L 5 9 L 11 2"
+                                          Stroke="{DynamicResource AccentBlue}"
+                                          StrokeThickness="1.5"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Visibility="Collapsed"/>
+                                </Border>
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  RecognizesAccessKey="True"/>
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="CheckBorder" Property="BorderBrush"
+                                            Value="{DynamicResource AccentBlue}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground"                    Value="{DynamicResource FaintFg}"/>
+                                    <Setter TargetName="CheckBorder" Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Icon button style (flat, no border) -->
             <Style x:Key="IconButton" TargetType="Button">
                 <Setter Property="Background"      Value="Transparent"/>
