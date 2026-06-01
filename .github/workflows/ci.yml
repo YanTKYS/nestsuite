@@ -29,4 +29,4 @@ jobs:
         with:
           name: build-${{ github.run_number }}
           path: NoteNest/bin/Release/
-          retention-days: 7
+          retention-days: 1

@@ -15,7 +15,7 @@ public class TaskGroupViewModelTests
         var group = new TaskGroupViewModel("Today", "today");
         group.AddTask(Task("A"));
 
-        Assert.Equal(1, group.Tasks.Count);
+        Assert.Single(group.Tasks);
     }
 
     [Fact]
