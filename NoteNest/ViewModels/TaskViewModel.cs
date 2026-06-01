@@ -35,5 +35,23 @@ public class TaskViewModel : BaseViewModel
 
     public bool HasComment => !string.IsNullOrEmpty(_model.Comment);
 
+    public TaskPriority Priority
+    {
+        get => _model.Priority;
+        set { _model.Priority = value; OnPropertyChanged(); }
+    }
+
+    public DateTime? DueDate
+    {
+        get => _model.DueDate;
+        set { _model.DueDate = value; OnPropertyChanged(); }
+    }
+
+    public string? LinkedNoteId
+    {
+        get => _model.LinkedNoteId;
+        set { _model.LinkedNoteId = value; OnPropertyChanged(); }
+    }
+
     public NoteTask Model => _model;
 }

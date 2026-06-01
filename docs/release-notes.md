@@ -1,5 +1,39 @@
 # リリースノート
 
+## v0.7.1 — 将来機能に備えたリファクタリング
+
+**リリース日：** 2026-06-01
+
+### 変更内容（機能追加なし）
+
+#### テーマ切り替えの準備：カラーリソース集約
+- `MainWindow.xaml` にハードコードされていた UI カラーをすべて `App.xaml` の名前付きブラシリソースに移動
+- `MainWindow.xaml` 側は `{StaticResource ...}` 参照に統一
+- 追加したブラシキー：`TaskCommentEditorBg` / `TaskCommentTitleBg` / `TaskCommentIndicator` / `CommentBadgeBg` / `CommentBadgeFg` / `UnsavedBrush` / `UnsavedWarningBrush` / `UnsavedSaveBtnBg` / `SampleBannerBg` / `SampleBannerBorder` / `SampleBannerFg` / `LineNumberBg` / `LineNumberFg` / `TaskCompletedFg` / `MarkerHoverBg`
+- 既存の `TodoBrush` / `FixmeBrush` / `NoteBrush` をマーカーフィルタ行・ノートインジケータにも統一適用
+
+#### タスク期限・優先度・ノート関連付けの準備：モデル拡張
+- `NoteTask` に `Priority`（`TaskPriority` 列挙型）・`DueDate`（`DateTime?`）・`LinkedNoteId`（`string?`）を追加
+- いずれも `WhenWritingDefault` / `WhenWritingNull` で JSON 省略するため、既存の `.notenest` ファイルとの後方互換を維持
+- `TaskViewModel` に対応するプロパティ（Priority / DueDate / LinkedNoteId）を公開
+
+#### エクスポート機能の準備：インターフェイス定義
+- `IExporter` インターフェイスを `NoteNest.Services` 名前空間に追加（`FileFilter` / `DefaultExtension` / `Export(Project)` を定義）
+- 実装は含まない。将来の Markdown・PDF エクスポート実装の契約を確立
+
+### コード変更
+
+- `NoteNest/Models/TaskPriority.cs`: `TaskPriority` 列挙型を新規作成（None / Low / Medium / High）
+- `NoteNest/Models/NoteTask.cs`: Priority / DueDate / LinkedNoteId を追加
+- `NoteNest/ViewModels/TaskViewModel.cs`: Priority / DueDate / LinkedNoteId プロパティを公開
+- `NoteNest/Services/IExporter.cs`: エクスポートインターフェイスを新規作成
+- `NoteNest/App.xaml`: テーマ対応ブラシ 15 種を追加
+- `NoteNest/MainWindow.xaml`: ハードコードカラー → StaticResource 参照に全置換（計 19 箇所）
+- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.7.1` に更新
+- `BuildProject()` の保存バージョンを `"0.7.1"` に更新
+
+---
+
 ## v0.7.0 — 保存安全性・検索状態復元・マーカーリセット・自動テスト
 
 **リリース日：** 2026-06-01
