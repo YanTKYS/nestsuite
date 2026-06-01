@@ -153,13 +153,9 @@ public partial class MainWindow : Window
         var d = new InputDialog("ノート追加", "ノート名を入力してください:") { Owner = this };
         if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
         var title = d.ResultText.Trim();
-        if (ViewModel.NoteNameExists(title))
-        {
+        if (!ViewModel.AddNoteToNotebook(nb, title))
             MessageBox.Show($"ノート名「{title}」は既に使用されています。", "エラー",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        ViewModel.AddNoteToNotebook(nb, title);
     }
 
     private void AddNoteToNotebook_Click(object sender, RoutedEventArgs e)
@@ -169,13 +165,9 @@ public partial class MainWindow : Window
         var d = new InputDialog("ノート追加", "ノート名を入力してください:") { Owner = this };
         if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
         var title = d.ResultText.Trim();
-        if (ViewModel.NoteNameExists(title))
-        {
+        if (!ViewModel.AddNoteToNotebook(nb, title))
             MessageBox.Show($"ノート名「{title}」は既に使用されています。", "エラー",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        ViewModel.AddNoteToNotebook(nb, title);
     }
 
     private void RenameNotebook_Click(object sender, RoutedEventArgs e)
@@ -227,13 +219,9 @@ public partial class MainWindow : Window
         var d = new InputDialog("名前変更", "新しいノート名:", note.Title) { Owner = this };
         if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
         var newTitle = d.ResultText.Trim();
-        if (ViewModel.NoteNameExists(newTitle, excludeSelf: note))
-        {
+        if (!ViewModel.RenameNote(note, newTitle))
             MessageBox.Show($"ノート名「{newTitle}」は既に使用されています。", "エラー",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        ViewModel.RenameNote(note, newTitle);
     }
 
     private void DeleteNote_Click(object sender, RoutedEventArgs e)
@@ -254,13 +242,9 @@ public partial class MainWindow : Window
         var d = new InputDialog("名前変更", "新しいノート名:", note.Title) { Owner = this };
         if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
         var newTitle = d.ResultText.Trim();
-        if (ViewModel.NoteNameExists(newTitle, excludeSelf: note))
-        {
+        if (!ViewModel.RenameNote(note, newTitle))
             MessageBox.Show($"ノート名「{newTitle}」は既に使用されています。", "エラー",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        ViewModel.RenameNote(note, newTitle);
     }
 
     private void DeleteSelectedNote_Click(object sender, RoutedEventArgs e)
@@ -398,6 +382,15 @@ public partial class MainWindow : Window
             return;
         }
         if (ViewModel.SelectedNote == null) return;
+        if (ViewModel.NoteNameExists(note.Title, excludeSelf: note))
+        {
+            var result = MessageBox.Show(
+                $"「{note.Title}」という名前のノートが複数あります。\n" +
+                $"[[{note.Title}]] リンクは最初に見つかったノートへ解決される場合があります。\n\n" +
+                "このノートへのリンクを挿入しますか？",
+                "同名ノートの警告", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+        }
         InsertTextAtCaret($"[[{note.Title}]]");
     }
 

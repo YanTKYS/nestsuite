@@ -364,8 +364,9 @@ public class MainViewModel : BaseViewModel
         RefreshMarkers();
     }
 
-    public void AddNoteToNotebook(NotebookViewModel notebook, string title)
+    public bool AddNoteToNotebook(NotebookViewModel notebook, string title)
     {
+        if (NoteNameExists(title)) return false;
         var model = new Note { Title = title };
         var vm = new NoteViewModel(model);
         notebook.Notes.Add(vm);
@@ -374,10 +375,12 @@ public class MainViewModel : BaseViewModel
         OnPropertyChanged(nameof(RelatedNoteChoices));
         SelectNote(vm);
         StatusMessage = $"ノート「{title}」を追加しました。";
+        return true;
     }
 
-    public void RenameNote(NoteViewModel note, string newTitle)
+    public bool RenameNote(NoteViewModel note, string newTitle)
     {
+        if (NoteNameExists(newTitle, excludeSelf: note)) return false;
         note.Title = newTitle;
         if (SelectedNote == note)
         {
@@ -386,6 +389,7 @@ public class MainViewModel : BaseViewModel
             RefreshMarkers();
         }
         IsModified = true;
+        return true;
     }
 
     public void DeleteNote(NoteViewModel note)

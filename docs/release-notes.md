@@ -26,9 +26,10 @@
 ### コード変更
 
 - `NoteNest/Dialogs/NotePickerDialog.xaml` / `.xaml.cs`: ノート選択ダイアログを新規作成（`NotePickerItem` レコード型含む）
-- `NoteNest/ViewModels/MainViewModel.cs`: `IsNoteEditMode` / `NoteNameExists()` を追加、バージョンを `0.8.2` に更新
+- `NoteNest/ViewModels/MainViewModel.cs`: `IsNoteEditMode` / `NoteNameExists()` を追加；`AddNoteToNotebook()` / `RenameNote()` を `bool` 返却に変更し内部で重複チェックを実施；バージョンを `0.8.2` に更新
+- `NoteNest/Dialogs/NotePickerDialog.xaml.cs`: 同名ノートが存在する場合に確認ダイアログを表示
 - `NoteNest/MainWindow.xaml`: ノートコンテキストメニューに「このノートへのリンクを挿入」を追加、エディタコンテキストメニューの挿入項目に `IsEnabled` バインドを追加
-- `NoteNest/MainWindow.xaml.cs`: `InsertNoteLink_Click` を `NotePickerDialog` 使用に変更、`InsertNoteLinkFromNote_Click` / `InsertTextAtCaret` を追加、ノート追加・名前変更の4ハンドラに重複チェックを追加
+- `NoteNest/MainWindow.xaml.cs`: `InsertNoteLink_Click` を `NotePickerDialog` 使用に変更；`InsertNoteLinkFromNote_Click` に同名警告を追加；`InsertTextAtCaret` を抽出；4ハンドラを ViewModel の返値で分岐するよう簡略化
 - `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.2` に更新
 
 ---
