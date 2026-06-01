@@ -11,10 +11,10 @@ public class ThemeService
         var uri  = new Uri($"pack://application:,,,/Themes/{name}.xaml");
         var dict = new ResourceDictionary { Source = uri };
 
-        var merged   = Application.Current.Resources.MergedDictionaries;
-        var existing = merged.FirstOrDefault(d =>
-            d.Source?.OriginalString.Contains("/Themes/") == true);
-        if (existing != null) merged.Remove(existing);
+        var merged = Application.Current.Resources.MergedDictionaries;
+        foreach (var old in merged.Where(d =>
+            d.Source?.OriginalString.Contains("Themes/") == true).ToList())
+            merged.Remove(old);
         merged.Add(dict);
     }
 }

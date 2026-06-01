@@ -17,8 +17,7 @@
     </Window.InputBindings>
 
     <Window.Resources>
-        <conv:BoolToVisibilityConverter    x:Key="BoolToVis"/>
-        <conv:MarkerTypeToBrushConverter   x:Key="MarkerBrush"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
 
     <DockPanel>
@@ -617,9 +616,25 @@
                                         <StackPanel>
                                             <DockPanel>
                                                 <TextBlock Text="{Binding Type}"
-                                                           Foreground="{Binding Type, Converter={StaticResource MarkerBrush}}"
                                                            FontWeight="Bold" FontSize="11"
-                                                           Width="46" DockPanel.Dock="Left"/>
+                                                           Width="46" DockPanel.Dock="Left">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryFg}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Type}" Value="TODO">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TodoBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Type}" Value="FIXME">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource FixmeBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Type}" Value="NOTE">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource NoteBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                                 <TextBlock Text="{Binding LineLabel}"
                                                            Foreground="{DynamicResource MutedFg}" FontSize="11"
                                                            Margin="0,0,6,0" VerticalAlignment="Center"
