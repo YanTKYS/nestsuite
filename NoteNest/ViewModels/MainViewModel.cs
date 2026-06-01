@@ -427,7 +427,9 @@ public class MainViewModel : BaseViewModel
         var sourceNotebook = Notebooks.FirstOrDefault(nb => nb.Notes.Contains(note));
         if (sourceNotebook == null || sourceNotebook == targetNotebook) return;
         sourceNotebook.Notes.Remove(note);
+        sourceNotebook.Model.Notes.Remove(note.Model);
         targetNotebook.Notes.Add(note);
+        targetNotebook.Model.Notes.Add(note.Model);
         IsModified = true;
         StatusMessage = $"ノート「{note.Title}」を「{targetNotebook.Title}」に移動しました。";
     }
