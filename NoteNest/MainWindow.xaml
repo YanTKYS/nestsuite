@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:NoteNest.ViewModels"
         xmlns:conv="clr-namespace:NoteNest.Converters"
         Title="{Binding WindowTitle}"
+        Icon="Assets/icon.ico"
         Width="1100" Height="720"
         MinWidth="800" MinHeight="520"
         Background="{DynamicResource AppBg}"
