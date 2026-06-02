@@ -87,6 +87,10 @@
                 <MenuItem Header="ノート削除(_D)"      Click="DeleteSelectedNote_Click"/>
             </MenuItem>
 
+            <MenuItem Header="ヘルプ(_H)">
+                <MenuItem Header="チュートリアル(_T)..." Click="ShowTutorial_Click"/>
+            </MenuItem>
+
         </Menu>
 
         <!-- ═══ Status bar ═══ -->

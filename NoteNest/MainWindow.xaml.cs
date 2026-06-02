@@ -539,6 +539,9 @@ public partial class MainWindow : Window
 
     private void ShowFindReplace_Click(object sender, RoutedEventArgs e) => OpenFindReplace();
 
+    private void ShowTutorial_Click(object sender, RoutedEventArgs e)
+        => new TutorialWindow { Owner = this }.Show();
+
     private void DarkTheme_Click(object sender, RoutedEventArgs e)
     {
         _uiSettings.Theme = DarkThemeMenuItem.IsChecked ? AppTheme.Dark : AppTheme.Light;
