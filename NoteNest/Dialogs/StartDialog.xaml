@@ -1,0 +1,98 @@
+<Window x:Class="NoteNest.Dialogs.StartDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NoteNest をはじめる"
+        Width="460" Height="440"
+        MinWidth="340" MinHeight="300"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="6"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*" MinHeight="60"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ヘッダー -->
+        <TextBlock Grid.Row="0"
+                   Text="NoteNest をはじめる"
+                   FontSize="17" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AppFg}"/>
+
+        <TextBlock Grid.Row="2"
+                   Text="新しく始めるか、最近使ったプロジェクトを開いてください。"
+                   FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SubtleFg}"/>
+
+        <!-- 新規プロジェクトボタン -->
+        <Button Grid.Row="4"
+                Content="＋  新規プロジェクトを開始する"
+                HorizontalAlignment="Stretch"
+                Click="NewProject_Click"
+                FontSize="13"
+                Background="#2B5CE6" Foreground="White"
+                BorderThickness="0" Padding="12,9"/>
+
+        <!-- 最近使ったファイルラベル -->
+        <TextBlock Grid.Row="6"
+                   Text="最近使ったファイル"
+                   FontSize="12" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SubtleFg}"/>
+
+        <!-- 最近使ったファイル一覧 -->
+        <ListBox Grid.Row="8" x:Name="RecentList"
+                 BorderThickness="1"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 MouseDoubleClick="RecentList_MouseDoubleClick"
+                 PreviewKeyDown="RecentList_PreviewKeyDown"
+                 SelectionChanged="RecentList_SelectionChanged">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Padding" Value="8,6"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}"
+                                   FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding FullPath}"
+                                   FontSize="11" Foreground="Gray"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- 最近使ったファイルなし（空状態） -->
+        <TextBlock Grid.Row="8" x:Name="NoRecentText"
+                   Text="最近使ったファイルがありません"
+                   FontSize="12"
+                   Foreground="{DynamicResource SubtleFg}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed"/>
+
+        <!-- ボタン行 -->
+        <StackPanel Grid.Row="10" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OpenButton"
+                    Content="開く" Width="80" Margin="0,0,8,0"
+                    IsEnabled="False"
+                    Click="Open_Click"
+                    Background="#2B5CE6" Foreground="White"
+                    BorderThickness="0" Padding="6,4"/>
+            <Button Content="キャンセル" Width="88" IsCancel="True"
+                    Click="Cancel_Click" Padding="6,4"/>
+        </StackPanel>
+    </Grid>
+</Window>
