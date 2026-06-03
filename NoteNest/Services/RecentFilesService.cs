@@ -40,4 +40,16 @@ public class RecentFilesService
         }
         catch { }
     }
+
+    public void Remove(string filePath)
+    {
+        var list = Load();
+        if (!list.Remove(filePath)) return;
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath)!);
+            File.WriteAllText(_dataPath, JsonSerializer.Serialize(list));
+        }
+        catch { }
+    }
 }

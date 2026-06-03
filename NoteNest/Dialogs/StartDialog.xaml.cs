@@ -26,12 +26,21 @@ public partial class StartDialog : Window
         {
             RecentList.Visibility = Visibility.Collapsed;
             NoRecentText.Visibility = Visibility.Visible;
-            OpenButton.Visibility = Visibility.Collapsed;
         }
         else
         {
             foreach (var path in paths)
                 RecentList.Items.Add(new RecentFileViewModel(path));
+        }
+    }
+
+    private void UpdateEmptyState()
+    {
+        if (RecentList.Items.Count == 0)
+        {
+            RecentList.Visibility = Visibility.Collapsed;
+            NoRecentText.Visibility = Visibility.Visible;
+            OpenButton.IsEnabled = false;
         }
     }
 
@@ -44,14 +53,14 @@ public partial class StartDialog : Window
     private void RecentList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (RecentList.SelectedItem is RecentFileViewModel vm)
-            TryOpen(vm.FullPath);
+            TryOpen(vm);
     }
 
     private void RecentList_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter && RecentList.SelectedItem is RecentFileViewModel vm)
         {
-            TryOpen(vm.FullPath);
+            TryOpen(vm);
             e.Handled = true;
         }
     }
@@ -59,18 +68,21 @@ public partial class StartDialog : Window
     private void Open_Click(object sender, RoutedEventArgs e)
     {
         if (RecentList.SelectedItem is RecentFileViewModel vm)
-            TryOpen(vm.FullPath);
+            TryOpen(vm);
     }
 
-    private void TryOpen(string path)
+    private void TryOpen(RecentFileViewModel vm)
     {
-        if (!File.Exists(path))
+        if (!File.Exists(vm.FullPath))
         {
-            MessageBox.Show(this, $"ファイルが見つかりません。\n\n{path}",
+            MessageBox.Show(this, $"ファイルが見つかりません。\n\n{vm.FullPath}",
                 "ファイルを開けません", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _recentFilesService.Remove(vm.FullPath);
+            RecentList.Items.Remove(vm);
+            UpdateEmptyState();
             return;
         }
-        SelectedPath = path;
+        SelectedPath = vm.FullPath;
         DialogResult = true;
     }
 
