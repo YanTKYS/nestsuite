@@ -189,6 +189,7 @@ public class MainViewModel : BaseViewModel
             if (!string.IsNullOrEmpty(_currentFilePath))
                 title += $" [{System.IO.Path.GetFileName(_currentFilePath)}]";
             if (IsModified) title += " *";
+            title += $" - ver{Project.CurrentSchemaVersion}";
             return title;
         }
     }
