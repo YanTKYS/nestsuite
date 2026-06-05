@@ -185,9 +185,7 @@ public class MainViewModel : BaseViewModel
     {
         get
         {
-            var title = $"NoteNest - {ProjectName}";
-            if (!string.IsNullOrEmpty(_currentFilePath))
-                title += $" [{System.IO.Path.GetFileName(_currentFilePath)}]";
+            var title = $"NoteNest - {ProjectDisplayName}";
             if (IsModified) title += " *";
             title += $" - ver{Project.CurrentSchemaVersion}";
             return title;
