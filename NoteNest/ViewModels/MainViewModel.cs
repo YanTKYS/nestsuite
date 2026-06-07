@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Threading;
 using NoteNest.Models;
@@ -181,13 +182,32 @@ public partial class MainViewModel : BaseViewModel
     public bool IsUnsavedWarning =>
         _isModified && (int)(DateTime.Now - _unsavedSince).TotalMinutes >= 5;
 
+    public static string ApplicationVersion
+    {
+        get
+        {
+            var informationalVersion = typeof(MainViewModel).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+            if (!string.IsNullOrWhiteSpace(informationalVersion))
+            {
+                var metadataSeparator = informationalVersion.IndexOf('+');
+                return metadataSeparator >= 0
+                    ? informationalVersion[..metadataSeparator]
+                    : informationalVersion;
+            }
+
+            return typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+        }
+    }
+
     public string WindowTitle
     {
         get
         {
             var title = $"NoteNest - {ProjectDisplayName}";
             if (IsModified) title += " *";
-            title += $" - ver{Project.CurrentSchemaVersion}";
+            title += $" - ver{ApplicationVersion}";
             return title;
         }
     }
