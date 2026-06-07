@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using NoteNest.Dialogs;
 using NoteNest.Models;
 using NoteNest.Services;
@@ -15,16 +14,11 @@ public partial class MainWindow : Window
     private FindReplaceDialog? _findReplaceDialog;
     private readonly UiSettingsService _uiSettingsService = new();
     private readonly ThemeService _themeService = new();
+    private readonly DialogService _dialogs;
     private UiSettings _uiSettings = new();
     private bool _suppressTreeSelectionChanged;
 
-    // Task drag-and-drop state
-    private Point _taskDragStartPoint;
-    private TaskViewModel? _draggedTask;
-
-    // Note drag-and-drop state
-    private Point _noteDragStartPoint;
-    private NoteViewModel? _draggedNote;
+    private readonly DragDropState _dragDrop = new();
 
     // Line number gutter scroll sync
     private ScrollViewer? _editorScrollViewer;
@@ -42,6 +36,7 @@ public partial class MainWindow : Window
     public MainWindow(string? startupFilePath = null)
     {
         _startupFilePath = startupFilePath;
+        _dialogs = new DialogService(this);
 
         // Apply theme before InitializeComponent so DynamicResources resolve to the correct values.
         _uiSettings = _uiSettingsService.Load();
@@ -81,17 +76,9 @@ public partial class MainWindow : Window
         RightPaneCollapseMenuItem.IsChecked = _isRightPaneCollapsed;
 
         // Wire up dialog callbacks
-        vm.ShowInputDialog = (title, prompt) =>
-        {
-            var d = new InputDialog(title, prompt) { Owner = this };
-            return d.ShowDialog() == true ? d.ResultText : null;
-        };
-
-        vm.ShowConfirmDialog = (title, message) =>
-            MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question)
-                == MessageBoxResult.Yes;
-
-        vm.ShowErrorDialog = (title, message) => ShowError(message, title);
+        vm.ShowInputDialog = (title, prompt) => _dialogs.ShowInput(title, prompt);
+        vm.ShowConfirmDialog = (title, message) => _dialogs.Confirm(message, title);
+        vm.ShowErrorDialog = (title, message) => _dialogs.ShowError(message, title);
 
         vm.RequestClose = Close;
 
@@ -188,388 +175,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void EditorBox_SelectionChanged(object sender, RoutedEventArgs e)
-    {
-        var caret     = EditorBox.CaretIndex;
-        var lineIndex = EditorBox.GetLineIndexFromCharacterIndex(caret);
-        if (lineIndex < 0) lineIndex = 0;
-        var lineStart = EditorBox.GetCharacterIndexFromLineIndex(lineIndex);
-        var col       = caret - lineStart + 1;
-        ViewModel.CaretPositionText = $"{lineIndex + 1}:{col}";
-    }
-
-    // ── Tree events ────────────────────────────────────────────────────────
-
-    private void NotebookTree_SelectedItemChanged(object sender,
-        RoutedPropertyChangedEventArgs<object> e)
-    {
-        if (_suppressTreeSelectionChanged) return;
-        if (e.NewValue is NoteViewModel note)
-            ViewModel.SelectNote(note);
-    }
-
-    // ── Left pane ─────────────────────────────────────────────────────────
-
-    private void LeftPaneAdd_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = new ContextMenu();
-        var addNb = new MenuItem { Header = "ノートブックを追加..." };
-        addNb.Click += AddNotebook_Click;
-        var addNote = new MenuItem { Header = "ノートを追加..." };
-        addNote.Click += AddNote_Click;
-        menu.Items.Add(addNb);
-        menu.Items.Add(addNote);
-        menu.PlacementTarget = (Button)sender;
-        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        menu.IsOpen = true;
-    }
-
-    private void AddNotebook_Click(object sender, RoutedEventArgs e)
-    {
-        var d = new InputDialog("ノートブック追加", "ノートブック名を入力してください:") { Owner = this };
-        if (d.ShowDialog() == true && !string.IsNullOrWhiteSpace(d.ResultText))
-            ViewModel.AddNotebookWithTitle(d.ResultText.Trim());
-    }
-
-    private void AddNote_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetSelectedNotebook();
-        if (nb == null) { ShowInfo("先にノートブックを選択または追加してください。"); return; }
-        AddNoteToNotebookViaDialog(nb);
-    }
-
-    private void AddNoteToNotebook_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetDataContext<NotebookViewModel>(sender);
-        if (nb != null) AddNoteToNotebookViaDialog(nb);
-    }
-
-    private void AddNoteToNotebookViaDialog(NotebookViewModel nb)
-    {
-        var d = new InputDialog("ノート追加", "ノート名を入力してください:") { Owner = this };
-        if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
-        var title = d.ResultText.Trim();
-        if (!ViewModel.AddNoteToNotebook(nb, title))
-            ShowError($"ノート名「{title}」は既に使用されています。");
-    }
-
-    private void RenameNotebook_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetDataContext<NotebookViewModel>(sender);
-        if (nb == null) return;
-        var d = new InputDialog("名前変更", "新しいノートブック名:", nb.Title) { Owner = this };
-        if (d.ShowDialog() == true && !string.IsNullOrWhiteSpace(d.ResultText))
-            ViewModel.RenameNotebook(nb, d.ResultText.Trim());
-    }
-
-    private void MoveNotebookUp_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetDataContext<NotebookViewModel>(sender);
-        if (nb != null) ViewModel.MoveNotebookUp(nb);
-    }
-
-    private void MoveNotebookDown_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetDataContext<NotebookViewModel>(sender);
-        if (nb != null) ViewModel.MoveNotebookDown(nb);
-    }
-
-    private void DeleteNotebook_Click(object sender, RoutedEventArgs e)
-    {
-        var nb = GetDataContext<NotebookViewModel>(sender);
-        if (nb == null) return;
-        if (Confirm($"ノートブック「{nb.Title}」を削除しますか？\n含まれるノートもすべて削除されます。この操作は取り消せません。",
-                    "削除の確認"))
-            ViewModel.DeleteNotebook(nb);
-    }
-
-    private void MoveNoteUp_Click(object sender, RoutedEventArgs e)
-    {
-        var note = GetDataContext<NoteViewModel>(sender);
-        if (note != null) ViewModel.MoveNoteUp(note);
-    }
-
-    private void MoveNoteDown_Click(object sender, RoutedEventArgs e)
-    {
-        var note = GetDataContext<NoteViewModel>(sender);
-        if (note != null) ViewModel.MoveNoteDown(note);
-    }
-
-    private void RenameNote_Click(object sender, RoutedEventArgs e)
-        => RenameNoteWithDialog(GetDataContext<NoteViewModel>(sender));
-
-    private void DeleteNote_Click(object sender, RoutedEventArgs e)
-        => DeleteNoteWithConfirm(GetDataContext<NoteViewModel>(sender));
-
-    private void RenameSelectedNote_Click(object sender, RoutedEventArgs e)
-        => RenameNoteWithDialog(ViewModel.SelectedNote);
-
-    private void DeleteSelectedNote_Click(object sender, RoutedEventArgs e)
-        => DeleteNoteWithConfirm(ViewModel.SelectedNote);
-
-    private void RenameNoteWithDialog(NoteViewModel? note)
-    {
-        if (note == null) return;
-        var d = new InputDialog("名前変更", "新しいノート名:", note.Title) { Owner = this };
-        if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
-        var newTitle = d.ResultText.Trim();
-        if (!ViewModel.RenameNote(note, newTitle))
-            ShowError($"ノート名「{newTitle}」は既に使用されています。");
-    }
-
-    private void DeleteNoteWithConfirm(NoteViewModel? note)
-    {
-        if (note == null) return;
-        var nbTitle = FindNotebookTitleOf(note);
-        var location = nbTitle != null ? $"（{nbTitle}）" : "";
-        if (Confirm($"ノート「{note.Title}」{location}を削除しますか？\nこの操作は取り消せません。", "削除の確認"))
-            ViewModel.DeleteNote(note);
-    }
-
-    // ── Task events ────────────────────────────────────────────────────────
-
-    private void AddTaskMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = new ContextMenu();
-        foreach (var group in ViewModel.TaskGroups)
-        {
-            var key = group.Key;
-            var item = new MenuItem { Header = group.Title };
-            item.Click += (_, _) => ViewModel.AddTaskCommand.Execute(key);
-            menu.Items.Add(item);
-        }
-        menu.PlacementTarget = (Button)sender;
-        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        menu.IsOpen = true;
-    }
-
-    private void MoveTaskToToday_Click(object sender, RoutedEventArgs e)   => MoveTaskFromMenu(sender, "today");
-    private void MoveTaskToWeek_Click(object sender, RoutedEventArgs e)    => MoveTaskFromMenu(sender, "week");
-    private void MoveTaskToBacklog_Click(object sender, RoutedEventArgs e) => MoveTaskFromMenu(sender, "backlog");
-
-    private void MoveTaskFromMenu(object sender, string targetGroupKey)
-    {
-        // Walk up: sub-MenuItem → parent MenuItem → ContextMenu → PlacementTarget
-        if (sender is MenuItem subItem &&
-            subItem.Parent is MenuItem parentItem &&
-            parentItem.Parent is ContextMenu cm &&
-            cm.PlacementTarget is FrameworkElement fe &&
-            fe.DataContext is TaskViewModel task)
-        {
-            ViewModel.MoveTask(task, targetGroupKey);
-        }
-    }
-
-    private void RenameTask_Click(object sender, RoutedEventArgs e)
-    {
-        var task = GetDataContext<TaskViewModel>(sender);
-        if (task == null) return;
-        var d = new InputDialog("タスク名変更", "新しいタスク名:", task.Title) { Owner = this };
-        if (d.ShowDialog() == true && !string.IsNullOrWhiteSpace(d.ResultText))
-            ViewModel.RenameTask(task, d.ResultText.Trim());
-    }
-
-    private void DeleteTask_Click(object sender, RoutedEventArgs e)
-    {
-        var task = GetDataContext<TaskViewModel>(sender);
-        if (task == null) return;
-        ViewModel.DeleteTaskCommand.Execute(task);
-    }
-
-    // ── Marker events ──────────────────────────────────────────────────────
-
-    private void Marker_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if ((sender as FrameworkElement)?.DataContext is MarkerViewModel m)
-            ViewModel.MarkerClickCommand.Execute(m);
-    }
-
-    // ── Task comment editing ───────────────────────────────────────────────
-
-    private void TaskTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ClickCount == 2 && (sender as FrameworkElement)?.DataContext is TaskViewModel task)
-        {
-            ViewModel.SelectTask(task);
-            e.Handled = true;
-        }
-    }
-
-    private void EditTaskComment_Click(object sender, RoutedEventArgs e)
-    {
-        TaskViewModel? task = null;
-        if (sender is Button btn && btn.DataContext is TaskViewModel t1)
-            task = t1;
-        else
-            task = GetDataContext<TaskViewModel>(sender);
-        if (task != null)
-            ViewModel.SelectTask(task);
-    }
-
-    // ── Editor marker insertion ────────────────────────────────────────────
-
-    private void InsertMarker(string markerText)
-        => InsertTextAtCaret($"{markerText} ");
-
-    private void InsertTodo_Click(object sender, RoutedEventArgs e)  => InsertMarker("[TODO]");
-    private void InsertFixme_Click(object sender, RoutedEventArgs e) => InsertMarker("[FIXME]");
-    private void InsertNote_Click(object sender, RoutedEventArgs e)  => InsertMarker("[NOTE]");
-
-    // ── Note link navigation ───────────────────────────────────────────────
-
-    private void TryOpenNoteLink()
-    {
-        var linkTitle = NoteLinkService.ExtractLinkAtCursor(EditorBox.Text, EditorBox.CaretIndex);
-        if (linkTitle == null) return;
-        var note = ViewModel.FindNoteByTitle(linkTitle);
-        if (note == null)
-        {
-            ShowInfo($"ノート「{linkTitle}」が見つかりません。", "リンク先なし");
-            return;
-        }
-        ViewModel.NavigateToNote(note);
-    }
-
-    private void OpenNoteLink_Click(object sender, RoutedEventArgs e) => TryOpenNoteLink();
-
-    private void InsertNoteLink_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.IsTaskCommentMode) return;
-        var items = ViewModel.Notebooks
-            .SelectMany(nb => nb.Notes.Select(n => new NotePickerItem(nb.Title, n)))
-            .ToList();
-        if (items.Count == 0) { ShowInfo("リンクできるノートがありません。"); return; }
-        var d = new NotePickerDialog(items) { Owner = this };
-        if (d.ShowDialog() != true || d.SelectedNote == null) return;
-        InsertTextAtCaret($"[[{d.SelectedNote.Title}]]");
-    }
-
-    private void InsertNoteLinkFromNote_Click(object sender, RoutedEventArgs e)
-    {
-        var note = GetDataContext<NoteViewModel>(sender);
-        if (note == null) return;
-        if (ViewModel.IsTaskCommentMode)
-        {
-            ShowInfo("タスクコメント編集中はノートリンクを挿入できません。\nノート本文を編集中のときに使用してください。");
-            return;
-        }
-        if (ViewModel.SelectedNote == null) return;
-        if (ViewModel.NoteNameExists(note.Title, excludeSelf: note))
-        {
-            if (!Confirm(
-                $"「{note.Title}」という名前のノートが複数あります。\n" +
-                $"[[{note.Title}]] リンクは最初に見つかったノートへ解決される場合があります。\n\n" +
-                "このノートへのリンクを挿入しますか？",
-                "同名ノートの警告"))
-                return;
-        }
-        InsertTextAtCaret($"[[{note.Title}]]");
-    }
-
-    private void InsertTextAtCaret(string text)
-    {
-        var caret = EditorBox.CaretIndex;
-        EditorBox.Select(caret, 0);
-        EditorBox.SelectedText = text;
-        EditorBox.CaretIndex = caret + text.Length;
-        EditorBox.Focus();
-    }
-
-    // ── Task related note ──────────────────────────────────────────────────
-
-    private void OpenRelatedNote_Click(object sender, RoutedEventArgs e)
-    {
-        NoteViewModel? note;
-        if (GetDataContext<TaskViewModel>(sender) is { } task)
-            note = ViewModel.FindNoteById(task.LinkedNoteId);
-        else
-            note = ViewModel.EditingTaskRelatedNote;
-
-        if (note != null)
-            ViewModel.NavigateToNote(note);
-        else
-            ShowInfo("関連ノートが見つかりません。");
-    }
-
-    private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
-    {
-        var task = GetDataContext<TaskViewModel>(sender);
-        if (task == null) return;
-        var d = new InputDialog("関連ノートを設定", "ノート名を入力してください:") { Owner = this };
-        if (d.ShowDialog() != true || string.IsNullOrWhiteSpace(d.ResultText)) return;
-        var noteTitle = d.ResultText.Trim();
-        var note = ViewModel.FindNoteByTitle(noteTitle);
-        if (note == null)
-        {
-            ShowError($"ノート「{noteTitle}」が見つかりません。");
-            return;
-        }
-        ViewModel.SetTaskRelatedNote(task, note);
-    }
-
-    private void ClearRelatedNote_Click(object sender, RoutedEventArgs e)
-    {
-        if (GetDataContext<TaskViewModel>(sender) is { } task)
-            ViewModel.ClearTaskRelatedNote(task);
-        else
-            ViewModel.EditingTaskRelatedNote = null;
-    }
-
-    // ── Edit menu actions ──────────────────────────────────────────────────
-
-    // ── Export handlers ────────────────────────────────────────────────────
-
-    private void ExportProjectText_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter      = "テキストファイル (*.txt)|*.txt",
-            DefaultExt  = ".txt",
-            FileName    = ViewModel.ProjectName
-        };
-        if (dialog.ShowDialog() != true) return;
-
-        try
-        {
-            ViewModel.ExportProjectToText(dialog.FileName);
-            ViewModel.StatusMessage = $"エクスポートしました: {System.IO.Path.GetFileName(dialog.FileName)}";
-        }
-        catch (Exception ex)
-        {
-            ShowError($"エクスポートに失敗しました。\n{ex.Message}");
-        }
-    }
-
-    private void ExportNotebooksText_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.Notebooks.Count == 0) { ShowInfo("エクスポートするノートブックがありません。"); return; }
-
-        var dialog = new Microsoft.Win32.OpenFolderDialog
-        {
-            Title = "出力先フォルダを選択してください"
-        };
-        if (dialog.ShowDialog() != true) return;
-
-        var dir = dialog.FolderName;
-        if (!System.IO.Directory.Exists(dir)) { ShowError("選択したフォルダが存在しません。"); return; }
-
-        try
-        {
-            var count = ViewModel.ExportNotebooksToTextFiles(dir);
-            ShowInfo($"{count} 件のノートブックをエクスポートしました。\n出力先: {dir}", "エクスポート完了");
-            ViewModel.StatusMessage = $"{count} 件のノートブックをエクスポートしました。";
-        }
-        catch (Exception ex)
-        {
-            ShowError($"エクスポートに失敗しました。\n{ex.Message}");
-        }
-    }
-
-    private void ShowFindReplace_Click(object sender, RoutedEventArgs e) => OpenFindReplace();
-
-    private void ShowTutorial_Click(object sender, RoutedEventArgs e)
-        => new TutorialWindow { Owner = this }.Show();
-
     private void DarkTheme_Click(object sender, RoutedEventArgs e)
     {
         _uiSettings.Theme = DarkThemeMenuItem.IsChecked ? AppTheme.Dark : AppTheme.Light;
@@ -600,16 +205,6 @@ public partial class MainWindow : Window
         RightPaneColumn.Width            = new GridLength(_savedRightPaneWidth);
         _isRightPaneCollapsed            = false;
         RightPaneExpandButton.Visibility = Visibility.Collapsed;
-    }
-
-    private void ShowFontSettings_Click(object sender, RoutedEventArgs e)
-    {
-        var d = new FontSettingsDialog(ViewModel.EditorFontFamily, ViewModel.EditorFontSize)
-        {
-            Owner = this
-        };
-        if (d.ShowDialog() == true)
-            ViewModel.ApplyFontSettings(d.SelectedFontFamily, d.SelectedFontSize);
     }
 
     // ── Window events ──────────────────────────────────────────────────────
@@ -673,18 +268,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OpenFindReplace()
-    {
-        if (_findReplaceDialog == null || !_findReplaceDialog.IsLoaded)
-        {
-            _findReplaceDialog = new FindReplaceDialog(EditorBox) { Owner = this };
-            _findReplaceDialog.RestoreState(_uiSettings.LastSearchText, _uiSettings.LastReplaceText,
-                                            _uiSettings.FindReplaceLeft, _uiSettings.FindReplaceTop);
-        }
-        _findReplaceDialog.Show();
-        _findReplaceDialog.Activate();
-    }
-
     private NotebookViewModel? GetSelectedNotebook()
     {
         if (NotebookTree.SelectedItem is NotebookViewModel nb) return nb;
@@ -699,17 +282,6 @@ public partial class MainWindow : Window
     private string? FindNotebookTitleOf(NoteViewModel note) =>
         ViewModel.FindNotebookOf(note)?.Title;
 
-    // 通知ダイアログ共通処理。MessageBox 呼び出しのボイラープレートを集約する。
-    private void ShowError(string message, string title = "エラー") =>
-        MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-
-    private void ShowInfo(string message, string title = "情報") =>
-        MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-
-    private bool Confirm(string message, string title = "確認",
-        MessageBoxImage icon = MessageBoxImage.Warning) =>
-        MessageBox.Show(this, message, title, MessageBoxButton.YesNo, icon) == MessageBoxResult.Yes;
-
     // Gets DataContext from a MenuItem in a ContextMenu
     private static T? GetDataContext<T>(object sender) where T : class
     {
@@ -723,125 +295,8 @@ public partial class MainWindow : Window
 
     // ── Task drag-and-drop ─────────────────────────────────────────────────────
 
-    private void TaskItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        _taskDragStartPoint = e.GetPosition(null);
-        _draggedTask = (sender as FrameworkElement)?.DataContext as TaskViewModel;
-    }
-
-    private void TaskItem_PreviewMouseMove(object sender, MouseEventArgs e)
-    {
-        if (e.LeftButton != MouseButtonState.Pressed || _draggedTask == null) return;
-        var pos = e.GetPosition(null);
-        if (Math.Abs(pos.X - _taskDragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(pos.Y - _taskDragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance) return;
-        if (sender is DependencyObject dep)
-            DragDrop.DoDragDrop(dep, _draggedTask, DragDropEffects.Move);
-        _draggedTask = null;
-    }
-
-    private void TaskItem_DragOver(object sender, DragEventArgs e)
-    {
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
-
-    private void TaskItem_Drop(object sender, DragEventArgs e)
-    {
-        var target = (sender as FrameworkElement)?.DataContext as TaskViewModel;
-        if (target != null && _draggedTask != null && _draggedTask != target)
-            ViewModel.MoveTaskToGroupAt(_draggedTask, target);
-        _draggedTask = null;
-    }
-
-    private void TaskGroupHeader_DragOver(object sender, DragEventArgs e)
-    {
-        if (_draggedTask == null) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
-
-    private void TaskGroupHeader_Drop(object sender, DragEventArgs e)
-    {
-        if (_draggedTask == null) return;
-        var group = (sender as FrameworkElement)?.DataContext as TaskGroupViewModel;
-        if (group != null)
-            ViewModel.MoveTask(_draggedTask, group.Key);
-        _draggedTask = null;
-    }
-
     // ── Note drag-and-drop ─────────────────────────────────────────────────────
-
-    private void NoteItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        _noteDragStartPoint = e.GetPosition(null);
-        _draggedNote = (sender as FrameworkElement)?.DataContext as NoteViewModel;
-    }
-
-    private void NoteItem_PreviewMouseMove(object sender, MouseEventArgs e)
-    {
-        if (e.LeftButton != MouseButtonState.Pressed || _draggedNote == null) return;
-        var pos = e.GetPosition(null);
-        if (Math.Abs(pos.X - _noteDragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(pos.Y - _noteDragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance) return;
-        if (sender is DependencyObject dep)
-            DragDrop.DoDragDrop(dep, _draggedNote, DragDropEffects.Move);
-        _draggedNote = null;
-    }
-
-    private void NotebookHeader_DragOver(object sender, DragEventArgs e)
-    {
-        if (_draggedNote == null) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
-
-    private void NotebookHeader_Drop(object sender, DragEventArgs e)
-    {
-        if (_draggedNote == null) return;
-        var targetNotebook = (sender as FrameworkElement)?.DataContext as NotebookViewModel;
-        if (targetNotebook != null)
-        {
-            var note = _draggedNote;
-            ViewModel.MoveNoteToNotebook(note, targetNotebook);
-            Dispatcher.BeginInvoke(() => SyncTreeSelection(note),
-                System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-        _draggedNote = null;
-    }
 
     // ── Line number gutter ─────────────────────────────────────────────────────
 
-    private void EditorBox_Loaded(object sender, RoutedEventArgs e)
-    {
-        _editorScrollViewer    = GetDescendant<ScrollViewer>(EditorBox);
-        _lineNumberScrollViewer = GetDescendant<ScrollViewer>(LineNumberBox);
-        if (_editorScrollViewer != null)
-            _editorScrollViewer.ScrollChanged += EditorScrollViewer_ScrollChanged;
-        UpdateLineNumbers();
-    }
-
-    private void EditorBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateLineNumbers();
-
-    private void EditorScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-    {
-        _lineNumberScrollViewer?.ScrollToVerticalOffset(e.VerticalOffset);
-    }
-
-    private void UpdateLineNumbers()
-    {
-        var count = EditorBox.Text.Count(c => c == '\n') + 1;
-        LineNumberBox.Text = string.Join("\n", Enumerable.Range(1, count));
-    }
-
-    private static T? GetDescendant<T>(DependencyObject obj) where T : DependencyObject
-    {
-        if (obj is T t) return t;
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-        {
-            var result = GetDescendant<T>(VisualTreeHelper.GetChild(obj, i));
-            if (result != null) return result;
-        }
-        return null;
-    }
 }

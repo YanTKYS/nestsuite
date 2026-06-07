@@ -1,16 +1,15 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Threading;
-using NoteNest.Models;
 using NoteNest.Services;
 
 namespace NoteNest.ViewModels;
 
-public class MainViewModel : BaseViewModel
+public partial class MainViewModel : BaseViewModel
 {
     private readonly ProjectFileService _fileService = new();
     private readonly SampleDataService _sampleService = new();
-    private readonly MarkerExtractorService _markerService = new();
     private readonly RecentFilesService _recentFilesService = new();
     private readonly ExportService _exportService = new();
 
@@ -24,9 +23,9 @@ public class MainViewModel : BaseViewModel
     private string? _currentFilePath = null;
     private string _currentProjectId = Guid.NewGuid().ToString();
     private bool _isLoadingNote = false;
-    private int _projectTodoCount;
-    private int _projectFixmeCount;
-    private int _projectNoteCount;
+    private readonly NoteWorkspaceViewModel _notes = new();
+    private readonly TaskBoardViewModel _tasks = new();
+    private readonly MarkerPanelViewModel _markers = new(new MarkerExtractorService());
     private DateTime _unsavedSince;
     private DispatcherTimer? _unsavedTimer;
 
@@ -48,12 +47,11 @@ public class MainViewModel : BaseViewModel
 
     public MainViewModel()
     {
-        TaskGroups = new ObservableCollection<TaskGroupViewModel>
-        {
-            new("今日のタスク", "today"),
-            new("今週のタスク", "week"),
-            new("バックログ", "backlog"),
-        };
+        _tasks.Changed += (_, _) => IsModified = true;
+        _markers.PropertyChanged += (_, e) => OnPropertyChanged(
+            e.PropertyName == nameof(MarkerPanelViewModel.SortOrderIndex)
+                ? nameof(MarkerSortOrderIndex)
+                : e.PropertyName);
 
         OpenRecentCommand          = new RelayCommand(param => { if (param is string path) OpenRecentFile(path); });
         ToggleLineNumbersCommand   = new RelayCommand(_ => ShowLineNumbers = !ShowLineNumbers);
@@ -110,12 +108,11 @@ public class MainViewModel : BaseViewModel
 
             if (_editorMode == EditorMode.TaskComment && _editingTask != null)
             {
-                _editingTask.Comment = value;
-                IsModified = true;
+                _tasks.UpdateComment(_editingTask, value);
             }
             else if (_editorMode == EditorMode.NoteEdit && _selectedNote != null)
             {
-                _selectedNote.Content = value;
+                _notes.UpdateContent(_selectedNote, value);
                 IsModified = true;
                 RefreshMarkers();
             }
@@ -181,13 +178,32 @@ public class MainViewModel : BaseViewModel
     public bool IsUnsavedWarning =>
         _isModified && (int)(DateTime.Now - _unsavedSince).TotalMinutes >= 5;
 
+    public static string ApplicationVersion
+    {
+        get
+        {
+            var informationalVersion = typeof(MainViewModel).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+            if (!string.IsNullOrWhiteSpace(informationalVersion))
+            {
+                var metadataSeparator = informationalVersion.IndexOf('+');
+                return metadataSeparator >= 0
+                    ? informationalVersion[..metadataSeparator]
+                    : informationalVersion;
+            }
+
+            return typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+        }
+    }
+
     public string WindowTitle
     {
         get
         {
             var title = $"NoteNest - {ProjectDisplayName}";
             if (IsModified) title += " *";
-            title += $" - ver{Project.CurrentSchemaVersion}";
+            title += $" - ver{ApplicationVersion}";
             return title;
         }
     }
@@ -197,86 +213,16 @@ public class MainViewModel : BaseViewModel
             ? System.IO.Path.GetFileName(_currentFilePath)
             : "新規プロジェクト";
 
-    public int MarkerCount => Markers.Count;
+    public int MarkerCount => _markers.MarkerCount;
     public string? CurrentNoteTitle => SelectedNote?.Title;
+    public string ProjectMarkerSummary => _markers.ProjectMarkerSummary;
 
-    public string ProjectMarkerSummary =>
-        $"全体  TODO: {_projectTodoCount}  FIXME: {_projectFixmeCount}  NOTE: {_projectNoteCount}";
-
-    // ── Marker filters ────────────────────────────────────────────────────────
-
-    private bool _filterTodo  = true;
-    private bool _filterFixme = true;
-    private bool _filterNote  = true;
-
-    public bool FilterTodo
-    {
-        get => _filterTodo;
-        set { SetProperty(ref _filterTodo, value); RaiseFilteredMarkersChanged(); }
-    }
-
-    public bool FilterFixme
-    {
-        get => _filterFixme;
-        set { SetProperty(ref _filterFixme, value); RaiseFilteredMarkersChanged(); }
-    }
-
-    public bool FilterNote
-    {
-        get => _filterNote;
-        set { SetProperty(ref _filterNote, value); RaiseFilteredMarkersChanged(); }
-    }
-
-    // 0=抽出順, 1=種別順, 2=ノート順, 3=行番号順
-    private int _markerSortOrderIndex = 0;
-
-    public int MarkerSortOrderIndex
-    {
-        get => _markerSortOrderIndex;
-        set { SetProperty(ref _markerSortOrderIndex, value); RaiseFilteredMarkersChanged(); }
-    }
-
-    public IEnumerable<MarkerViewModel> FilteredMarkers
-    {
-        get
-        {
-            var filtered = Markers.Where(m =>
-                (m.Type == "TODO"  && _filterTodo)  ||
-                (m.Type == "FIXME" && _filterFixme) ||
-                (m.Type == "NOTE"  && _filterNote));
-            return _markerSortOrderIndex switch
-            {
-                1 => filtered.OrderBy(m => MarkerTypeOrder(m.Type)).ThenBy(m => m.NoteTitle).ThenBy(m => m.LineNumber),
-                2 => filtered.OrderBy(m => m.NoteTitle).ThenBy(m => m.LineNumber),
-                3 => filtered.OrderBy(m => m.LineNumber),
-                _ => filtered,
-            };
-        }
-    }
-
-    private static int MarkerTypeOrder(string type) => type switch
-    {
-        "TODO"  => 0,
-        "FIXME" => 1,
-        "NOTE"  => 2,
-        _       => 99,
-    };
-
-    public string FilteredMarkerCountText
-    {
-        get
-        {
-            var total    = Markers.Count;
-            var filtered = FilteredMarkers.Count();
-            return filtered == total ? $"{total}個" : $"{filtered}/{total}個";
-        }
-    }
-
-    private void RaiseFilteredMarkersChanged()
-    {
-        OnPropertyChanged(nameof(FilteredMarkers));
-        OnPropertyChanged(nameof(FilteredMarkerCountText));
-    }
+    public bool FilterTodo { get => _markers.FilterTodo; set => _markers.FilterTodo = value; }
+    public bool FilterFixme { get => _markers.FilterFixme; set => _markers.FilterFixme = value; }
+    public bool FilterNote { get => _markers.FilterNote; set => _markers.FilterNote = value; }
+    public int MarkerSortOrderIndex { get => _markers.SortOrderIndex; set => _markers.SortOrderIndex = value; }
+    public IEnumerable<MarkerViewModel> FilteredMarkers => _markers.FilteredMarkers;
+    public string FilteredMarkerCountText => _markers.FilteredMarkerCountText;
 
     public bool IsSampleProject
     {
@@ -299,7 +245,7 @@ public class MainViewModel : BaseViewModel
             : SelectedNote?.Title ?? "";
 
     // プロジェクト全体のノート列挙。全ノート横断処理（検索、リンク解決、マーカー集計等）はここを起点に書く。
-    public IEnumerable<NoteViewModel> AllNotes => Notebooks.SelectMany(nb => nb.Notes);
+    public IEnumerable<NoteViewModel> AllNotes => _notes.AllNotes;
 
     public IEnumerable<NoteViewModel> RelatedNoteChoices => AllNotes;
 
@@ -311,18 +257,19 @@ public class MainViewModel : BaseViewModel
             if (!SetProperty(ref _editingTaskRelatedNote, value)) return;
             OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
             if (_editingTask != null)
-            {
-                _editingTask.LinkedNoteId = value?.Id;
-                IsModified = true;
-            }
+                _tasks.SetRelatedNote(_editingTask, value);
         }
     }
 
     public bool HasEditingTaskRelatedNote => _editingTaskRelatedNote != null;
 
-    public ObservableCollection<NotebookViewModel> Notebooks { get; } = new();
-    public ObservableCollection<TaskGroupViewModel> TaskGroups { get; }
-    public ObservableCollection<MarkerViewModel> Markers { get; } = new();
+    public NoteWorkspaceViewModel Notes => _notes;
+    public TaskBoardViewModel Tasks => _tasks;
+    public MarkerPanelViewModel MarkerPanel => _markers;
+
+    public ObservableCollection<NotebookViewModel> Notebooks => Notes.Notebooks;
+    public ObservableCollection<TaskGroupViewModel> TaskGroups => Tasks.TaskGroups;
+    public ObservableCollection<MarkerViewModel> Markers => MarkerPanel.Markers;
     public ObservableCollection<RecentFileViewModel> RecentFiles { get; } = new();
     public bool HasRecentFiles => RecentFiles.Count > 0;
 
@@ -341,610 +288,4 @@ public class MainViewModel : BaseViewModel
     public ICommand OpenRecentCommand   { get; }
     public ICommand ToggleLineNumbersCommand { get; }
 
-    // ── Public methods called from code-behind ───────────────────────────────
-
-    public void SelectNote(NoteViewModel note)
-    {
-        _editorMode = EditorMode.NoteEdit;
-        _editingTask = null;
-        _isLoadingNote = true;
-        SelectedNote = note;
-        _editorContent = note.Content;
-        OnPropertyChanged(nameof(EditorContent));
-        OnPropertyChanged(nameof(CurrentNoteTitle));
-        OnPropertyChanged(nameof(EditorTitle));
-        OnPropertyChanged(nameof(IsTaskCommentMode));
-        OnPropertyChanged(nameof(IsNoteEditMode));
-        _isLoadingNote = false;
-        RefreshMarkers();
-    }
-
-    public void SelectTask(TaskViewModel task)
-    {
-        _editorMode = EditorMode.TaskComment;
-        _editingTask = task;
-        _isLoadingNote = true;
-        _editorContent = task.Comment;
-        OnPropertyChanged(nameof(EditorContent));
-        OnPropertyChanged(nameof(EditorTitle));
-        OnPropertyChanged(nameof(IsTaskCommentMode));
-        OnPropertyChanged(nameof(IsNoteEditMode));
-        _isLoadingNote = false;
-
-        _editingTaskRelatedNote = FindNoteById(task.LinkedNoteId);
-        OnPropertyChanged(nameof(EditingTaskRelatedNote));
-        OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
-
-        RefreshMarkers();
-    }
-
-    public void AddNotebookWithTitle(string title)
-    {
-        var model = new Notebook { Title = title };
-        var vm = new NotebookViewModel(model);
-        Notebooks.Add(vm);
-        IsModified = true;
-        StatusMessage = $"ノートブック「{title}」を追加しました。";
-    }
-
-    public void RenameNotebook(NotebookViewModel nb, string newTitle)
-    {
-        nb.Title = newTitle;
-        IsModified = true;
-    }
-
-    public void DeleteNotebook(NotebookViewModel nb)
-    {
-        if (SelectedNote != null && nb.Notes.Contains(SelectedNote))
-        {
-            SelectedNote = null;
-            ClearEditor();
-        }
-        ClearTaskLinksToNoteIds(nb.Notes.Select(n => n.Id));
-        Notebooks.Remove(nb);
-        IsModified = true;
-        RefreshMarkers();
-    }
-
-    public bool AddNoteToNotebook(NotebookViewModel notebook, string title)
-    {
-        if (NoteNameExists(title)) return false;
-        var model = new Note { Title = title };
-        var vm = new NoteViewModel(model);
-        notebook.Notes.Add(vm);
-        notebook.Model.Notes.Add(model);
-        IsModified = true;
-        OnPropertyChanged(nameof(RelatedNoteChoices));
-        SelectNote(vm);
-        StatusMessage = $"ノート「{title}」を追加しました。";
-        return true;
-    }
-
-    public bool RenameNote(NoteViewModel note, string newTitle)
-    {
-        if (NoteNameExists(newTitle, excludeSelf: note)) return false;
-        note.Title = newTitle;
-        if (SelectedNote == note)
-        {
-            OnPropertyChanged(nameof(CurrentNoteTitle));
-            OnPropertyChanged(nameof(EditorTitle));
-            RefreshMarkers();
-        }
-        IsModified = true;
-        return true;
-    }
-
-    public void DeleteNote(NoteViewModel note)
-    {
-        var nb = FindNotebookOf(note);
-        if (nb == null) return;
-        nb.Notes.Remove(note);
-        nb.Model.Notes.Remove(note.Model);
-        ClearTaskLinksToNoteIds(new[] { note.Id });
-        if (SelectedNote == note) ClearEditor();
-        IsModified = true;
-        OnPropertyChanged(nameof(RelatedNoteChoices));
-        RefreshMarkers();
-    }
-
-    public void MoveNoteUp(NoteViewModel note)
-    {
-        var nb = FindNotebookOf(note);
-        if (nb == null) return;
-        var idx = nb.Notes.IndexOf(note);
-        if (idx > 0) { nb.Notes.Move(idx, idx - 1); IsModified = true; }
-    }
-
-    public void MoveNoteDown(NoteViewModel note)
-    {
-        var nb = FindNotebookOf(note);
-        if (nb == null) return;
-        var idx = nb.Notes.IndexOf(note);
-        if (idx >= 0 && idx < nb.Notes.Count - 1) { nb.Notes.Move(idx, idx + 1); IsModified = true; }
-    }
-
-    public void MoveNotebookUp(NotebookViewModel nb)
-    {
-        var idx = Notebooks.IndexOf(nb);
-        if (idx > 0) { Notebooks.Move(idx, idx - 1); IsModified = true; }
-    }
-
-    public void MoveNotebookDown(NotebookViewModel nb)
-    {
-        var idx = Notebooks.IndexOf(nb);
-        if (idx >= 0 && idx < Notebooks.Count - 1) { Notebooks.Move(idx, idx + 1); IsModified = true; }
-    }
-
-    public void MoveTaskToGroupAt(TaskViewModel source, TaskViewModel target)
-    {
-        var sourceGroup = TaskGroups.FirstOrDefault(g => g.Tasks.Contains(source));
-        var targetGroup = TaskGroups.FirstOrDefault(g => g.Tasks.Contains(target));
-        if (sourceGroup == null || targetGroup == null || source == target) return;
-
-        if (sourceGroup == targetGroup)
-        {
-            var srcIdx = sourceGroup.Tasks.IndexOf(source);
-            var tgtIdx = targetGroup.Tasks.IndexOf(target);
-            sourceGroup.Tasks.Move(srcIdx, tgtIdx);
-        }
-        else
-        {
-            sourceGroup.RemoveTask(source);
-            var tgtIdx = targetGroup.Tasks.IndexOf(target);
-            targetGroup.InsertTask(tgtIdx, source);
-            StatusMessage = $"タスクを「{targetGroup.Title}」に移動しました。";
-        }
-        IsModified = true;
-    }
-
-    public void MoveNoteToNotebook(NoteViewModel note, NotebookViewModel targetNotebook)
-    {
-        var sourceNotebook = FindNotebookOf(note);
-        if (sourceNotebook == null || sourceNotebook == targetNotebook) return;
-        sourceNotebook.Notes.Remove(note);
-        sourceNotebook.Model.Notes.Remove(note.Model);
-        targetNotebook.Notes.Add(note);
-        targetNotebook.Model.Notes.Add(note.Model);
-        IsModified = true;
-        StatusMessage = $"ノート「{note.Title}」を「{targetNotebook.Title}」に移動しました。";
-    }
-
-    public void MoveTask(TaskViewModel task, string targetGroupKey)
-    {
-        var sourceGroup = TaskGroups.FirstOrDefault(g => g.Tasks.Contains(task));
-        var targetGroup = TaskGroups.FirstOrDefault(g => g.Key == targetGroupKey);
-        if (sourceGroup == null || targetGroup == null || sourceGroup == targetGroup) return;
-
-        sourceGroup.RemoveTask(task);
-        targetGroup.AddTask(task);
-        IsModified = true;
-        StatusMessage = $"タスクを「{targetGroup.Title}」に移動しました。";
-    }
-
-    public void RenameTask(TaskViewModel task, string newTitle)
-    {
-        task.Title = newTitle;
-        if (_editingTask == task)
-            OnPropertyChanged(nameof(EditorTitle));
-        IsModified = true;
-    }
-
-    public NoteViewModel? FindNoteById(string? id)
-    {
-        if (string.IsNullOrEmpty(id)) return null;
-        return AllNotes.FirstOrDefault(n => n.Id == id);
-    }
-
-    public NoteViewModel? FindNoteByTitle(string title) =>
-        AllNotes.FirstOrDefault(n =>
-            string.Equals(n.Title, title, StringComparison.OrdinalIgnoreCase));
-
-    public bool NoteNameExists(string title, NoteViewModel? excludeSelf = null) =>
-        AllNotes.Any(n => n != excludeSelf &&
-            string.Equals(n.Title, title, StringComparison.OrdinalIgnoreCase));
-
-    // ノートが属するノートブックを返す。M3/M9 のリンク影響調査で利用予定。
-    public NotebookViewModel? FindNotebookOf(NoteViewModel note) =>
-        Notebooks.FirstOrDefault(nb => nb.Notes.Contains(note));
-
-    public void NavigateToNote(NoteViewModel note)
-    {
-        SelectNote(note);
-        SyncTreeSelectionCallback?.Invoke(note);
-    }
-
-    public void SetTaskRelatedNote(TaskViewModel task, NoteViewModel note)
-    {
-        task.LinkedNoteId = note.Id;
-        if (_editingTask == task)
-        {
-            _editingTaskRelatedNote = note;
-            OnPropertyChanged(nameof(EditingTaskRelatedNote));
-            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
-        }
-        IsModified = true;
-        StatusMessage = $"タスク「{task.Title}」に関連ノート「{note.Title}」を設定しました。";
-    }
-
-    public void ClearTaskRelatedNote(TaskViewModel task)
-    {
-        task.LinkedNoteId = null;
-        if (_editingTask == task)
-        {
-            _editingTaskRelatedNote = null;
-            OnPropertyChanged(nameof(EditingTaskRelatedNote));
-            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
-        }
-        IsModified = true;
-    }
-
-    public void ExportProjectToText(string outputPath)
-        => _exportService.ExportProjectToText(BuildProject(), outputPath);
-
-    public int ExportNotebooksToTextFiles(string outputDirectory)
-    {
-        var project = BuildProject();
-        _exportService.ExportNotebooksToTextFiles(project, outputDirectory);
-        return project.Notebooks.Count;
-    }
-
-    public void ApplyFontSettings(string fontFamily, double fontSize)
-    {
-        EditorFontFamily = fontFamily;
-        EditorFontSize   = fontSize;
-        IsModified       = true;
-    }
-
-    // 起動時引数から渡されたファイルパスを開く。
-    // 拡張子・存在確認は呼び出し元（MainWindow）で済ませてから呼ぶこと。
-    // 成功時は true、失敗時は false を返す（エラー通知は ShowErrorDialog を通じて行う）。
-    public bool OpenFileAtStartup(string path)
-    {
-        try
-        {
-            var project = _fileService.Load(path);
-            LoadProject(project, path);
-            StatusMessage = $"プロジェクトを開きました: {System.IO.Path.GetFileName(path)}";
-            return true;
-        }
-        catch (Exception ex)
-        {
-            ShowErrorDialog?.Invoke("エラー", $"ファイルを開けませんでした。\n{ex.Message}");
-            return false;
-        }
-    }
-
-    public bool ConfirmCloseIfModified()
-    {
-        if (!IsModified) return true;
-        return ShowConfirmDialog?.Invoke("未保存の変更", "保存されていない変更があります。終了しますか？") ?? true;
-    }
-
-    // 未保存変更がある場合に確認ダイアログを出す共通処理。
-    // 続行可（保存不要、または破棄を選択）なら true。M6 自動保存導入時はここで保存して true を返す形に拡張する想定。
-    private bool EnsureCanDiscardChanges(string question)
-    {
-        if (!IsModified) return true;
-        return ShowConfirmDialog?.Invoke("未保存の変更", question) ?? true;
-    }
-
-    // ── Private helpers ──────────────────────────────────────────────────────
-
-    private void ClearEditor()
-    {
-        _editorMode = EditorMode.NoteEdit;
-        _editingTask = null;
-        _editingTaskRelatedNote = null;
-        SelectedNote = null;
-        _isLoadingNote = true;
-        _editorContent = "";
-        OnPropertyChanged(nameof(EditorContent));
-        OnPropertyChanged(nameof(CurrentNoteTitle));
-        OnPropertyChanged(nameof(EditorTitle));
-        OnPropertyChanged(nameof(IsTaskCommentMode));
-        OnPropertyChanged(nameof(IsNoteEditMode));
-        OnPropertyChanged(nameof(EditingTaskRelatedNote));
-        OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
-        _isLoadingNote = false;
-        CaretPositionText = "";
-        Markers.Clear();
-        _projectTodoCount  = 0;
-        _projectFixmeCount = 0;
-        _projectNoteCount  = 0;
-        OnPropertyChanged(nameof(MarkerCount));
-        OnPropertyChanged(nameof(ProjectMarkerSummary));
-        RaiseFilteredMarkersChanged();
-    }
-
-    private void NewProject()
-    {
-        if (!EnsureCanDiscardChanges("保存されていない変更があります。新規プロジェクトを作成しますか？"))
-            return;
-        LoadProject(_sampleService.Create(), null);
-        StatusMessage = "新規プロジェクトを作成しました。";
-    }
-
-    private void OpenProject()
-    {
-        if (!EnsureCanDiscardChanges("保存されていない変更があります。続けますか？")) return;
-
-        var dialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = "NoteNest プロジェクト (*.notenest)|*.notenest|すべてのファイル (*.*)|*.*",
-            DefaultExt = ".notenest"
-        };
-
-        if (dialog.ShowDialog() != true) return;
-
-        try
-        {
-            var project = _fileService.Load(dialog.FileName);
-            LoadProject(project, dialog.FileName);
-            StatusMessage = $"プロジェクトを開きました: {System.IO.Path.GetFileName(dialog.FileName)}";
-        }
-        catch (Exception ex)
-        {
-            ShowErrorDialog?.Invoke("エラー", $"ファイルを開けませんでした。\n{ex.Message}");
-        }
-    }
-
-    private void SaveProject()
-    {
-        if (_currentFilePath == null) { SaveProjectAs(); return; }
-        DoSave(_currentFilePath);
-    }
-
-    private void SaveProjectAs()
-    {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "NoteNest プロジェクト (*.notenest)|*.notenest",
-            DefaultExt = ".notenest",
-            FileName = ProjectName
-        };
-
-        if (dialog.ShowDialog() != true) return;
-        if (DoSave(dialog.FileName))
-        {
-            _currentFilePath = dialog.FileName;
-            OnPropertyChanged(nameof(WindowTitle));
-            OnPropertyChanged(nameof(ProjectDisplayName));
-        }
-    }
-
-    // Returns true only on success; _currentFilePath must NOT be updated on failure.
-    private bool DoSave(string path)
-    {
-        try
-        {
-            _fileService.Save(path, BuildProject());
-            IsModified = false;
-            IsSampleProject = false;
-            StatusMessage = $"保存しました: {System.IO.Path.GetFileName(path)}";
-            RecordRecentFile(path);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            ShowErrorDialog?.Invoke("エラー", $"保存に失敗しました。\n{ex.Message}");
-            return false;
-        }
-    }
-
-    private void Exit()
-    {
-        if (ConfirmCloseIfModified()) RequestClose?.Invoke();
-    }
-
-    private void OpenRecentFile(string path)
-    {
-        if (!EnsureCanDiscardChanges("保存されていない変更があります。続けますか？")) return;
-        try
-        {
-            var project = _fileService.Load(path);
-            LoadProject(project, path);
-            StatusMessage = $"プロジェクトを開きました: {System.IO.Path.GetFileName(path)}";
-        }
-        catch (Exception ex)
-        {
-            ShowErrorDialog?.Invoke("エラー", $"ファイルを開けませんでした。\n{ex.Message}");
-        }
-    }
-
-    private void RecordRecentFile(string path)
-    {
-        _recentFilesService.Add(path);
-        RecentFiles.Clear();
-        foreach (var p in _recentFilesService.Load())
-            RecentFiles.Add(new RecentFileViewModel(p));
-    }
-
-    private void AddNotebook()
-    {
-        var title = ShowInputDialog?.Invoke("ノートブック追加", "ノートブック名を入力してください:");
-        if (!string.IsNullOrWhiteSpace(title))
-            AddNotebookWithTitle(title.Trim());
-    }
-
-    private void AddTask(string groupKey)
-    {
-        var title = ShowInputDialog?.Invoke("タスク追加", "タスク名を入力してください:");
-        if (string.IsNullOrWhiteSpace(title)) return;
-
-        var group = TaskGroups.FirstOrDefault(g => g.Key == groupKey);
-        if (group == null) return;
-
-        var task = new TaskViewModel(new NoteTask { Title = title.Trim() });
-        TrackTaskCompletion(task);
-        group.AddTask(task);
-        IsModified = true;
-        StatusMessage = $"タスク「{title.Trim()}」を追加しました。";
-    }
-
-    // Subscribe to IsCompleted so toggling a checkbox marks the project as modified.
-    private void TrackTaskCompletion(TaskViewModel task)
-    {
-        task.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(TaskViewModel.IsCompleted))
-                IsModified = true;
-        };
-    }
-
-    private void DeleteTask(TaskViewModel task)
-    {
-        if (_editingTask == task)
-        {
-            _editorMode = EditorMode.NoteEdit;
-            _editingTask = null;
-            _isLoadingNote = true;
-            _editorContent = _selectedNote?.Content ?? "";
-            OnPropertyChanged(nameof(EditorContent));
-            OnPropertyChanged(nameof(EditorTitle));
-            OnPropertyChanged(nameof(IsTaskCommentMode));
-            OnPropertyChanged(nameof(IsNoteEditMode));
-            _isLoadingNote = false;
-            RefreshMarkers();
-        }
-
-        foreach (var group in TaskGroups)
-        {
-            if (group.RemoveTask(task))
-            {
-                IsModified = true;
-                return;
-            }
-        }
-    }
-
-    private void LoadProject(Project project, string? filePath)
-    {
-        _editorMode = EditorMode.NoteEdit;
-        _editingTask = null;
-        _currentProjectId = project.ProjectId;
-        ProjectName = project.ProjectName;
-        _currentFilePath = filePath;
-        IsSampleProject = filePath == null;
-        if (filePath != null) RecordRecentFile(filePath);
-
-        Notebooks.Clear();
-        foreach (var nb in project.Notebooks)
-            Notebooks.Add(new NotebookViewModel(nb));
-
-        foreach (var group in TaskGroups)
-            group.Tasks.Clear();
-
-        var taskMap = new Dictionary<string, List<NoteTask>>
-        {
-            { "today",   project.Tasks.Today   },
-            { "week",    project.Tasks.Week     },
-            { "backlog", project.Tasks.Backlog  }
-        };
-
-        foreach (var group in TaskGroups)
-        {
-            if (taskMap.TryGetValue(group.Key, out var tasks))
-                foreach (var t in tasks)
-                {
-                    var taskVm = new TaskViewModel(t);
-                    TrackTaskCompletion(taskVm);
-                    group.AddTask(taskVm);
-                }
-        }
-
-        EditorFontFamily = project.Settings.FontFamily;
-        EditorFontSize   = project.Settings.FontSize;
-
-        // Restore last opened note
-        var lastNote = FindNoteById(project.Settings.LastOpenedNoteId);
-        if (lastNote == null && Notebooks.Count > 0 && Notebooks[0].Notes.Count > 0)
-            lastNote = Notebooks[0].Notes[0];
-
-        if (lastNote != null)
-            SelectNote(lastNote);
-        else
-            ClearEditor();
-
-        IsModified = false;
-        OnPropertyChanged(nameof(WindowTitle));
-        OnPropertyChanged(nameof(ProjectDisplayName));
-        OnPropertyChanged(nameof(RelatedNoteChoices));
-    }
-
-    private Project BuildProject()
-    {
-        if (_editorMode == EditorMode.NoteEdit && _selectedNote != null)
-            _selectedNote.Content = _editorContent;
-
-        return new Project
-        {
-            Version = Project.CurrentSchemaVersion,
-            ProjectId = _currentProjectId,
-            ProjectName = ProjectName,
-            Notebooks = Notebooks.Select(nb => new Notebook
-            {
-                Id    = nb.Id,
-                Title = nb.Title,
-                Notes = nb.Notes.Select(n => new Note
-                {
-                    Id      = n.Id,
-                    Title   = n.Title,
-                    Content = n.Content
-                }).ToList()
-            }).ToList(),
-            Tasks = new TaskCollection
-            {
-                Today   = TaskGroups.First(g => g.Key == "today")  .Tasks.Select(t => t.Model).ToList(),
-                Week    = TaskGroups.First(g => g.Key == "week")   .Tasks.Select(t => t.Model).ToList(),
-                Backlog = TaskGroups.First(g => g.Key == "backlog").Tasks.Select(t => t.Model).ToList()
-            },
-            Settings = new AppSettings
-            {
-                LastOpenedNoteId = SelectedNote?.Id ?? "",
-                FontFamily       = EditorFontFamily,
-                FontSize         = EditorFontSize
-            }
-        };
-    }
-
-    private void RefreshMarkers()
-    {
-        Markers.Clear();
-        int todo = 0, fixme = 0, noteCount = 0;
-        foreach (var n in AllNotes)
-        {
-            foreach (var m in _markerService.Extract(n.Content, n.Title))
-            {
-                Markers.Add(new MarkerViewModel(m, n));
-                if (m.Type == "TODO")       todo++;
-                else if (m.Type == "FIXME") fixme++;
-                else if (m.Type == "NOTE")  noteCount++;
-            }
-        }
-        _projectTodoCount  = todo;
-        _projectFixmeCount = fixme;
-        _projectNoteCount  = noteCount;
-        OnPropertyChanged(nameof(MarkerCount));
-        OnPropertyChanged(nameof(ProjectMarkerSummary));
-        RaiseFilteredMarkersChanged();
-    }
-
-    private void ClearTaskLinksToNoteIds(IEnumerable<string> deletedNoteIds)
-    {
-        var ids = deletedNoteIds.ToHashSet();
-
-        foreach (var group in TaskGroups)
-        foreach (var task in group.Tasks)
-        {
-            if (task.LinkedNoteId != null && ids.Contains(task.LinkedNoteId))
-                task.LinkedNoteId = null;
-        }
-
-        if (_editingTaskRelatedNote != null && ids.Contains(_editingTaskRelatedNote.Id))
-        {
-            _editingTaskRelatedNote = null;
-            OnPropertyChanged(nameof(EditingTaskRelatedNote));
-            OnPropertyChanged(nameof(HasEditingTaskRelatedNote));
-        }
-    }
 }
