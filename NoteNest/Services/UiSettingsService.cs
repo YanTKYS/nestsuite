@@ -19,6 +19,7 @@ public class UiSettings
     public double LeftPaneWidth { get; set; } = 220;
     public double RightPaneWidth { get; set; } = 280;
     public bool IsRightPaneCollapsed { get; set; } = false;
+    public bool IsAutoSaveEnabled { get; set; } = false;
 }
 
 public class UiSettingsService

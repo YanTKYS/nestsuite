@@ -1,0 +1,8 @@
+<Window x:Class="NoteNest.Dialogs.ExportDialog" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="エクスポート" Width="380" Height="300" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Grid Margin="18"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="Auto"/><RowDefinition Height="16"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <GroupBox Header="対象"><StackPanel Margin="8"><RadioButton x:Name="ProjectTarget" Content="プロジェクト全体" IsChecked="True"/><RadioButton x:Name="NotebookTarget" Content="現在のノートブック" Margin="0,5,0,0"/><RadioButton x:Name="NoteTarget" Content="現在のノート" Margin="0,5,0,0"/></StackPanel></GroupBox>
+    <StackPanel Grid.Row="2" Orientation="Horizontal"><TextBlock Text="形式:" Width="70" VerticalAlignment="Center"/><ComboBox x:Name="FormatBox" Width="180" SelectedIndex="0"><ComboBoxItem Content="テキスト (.txt)"/><ComboBoxItem Content="Markdown (.md)"/><ComboBoxItem Content="HTML (.html)"/></ComboBox></StackPanel>
+    <StackPanel Grid.Row="4"><CheckBox x:Name="IncludeTasksBox" Content="タスクを含める"/><CheckBox x:Name="IncludeMarkersBox" Content="マーカー一覧を含める" Margin="0,6,0,0"/></StackPanel>
+    <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="エクスポート..." Width="105" IsDefault="True" Click="OK_Click"/><Button Content="キャンセル" Width="88" Margin="8,0,0,0" IsCancel="True"/></StackPanel>
+  </Grid>
+</Window>

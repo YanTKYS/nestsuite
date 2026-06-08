@@ -1,0 +1,6 @@
+<Window x:Class="NoteNest.Dialogs.ProjectInfoDialog" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="プロジェクト情報" Width="460" Height="330" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
+  <Grid Margin="18"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="16"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <TextBox x:Name="InfoBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="10"/>
+    <Button Grid.Row="2" Content="閉じる" Width="88" HorizontalAlignment="Right" IsCancel="True"/>
+  </Grid>
+</Window>
