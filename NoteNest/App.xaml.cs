@@ -1,5 +1,4 @@
 using System.Windows;
-using NoteNest.Dialogs;
 using NoteNest.Services;
 
 namespace NoteNest;
@@ -17,9 +16,7 @@ public partial class App : Application
             var uiSettings = new UiSettingsService().Load();
             new ThemeService().Apply(uiSettings.Theme);
 
-            var dialog = new StartDialog();
-            dialog.ShowDialog();
-            startupPath = dialog.SelectedPath;
+            startupPath = DialogService.ShowStartupDialog();
         }
 
         var window = new MainWindow(startupPath);
