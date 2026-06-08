@@ -2,32 +2,21 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.ComponentModel;
 using NoteNest.Services;
 
 namespace NoteNest.ViewModels;
 
 public partial class MainViewModel : BaseViewModel
 {
-    private readonly ProjectFileService _fileService = new();
-    private readonly SampleDataService _sampleService = new();
-    private readonly RecentFilesService _recentFilesService = new();
-    private readonly ExportService _exportService = new();
-    private readonly ProjectDocumentService _documentService = new();
-
-    private string _projectName = "";
-    private string _statusMessage = "準備完了";
-    private bool _isModified = false;
-    private string? _currentFilePath = null;
-    private string _currentProjectId = Guid.NewGuid().ToString();
     private readonly NoteWorkspaceViewModel _notes = new();
     private readonly TaskBoardViewModel _tasks = new();
     private readonly MarkerPanelViewModel _markers = new(new MarkerExtractorService());
     private readonly EditorStateViewModel _editor = new();
+    private readonly ProjectSessionViewModel _session = new();
     private readonly WorkspaceChangeCoordinator _changeCoordinator;
-    private DateTime _unsavedSince;
-    private DispatcherTimer? _unsavedTimer;
-
-    private bool _isSampleProject = false;
+    private readonly ProjectLifecycleService _lifecycle;
+    private readonly DispatcherTimer _unsavedTimer;
 
     // Callbacks registered by MainWindow
     public Func<string, string, string?>? ShowInputDialog { get; set; }
@@ -40,44 +29,34 @@ public partial class MainViewModel : BaseViewModel
 
     public MainViewModel()
     {
+        _unsavedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _unsavedTimer.Tick += (_, _) => _session.RefreshUnsavedStatus();
+
         _changeCoordinator = new WorkspaceChangeCoordinator(_notes, _tasks, _markers, _editor);
         _changeCoordinator.Changed += WorkspaceChanged;
+        _session.PropertyChanged += SessionPropertyChanged;
+        _lifecycle = new ProjectLifecycleService(_session, _notes, _tasks, _markers, _editor);
+        _lifecycle.InitializeRecentFiles();
 
         OpenRecentCommand          = new RelayCommand(param => { if (param is string path) OpenRecentFile(path); });
         ToggleLineNumbersCommand   = new RelayCommand(_ => ShowLineNumbers = !ShowLineNumbers);
+        NewProjectCommand          = new RelayCommand(NewProject);
+        OpenProjectCommand         = new RelayCommand(OpenProject);
+        SaveProjectCommand         = new RelayCommand(SaveProject);
+        SaveAsProjectCommand       = new RelayCommand(SaveProjectAs);
+        ExitCommand                = new RelayCommand(Exit);
+        AddNotebookCommand         = new RelayCommand(AddNotebook);
+        AddTaskCommand             = new RelayCommand(param => AddTask(param as string ?? "today"));
+        DeleteTaskCommand          = new RelayCommand(param => { if (param is TaskViewModel t) DeleteTask(t); });
+        ToggleGroupCommand         = new RelayCommand(param => { if (param is TaskGroupViewModel g) g.IsExpanded = !g.IsExpanded; });
+        MarkerClickCommand         = new RelayCommand(param => { if (param is MarkerViewModel m) NavigateToMarker?.Invoke(m); });
 
-        foreach (var p in _recentFilesService.Load())
-            RecentFiles.Add(new RecentFileViewModel(p));
-        RecentFiles.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRecentFiles));
-
-        NewProjectCommand   = new RelayCommand(NewProject);
-        OpenProjectCommand  = new RelayCommand(OpenProject);
-        SaveProjectCommand  = new RelayCommand(SaveProject);
-        SaveAsProjectCommand = new RelayCommand(SaveProjectAs);
-        ExitCommand         = new RelayCommand(Exit);
-        AddNotebookCommand  = new RelayCommand(AddNotebook);
-        AddTaskCommand      = new RelayCommand(param => AddTask(param as string ?? "today"));
-        DeleteTaskCommand   = new RelayCommand(param => { if (param is TaskViewModel t) DeleteTask(t); });
-        ToggleGroupCommand  = new RelayCommand(param => { if (param is TaskGroupViewModel g) g.IsExpanded = !g.IsExpanded; });
-        MarkerClickCommand  = new RelayCommand(param => { if (param is MarkerViewModel m) NavigateToMarker?.Invoke(m); });
-
-        _unsavedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-        _unsavedTimer.Tick += (_, _) =>
-        {
-            OnPropertyChanged(nameof(UnsavedIndicatorText));
-            OnPropertyChanged(nameof(IsUnsavedWarning));
-        };
-
-        LoadProject(_sampleService.Create(), null);
+        _lifecycle.CreateNew();
     }
 
     // ── Properties ──────────────────────────────────────────────────────────
 
-    public string ProjectName
-    {
-        get => _projectName;
-        set { SetProperty(ref _projectName, value); OnPropertyChanged(nameof(WindowTitle)); }
-    }
+    public string ProjectName { get => _session.ProjectName; set => _session.ProjectName = value; }
 
     public NoteViewModel? SelectedNote => _editor.SelectedNote;
 
@@ -86,45 +65,10 @@ public partial class MainViewModel : BaseViewModel
     public double EditorFontSize { get => _editor.FontSize; set => _editor.FontSize = value; }
     public string CaretPositionText { get => _editor.CaretPositionText; set => _editor.CaretPositionText = value; }
 
-    public string StatusMessage
-    {
-        get => _statusMessage;
-        set => SetProperty(ref _statusMessage, value);
-    }
-
-    public bool IsModified
-    {
-        get => _isModified;
-        set
-        {
-            if (!SetProperty(ref _isModified, value)) return;
-            OnPropertyChanged(nameof(WindowTitle));
-            if (value)
-            {
-                _unsavedSince = DateTime.Now;
-                _unsavedTimer?.Start();
-            }
-            else
-            {
-                _unsavedTimer?.Stop();
-            }
-            OnPropertyChanged(nameof(UnsavedIndicatorText));
-            OnPropertyChanged(nameof(IsUnsavedWarning));
-        }
-    }
-
-    public string UnsavedIndicatorText
-    {
-        get
-        {
-            if (!_isModified) return "● 未保存";
-            var minutes = (int)(DateTime.Now - _unsavedSince).TotalMinutes;
-            return minutes >= 5 ? $"⚠ 未保存（{minutes}分）" : "● 未保存";
-        }
-    }
-
-    public bool IsUnsavedWarning =>
-        _isModified && (int)(DateTime.Now - _unsavedSince).TotalMinutes >= 5;
+    public string StatusMessage { get => _session.StatusMessage; set => _session.StatusMessage = value; }
+    public bool IsModified { get => _session.IsModified; set => _session.IsModified = value; }
+    public string UnsavedIndicatorText => _session.UnsavedIndicatorText;
+    public bool IsUnsavedWarning => _session.IsUnsavedWarning;
 
     public static string ApplicationVersion
     {
@@ -156,10 +100,7 @@ public partial class MainViewModel : BaseViewModel
         }
     }
 
-    public string ProjectDisplayName =>
-        _currentFilePath != null
-            ? System.IO.Path.GetFileName(_currentFilePath)
-            : "新規プロジェクト";
+    public string ProjectDisplayName => _session.ProjectDisplayName;
 
     public int MarkerCount => _markers.MarkerCount;
     public string? CurrentNoteTitle => SelectedNote?.Title;
@@ -172,11 +113,7 @@ public partial class MainViewModel : BaseViewModel
     public IEnumerable<MarkerViewModel> FilteredMarkers => _markers.FilteredMarkers;
     public string FilteredMarkerCountText => _markers.FilteredMarkerCountText;
 
-    public bool IsSampleProject
-    {
-        get => _isSampleProject;
-        private set => SetProperty(ref _isSampleProject, value);
-    }
+    public bool IsSampleProject => _session.IsSampleProject;
 
     public bool ShowLineNumbers { get => _editor.ShowLineNumbers; set => _editor.ShowLineNumbers = value; }
     public bool IsTaskCommentMode => _editor.IsTaskCommentMode;
@@ -200,12 +137,13 @@ public partial class MainViewModel : BaseViewModel
     public TaskBoardViewModel Tasks => _tasks;
     public MarkerPanelViewModel MarkerPanel => _markers;
     public EditorStateViewModel Editor => _editor;
+    public ProjectSessionViewModel Session => _session;
 
     public ObservableCollection<NotebookViewModel> Notebooks => Notes.Notebooks;
     public ObservableCollection<TaskGroupViewModel> TaskGroups => Tasks.TaskGroups;
     public ObservableCollection<MarkerViewModel> Markers => MarkerPanel.Markers;
-    public ObservableCollection<RecentFileViewModel> RecentFiles { get; } = new();
-    public bool HasRecentFiles => RecentFiles.Count > 0;
+    public ObservableCollection<RecentFileViewModel> RecentFiles => _session.RecentFiles;
+    public bool HasRecentFiles => _session.HasRecentFiles;
 
     // ── Commands ─────────────────────────────────────────────────────────────
 
@@ -221,6 +159,22 @@ public partial class MainViewModel : BaseViewModel
     public ICommand MarkerClickCommand  { get; }
     public ICommand OpenRecentCommand   { get; }
     public ICommand ToggleLineNumbersCommand { get; }
+
+    private void SessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ProjectSessionViewModel.IsModified))
+        {
+            if (_session.IsModified) _unsavedTimer.Start(); else _unsavedTimer.Stop();
+            OnPropertyChanged(nameof(WindowTitle));
+        }
+        else if (e.PropertyName is nameof(ProjectSessionViewModel.ProjectName)
+                 or nameof(ProjectSessionViewModel.ProjectDisplayName)
+                 or nameof(ProjectSessionViewModel.CurrentFilePath))
+        {
+            OnPropertyChanged(nameof(WindowTitle));
+        }
+        OnPropertyChanged(e.PropertyName);
+    }
 
     private void WorkspaceChanged(object? sender, WorkspaceChangeEventArgs e)
     {

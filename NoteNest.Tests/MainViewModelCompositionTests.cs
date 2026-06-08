@@ -106,4 +106,20 @@ public class MainViewModelCompositionTests
         Assert.True(main.IsModified);
         Assert.Equal(markerCountBeforeChange + 1, main.MarkerCount);
     }
+
+    [Fact]
+    public void DirectSessionChangesPropagateThroughMainViewModelFacade()
+    {
+        var main = new MainViewModel();
+        var changed = new List<string?>();
+        main.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        main.Session.StatusMessage = "session status";
+        main.Session.IsModified = true;
+
+        Assert.Equal("session status", main.StatusMessage);
+        Assert.True(main.IsModified);
+        Assert.Contains(nameof(MainViewModel.StatusMessage), changed);
+        Assert.Contains(nameof(MainViewModel.WindowTitle), changed);
+    }
 }

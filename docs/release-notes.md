@@ -1,5 +1,23 @@
 # リリースノート
 
+## v1.3.6 — 責務分離の第五段階
+
+**リリース日：** 2026-06-08
+
+### 保守性改善
+
+- `ProjectSessionViewModel` を追加し、プロジェクト識別情報、ファイルパス、未保存状態、ステータス、最近使ったファイルの所有者を `MainViewModel` から分離
+- `ProjectLifecycleService` を追加し、新規作成、読込、保存、保存モデル生成、エクスポート、最近使ったファイル更新を一つのライフサイクルへ集約
+- `WorkspaceChangeCoordinator` のノート変更調停とエディタ変更調停を、`NoteChangeCoordinator` と `EditorChangeCoordinator` へ分割
+- `MainViewModel` は責務所有者の合成、XAML互換ファサード、UIダイアログとの接続に集中
+- プロジェクトセッション、ライフサイクル、責務別 Coordinator の単体テストを追加
+
+### 互換性
+
+- ユーザー向け操作と `.notenest` 保存形式に変更なし（保存スキーマバージョンは `1.3.1` のまま）
+
+---
+
 ## v1.3.5 — 責務分離の第四段階
 
 **リリース日：** 2026-06-07
