@@ -49,6 +49,19 @@ public class MainViewModelFacadeTests
     }
 
     [Fact]
+    public void ClearingEditorRefreshesMarkersFromNoteWorkspaceOwner()
+    {
+        var main = new MainViewModel();
+        var note = main.Notes.AddNote(main.Notes.AddNotebook("NB"), "Note")!;
+        note.Content = "[TODO] marker";
+        main.SelectNote(note);
+
+        main.DeleteNote(note);
+
+        Assert.Empty(main.MarkerPanel.Markers);
+    }
+
+    [Fact]
     public void NoteChangesOnlyPublishActiveFacadePropertyNames()
     {
         var notes = new NoteWorkspaceViewModel();

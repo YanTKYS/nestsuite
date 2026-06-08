@@ -11,6 +11,6 @@ public partial class MainViewModel
     private void ClearEditor()
     {
         _editor.Clear();
-        _markers.Refresh(_notes.AllNotes);
+        RefreshMarkers();
     }
 }

@@ -10,6 +10,7 @@
 - XAML、MainWindow、横断処理のいずれからも使用されていなかった `Markers`、`MarkerCount`、`AllNotes`、`CurrentNoteTitle` の重複ファサードを削除した
 - 削除した `CurrentNoteTitle` に対する通知と、公開ファサードに存在しないSessionプロパティの過剰な中継通知を除去した
 - MainViewModel内部の単純な自己ファサード経由処理を一部、責務所有者への直接委譲へ整理した
+- マーカー再抽出用partialも、削除した `AllNotes` ファサードではなく `NoteWorkspaceViewModel.AllNotes` を参照するよう統一した
 - ファサード中継契約、重複プロパティの非公開化、有効な通知名を確認するテストを追加した
 
 ### 互換性
