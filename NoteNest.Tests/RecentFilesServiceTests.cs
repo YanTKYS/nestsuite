@@ -46,10 +46,11 @@ public class RecentFilesServiceTests : IDisposable
     public void Add_NewPath_AppearsAtFront()
     {
         _svc.Add("path/existing");
-        _svc.Add("path/newest");
 
-        var list = _svc.Load();
-        Assert.Equal("path/newest", list[0]);
+        var updated = _svc.Add("path/newest");
+
+        Assert.Equal("path/newest", updated[0]);
+        Assert.Equal(updated, _svc.Load());
     }
 
     [Fact]
@@ -64,8 +65,9 @@ public class RecentFilesServiceTests : IDisposable
         _svc.Add("path/a");
         _svc.Add("path/b");
 
-        _svc.Clear();
+        var updated = _svc.Clear();
 
+        Assert.Empty(updated);
         Assert.Empty(_svc.Load());
     }
 }

@@ -4,7 +4,7 @@ using NoteNest.ViewModels;
 
 namespace NoteNest.Services;
 
-/// <summary>プロジェクトの読込・保存・変換・最近使ったファイル更新を一つのライフサイクルとして扱います。</summary>
+/// <summary>プロジェクトの新規作成・読込・保存と、セッション／ワークスペース同期を扱います。</summary>
 public sealed class ProjectLifecycleService
 {
     private readonly ProjectSessionViewModel _session;
@@ -16,7 +16,6 @@ public sealed class ProjectLifecycleService
     private readonly ProjectDocumentService _documents;
     private readonly SampleDataService _samples;
     private readonly RecentFilesService _recentFiles;
-    private readonly ExportService _exports;
 
     public ProjectLifecycleService(
         ProjectSessionViewModel session,
@@ -27,8 +26,7 @@ public sealed class ProjectLifecycleService
         ProjectFileService? files = null,
         ProjectDocumentService? documents = null,
         SampleDataService? samples = null,
-        RecentFilesService? recentFiles = null,
-        ExportService? exports = null)
+        RecentFilesService? recentFiles = null)
     {
         _session = session;
         _notes = notes;
@@ -39,16 +37,11 @@ public sealed class ProjectLifecycleService
         _documents = documents ?? new ProjectDocumentService();
         _samples = samples ?? new SampleDataService();
         _recentFiles = recentFiles ?? new RecentFilesService();
-        _exports = exports ?? new ExportService();
     }
 
     public void InitializeRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.Load());
 
-    public void ClearRecentFiles()
-    {
-        _recentFiles.Clear();
-        _session.ReplaceRecentFiles([]);
-    }
+    public void ClearRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.Clear());
 
     public bool TryAutoSave()
     {
@@ -63,26 +56,13 @@ public sealed class ProjectLifecycleService
 
     public void Save(string path)
     {
-        _files.Save(path, Build());
+        _files.Save(path, CreateSnapshot());
         _session.MarkSaved(path);
-        RecordRecentFile(path);
+        TrackRecentFile(path);
     }
 
-    public Project Build() =>
+    public Project CreateSnapshot() =>
         _documents.Build(_session.ProjectId, _session.ProjectName, _notes, _tasks, _editor);
-
-    public void Export(ExportOptions options, string outputPath, string? notebookId, string? noteId) =>
-        _exports.Export(Build(), options, outputPath, notebookId, noteId);
-
-    public void ExportProjectToText(string outputPath) =>
-        _exports.ExportProjectToText(Build(), outputPath);
-
-    public int ExportNotebooksToTextFiles(string outputDirectory)
-    {
-        var project = Build();
-        _exports.ExportNotebooksToTextFiles(project, outputDirectory);
-        return project.Notebooks.Count;
-    }
 
     private void Load(Project project, string? filePath)
     {
@@ -97,12 +77,9 @@ public sealed class ProjectLifecycleService
             _editor.Clear();
 
         _session.IsModified = false;
-        if (filePath != null) RecordRecentFile(filePath);
+        if (filePath != null) TrackRecentFile(filePath);
     }
 
-    private void RecordRecentFile(string path)
-    {
-        _recentFiles.Add(path);
-        _session.ReplaceRecentFiles(_recentFiles.Load());
-    }
+    private void TrackRecentFile(string path) =>
+        _session.ReplaceRecentFiles(_recentFiles.Add(path));
 }

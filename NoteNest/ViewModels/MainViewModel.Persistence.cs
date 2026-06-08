@@ -5,13 +5,18 @@ public partial class MainViewModel
     public void Export(NoteNest.Models.ExportOptions options, string outputPath)
     {
         var notebookId = SelectedNote == null ? null : FindNotebookOf(SelectedNote)?.Id;
-        _lifecycle.Export(options, outputPath, notebookId, SelectedNote?.Id);
+        _exports.Export(_lifecycle.CreateSnapshot(), options, outputPath, notebookId, SelectedNote?.Id);
     }
 
-    public void ExportProjectToText(string outputPath) => _lifecycle.ExportProjectToText(outputPath);
+    public void ExportProjectToText(string outputPath) =>
+        _exports.ExportProjectToText(_lifecycle.CreateSnapshot(), outputPath);
 
-    public int ExportNotebooksToTextFiles(string outputDirectory) =>
-        _lifecycle.ExportNotebooksToTextFiles(outputDirectory);
+    public int ExportNotebooksToTextFiles(string outputDirectory)
+    {
+        var project = _lifecycle.CreateSnapshot();
+        _exports.ExportNotebooksToTextFiles(project, outputDirectory);
+        return project.Notebooks.Count;
+    }
 
     public bool OpenFileAtStartup(string path) => TryOpenProject(path);
 

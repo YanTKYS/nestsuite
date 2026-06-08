@@ -44,6 +44,35 @@ public class ProjectLifecycleServiceTests : IDisposable
         Assert.DoesNotContain(context.Notes.Notebooks, notebook => notebook.Title == "Temporary");
     }
 
+    [Fact]
+    public void CreateSnapshotBuildsCurrentDocumentWithoutSavingOrChangingSession()
+    {
+        var context = CreateContext();
+        context.Lifecycle.CreateNew();
+        context.Notes.AddNotebook("Snapshot only");
+        context.Session.IsModified = true;
+
+        var snapshot = context.Lifecycle.CreateSnapshot();
+
+        Assert.Contains(snapshot.Notebooks, notebook => notebook.Title == "Snapshot only");
+        Assert.Null(context.Session.CurrentFilePath);
+        Assert.True(context.Session.IsModified);
+    }
+
+    [Fact]
+    public void ClearRecentFilesSynchronizesSessionWithRecentFilesService()
+    {
+        var context = CreateContext();
+        context.Lifecycle.CreateNew();
+        var path = Path.Combine(_directory, "recent.notenest");
+        context.Lifecycle.Save(path);
+
+        context.Lifecycle.ClearRecentFiles();
+
+        Assert.Empty(context.Session.RecentFiles);
+        Assert.Empty(new RecentFilesService(Path.Combine(_directory, "recent.json")).Load());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);

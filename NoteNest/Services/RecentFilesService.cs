@@ -27,7 +27,7 @@ public class RecentFilesService
         catch { return []; }
     }
 
-    public void Add(string filePath)
+    public IReadOnlyList<string> Add(string filePath)
     {
         var list = Load();
         list.Remove(filePath);
@@ -39,6 +39,17 @@ public class RecentFilesService
             File.WriteAllText(_dataPath, JsonSerializer.Serialize(list));
         }
         catch { }
+        return list;
+    }
+
+    public IReadOnlyList<string> Clear()
+    {
+        try
+        {
+            if (File.Exists(_dataPath)) File.Delete(_dataPath);
+        }
+        catch { }
+        return [];
     }
 
     public void Clear()

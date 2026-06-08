@@ -16,6 +16,7 @@ public partial class MainViewModel : BaseViewModel
     private readonly ProjectSessionViewModel _session = new();
     private readonly WorkspaceChangeCoordinator _changeCoordinator;
     private readonly ProjectLifecycleService _lifecycle;
+    private readonly ExportService _exports = new();
     private readonly DispatcherTimer _unsavedTimer;
     private readonly DispatcherTimer _autoSaveTimer;
     private bool _isAutoSaveEnabled;
