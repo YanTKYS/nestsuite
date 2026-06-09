@@ -253,7 +253,7 @@ public sealed class V146RegressionTests : IDisposable
         };
         var svc  = new ExportService();
         var path = Path.Combine(_dir, "export.txt");
-        svc.Export(project, new ExportOptions(ExportTarget.Project, ExportFormat.Txt, false, false), path);
+        new ExportService().Export(project, new ExportOptions(ExportTarget.Project, ExportFormat.Text, false, false), path);
 
         var text = File.ReadAllText(path, System.Text.Encoding.UTF8);
         Assert.Contains("日本語ノート", text);
