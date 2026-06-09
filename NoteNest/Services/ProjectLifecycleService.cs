@@ -1,0 +1,85 @@
+using System.IO;
+using NoteNest.Models;
+using NoteNest.ViewModels;
+
+namespace NoteNest.Services;
+
+/// <summary>プロジェクトの新規作成・読込・保存と、セッション／ワークスペース同期を扱います。</summary>
+public sealed class ProjectLifecycleService
+{
+    private readonly ProjectSessionViewModel _session;
+    private readonly NoteWorkspaceViewModel _notes;
+    private readonly TaskBoardViewModel _tasks;
+    private readonly MarkerPanelViewModel _markers;
+    private readonly EditorStateViewModel _editor;
+    private readonly ProjectFileService _files;
+    private readonly ProjectDocumentService _documents;
+    private readonly SampleDataService _samples;
+    private readonly RecentFilesService _recentFiles;
+
+    public ProjectLifecycleService(
+        ProjectSessionViewModel session,
+        NoteWorkspaceViewModel notes,
+        TaskBoardViewModel tasks,
+        MarkerPanelViewModel markers,
+        EditorStateViewModel editor,
+        ProjectFileService? files = null,
+        ProjectDocumentService? documents = null,
+        SampleDataService? samples = null,
+        RecentFilesService? recentFiles = null)
+    {
+        _session = session;
+        _notes = notes;
+        _tasks = tasks;
+        _markers = markers;
+        _editor = editor;
+        _files = files ?? new ProjectFileService();
+        _documents = documents ?? new ProjectDocumentService();
+        _samples = samples ?? new SampleDataService();
+        _recentFiles = recentFiles ?? new RecentFilesService();
+    }
+
+    public void InitializeRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.Load());
+
+    public void ClearRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.ClearAndGetUpdatedList());
+
+    public bool TryAutoSave()
+    {
+        if (!_session.IsModified || _session.CurrentFilePath == null) return false;
+        Save(_session.CurrentFilePath);
+        return true;
+    }
+
+    public void CreateNew() => Load(_samples.Create(), null);
+
+    public void Open(string path) => Load(_files.Load(path), path);
+
+    public void Save(string path)
+    {
+        _files.Save(path, CreateSnapshot());
+        _session.MarkSaved(path);
+        TrackRecentFile(path);
+    }
+
+    public Project CreateSnapshot() =>
+        _documents.Build(_session.ProjectId, _session.ProjectName, _notes, _tasks, _editor);
+
+    private void Load(Project project, string? filePath)
+    {
+        _session.Start(project.ProjectId, project.ProjectName, filePath,
+            filePath != null && File.Exists(filePath) ? File.GetLastWriteTime(filePath) : null);
+        var lastNote = _documents.Load(project, _notes, _tasks, _editor);
+        _markers.Refresh(_notes.AllNotes);
+
+        if (lastNote != null)
+            _editor.SelectNote(lastNote);
+        else
+            _editor.Clear();
+
+        _session.IsModified = false;
+        if (filePath != null) TrackRecentFile(filePath);
+    }
+
+    private void TrackRecentFile(string path) =>
+        _session.ReplaceRecentFiles(_recentFiles.Add(path));
+}

@@ -20,28 +20,18 @@ public partial class StartDialog : Window
     }
 
     private void LoadRecentFiles()
-    {
-        var paths = _recentFilesService.Load();
-        if (paths.Count == 0)
-        {
-            RecentList.Visibility = Visibility.Collapsed;
-            NoRecentText.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            foreach (var path in paths)
-                RecentList.Items.Add(new RecentFileViewModel(path));
-        }
-    }
+        => ShowRecentFiles(_recentFilesService.Load());
 
-    private void UpdateEmptyState()
+    private void ShowRecentFiles(IEnumerable<string> paths)
     {
-        if (RecentList.Items.Count == 0)
-        {
-            RecentList.Visibility = Visibility.Collapsed;
-            NoRecentText.Visibility = Visibility.Visible;
-            OpenButton.IsEnabled = false;
-        }
+        RecentList.Items.Clear();
+        foreach (var path in paths)
+            RecentList.Items.Add(new RecentFileViewModel(path));
+
+        var hasRecentFiles = RecentList.Items.Count > 0;
+        RecentList.Visibility = hasRecentFiles ? Visibility.Visible : Visibility.Collapsed;
+        NoRecentText.Visibility = hasRecentFiles ? Visibility.Collapsed : Visibility.Visible;
+        OpenButton.IsEnabled = false;
     }
 
     private void NewProject_Click(object sender, RoutedEventArgs e)
@@ -77,9 +67,7 @@ public partial class StartDialog : Window
         {
             MessageBox.Show(this, $"ファイルが見つかりません。\n\n{vm.FullPath}",
                 "ファイルを開けません", MessageBoxButton.OK, MessageBoxImage.Warning);
-            _recentFilesService.Remove(vm.FullPath);
-            RecentList.Items.Remove(vm);
-            UpdateEmptyState();
+            ShowRecentFiles(_recentFilesService.RemoveAndGetUpdatedList(vm.FullPath));
             return;
         }
         SelectedPath = vm.FullPath;

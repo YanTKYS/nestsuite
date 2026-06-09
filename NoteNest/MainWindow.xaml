@@ -47,17 +47,15 @@
                         </Style>
                     </MenuItem.ItemContainerStyle>
                 </MenuItem>
+                <MenuItem Header="最近使ったファイルをクリア" Click="ClearRecentFiles_Click"
+                          IsEnabled="{Binding HasRecentFiles}"/>
                 <Separator/>
                 <MenuItem Header="保存(_S)" Command="{Binding SaveProjectCommand}"
                           InputGestureText="Ctrl+S"/>
                 <MenuItem Header="名前を付けて保存(_A)..." Command="{Binding SaveAsProjectCommand}"/>
                 <Separator/>
-                <MenuItem Header="エクスポート(_E)">
-                    <MenuItem Header="プロジェクト全体をテキスト出力(_T)..."
-                              Click="ExportProjectText_Click"/>
-                    <MenuItem Header="ノートブックごとにテキスト出力(_N)..."
-                              Click="ExportNotebooksText_Click"/>
-                </MenuItem>
+                <MenuItem Header="エクスポート(_E)..." Click="Export_Click"/>
+                <MenuItem Header="プロジェクト情報(_I)..." Click="ShowProjectInfo_Click"/>
                 <Separator/>
                 <MenuItem Header="終了(_X)" Command="{Binding ExitCommand}"
                           InputGestureText="Alt+F4"/>
@@ -69,6 +67,8 @@
                 <Separator/>
                 <MenuItem Header="行番号を表示(_L)" IsCheckable="True"
                           IsChecked="{Binding ShowLineNumbers, Mode=TwoWay}"/>
+                <MenuItem Header="自動保存（5分ごと）(_A)" IsCheckable="True"
+                          IsChecked="{Binding IsAutoSaveEnabled, Mode=TwoWay}"/>
                 <MenuItem Header="ダークテーマ(_D)" IsCheckable="True"
                           x:Name="DarkThemeMenuItem"
                           Click="DarkTheme_Click"/>
@@ -322,6 +322,7 @@
                                        FontSize="10.5" Foreground="{DynamicResource CommentBadgeFg}"/>
                         </Border>
                         <TextBlock Text="{Binding EditorTitle}"
+                                   ToolTip="{Binding CurrentNoteTimestampSummary}"
                                    FontSize="14" FontWeight="SemiBold"
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis"/>
