@@ -32,7 +32,7 @@ public partial class MainWindow
 
     private void RenameTask_Click(object sender, RoutedEventArgs e)
     {
-        var task = GetDataContext<TaskViewModel>(sender);
+        var task = GetContextMenuDataContext<TaskViewModel>(sender);
         if (task == null) return;
         var title = _dialogs.ShowInput("タスク名変更", "新しいタスク名:", task.Title);
         if (!string.IsNullOrWhiteSpace(title))
@@ -41,7 +41,7 @@ public partial class MainWindow
 
     private void DeleteTask_Click(object sender, RoutedEventArgs e)
     {
-        var task = GetDataContext<TaskViewModel>(sender);
+        var task = GetContextMenuDataContext<TaskViewModel>(sender);
         if (task == null) return;
         ViewModel.DeleteTaskCommand.Execute(task);
     }
@@ -61,7 +61,7 @@ public partial class MainWindow
         if (sender is Button btn && btn.DataContext is TaskViewModel t1)
             task = t1;
         else
-            task = GetDataContext<TaskViewModel>(sender);
+            task = GetContextMenuDataContext<TaskViewModel>(sender);
         if (task != null)
             ViewModel.SelectTask(task);
     }
@@ -69,7 +69,7 @@ public partial class MainWindow
     private void OpenRelatedNote_Click(object sender, RoutedEventArgs e)
     {
         NoteViewModel? note;
-        if (GetDataContext<TaskViewModel>(sender) is { } task)
+        if (GetContextMenuDataContext<TaskViewModel>(sender) is { } task)
             note = ViewModel.FindNoteById(task.LinkedNoteId);
         else
             note = ViewModel.EditingTaskRelatedNote;
@@ -82,7 +82,7 @@ public partial class MainWindow
 
     private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
     {
-        var task = GetDataContext<TaskViewModel>(sender);
+        var task = GetContextMenuDataContext<TaskViewModel>(sender);
         if (task == null) return;
         var input = _dialogs.ShowInput("関連ノートを設定", "ノート名を入力してください:");
         if (string.IsNullOrWhiteSpace(input)) return;
@@ -98,7 +98,7 @@ public partial class MainWindow
 
     private void ClearRelatedNote_Click(object sender, RoutedEventArgs e)
     {
-        if (GetDataContext<TaskViewModel>(sender) is { } task)
+        if (GetContextMenuDataContext<TaskViewModel>(sender) is { } task)
             ViewModel.ClearTaskRelatedNote(task);
         else
             ViewModel.EditingTaskRelatedNote = null;

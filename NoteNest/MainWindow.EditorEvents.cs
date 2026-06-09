@@ -63,7 +63,7 @@ public partial class MainWindow
 
     private void InsertNoteLinkFromNote_Click(object sender, RoutedEventArgs e)
     {
-        var note = GetDataContext<NoteViewModel>(sender);
+        var note = GetContextMenuDataContext<NoteViewModel>(sender);
         if (note == null) return;
         if (ViewModel.IsTaskCommentMode)
         {

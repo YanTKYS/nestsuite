@@ -16,19 +16,14 @@ public partial class MainWindow
     private void TaskItem_PreviewMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed || _dragDrop.Task == null) return;
-        var pos = e.GetPosition(null);
-        if (Math.Abs(pos.X - _dragDrop.TaskStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(pos.Y - _dragDrop.TaskStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        if (!HasExceededDragThreshold(_dragDrop.TaskStartPoint, e)) return;
         if (sender is DependencyObject dep)
             DragDrop.DoDragDrop(dep, _dragDrop.Task, DragDropEffects.Move);
         _dragDrop.ClearTask();
     }
 
     private void TaskItem_DragOver(object sender, DragEventArgs e)
-    {
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
+        => SetDragOverEffect(e, _dragDrop.Task != null);
 
     private void TaskItem_Drop(object sender, DragEventArgs e)
     {
@@ -39,11 +34,7 @@ public partial class MainWindow
     }
 
     private void TaskGroupHeader_DragOver(object sender, DragEventArgs e)
-    {
-        if (_dragDrop.Task == null) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
+        => SetDragOverEffect(e, _dragDrop.Task != null);
 
     private void TaskGroupHeader_Drop(object sender, DragEventArgs e)
     {
@@ -63,20 +54,14 @@ public partial class MainWindow
     private void NoteItem_PreviewMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed || _dragDrop.Note == null) return;
-        var pos = e.GetPosition(null);
-        if (Math.Abs(pos.X - _dragDrop.NoteStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(pos.Y - _dragDrop.NoteStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        if (!HasExceededDragThreshold(_dragDrop.NoteStartPoint, e)) return;
         if (sender is DependencyObject dep)
             DragDrop.DoDragDrop(dep, _dragDrop.Note, DragDropEffects.Move);
         _dragDrop.ClearNote();
     }
 
     private void NotebookHeader_DragOver(object sender, DragEventArgs e)
-    {
-        if (_dragDrop.Note == null) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
-    }
+        => SetDragOverEffect(e, _dragDrop.Note != null);
 
     private void NotebookHeader_Drop(object sender, DragEventArgs e)
     {
@@ -90,5 +75,18 @@ public partial class MainWindow
                 System.Windows.Threading.DispatcherPriority.Loaded);
         }
         _dragDrop.ClearNote();
+    }
+
+    private static bool HasExceededDragThreshold(Point startPoint, MouseEventArgs e)
+    {
+        var currentPoint = e.GetPosition(null);
+        return Math.Abs(currentPoint.X - startPoint.X) >= SystemParameters.MinimumHorizontalDragDistance ||
+               Math.Abs(currentPoint.Y - startPoint.Y) >= SystemParameters.MinimumVerticalDragDistance;
+    }
+
+    private static void SetDragOverEffect(DragEventArgs e, bool canDrop)
+    {
+        e.Effects = canDrop ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
     }
 }

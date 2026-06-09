@@ -1,3 +1,21 @@
+## v1.4.5 — MainWindow partial群のイベント処理整理
+
+**リリース日：** 2026-06-09
+
+### 保守性改善
+
+- ウィンドウ共通ショートカットを `MainWindow.ShortcutEvents.cs`、起動ファイル・テーマ・ペイン・終了処理を `MainWindow.WindowEvents.cs` へ整理した
+- エクスポート、プロジェクト操作、ダイアログ起動をそれぞれ `ExportEvents`、`ProjectEvents`、`DialogEvents` に分け、イベント配置と命名を明確にした
+- 右クリックメニューの対象解決を `GetContextMenuDataContext` に統一し、汎用的すぎる旧名称を廃止した
+- ノート／タスクのドラッグ開始しきい値判定とDragOver効果設定を共通化し、対応するドラッグ状態がない場合は移動効果を表示しないよう整理した
+- Attached Behavior化や大規模なUI設計変更は行わず、既存コードビハインドの役割を維持した
+
+### 互換性
+
+- ユーザー操作、保存形式、XAMLイベント名に変更なし（保存スキーマバージョンは `1.4.1` のまま）
+
+---
+
 # リリースノート
 
 ## v1.4.4 — MainViewModel ファサード責務の棚卸し

@@ -46,7 +46,7 @@ public partial class MainWindow
 
     private void AddNoteToNotebook_Click(object sender, RoutedEventArgs e)
     {
-        var nb = GetDataContext<NotebookViewModel>(sender);
+        var nb = GetContextMenuDataContext<NotebookViewModel>(sender);
         if (nb != null) AddNoteToNotebookViaDialog(nb);
     }
 
@@ -61,7 +61,7 @@ public partial class MainWindow
 
     private void RenameNotebook_Click(object sender, RoutedEventArgs e)
     {
-        var nb = GetDataContext<NotebookViewModel>(sender);
+        var nb = GetContextMenuDataContext<NotebookViewModel>(sender);
         if (nb == null) return;
         var title = _dialogs.ShowInput("名前変更", "新しいノートブック名:", nb.Title);
         if (!string.IsNullOrWhiteSpace(title))
@@ -70,19 +70,19 @@ public partial class MainWindow
 
     private void MoveNotebookUp_Click(object sender, RoutedEventArgs e)
     {
-        var nb = GetDataContext<NotebookViewModel>(sender);
+        var nb = GetContextMenuDataContext<NotebookViewModel>(sender);
         if (nb != null) ViewModel.MoveNotebookUp(nb);
     }
 
     private void MoveNotebookDown_Click(object sender, RoutedEventArgs e)
     {
-        var nb = GetDataContext<NotebookViewModel>(sender);
+        var nb = GetContextMenuDataContext<NotebookViewModel>(sender);
         if (nb != null) ViewModel.MoveNotebookDown(nb);
     }
 
     private void DeleteNotebook_Click(object sender, RoutedEventArgs e)
     {
-        var nb = GetDataContext<NotebookViewModel>(sender);
+        var nb = GetContextMenuDataContext<NotebookViewModel>(sender);
         if (nb == null) return;
         if (Confirm($"ノートブック「{nb.Title}」を削除しますか？\n含まれるノートもすべて削除されます。この操作は取り消せません。",
                     "削除の確認"))
@@ -91,21 +91,21 @@ public partial class MainWindow
 
     private void MoveNoteUp_Click(object sender, RoutedEventArgs e)
     {
-        var note = GetDataContext<NoteViewModel>(sender);
+        var note = GetContextMenuDataContext<NoteViewModel>(sender);
         if (note != null) ViewModel.MoveNoteUp(note);
     }
 
     private void MoveNoteDown_Click(object sender, RoutedEventArgs e)
     {
-        var note = GetDataContext<NoteViewModel>(sender);
+        var note = GetContextMenuDataContext<NoteViewModel>(sender);
         if (note != null) ViewModel.MoveNoteDown(note);
     }
 
     private void RenameNote_Click(object sender, RoutedEventArgs e)
-        => RenameNoteWithDialog(GetDataContext<NoteViewModel>(sender));
+        => RenameNoteWithDialog(GetContextMenuDataContext<NoteViewModel>(sender));
 
     private void DeleteNote_Click(object sender, RoutedEventArgs e)
-        => DeleteNoteWithConfirm(GetDataContext<NoteViewModel>(sender));
+        => DeleteNoteWithConfirm(GetContextMenuDataContext<NoteViewModel>(sender));
 
     private void RenameSelectedNote_Click(object sender, RoutedEventArgs e)
         => RenameNoteWithDialog(ViewModel.SelectedNote);
