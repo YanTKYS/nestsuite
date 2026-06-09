@@ -64,10 +64,9 @@ public sealed class V146RegressionTests : IDisposable
 
         var saved = new ProjectFileService().Load(path);
         Assert.Equal("1.4.1", saved.Version);
-        Assert.Equal("RegressionNB", saved.Notebooks[0].Title);
-        Assert.Equal("[TODO] check me", saved.Notebooks[0].Notes[0].Content);
-        Assert.Equal("RegressionTask", saved.Tasks.Today[0].Title);
-        Assert.Equal("commit this", saved.Tasks.Today[0].Comment);
+        var regressionNb = saved.Notebooks.First(nb => nb.Title == "RegressionNB");
+        Assert.Equal("[TODO] check me", regressionNb.Notes[0].Content);
+        Assert.Contains(saved.Tasks.Today, t => t.Title == "RegressionTask" && t.Comment == "commit this");
     }
 
     [Fact]
