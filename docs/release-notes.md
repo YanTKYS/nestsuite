@@ -1,5 +1,49 @@
 # リリースノート
 
+## v1.5.2 — Workspace側のAppShell依存チェック強化
+
+**リリース日：** 2026-06-13
+
+### NestSuite対応準備（N2 完了）
+
+backlog N2「Workspace側のAppShell依存チェック強化」を実施した。
+v1.5.1 のシグネチャチェックに加え、ソースファイルのテキストレベルでコールサイトパターンを確認する軽量テストを追加した。
+
+**追加チェック内容：**
+- Model 型（`Project`・`Notebook`・`Note`・`NoteTask`・`TaskCollection`・`AppSettings`・`ExportOptions`）のシグネチャチェックを追加
+- Workspace 型が `System.Windows.Window` を継承していないことを確認するテストを追加
+- Workspace 再利用候補の `.cs` ファイルに対し、`MessageBox.Show`・`new OpenFileDialog`・`Application.Current`・`new MainWindow` 等 11 パターンを文字列検索するテストを追加
+
+**検出結果：** 全対象ファイルで違反なし
+- `ThemeService.cs` に `Application.Current` があるが AppShell 側サービスとして除外（設計上の意図通り）
+- `MainViewModel*.cs` は AppShell/Workspace 境界ファサードとして除外
+
+**AppShell 側として明示的に除外したファイル：**
+`DialogService.cs`・`DragDropState.cs`・`ThemeService.cs`・`UiSettingsService.cs`・`MainViewModel*.cs`
+
+### テスト
+
+- `ArchitectureBoundaryTests.cs` を更新（計 6 テスト）
+  - `WorkspaceViewModels_DoNotExposeAppShellTypesInSignatures`（維持）
+  - `WorkspaceCoordinatorsAndServices_DoNotExposeAppShellTypesInSignatures`（維持）
+  - `WorkspaceModels_DoNotExposeAppShellTypesInSignatures`（新規追加）
+  - `WorkspaceTypes_DoNotInheritFromWindow`（新規追加）
+  - `WorkspaceViewModels_CanBeInstantiatedWithoutWindowInfrastructure`（維持）
+  - `WorkspaceSourceFiles_DoNotContainAppShellCallSites`（新規追加）
+
+### ドキュメント
+
+- `docs/nestsuite-preparation.md`：v1.5.x 進捗表を更新（N2 完了）、確認結果を追記
+- `docs/design-decisions.md`：§25 を追加（依存チェック強化の設計判断と残課題）
+- `docs/backlog.md`：N2 を完了済みとして記載
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.2`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.1 — AppShell / Workspace 境界の棚卸し
 
 **リリース日：** 2026-06-13

@@ -1,4 +1,5 @@
 using System.Reflection;
+using NoteNest.Models;
 using NoteNest.Services;
 using NoteNest.ViewModels;
 using Xunit;
@@ -6,10 +7,9 @@ using Xunit;
 namespace NoteNest.Tests;
 
 /// <summary>
-/// v1.5.1 AppShell / Workspace 境界テスト。
-/// Workspace 再利用候補が AppShell 型（Window・ダイアログ類）を
-/// フィールド・プロパティ・コンストラクタ・メソッドシグネチャで参照していないことを確認します。
-/// メソッド本体内の呼び出しは IL 解析が必要なため本テストの対象外です。
+/// AppShell / Workspace 境界テスト。
+/// v1.5.1: シグネチャ（フィールド・プロパティ・コンストラクタ・メソッドパラメータ）ベースの依存確認
+/// v1.5.2: Model型追加・Window継承チェック追加・ソースファイル文字列チェック追加
 /// </summary>
 public class ArchitectureBoundaryTests
 {
@@ -35,6 +35,17 @@ public class ArchitectureBoundaryTests
         typeof(ExportService),
     ];
 
+    private static readonly Type[] WorkspaceModelTypes =
+    [
+        typeof(Project),
+        typeof(Notebook),
+        typeof(Note),
+        typeof(NoteTask),
+        typeof(TaskCollection),
+        typeof(AppSettings),
+        typeof(ExportOptions),
+    ];
+
     // FullName 部分一致で確認するため、ネストした generic 型も検出できる
     private static readonly string[] ForbiddenTypeFullNames =
     [
@@ -44,6 +55,37 @@ public class ArchitectureBoundaryTests
         "Microsoft.Win32.SaveFileDialog",
         "System.Windows.Forms.FolderBrowserDialog",
     ];
+
+    // ソースファイル内で禁止するコールサイトパターン（v1.5.2 追加）
+    private static readonly string[] ForbiddenCallSitePatterns =
+    [
+        "MessageBox.Show",
+        "new OpenFileDialog",
+        "new SaveFileDialog",
+        "new FolderBrowserDialog",
+        "Application.Current",
+        "new StartDialog",
+        "new ExportDialog",
+        "new ProjectInfoDialog",
+        "new TutorialWindow",
+        "typeof(MainWindow)",
+        "new MainWindow",
+    ];
+
+    // AppShell 側として除外する Services ファイル名（ソースチェック対象外）
+    // DialogService    : AppShell UI サービス
+    // DragDropState    : MainWindow ドラッグ状態
+    // ThemeService     : Application.Current を使う AppShell テーマ管理
+    // UiSettingsService: ウィンドウ設定の永続化（AppShell 責務）
+    private static readonly HashSet<string> ExcludedServiceFiles =
+    [
+        "DialogService.cs",
+        "DragDropState.cs",
+        "ThemeService.cs",
+        "UiSettingsService.cs",
+    ];
+
+    // ======= リフレクションベース =======
 
     private static IEnumerable<string> GetShallowDependencyNames(Type type)
     {
@@ -69,7 +111,7 @@ public class ArchitectureBoundaryTests
         }
     }
 
-    private static List<string> FindViolations(IEnumerable<Type> types)
+    private static List<string> FindSignatureViolations(IEnumerable<Type> types)
     {
         var violations = new List<string>();
         foreach (var type in types)
@@ -86,27 +128,116 @@ public class ArchitectureBoundaryTests
         return violations;
     }
 
+    private static bool HasWindowInHierarchy(Type t)
+    {
+        var baseType = t.BaseType;
+        while (baseType != null)
+        {
+            if (baseType.FullName == "System.Windows.Window") return true;
+            baseType = baseType.BaseType;
+        }
+        return false;
+    }
+
     [Fact]
     public void WorkspaceViewModels_DoNotExposeAppShellTypesInSignatures()
     {
-        Assert.Empty(FindViolations(WorkspaceViewModelTypes));
+        Assert.Empty(FindSignatureViolations(WorkspaceViewModelTypes));
     }
 
     [Fact]
     public void WorkspaceCoordinatorsAndServices_DoNotExposeAppShellTypesInSignatures()
     {
-        Assert.Empty(FindViolations(WorkspaceCoordinatorAndServiceTypes));
+        Assert.Empty(FindSignatureViolations(WorkspaceCoordinatorAndServiceTypes));
+    }
+
+    // v1.5.2 追加：Model 型も確認対象へ
+    [Fact]
+    public void WorkspaceModels_DoNotExposeAppShellTypesInSignatures()
+    {
+        Assert.Empty(FindSignatureViolations(WorkspaceModelTypes));
+    }
+
+    // v1.5.2 追加：Window 継承確認
+    [Fact]
+    public void WorkspaceTypes_DoNotInheritFromWindow()
+    {
+        var allTypes = WorkspaceViewModelTypes
+            .Concat(WorkspaceCoordinatorAndServiceTypes)
+            .Concat(WorkspaceModelTypes);
+
+        var violations = allTypes
+            .Where(HasWindowInHierarchy)
+            .Select(t => t.Name)
+            .ToList();
+
+        Assert.Empty(violations);
     }
 
     [Fact]
     public void WorkspaceViewModels_CanBeInstantiatedWithoutWindowInfrastructure()
     {
-        // Workspace ViewModel が UI スレッドやウィンドウなしで生成できることを確認する。
-        // テスト環境で生成できること自体が AppShell 非依存の証拠になる。
         _ = new NoteWorkspaceViewModel();
         _ = new TaskBoardViewModel();
         _ = new MarkerPanelViewModel(new MarkerExtractorService());
         _ = new EditorStateViewModel();
         _ = new ProjectSessionViewModel();
+    }
+
+    // ======= ソースファイル文字列チェック（v1.5.2 追加）=======
+    // メソッド本体内のコールサイトをテキストレベルで検出する。
+    // 本格的な IL 解析は行わず、パターン文字列の有無を確認する軽量チェック。
+
+    private static string FindSolutionRoot()
+    {
+        var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        while (!string.IsNullOrEmpty(dir) && !File.Exists(Path.Combine(dir, "NoteNest.sln")))
+            dir = Path.GetDirectoryName(dir)!;
+        return !string.IsNullOrEmpty(dir)
+            ? dir
+            : throw new InvalidOperationException("NoteNest.sln が見つかりません");
+    }
+
+    private static IEnumerable<string> GetWorkspaceSourceFiles()
+    {
+        var src = Path.Combine(FindSolutionRoot(), "NoteNest");
+
+        // ViewModels: MainViewModel*.cs は AppShell/Workspace 境界ファサードのため除外
+        foreach (var f in Directory.GetFiles(Path.Combine(src, "ViewModels"), "*.cs"))
+        {
+            if (!Path.GetFileName(f).StartsWith("MainViewModel", StringComparison.Ordinal))
+                yield return f;
+        }
+
+        // Services: AppShell 側サービスを除外
+        foreach (var f in Directory.GetFiles(Path.Combine(src, "Services"), "*.cs"))
+        {
+            if (!ExcludedServiceFiles.Contains(Path.GetFileName(f)))
+                yield return f;
+        }
+
+        // Models: すべて対象
+        foreach (var f in Directory.GetFiles(Path.Combine(src, "Models"), "*.cs"))
+            yield return f;
+    }
+
+    [Fact]
+    public void WorkspaceSourceFiles_DoNotContainAppShellCallSites()
+    {
+        var violations = new List<string>();
+
+        foreach (var file in GetWorkspaceSourceFiles())
+        {
+            var content = File.ReadAllText(file);
+            var fileName = Path.GetFileName(file);
+
+            foreach (var pattern in ForbiddenCallSitePatterns)
+            {
+                if (content.Contains(pattern, StringComparison.Ordinal))
+                    violations.Add($"{fileName}: '{pattern}'");
+            }
+        }
+
+        Assert.Empty(violations);
     }
 }
