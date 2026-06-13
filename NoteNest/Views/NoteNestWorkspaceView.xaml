@@ -395,7 +395,7 @@
                                         <Border.InputBindings>
                                             <MouseBinding MouseAction="LeftClick"
                                                           Command="{Binding DataContext.ToggleGroupCommand,
-                                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"/>
                                         </Border.InputBindings>
                                         <DockPanel>
@@ -408,7 +408,7 @@
                                                     FontSize="12" Padding="0"
                                                     Style="{StaticResource IconButton}"
                                                     Command="{Binding DataContext.AddTaskCommand,
-                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding Key}"
                                                     ToolTip="このグループにタスクを追加"/>
                                             <CheckBox DockPanel.Dock="Right"

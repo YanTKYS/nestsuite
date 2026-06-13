@@ -1,5 +1,59 @@
 # リリースノート
 
+## v1.5.6 — NoteNestWorkspaceView 切り出し後の回帰確認・小修正
+
+**リリース日：** 2026-06-13
+
+### 概要
+
+v1.5.5 で実施した `NoteNestWorkspaceView` 切り出し後の回帰確認と、発見された軽微な不具合の修正。新機能追加・構造変更は行っていない。
+
+### 修正内容
+
+#### 1. DialogService / Window.GetWindow 境界違反の修正
+
+v1.5.5 で `NoteNestWorkspaceView` が `DialogService` を `Window.GetWindow(this)!` 経由で直接生成していた問題を修正。これは v1.5.4 で定めた AppShell 境界方針（「ダイアログ起動処理は AppShell 側に残す」「WorkspaceView から DialogService を直接呼ばない」）に反する実装だった。
+
+**修正：**
+- `NoteNest/Views/IWorkspaceDialogHost.cs` を新設（WorkspaceView が必要とするダイアログ操作の狭いインターフェース）
+- `NoteNestWorkspaceView` から `DialogService` フィールドと `Window.GetWindow(this)` を除去し、`IWorkspaceDialogHost DialogHost { get; set; }` プロパティへ置き換え
+- `MainWindow` が `IWorkspaceDialogHost` を実装（明示的インターフェース実装、内部の `_dialogs` へ委譲）
+- コンストラクタで `WorkspaceView.DialogHost = this` をセット
+- `ArchitectureBoundaryTests` に `"DialogService"` と `"Window.GetWindow("` を禁止パターンとして追加
+
+#### 2. WorkspaceView.xaml の AncestorType=Window バインディング修正
+
+タスクグループヘッダーの 2 箇所で `RelativeSource={RelativeSource AncestorType=Window}` を使用していたが、WorkspaceView は UserControl であるため `AncestorType=UserControl` に修正。
+
+- `ToggleGroupCommand` の MouseBinding（グループ折り畳みクリック）
+- `AddTaskCommand` の Button（グループへのタスク追加「+」ボタン）
+
+両バインディングとも DataContext（MainViewModel）が同一のため動作上の問題は生じていなかったが、UserControl として自己完結させるため修正。
+
+### 回帰テスト追加
+
+`NoteNest.Tests/WorkspaceViewRegressionTests.cs` を新設。
+
+- WorkspaceView のレイアウト公開プロパティ（`LeftPaneWidth`・`IsRightPaneCollapsed`・`ActualRightPaneWidth`）の存在確認
+- WorkspaceView の公開メソッド 10 件の存在確認
+- MainWindow への委譲 internal メソッド（`AddNotebook`・`AddNote`・`RenameSelectedNote`・`DeleteSelectedNote`）の存在確認
+- `DialogHost` プロパティが読み書き可能であることの確認
+- WorkspaceView が Window ではなく UserControl であることの確認
+- MainWindow が `IWorkspaceDialogHost` を実装していることの確認
+- `IWorkspaceDialogHost` インターフェースに 8 メソッドが存在することの確認
+
+### ドキュメント
+
+- `docs/release-notes.md`：本エントリを追加
+- `docs/test-scenarios.md`：§42 v1.5.6 WorkspaceView 切り出し後の回帰確認シナリオを追加
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.6`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.5 — NoteNestWorkspaceView 実切り出し
 
 **リリース日：** 2026-06-13
