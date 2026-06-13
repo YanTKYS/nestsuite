@@ -1,5 +1,34 @@
 # リリースノート
 
+## v1.5.3 — NoteNestWorkspaceView 構想の設計
+
+**リリース日：** 2026-06-13
+
+### NestSuite対応準備（N3 完了）
+
+backlog N3「NoteNestWorkspaceView 構想の設計」を実施した。
+実際の View 切り出しは行わず、設計メモの文書化に留めた。
+
+**整理した内容：**
+- `MainWindow` の主コンテンツ領域（5 列グリッド）が `NoteNestWorkspaceView` の切り出し候補であることを確認
+- WorkspaceView 側へ移す候補：`NoteEvents.cs`・`TaskEvents.cs`・`EditorEvents.cs`・`DragDrop.cs`・`ContextMenuEvents.cs` と対応する XAML 要素
+- AppShell 側に残すもの：`Window`・`Menu`・`StatusBar`・`WindowEvents.cs`・`ProjectEvents.cs`・`ExportEvents.cs`・`DialogEvents.cs`
+- DataContext 候補を 3 案（A：MainViewModel 継続、B：NoteNestWorkspaceViewModel 新設、C：MainViewModel 分割）として整理。v1.5.x では案 A を継続
+- 実切り出し時の注意点（ContextMenuEvents の PlacementTarget 解決・DialogService の Owner 設定・検索置換ダイアログの帰属・AppShell 依存の持ち込み防止）を文書化
+
+### ドキュメント
+
+- `docs/nestsuite-preparation.md`：「NoteNestWorkspaceView 構想」セクションを追加（切り出し候補・AppShell残存範囲・DataContext 候補・実切り出し注意点・当面方針）
+- `docs/design-decisions.md`：§26 を追加（WorkspaceView 設計判断と主要課題）
+- `docs/backlog.md`：N3 を完了済みとして記載、N4 の説明に DataContext 選択肢を追記
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.3`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.2 — Workspace側のAppShell依存チェック強化
 
 **リリース日：** 2026-06-13
