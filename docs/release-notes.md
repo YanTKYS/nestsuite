@@ -1,5 +1,42 @@
 # リリースノート
 
+## v1.5.1 — AppShell / Workspace 境界の棚卸し
+
+**リリース日：** 2026-06-13
+
+### NestSuite対応準備（N1 完了）
+
+backlog N1「AppShell / Workspace 境界の棚卸し」を実施した。
+実装の大規模変更は行わず、境界確認テストの追加とドキュメント整備を行った。
+
+**確認結果：**
+- Workspace 再利用候補（ViewModel 5型・Coordinator 3型・Service 6型）が `Window`・`MessageBox`・`OpenFileDialog`・`SaveFileDialog` をフィールド・プロパティ・シグネチャで参照していないことを確認
+- Workspace ViewModel 5型がウィンドウインフラなしで生成できることを確認（AppShell 非依存の実証）
+
+**境界上の注意点：**
+- `DialogService` が AppShell 責務（ファイル選択・Owner 設定）と Workspace 近接責務（確認ダイアログ）をまたいでいる。Workspace ViewModel からの直接依存は避ける
+- `MainViewModel` は XAML 互換 Facade として現状を維持。NestSuite 移行時に Workspace Facade と AppShell 接続層へ分離を検討する
+
+### テスト
+
+- `NoteNest.Tests/ArchitectureBoundaryTests.cs` を追加（3テスト）
+  - `WorkspaceViewModels_DoNotExposeAppShellTypesInSignatures`
+  - `WorkspaceCoordinatorsAndServices_DoNotExposeAppShellTypesInSignatures`
+  - `WorkspaceViewModels_CanBeInstantiatedWithoutWindowInfrastructure`
+
+### ドキュメント
+
+- `docs/nestsuite-preparation.md`：v1.5.x 進め方の表を更新、残課題を整理
+- `docs/design-decisions.md`：§24 を追加（境界棚卸し設計判断と確認結果）
+- `docs/backlog.md`：N1 を完了済みとして記載、N2 の説明を更新
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.1`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.0 — NestSuite対応準備
 
 **リリース日：** 2026-06-13

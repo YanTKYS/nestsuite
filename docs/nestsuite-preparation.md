@@ -136,18 +136,24 @@ AppShell側の接続層を分離することが想定されるが、
 ## v1.5.x での進め方
 
 v1.5.0 では実装変更を行わず、境界の文書化と確認を目的とした。
-v1.5.x 以降は、以下の順序で段階的に進める想定（詳細は backlog.md を参照）。
+v1.5.1 では `ArchitectureBoundaryTests.cs` を追加し、Workspace再利用候補がAppShell型に
+シグネチャレベルで依存していないことを自動確認する仕組みを整えた。
 
-1. **AppShell / Workspace 境界の棚卸し**（backlog N1）
-   — コードレビューとテストで境界違反がないことを定期確認する
+| バージョン | 実施内容 |
+|-----------|---------|
+| v1.5.0 | 境界の文書化（nestsuite-preparation.md 補強、design-decisions.md §23 追加） |
+| v1.5.1 | AppShell / Workspace 境界の棚卸し完了（アーキテクチャ境界テスト追加、N1 完了） |
 
-2. **Workspace側のAppShell依存チェック**（backlog N2）
-   — CI等での静的チェック導入を検討する
+### 残課題（詳細は backlog.md を参照）
 
-3. **NoteNestWorkspaceView 構想の設計**（backlog N3）
+1. **Workspace側のAppShell依存チェック強化**（backlog N2）
+   — 現テストはフィールド・プロパティ・シグネチャのみカバー。
+     メソッド本体内呼び出し（`MessageBox.Show` 等）の自動検出は IL 解析または静的解析ツールが必要
+
+2. **NoteNestWorkspaceView 構想の設計**（backlog N3）
    — NestSuiteへ切り出す際のViewの境界を設計メモとして整理する
 
-4. **将来的なWorkspace切り出し検討**（backlog N4）
+3. **将来的なWorkspace切り出し検討**（backlog N4）
    — 実際の切り出し設計と段階的移行計画を立案する
 
 大規模な切り出しはNestSuite本体の方針が固まった段階で着手する。
