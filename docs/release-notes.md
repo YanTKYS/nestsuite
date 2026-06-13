@@ -1,5 +1,31 @@
 # リリースノート
 
+## v1.5.0 — NestSuite対応準備
+
+**リリース日：** 2026-06-13
+
+### NestSuite対応準備
+
+NoteNestを将来的にNestSuiteへ統合しやすくするため、AppShell側とWorkspace側の責務境界をコードと文書で確認した。
+実装の大規模変更は行わず、境界の明確化と文書整備を目的とした。
+
+- AppShell側（将来的に置き換え対象）：`MainWindow`、`App.xaml.cs`、`StartDialog`、`RecentFilesService`、`UiSettingsService`、`ThemeService`、`DialogService`（ファイル選択・MessageBox部分）
+- Workspace側（NestSuiteへ持ち込み対象）：責務別ViewModel群、Coordinator群、Project services、`ExportService`、モデル層
+- Workspace系ViewModelが `Window`・`MessageBox`・`OpenFileDialog` を直接参照していないことを確認
+
+### ドキュメント
+
+- `docs/nestsuite-preparation.md` を大幅補強：AppShell / Workspace 境界の詳細、再利用・置き換え対象の列挙、`DialogService` の懸念点、v1.5.x での進め方
+- `docs/design-decisions.md` に §23 を追加：NestSuite対応境界の設計判断と `nestsuite-preparation.md` への参照
+- `docs/backlog.md` に NestSuite対応準備カテゴリを追加：N1〜N4 の候補を記載
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.0`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.4.6 — 回帰確認・小修正
 
 **リリース日：** 2026-06-09

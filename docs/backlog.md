@@ -56,6 +56,20 @@
 
 ---
 
+## NestSuite対応準備
+
+NestSuiteへの将来的な統合に向けた準備作業。すぐに実装するものではなく、v1.5.x以降の候補として記載する。
+設計の背景は [`docs/nestsuite-preparation.md`](nestsuite-preparation.md) を参照。
+
+| No | 項目 | 概要 | 優先度 |
+|----|------|------|--------|
+| N1 | AppShell / Workspace 境界の棚卸し | コードレビューと境界テストで、Workspace系ViewModelがAppShell要素（Window, MessageBox, ファイルダイアログ）を参照していないことを定期確認する仕組みを整える | B |
+| N2 | Workspace側のAppShell依存チェック | CI等での静的解析またはアーキテクチャテスト導入を検討し、境界違反を自動検出できるようにする | C |
+| N3 | NoteNestWorkspaceView 構想の設計 | NestSuiteへ切り出す際のViewの境界（どこからどこまでがWorkspaceのUI）を設計メモとして整理する。実際の切り出しはこの設計後 | C |
+| N4 | 将来的なWorkspace切り出し検討 | NestSuite本体の方針が固まった段階で、実際の切り出し設計と段階的移行計画を立案する | C |
+
+---
+
 ## 対象外・当面見送り
 
 NoteNest の設計方針から意図的に除外しているもの。要望があっても原則実装しません。
