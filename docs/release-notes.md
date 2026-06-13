@@ -1,5 +1,43 @@
 # リリースノート
 
+## v1.5.5 — NoteNestWorkspaceView 実切り出し
+
+**リリース日：** 2026-06-13
+
+### NestSuite対応準備（N4 完了）
+
+backlog N4「NoteNestWorkspaceView 実切り出し」を実施した。
+v1.5.4 で確定した移行計画に基づき、`NoteNestWorkspaceView` を新規作成して `MainWindow` から 5 列グリッドと関連コードビハインドを分離した。
+
+**実施内容：**
+
+- `NoteNest/Views/NoteNestWorkspaceView.xaml` を新規作成。`MainWindow.xaml` の 5 列グリッド（左ペイン・中央エディタ・右ペイン・GridSplitter ×2）を移動
+- `NoteNestWorkspaceView.xaml.cs` を作成。レイアウト状態（`_isRightPaneCollapsed`・`_savedRightPaneWidth`）、スクロール同期、TreeView 選択制御（`_suppressTreeSelectionChanged`）、ドラッグ状態（`_dragDrop`）をカプセル化
+- `NoteNestWorkspaceView.NoteEvents.cs`・`TaskEvents.cs`・`EditorEvents.cs`・`DragDrop.cs`・`ContextMenuEvents.cs` を作成し、対応する `MainWindow.*Events.cs` のハンドラを移動
+- `MainWindow.xaml` は `<views:NoteNestWorkspaceView x:Name="WorkspaceView" .../>` 1 要素に縮小。メニュー・ステータスバー・InputBindings のみ残存
+- `MainWindow.xaml.cs`・`MainWindow.WindowEvents.cs` を WorkspaceView 公開 API（`LeftPaneWidth`・`ActualRightPaneWidth`・`IsRightPaneCollapsed`・`CollapseRightPane()`・`ToggleRightPane()`・`NavigateToLine()`・`SyncTreeSelection()`・`GetFindReplaceState()` 等）を通じて更新
+- `BoolToVisibilityConverter` をアプリケーションレベルリソース（`App.xaml`）へ移動し、Window 固有リソース定義を撤廃
+- `WorkspaceView` は `DialogService` を遅延初期化（`Window.GetWindow(this)!` で Owner 取得）。ダイアログはすべて `DialogService` 経由
+- `RightPaneToggled` CLR イベントで右ペイン折り畳み状態を MainWindow へ通知。`RightPaneCollapseMenuItem.IsChecked` を同期
+
+**ArchitectureBoundaryTests 更新：**
+
+`GetWorkspaceSourceFiles()` に `Views/` ディレクトリスキャンを追加（`.g.cs` 除外）。
+WorkspaceView コードビハインドが禁止コールサイトパターンを含まないことを自動確認。
+
+### ドキュメント
+
+- `docs/nestsuite-preparation.md`：v1.5.x 進捗表に v1.5.5 を追加、N4 残課題を解消
+- `docs/design-decisions.md` は v1.5.4 §27 が移行計画を包括済みのため変更なし
+- `docs/backlog.md`：N4 を完了済みとして記載
+
+### バージョン
+
+- アプリケーションバージョン：`1.5.5`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.4 — NoteNestWorkspaceView 実切り出し前の移行計画
 
 **リリース日：** 2026-06-13

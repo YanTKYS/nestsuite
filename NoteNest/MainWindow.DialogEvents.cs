@@ -18,16 +18,8 @@ public partial class MainWindow
     }
 
     private void ShowError(string message, string title = "エラー") => _dialogs.ShowError(message, title);
-
     private void ShowInfo(string message, string title = "情報") => _dialogs.ShowInfo(message, title);
 
     private bool Confirm(string message, string title = "確認",
         MessageBoxImage icon = MessageBoxImage.Warning) => _dialogs.Confirm(message, title, icon);
-
-    private void OpenFindReplace() =>
-        _dialogs.ShowFindReplace(EditorBox,
-            _uiSettings.LastSearchText,
-            _uiSettings.LastReplaceText,
-            _uiSettings.FindReplaceLeft,
-            _uiSettings.FindReplaceTop);
 }

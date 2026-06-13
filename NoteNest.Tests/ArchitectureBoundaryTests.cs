@@ -10,6 +10,7 @@ namespace NoteNest.Tests;
 /// AppShell / Workspace 境界テスト。
 /// v1.5.1: シグネチャ（フィールド・プロパティ・コンストラクタ・メソッドパラメータ）ベースの依存確認
 /// v1.5.2: Model型追加・Window継承チェック追加・ソースファイル文字列チェック追加
+/// v1.5.5: Views/NoteNestWorkspaceView コードビハインドをソースチェック対象に追加
 /// </summary>
 public class ArchitectureBoundaryTests
 {
@@ -219,6 +220,19 @@ public class ArchitectureBoundaryTests
         // Models: すべて対象
         foreach (var f in Directory.GetFiles(Path.Combine(src, "Models"), "*.cs"))
             yield return f;
+
+        // Views: NoteNestWorkspaceView コードビハインドのみ（.g.cs は除外）
+        var viewsDir = Path.Combine(src, "Views");
+        if (Directory.Exists(viewsDir))
+        {
+            foreach (var f in Directory.GetFiles(viewsDir, "*.cs"))
+            {
+                var name = Path.GetFileName(f);
+                if (!name.EndsWith(".g.cs", StringComparison.Ordinal) &&
+                    !name.EndsWith(".g.i.cs", StringComparison.Ordinal))
+                    yield return f;
+            }
+        }
     }
 
     [Fact]

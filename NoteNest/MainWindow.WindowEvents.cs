@@ -13,13 +13,14 @@ public partial class MainWindow
     {
         if (!path.EndsWith(".notenest", StringComparison.OrdinalIgnoreCase))
         {
-            ShowError($"NoteNest で開けるファイルではありません。\n.notenest ファイルを指定してください。\n\n{path}",
+            _dialogs.ShowError(
+                $"NoteNest で開けるファイルではありません。\n.notenest ファイルを指定してください。\n\n{path}",
                 "ファイルを開けません");
             return;
         }
         if (!File.Exists(path))
         {
-            ShowError($"指定されたファイルが見つかりません。\n\n{path}", "ファイルを開けません");
+            _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{path}", "ファイルを開けません");
             return;
         }
         ViewModel.OpenFileAtStartup(path);
@@ -33,28 +34,13 @@ public partial class MainWindow
 
     private void ToggleRightPane_Click(object sender, RoutedEventArgs e)
     {
-        if (_isRightPaneCollapsed) ExpandRightPane(); else CollapseRightPane();
-        RightPaneCollapseMenuItem.IsChecked = _isRightPaneCollapsed;
+        WorkspaceView.ToggleRightPane();
+        RightPaneCollapseMenuItem.IsChecked = WorkspaceView.IsRightPaneCollapsed;
     }
 
-    private void CollapseRightPane()
+    private void WorkspaceView_RightPaneToggled(object? sender, EventArgs e)
     {
-        var width = RightPaneColumn.Width.Value;
-        if (width > 0) _savedRightPaneWidth = width;
-        RightSplitterColumn.Width = new GridLength(0);
-        RightPaneColumn.MinWidth = 0;
-        RightPaneColumn.Width = new GridLength(0);
-        _isRightPaneCollapsed = true;
-        RightPaneExpandButton.Visibility = Visibility.Visible;
-    }
-
-    private void ExpandRightPane()
-    {
-        RightSplitterColumn.Width = new GridLength(4);
-        RightPaneColumn.MinWidth = 200;
-        RightPaneColumn.Width = new GridLength(_savedRightPaneWidth);
-        _isRightPaneCollapsed = false;
-        RightPaneExpandButton.Visibility = Visibility.Collapsed;
+        RightPaneCollapseMenuItem.IsChecked = WorkspaceView.IsRightPaneCollapsed;
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -72,7 +58,7 @@ public partial class MainWindow
             return;
         }
 
-        var findReplaceState = _dialogs.GetFindReplaceState(
+        var findReplaceState = WorkspaceView.GetFindReplaceState(
             _uiSettings.LastSearchText,
             _uiSettings.LastReplaceText,
             _uiSettings.FindReplaceLeft,
@@ -90,11 +76,11 @@ public partial class MainWindow
             WindowWidth = _lastNormalWidth,
             WindowHeight = _lastNormalHeight,
             IsWindowMaximized = WindowState == WindowState.Maximized,
-            LeftPaneWidth = LeftPaneColumn.Width.Value,
-            RightPaneWidth = _isRightPaneCollapsed ? _savedRightPaneWidth : RightPaneColumn.Width.Value,
-            IsRightPaneCollapsed = _isRightPaneCollapsed,
+            LeftPaneWidth = WorkspaceView.LeftPaneWidth,
+            RightPaneWidth = WorkspaceView.ActualRightPaneWidth,
+            IsRightPaneCollapsed = WorkspaceView.IsRightPaneCollapsed,
             IsAutoSaveEnabled = ViewModel.IsAutoSaveEnabled,
         });
-        _dialogs.CloseFindReplace();
+        WorkspaceView.CloseFindReplace();
     }
 }
