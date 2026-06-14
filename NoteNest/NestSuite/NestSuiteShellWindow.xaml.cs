@@ -34,6 +34,11 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     public NestSuiteShellWindow()
     {
         _dialogs = new DialogService(this);
+
+        // テーマを InitializeComponent 前に適用（DynamicResource が正しい値に解決されるよう）
+        var uiSettings = new UiSettingsService().Load();
+        new ThemeService().Apply(uiSettings.Theme);
+
         InitializeComponent();
 
         var vm = new MainViewModel();

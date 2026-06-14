@@ -1,5 +1,82 @@
 # リリースノート
 
+## v1.6.1 — NestSuite 最小 AppShell 起動導線の追加
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+v1.6.0 で追加した `NestSuiteShellWindow` に対し、開発・検証用の起動導線を追加した。`--nestsuite` コマンドライン引数を指定することで、通常の NoteNest 単体版（`MainWindow`）の代わりに `NestSuiteShellWindow` を起動できる。既定の起動フローは変更していない。IdeaNest / ChatNest の統合は本バージョンでは行っていない。
+
+### 追加内容
+
+#### 1. StartupArgParser（`NoteNest/StartupArgParser.cs`）
+
+`NoteNest` 名前空間に `StartupArgParser` 静的クラスを新設。
+
+- `IsNestSuiteMode(string[] args)` — `--nestsuite` フラグを大文字・小文字を問わず検出する
+- `StringComparer.OrdinalIgnoreCase` による比較で、`--nestsuite`・`--NestSuite`・`--NESTSUITE` のいずれも認識する
+
+#### 2. App.xaml.cs の起動分岐（`NoteNest/App.xaml.cs`）
+
+`App_Startup` に `--nestsuite` 分岐を追加（通常起動より前に評価する）。
+
+- `StartupArgParser.IsNestSuiteMode(e.Args)` が `true` の場合：`NestSuiteShellWindow` を起動し、`ShutdownMode.OnMainWindowClose` を設定して返す
+- それ以外の場合：従来どおりの NoteNest 単体版起動フロー（変更なし）
+
+**制約（v1.6.1）：** `--nestsuite` + `.notenest` ファイルパスの同時指定は非対応。NestSuite モードが優先され、ファイルパスは無視される。
+
+#### 3. NestSuiteShellWindow テーマ適用（`NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs`）
+
+コンストラクタで `UiSettingsService().Load()` → `ThemeService().Apply()` を `InitializeComponent()` 前に実行するよう変更。
+
+- `App.xaml` のデフォルトは `Light.xaml`。`--nestsuite` 起動経路ではテーマ初期化を別途行う必要があるため、`MainWindow` と同じパターンでユーザー設定を読み込んでテーマを適用する
+- `DynamicResource` が `InitializeComponent()` 時点で正しい値に解決されるよう、コンストラクタ冒頭で適用する
+
+#### 4. テスト（`NoteNest.Tests/StartupArgParserTests.cs`）
+
+`StartupArgParser.IsNestSuiteMode` の単体テスト（UI なし・WPF 不要）：
+
+- `IsNestSuiteMode_WithNestSuiteFlag_ReturnsTrue` — `--nestsuite` フラグを認識する
+- `IsNestSuiteMode_WithNestSuiteFlagMixedCase_ReturnsTrue` — 大文字・小文字混在でも認識する
+- `IsNestSuiteMode_WithNestSuiteFlagUpperCase_ReturnsTrue` — 全大文字でも認識する
+- `IsNestSuiteMode_WithNoArgs_ReturnsFalse` — 引数なしは false
+- `IsNestSuiteMode_WithFilePathOnly_ReturnsFalse` — ファイルパスのみは false
+- `IsNestSuiteMode_WithOtherFlag_ReturnsFalse` — 他のフラグは false
+- `IsNestSuiteMode_WithNestSuitePlusFilePath_ReturnsTrue` — フラグ + ファイルパスの同時指定は NestSuite モード（v1.6.1 非対応・ファイルパスは無視）
+
+### 変更しなかったもの
+
+- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
+- `.notenest` ファイル関連付け・引数起動（`--nestsuite` なし時は従来どおり）
+- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest / ChatNest の統合（本バージョン対象外）
+
+### v1.6.x 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.6.2 | NoteNest 単体版と NestSuite 版の起動切替をさらに検討 |
+| v1.6.3 | N6（MainViewModel Workspace Facade 分離）着手 |
+| v1.6.x | IdeaNest / ChatNest を載せる前提条件整理 |
+| 将来 | MainViewModel の Workspace Facade と AppShell 接続層への分割 |
+
+### ドキュメント
+
+- `docs/design-decisions.md`：§31「v1.6.1 StartupArgParser と --nestsuite 設計判断」追加
+- `docs/nestsuite-preparation.md`：進捗表に v1.6.1 行を追加
+- `docs/backlog.md`：N7 を完了済みとして記載、v1.6.x 候補を更新
+- `docs/release-notes.md`：本エントリを追加
+- `README.md`：制限テーブルのバージョン見出しを v1.6.1 に更新
+
+### バージョン
+
+- アプリケーションバージョン：`1.6.1`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.6.0 — NestSuite 最小 AppShell 骨格
 
 **リリース日：** 2026-06-14
