@@ -7,7 +7,7 @@ using Xunit;
 namespace NoteNest.Tests;
 
 /// <summary>
-/// v1.6.0: NestSuite 最小 AppShell 骨格の型境界・契約を確認するテスト。
+/// v1.6.2: NestSuite 統合母体の型境界・ツールレジストリ・契約を確認するテスト。
 /// UI を実際に起動しない、リフレクションベースの静的確認。
 /// </summary>
 public class NestSuiteShellTests
@@ -75,5 +75,49 @@ public class NestSuiteShellTests
                 [typeof(System.ComponentModel.CancelEventArgs)],
                 null);
         Assert.NotNull(method);
+    }
+
+    // ── v1.6.2 ツール選択領域の存在確認 ─────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasToolSelectorPanel()
+    {
+        // XAML x:Name="ToolSelectorPanel" によるツール選択領域フィールドの存在確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "ToolSelectorPanel");
+        Assert.NotNull(field);
+    }
+
+    // ── NestSuiteToolRegistry ─────────────────────────────────────────────
+
+    [Fact]
+    public void NestSuiteToolRegistry_AllTools_ContainsThreeEntries()
+    {
+        Assert.Equal(3, NestSuiteToolRegistry.AllTools.Length);
+    }
+
+    [Fact]
+    public void NestSuiteToolRegistry_NoteNest_IsFirstBuiltInTool()
+    {
+        Assert.Equal(NestSuiteToolRegistry.NoteNestToolId, NestSuiteToolRegistry.AllTools[0]);
+    }
+
+    [Fact]
+    public void NestSuiteToolRegistry_NoteNest_IsIntegrated()
+    {
+        Assert.True(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.NoteNestToolId));
+    }
+
+    [Fact]
+    public void NestSuiteToolRegistry_IdeaNest_IsNotIntegrated()
+    {
+        Assert.False(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.IdeaNestToolId));
+    }
+
+    [Fact]
+    public void NestSuiteToolRegistry_ChatNest_IsNotIntegrated()
+    {
+        Assert.False(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.ChatNestToolId));
     }
 }

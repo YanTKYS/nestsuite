@@ -1,5 +1,90 @@
 # リリースノート
 
+## v1.6.2 — NestSuite 統合母体の最小成立
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+`NestSuiteShellWindow` を単なる検証用 Window から **NestSuite 統合母体の最小構成**として成立させた。`--nestsuite` 起動時に、ツール選択領域・Workspace 領域・最小メニュー・ステータスバーを備えた「NestSuite」として見える最小 UI を実現した。NoteNest を最初の内蔵ツールとして扱い、IdeaNest / ChatNest はプレースホルダーとして配置した。IdeaNest / ChatNest の実統合は本バージョンでは行わない。NoteNest 単体版 `MainWindow` は引き続き維持する。
+
+### 追加・変更内容
+
+#### 1. NestSuiteShellWindow UI 整理（`NoteNest/NestSuite/NestSuiteShellWindow.xaml`）
+
+`--nestsuite` 起動時に統合母体として見える最小 UI を整備した。
+
+**構成：**
+- 最小メニュー（ファイル → 終了、ヘルプ → NestSuite について）
+- NestSuite ヘッダーバー
+- ツール選択領域（左ペイン・固定幅 120px）
+  - NoteNest：統合済み（選択中・`SelectedNoteBg` でハイライト表示）
+  - IdeaNest：未統合（プレースホルダー・半透明表示・ToolTip で「未統合（将来対応予定）」）
+  - ChatNest：未統合（同上）
+- Workspace 領域（`NoteNestWorkspaceView` を配置・残り幅）
+- ステータスバー（"NestSuite mode  /  NoteNest workspace" を表示）
+
+#### 2. NestSuiteToolRegistry（`NoteNest/NestSuite/NestSuiteToolRegistry.cs`）
+
+NestSuite に登録された内蔵ツールの一覧と統合状態を管理する静的クラスを新設。
+
+- `AllTools` — NoteNest・IdeaNest・ChatNest の 3 ツール（先頭が最初の内蔵ツール）
+- `IntegratedTools` — v1.6.2 時点で統合済みのツール（NoteNest のみ）
+- `IsIntegrated(toolId)` — 指定ツールの統合状態を返す（`StringComparer.Ordinal`）
+
+#### 3. NestSuiteShellWindow メニューハンドラ（`NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs`）
+
+最小メニュー用ハンドラを追加。
+
+- `MenuExit_Click` — ウィンドウを閉じる（`Close()`。`OnClosing` で未保存確認が走る）
+- `MenuAbout_Click` — NestSuite についてのダイアログを表示（`_dialogs.ShowInfo` 経由）
+
+#### 4. テスト追加（`NoteNest.Tests/NestSuiteShellTests.cs`）
+
+NestSuiteToolRegistry の単体テスト 5 件と ToolSelectorPanel 存在確認 1 件を追加（UI なし）：
+
+- `NestSuiteShellWindow_HasToolSelectorPanel` — XAML フィールドの存在確認
+- `NestSuiteToolRegistry_AllTools_ContainsThreeEntries`
+- `NestSuiteToolRegistry_NoteNest_IsFirstBuiltInTool`
+- `NestSuiteToolRegistry_NoteNest_IsIntegrated`
+- `NestSuiteToolRegistry_IdeaNest_IsNotIntegrated`
+- `NestSuiteToolRegistry_ChatNest_IsNotIntegrated`
+
+### 変更しなかったもの
+
+- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
+- `--nestsuite` 起動分岐の動作（`StartupArgParser` は変更なし）
+- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
+- DataContext（引き続き `MainViewModel`）
+- `NoteNestWorkspaceViewModel` の新設なし
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest / ChatNest の実統合（本バージョン対象外）
+
+### v1.6.x 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.6.3 | NestSuite 内 NoteNest のファイル操作整理（新規・開く・保存・最近使ったファイルを NestSuite 側メニューから実行） |
+| v1.6.4 | NestSuite ツール切替モデル整理（ツール選択時に Workspace を切り替える最小モデルの試作） |
+| v1.6.5 | IdeaNest / ChatNest を載せるための前提条件整理 |
+| v1.7.0 | IdeaNest または ChatNest の最初の統合検証 |
+| 将来 | MainViewModel の Workspace Facade 分離（N6） |
+
+### ドキュメント
+
+- `docs/design-decisions.md`：§32「v1.6.2 NestSuite 統合母体最小成立の設計判断」追加
+- `docs/nestsuite-preparation.md`：進捗表に v1.6.2 行を追加、v1.6.x 候補を更新
+- `docs/backlog.md`：N8 完了記録を追加、N9・N10 を追加
+- `docs/release-notes.md`：本エントリを追加
+- `README.md`：制限テーブルのバージョン見出しを v1.6.2 に更新
+
+### バージョン
+
+- アプリケーションバージョン：`1.6.2`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.6.1 — NestSuite 最小 AppShell 起動導線の追加
 
 **リリース日：** 2026-06-14

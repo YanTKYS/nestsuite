@@ -8,12 +8,13 @@ using NoteNest.Views;
 namespace NoteNest.NestSuite;
 
 /// <summary>
-/// v1.6.0 NestSuite 最小 AppShell。
-/// NoteNestWorkspaceView をホストする WPF Window の骨格。
+/// v1.6.2 NestSuite 統合母体の最小構成。
+/// ツール選択領域・Workspace 領域・最小メニュー・ステータスバーを備え、
+/// NoteNestWorkspaceView を最初の内蔵ツール Workspace としてホストする WPF Window。
 ///
-/// <para><b>v1.6.0 の位置づけ</b><br/>
-/// 本格統合ではなく、NestSuite 統合母体の最小構成を確認するための骨格。
-/// v1.6.0 では NoteNest のみを載せる。メニュー・ステータスバー・ウィンドウ設定は実装しない。
+/// <para><b>v1.6.2 の位置づけ</b><br/>
+/// NoteNest を NestSuite の最初の内蔵ツールとして搭載し、IdeaNest / ChatNest は
+/// 将来統合予定のプレースホルダーとして表示する。本格統合ではない。
 /// NoteNest 単体版 MainWindow は引き続き維持する。</para>
 ///
 /// <para><b>IWorkspaceDialogHost 方針（WPF 前提）</b><br/>
@@ -90,6 +91,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         base.OnClosed(e);
     }
+
+    // ── NestSuite メニューハンドラ ──────────────────────────────────────
+
+    private void MenuExit_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void MenuAbout_Click(object sender, RoutedEventArgs e)
+        => _dialogs.ShowInfo(
+            $"NestSuite（開発版）\n\nNoteNest v{MainViewModel.ApplicationVersion} 搭載\n" +
+            "IdeaNest・ChatNest は将来統合予定",
+            "NestSuite について");
 
     // ── IWorkspaceDialogHost（明示的実装 — WorkspaceView の境界を明確に保つ）──
 
