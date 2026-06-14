@@ -21,16 +21,19 @@
             <MenuItem Header="ツール(_T)">
                 <!-- v1.6.4: ツール切替対応。未統合ツールも選択可（プレースホルダー表示） -->
                 <MenuItem x:Name="ToolMenuNoteNest" Header="NoteNest"
+                          Tag="NoteNest"
                           IsCheckable="True" IsChecked="True"
-                          Click="MenuToolNoteNest_Click"/>
+                          Click="MenuTool_Click"/>
                 <MenuItem x:Name="ToolMenuIdeaNest" Header="IdeaNest"
+                          Tag="IdeaNest"
                           IsCheckable="True"
                           ToolTip="未統合（将来対応予定）"
-                          Click="MenuToolIdeaNest_Click"/>
+                          Click="MenuTool_Click"/>
                 <MenuItem x:Name="ToolMenuChatNest" Header="ChatNest"
+                          Tag="ChatNest"
                           IsCheckable="True"
                           ToolTip="未統合（将来対応予定）"
-                          Click="MenuToolChatNest_Click"/>
+                          Click="MenuTool_Click"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <MenuItem Header="NestSuite について" Click="MenuAbout_Click"/>
@@ -84,20 +87,22 @@
                                Margin="10,0,10,6"/>
                     <!-- NoteNest: 統合済み・初期選択 -->
                     <Border x:Name="NoteNestToolBorder"
+                            Tag="NoteNest"
                             Background="{DynamicResource SelectedNoteBg}"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
-                            MouseLeftButtonDown="NoteNestTool_MouseDown">
+                            MouseLeftButtonDown="ToolBorder_MouseDown">
                         <TextBlock x:Name="NoteNestToolLabel"
                                    Text="NoteNest" FontSize="12"
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                     <!-- IdeaNest: 未統合・選択可（プレースホルダー表示） -->
                     <Border x:Name="IdeaNestToolBorder"
+                            Tag="IdeaNest"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
                             ToolTip="未統合（将来対応予定）"
-                            MouseLeftButtonDown="IdeaNestTool_MouseDown">
+                            MouseLeftButtonDown="ToolBorder_MouseDown">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="IdeaNest" FontSize="12"
                                        Foreground="{DynamicResource SubtleFg}"/>
@@ -108,10 +113,11 @@
                     </Border>
                     <!-- ChatNest: 未統合・選択可（プレースホルダー表示） -->
                     <Border x:Name="ChatNestToolBorder"
+                            Tag="ChatNest"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
                             ToolTip="未統合（将来対応予定）"
-                            MouseLeftButtonDown="ChatNestTool_MouseDown">
+                            MouseLeftButtonDown="ToolBorder_MouseDown">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="ChatNest" FontSize="12"
                                        Foreground="{DynamicResource SubtleFg}"/>

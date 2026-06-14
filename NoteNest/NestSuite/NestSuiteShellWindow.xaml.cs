@@ -45,6 +45,19 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         InitializeComponent();
 
+        _sidebarBorders = new Dictionary<string, Border>(StringComparer.Ordinal)
+        {
+            { NestSuiteToolRegistry.NoteNestToolId, NoteNestToolBorder },
+            { NestSuiteToolRegistry.IdeaNestToolId, IdeaNestToolBorder },
+            { NestSuiteToolRegistry.ChatNestToolId, ChatNestToolBorder },
+        };
+        _toolMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
+        {
+            { NestSuiteToolRegistry.NoteNestToolId, ToolMenuNoteNest },
+            { NestSuiteToolRegistry.IdeaNestToolId, ToolMenuIdeaNest },
+            { NestSuiteToolRegistry.ChatNestToolId, ToolMenuChatNest },
+        };
+
         var vm = new MainViewModel();
         DataContext = vm;
 
@@ -105,6 +118,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// <summary>現在選択中のツール ID。</summary>
     public string SelectedToolId => _selectedToolId;
 
+    private Dictionary<string, Border> _sidebarBorders = null!;
+    private Dictionary<string, MenuItem> _toolMenuItems = null!;
+
     /// <summary>
     /// 指定ツールを選択し、Workspace 表示・サイドバーハイライト・メニューを同期する。
     /// </summary>
@@ -125,14 +141,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
 
         // サイドバー選択ハイライト更新
-        UpdateSidebarHighlight(NoteNestToolBorder, NestSuiteToolRegistry.NoteNestToolId, toolId);
-        UpdateSidebarHighlight(IdeaNestToolBorder, NestSuiteToolRegistry.IdeaNestToolId, toolId);
-        UpdateSidebarHighlight(ChatNestToolBorder, NestSuiteToolRegistry.ChatNestToolId, toolId);
+        foreach (var (id, border) in _sidebarBorders)
+            UpdateSidebarHighlight(border, id, toolId);
 
         // ツールメニューのチェック状態更新
-        ToolMenuNoteNest.IsChecked = isNoteNest;
-        ToolMenuIdeaNest.IsChecked = toolId == NestSuiteToolRegistry.IdeaNestToolId;
-        ToolMenuChatNest.IsChecked = toolId == NestSuiteToolRegistry.ChatNestToolId;
+        foreach (var (id, item) in _toolMenuItems)
+            item.IsChecked = id == toolId;
 
         // ステータスバー更新
         NestSuiteModeSuffix.Text = isNoteNest
@@ -178,23 +192,11 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     // ── ツール選択ハンドラ（サイドバー・ツールメニュー共通） ────────────
 
-    private void NoteNestTool_MouseDown(object sender, MouseButtonEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.NoteNestToolId);
+    private void ToolBorder_MouseDown(object sender, MouseButtonEventArgs e)
+        => SelectTool((string)((FrameworkElement)sender).Tag);
 
-    private void IdeaNestTool_MouseDown(object sender, MouseButtonEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.IdeaNestToolId);
-
-    private void ChatNestTool_MouseDown(object sender, MouseButtonEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.ChatNestToolId);
-
-    private void MenuToolNoteNest_Click(object sender, RoutedEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.NoteNestToolId);
-
-    private void MenuToolIdeaNest_Click(object sender, RoutedEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.IdeaNestToolId);
-
-    private void MenuToolChatNest_Click(object sender, RoutedEventArgs e)
-        => SelectTool(NestSuiteToolRegistry.ChatNestToolId);
+    private void MenuTool_Click(object sender, RoutedEventArgs e)
+        => SelectTool((string)((FrameworkElement)sender).Tag);
 
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => _dialogs.ShowInfo(
