@@ -1,5 +1,80 @@
 # リリースノート
 
+## v1.7.2 — NestSuite ファイル単位タブの最小設計
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+NestSuite の最終タブを**ツール単位**ではなく**ファイル／作業単位**に定めるための最小設計を行った。
+新機能 UI の追加はなく、設計用モデルクラスの導入・設計文書の整備・テスト追加に留める。
+
+**目指す形：** `[NoteNest: A.notenest] [ChatNest: 会議メモ.chatnest] [NoteNest: B.notenest]`  
+**避ける形：** `[NoteNest] [ChatNest] [IdeaNest]`
+
+現在の `NestSuiteShellWindow` のツール選択 UI（サイドバー・ツールメニュー）は暫定的な Workspace 切替であり、
+最終的な主 UI はファイル単位タブに移行する。
+
+IdeaNest 統合・`.chatnest` 保存／読込・本格的な TabControl 実装は v1.7.2 では行わない。
+
+### 追加したファイル（`NoteNest/NestSuite/`）
+
+- **`NestSuiteWorkspaceKind.cs`** — Workspace 種別 enum（NoteNest / ChatNest / IdeaNest）。
+  ツール定義（`NestSuiteTool`）とは別概念：タブが「何の Workspace か」を表す
+- **`NestSuiteDocumentTab.cs`** — ファイル単位タブの最小モデル（`sealed record`）。
+  `WorkspaceKind`・`DisplayName`・`FilePath`・`IsModified`・`IsUntitled`・`ToolId`（computed）を持つ
+- **`NestSuiteTabFactory.cs`** — タブ生成ファクトリの骨格。
+  `CreateUntitled(kind)` / `FromFilePath(path)` / `TryGetKind(path)` を提供する。
+  拡張子とタブの対応（`.notenest` / `.chatnest` / `.ideanest`）の唯一の情報源
+
+### 追加したテスト（`NestSuiteDocumentTabTests.cs`・22 件）
+
+- タブが Id・WorkspaceKind・DisplayName・FilePath・IsModified を持てる
+- `ToolId` が `WorkspaceKind` から正しく導出される（NoteNest / ChatNest / IdeaNest）
+- `IsUntitled` は FilePath が null のとき true
+- `IsModified` は `with` 式で非破壊更新できる（sealed record の特性）
+- 同一 WorkspaceKind の複数タブを区別できる（Id が別になる）
+- `NestSuiteTool` と `NestSuiteDocumentTab` が別型（混同しない設計）
+- `NestSuiteTabFactory.CreateUntitled` / `FromFilePath` / `TryGetKind` の動作
+- 未対応拡張子で `FromFilePath` が `ArgumentException` を投げる
+- `WorkspaceKind` が 3 値（NoteNest / ChatNest / IdeaNest）を持つ
+- `GetExtension` が各 WorkspaceKind に対応する拡張子を返す
+
+### ファイル単位タブとツール定義の関係整理
+
+| 概念 | 型 | 意味 |
+|------|----|------|
+| ツール定義 | `NestSuiteTool` | ツールの「機能定義」（何ができるか・統合状態） |
+| タブ | `NestSuiteDocumentTab` | 「何が開いているか」（ファイル・変更状態） |
+
+1 つのツールから複数タブが生まれる（例：NoteNest で A.notenest と B.notenest を同時に開く）。
+
+### 各ツールのタブ扱い
+
+| ツール | 拡張子 | v1.7.2 での扱い |
+|--------|--------|----------------|
+| NoteNest | `.notenest` | モデル定義済み。保存スキーマ 1.4.1 は変更なし |
+| ChatNest | `.chatnest` | モデル定義済み。保存／読込は次段階（v1.7.4 候補） |
+| IdeaNest | `.ideanest` | モデル定義済み・未統合のまま。統合は v1.8.0 候補 |
+
+### 変更しなかったもの
+
+- `NestSuiteShellWindow` の UI（ツール選択・Workspace 切替ロジック）は変更なし
+- NoteNest 単体版の通常起動フロー
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
+
+### v1.7.3 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.7.3 | ファイル単位タブ UI の最小骨格（TabControl・タブ切替の最小実装） |
+| v1.7.4 | ChatNest の `.chatnest` 保存／読込（NestSuite 側対応） |
+| v1.7.5 | NoteNest / ChatNest タブ状態の回帰確認 |
+| v1.8.0 | IdeaNest 統合検証 |
+
+---
+
 ## v1.7.1 — ChatNest 統合後の回帰確認・小修正
 
 **リリース日：** 2026-06-14
