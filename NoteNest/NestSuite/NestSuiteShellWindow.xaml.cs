@@ -229,7 +229,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => _dialogs.ShowInfo(
             $"NestSuite（開発版）\n\nNoteNest v{MainViewModel.ApplicationVersion} 搭載\n" +
-            "IdeaNest・ChatNest は将来統合予定",
+            "ChatNest 統合検証中 / IdeaNest は将来統合予定",
             "NestSuite について");
 
     // ── IWorkspaceDialogHost（明示的実装 — WorkspaceView の境界を明確に保つ）──

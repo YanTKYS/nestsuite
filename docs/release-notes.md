@@ -1,5 +1,42 @@
 # リリースノート
 
+## v1.7.1 — ChatNest 統合後の回帰確認・小修正
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+v1.7.0 で行った ChatNest 統合検証の後、回帰確認と軽微な修正を実施した。新機能の追加はない。
+
+- **NoteNest 単体版**の通常起動・ファイル操作・終了確認・スキーマが v1.7.0 から変わらないことを確認
+- **NestSuite** の NoteNest / ChatNest / IdeaNest 切替が破綻していないことを確認
+- **ChatNest** の入力・投稿・発言者切替・未保存確認が v1.7.0 から変わらないことを確認
+- IdeaNest は未統合表示のまま維持
+- 新機能・IdeaNest 統合・ChatNest 保存形式・ファイル単位タブの本格実装は行わない
+
+### 修正内容
+
+- **NestSuiteShellWindow.xaml.cs** — `MenuAbout_Click` の「NestSuite について」ダイアログのテキストを修正。v1.7.0 で ChatNest が統合検証段階となったにもかかわらず「IdeaNest・ChatNest は将来統合予定」と表示されていた問題を「ChatNest 統合検証中 / IdeaNest は将来統合予定」に修正
+
+### 変更しなかったもの
+
+- NoteNest 単体版の通常起動フロー（引数なし → `StartDialog` → `MainWindow`、`.notenest` 指定 → `MainWindow`）
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- NoteNest 単体版 `MainWindow`・`MainViewModel`
+- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
+- ChatNest 保存・読込（メモリ内のみ。次段階の課題）
+- ファイル単位タブ（次段階の課題）
+- IdeaNest 統合（未統合のまま）
+
+### 次に進むべき候補
+
+- **ChatNest ファイル（`.chatnest`）保存／読込の NestSuite 対応** — AppShell 委譲か共通機構かを含む設計
+- **`MessageBox.Show` の `IWorkspaceDialogHost` 委譲** — 発言削除確認の本格抽象化
+- **ファイル単位タブ最小設計** — `[NoteNest: A.notenest] [ChatNest: 会議メモ.chatnest] …` の実現
+- **IdeaNest 統合準備** — IdeaNestWorkspaceView 構想の検討。v1.8.0 候補
+
+---
+
 ## v1.7.0 — NestSuite ChatNest 統合検証
 
 **リリース日：** 2026-06-14

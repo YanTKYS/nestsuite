@@ -9,8 +9,9 @@ using Xunit;
 namespace NoteNest.Tests;
 
 /// <summary>
-/// v1.7.0: NestSuite 統合母体の型境界・ツール定義モデル・ツール切替・レジストリ・契約を確認するテスト。
-/// ChatNest を 2 つ目の Workspace（統合検証段階）として追加したことを反映する。
+/// v1.7.0〜v1.7.1: NestSuite 統合母体の型境界・ツール定義モデル・ツール切替・レジストリ・契約を確認するテスト。
+/// ChatNest を 2 つ目の Workspace（統合検証段階）として追加したことを反映する（v1.7.0）。
+/// v1.7.1 は回帰確認・小修正版であり、このテストファイルへの新規追加はない。
 /// UI を実際に起動しない、リフレクションベースの静的確認。
 /// </summary>
 public class NestSuiteShellTests
