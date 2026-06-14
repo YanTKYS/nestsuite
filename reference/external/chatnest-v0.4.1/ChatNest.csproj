@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ChatNest</AssemblyName>
+    <RootNamespace>ChatNest</RootNamespace>
+    <Version>0.4.1</Version>
+    <ApplicationIcon>Resources\chatnest.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\chatnest.ico"/>
+  </ItemGroup>
+
+</Project>

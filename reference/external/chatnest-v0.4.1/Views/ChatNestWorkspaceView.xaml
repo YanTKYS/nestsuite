@@ -1,0 +1,220 @@
+<UserControl x:Class="ChatNest.Views.ChatNestWorkspaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ChatNest.Converters"
+             xmlns:models="clr-namespace:ChatNest.Models">
+
+    <UserControl.Resources>
+        <conv:SpeakerBackgroundConverter x:Key="SpeakerBg"/>
+        <conv:SpeakerAccentConverter x:Key="SpeakerAccent"/>
+        <conv:SpeakerAlignmentConverter x:Key="SpeakerAlign"/>
+        <conv:SpeakerBorderThicknessConverter x:Key="SpeakerBorderThickness"/>
+        <conv:SpeakerLabelAlignmentConverter x:Key="SpeakerLabelAlign"/>
+        <conv:SpeakerButtonAlignmentConverter x:Key="SpeakerBtnAlign"/>
+        <conv:SpeakerTextAlignmentConverter x:Key="SpeakerTextAlign"/>
+
+        <!-- Message bubble template — compact horizontal layout (meta outside bubble) -->
+        <DataTemplate x:Key="MessageTemplate" DataType="{x:Type models:Message}">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="{Binding Speaker, Converter={StaticResource SpeakerAlign}}"
+                        VerticalAlignment="Top"
+                        Margin="16,2"
+                        MaxWidth="580">
+
+                <!-- Meta: [Speaker  HH:mm  ✕] on one compact line -->
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Top"
+                            Margin="0,5,7,0">
+                    <TextBlock Text="{Binding Speaker}"
+                               FontSize="11"
+                               FontWeight="Bold"
+                               Foreground="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}"
+                               FontSize="10"
+                               Foreground="#C0C0C0"
+                               Margin="5,0,3,0"
+                               VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource MiniDeleteButton}"
+                            Content="✕"
+                            ToolTip="この発言を削除"
+                            VerticalAlignment="Center"
+                            Command="{Binding DataContext.DeleteMessageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"/>
+                </StackPanel>
+
+                <!-- Bubble: text only -->
+                <Border Background="{Binding Speaker, Converter={StaticResource SpeakerBg}}"
+                        BorderBrush="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
+                        BorderThickness="3,0,0,0"
+                        CornerRadius="8"
+                        Padding="10,6"
+                        MaxWidth="460">
+                    <TextBlock Text="{Binding Text}"
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               LineHeight="20"
+                               Foreground="#212121"/>
+                </Border>
+
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="#F5F5F7">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ========== CHAT LOG ========== -->
+        <ScrollViewer Grid.Row="0"
+                      x:Name="ChatScrollViewer"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="0,8,0,8"
+                      Background="Transparent">
+            <ItemsControl ItemsSource="{Binding Messages}"
+                          ItemTemplate="{StaticResource MessageTemplate}"
+                          VirtualizingPanel.IsVirtualizing="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Empty state -->
+        <StackPanel Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Messages.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <TextBlock Text="💬"
+                       FontSize="36"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,12"/>
+            <TextBlock Text="発言者を選んで、考えを書き出そう"
+                       FontSize="14"
+                       Foreground="#BDBDBD"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Ctrl / Shift + Enter で投稿"
+                       FontSize="11"
+                       Foreground="#D0D0D0"
+                       HorizontalAlignment="Center"
+                       Margin="0,6,0,0"/>
+        </StackPanel>
+
+        <!-- ========== INPUT AREA ========== -->
+        <Border Grid.Row="1"
+                Background="White"
+                Padding="16,12,16,14">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.05" BlurRadius="8" ShadowDepth="-2" Direction="90"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Speaker selector + shortcut hint -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="発言者："
+                                   FontSize="11"
+                                   Foreground="#757575"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <RadioButton Style="{StaticResource SpeakerToggle}"
+                                     Content="自分"
+                                     IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=自分, Mode=TwoWay}"
+                                     GroupName="Speaker"/>
+                        <RadioButton Style="{StaticResource SpeakerToggle}"
+                                     Content="反論"
+                                     IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=反論, Mode=TwoWay}"
+                                     GroupName="Speaker"/>
+                        <RadioButton Style="{StaticResource SpeakerToggle}"
+                                     Content="補足"
+                                     IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=補足, Mode=TwoWay}"
+                                     GroupName="Speaker"/>
+                        <RadioButton Style="{StaticResource SpeakerToggle}"
+                                     Content="結論"
+                                     IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=結論, Mode=TwoWay}"
+                                     GroupName="Speaker"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1"
+                               Text="Ctrl / Shift + ← / → で切り替え"
+                               FontSize="10"
+                               Foreground="#C8C8C8"
+                               VerticalAlignment="Center"
+                               Margin="12,0,6,0"/>
+                </Grid>
+
+                <!-- Input row: TextBox + Post button -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Margin="0,0,10,0">
+                        <TextBox x:Name="InputBox"
+                                 Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="52"
+                                 MaxHeight="120"
+                                 VerticalScrollBarVisibility="Auto"
+                                 FontSize="13"
+                                 Padding="10,8"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalContentAlignment="Top"
+                                 PreviewKeyDown="InputBox_PreviewKeyDown">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="TextBox">
+                                                <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="{TemplateBinding Padding}"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Border>
+
+                    <Button Grid.Column="1"
+                            Style="{StaticResource PrimaryButton}"
+                            Content="投稿"
+                            Width="70"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding PostCommand}"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

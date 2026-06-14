@@ -1,0 +1,158 @@
+<Window x:Class="ChatNest.FinishDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="終了処理"
+        Width="360"
+        SizeToContent="Height"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="White"
+        FontFamily="Yu Gothic UI, Meiryo UI, sans-serif">
+
+    <Window.Resources>
+        <!-- Full-width action button -->
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,11"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bg" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CopyActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#F0F4FF"/>
+            <Setter Property="Foreground" Value="#1565C0"/>
+        </Style>
+
+        <Style x:Key="NewChatActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#F3E8FF"/>
+            <Setter Property="Foreground" Value="#6B21A8"/>
+        </Style>
+
+        <Style x:Key="CancelActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#616161"/>
+        </Style>
+    </Window.Resources>
+
+    <Border BorderBrush="#E0E0E0" BorderThickness="1" Background="White">
+        <StackPanel>
+
+            <!-- Purple header -->
+            <Border Background="#7C3AED" Padding="20,16,14,16" MouseDown="Header_MouseDown">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="終了処理"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="このチャットログをどう処理しますか？"
+                                   FontSize="11"
+                                   Foreground="#D8B4FE"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <Button HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Content="✕"
+                            FontSize="13"
+                            Command="{Binding CancelCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Width" Value="26"/>
+                                <Setter Property="Height" Value="26"/>
+                                <Setter Property="Foreground" Value="#D8B4FE"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bg" Background="Transparent" CornerRadius="4"
+                                                    Width="26" Height="26">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bg" Property="Background" Value="#5B21B6"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Body -->
+            <StackPanel Margin="16,16,16,20">
+
+                <!-- Copy operations -->
+                <Button Style="{StaticResource CopyActionButton}"
+                        Command="{Binding CopyMarkdownCommand}">
+                    <StackPanel>
+                        <TextBlock Text="Markdownコピー" FontWeight="SemiBold"/>
+                        <TextBlock Text="保存してMarkdown形式でコピー" FontSize="11"
+                                   Foreground="#5C85D6" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource CopyActionButton}"
+                        Command="{Binding CopyIdeaNestCommand}">
+                    <StackPanel>
+                        <TextBlock Text="IdeaNest用コピー" FontWeight="SemiBold"/>
+                        <TextBlock Text="保存してIdeaNest形式でコピー" FontSize="11"
+                                   Foreground="#5C85D6" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Button>
+
+                <Separator Background="#F0F0F0" Margin="0,10"/>
+
+                <!-- New chat -->
+                <Button Style="{StaticResource NewChatActionButton}"
+                        Command="{Binding StartNewCommand}">
+                    <StackPanel>
+                        <TextBlock Text="新規チャットを開始" FontWeight="SemiBold"/>
+                        <TextBlock Text="現在のファイルを閉じて新規状態にする" FontSize="11"
+                                   Foreground="#7C3AED" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Button>
+
+                <Separator Background="#F0F0F0" Margin="0,10"/>
+
+                <Button Style="{StaticResource CancelActionButton}"
+                        Content="キャンセル"
+                        HorizontalContentAlignment="Center"
+                        Command="{Binding CancelCommand}"/>
+
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

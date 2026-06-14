@@ -1,0 +1,181 @@
+<Window x:Class="ChatNest.StartDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ChatNest.ViewModels"
+        Title="ChatNest"
+        Width="400"
+        SizeToContent="Height"
+        MaxHeight="580"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        AllowsTransparency="False"
+        FontFamily="Yu Gothic UI, Meiryo UI, sans-serif">
+
+    <Window.Resources>
+        <!-- Recent file item button -->
+        <Style x:Key="FileItemButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="#F3EEFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="#E9DDFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Outer border gives the window its visual frame -->
+    <Border BorderBrush="#E0E0E0"
+            BorderThickness="1"
+            CornerRadius="0"
+            Background="White"
+            ClipToBounds="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== Purple header ===== -->
+            <Border Grid.Row="0"
+                    Background="#7C3AED"
+                    Padding="24,22,16,22"
+                    MouseDown="Header_MouseDown">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="ChatNest"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="一時的な思考ログ"
+                                   FontSize="11"
+                                   Foreground="#D8B4FE"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <Button HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Width="28" Height="28"
+                            Content="✕"
+                            FontSize="13"
+                            Foreground="#D8B4FE"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Command="{Binding CloseCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bg"
+                                                    Background="Transparent"
+                                                    CornerRadius="5"
+                                                    Width="28" Height="28">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bg" Property="Background" Value="#5B21B6"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="#D8B4FE"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ===== Body ===== -->
+            <StackPanel Grid.Row="1" Margin="24,24,24,28">
+
+                <!-- New chat button -->
+                <Button Style="{StaticResource PrimaryButton}"
+                        Content="＋  新規チャットを開始する"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        FontSize="13"
+                        Padding="0,12"
+                        Command="{Binding OpenNewCommand}"/>
+
+                <!-- Recent files section -->
+                <TextBlock Text="最近開いたファイル"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="#757575"
+                           Margin="0,24,0,6"/>
+
+                <Separator Background="#F0F0F0" Margin="0,0,0,8"/>
+
+                <!-- Empty state -->
+                <TextBlock Text="最近開いたファイルはありません"
+                           FontSize="12"
+                           Foreground="#BDBDBD"
+                           Margin="4,8"
+                           HorizontalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasRecentFiles}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Recent file list -->
+                <ItemsControl ItemsSource="{Binding RecentFiles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:RecentFileEntry}">
+                            <Button Style="{StaticResource FileItemButton}"
+                                    Margin="0,2"
+                                    Command="{Binding DataContext.OpenRecentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FileName}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#212121"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding FullPath}"
+                                               FontSize="10"
+                                               Foreground="#9E9E9E"
+                                               Margin="0,2,0,0"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
