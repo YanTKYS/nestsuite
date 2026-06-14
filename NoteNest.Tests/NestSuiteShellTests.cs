@@ -7,7 +7,7 @@ using Xunit;
 namespace NoteNest.Tests;
 
 /// <summary>
-/// v1.6.2: NestSuite 統合母体の型境界・ツールレジストリ・契約を確認するテスト。
+/// v1.6.3: NestSuite 統合母体の型境界・ツールレジストリ・契約・ファイル操作メソッドを確認するテスト。
 /// UI を実際に起動しない、リフレクションベースの静的確認。
 /// </summary>
 public class NestSuiteShellTests
@@ -87,6 +87,30 @@ public class NestSuiteShellTests
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.Name == "ToolSelectorPanel");
         Assert.NotNull(field);
+    }
+
+    // ── v1.6.3 LoadInitialFile メソッドの存在確認 ────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasLoadInitialFileMethod()
+    {
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("LoadInitialFile",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(string)],
+                null);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_ViewModelProperty_IsMainViewModelType()
+    {
+        // ViewModel プロパティ（private）が MainViewModel 型を返すことを確認
+        var prop = typeof(NestSuiteShellWindow)
+            .GetProperty("ViewModel", AllInstance);
+        Assert.NotNull(prop);
+        Assert.Equal(typeof(NoteNest.ViewModels.MainViewModel), prop!.PropertyType);
     }
 
     // ── NestSuiteToolRegistry ─────────────────────────────────────────────

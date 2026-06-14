@@ -7,10 +7,25 @@
         MinHeight="500" MinWidth="800"
         WindowStartupLocation="CenterScreen">
     <DockPanel>
-        <!-- v1.6.2 NestSuite 最小メニュー -->
+        <!-- v1.6.3 NestSuite メニュー（ファイル操作・ツール選択・ヘルプ） -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル(_F)">
+                <MenuItem Header="新規プロジェクト(_N)" Command="{Binding NewProjectCommand}"/>
+                <MenuItem Header="プロジェクトを開く(_O)..." Command="{Binding OpenProjectCommand}"/>
+                <Separator/>
+                <MenuItem Header="上書き保存(_S)" Command="{Binding SaveProjectCommand}"/>
+                <MenuItem Header="名前を付けて保存(_A)..." Command="{Binding SaveAsProjectCommand}"/>
+                <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
+            </MenuItem>
+            <MenuItem Header="ツール(_T)">
+                <!-- NoteNest: 統合済み・常に選択中。v1.6.4 以降でツール切替を実装予定 -->
+                <MenuItem Header="NoteNest" IsCheckable="True" IsChecked="True"
+                          Click="MenuToolNoteNest_Click"/>
+                <MenuItem Header="IdeaNest" IsEnabled="False"
+                          ToolTip="未統合（将来対応予定）"/>
+                <MenuItem Header="ChatNest" IsEnabled="False"
+                          ToolTip="未統合（将来対応予定）"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <MenuItem Header="NestSuite について" Click="MenuAbout_Click"/>
@@ -27,14 +42,20 @@
                        Foreground="{DynamicResource PrimaryFg}"/>
         </Border>
 
-        <!-- NestSuite ステータスバー -->
+        <!-- NestSuite ステータスバー（v1.6.3: プロジェクト名・未保存インジケーター動的表示） -->
         <Border DockPanel.Dock="Bottom" Height="22"
                 Background="{DynamicResource StatusBarBg}"
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0">
-            <TextBlock Text="NestSuite mode  /  NoteNest workspace"
-                       FontSize="11" VerticalAlignment="Center" Margin="10,0"
-                       Foreground="{DynamicResource MutedFg}"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                <TextBlock Text="{Binding ProjectDisplayName}"
+                           FontSize="11" Foreground="{DynamicResource MutedFg}"/>
+                <TextBlock Text="{Binding UnsavedIndicatorText}"
+                           FontSize="11" Foreground="{DynamicResource UnsavedBrush}"
+                           Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock Text="  /  NestSuite mode"
+                           FontSize="11" Foreground="{DynamicResource MutedFg}"/>
+            </StackPanel>
         </Border>
 
         <!-- メインエリア: ツール選択領域 + Workspace 領域 -->

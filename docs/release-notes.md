@@ -1,5 +1,102 @@
 # リリースノート
 
+## v1.6.3 — NestSuite 内 NoteNest のファイル操作・メニュー整理
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+NestSuite 起動時の NoteNest を「表示できる」から**「最低限操作できる」**へ引き上げた。ファイルメニューに新規・開く・保存・名前を付けて保存を追加し、既存の `MainViewModel` コマンドへバインドした。ツールメニューで NoteNest の選択状態を表示する（ツール切替実装は v1.6.4 以降）。ステータスバーはプロジェクト名と未保存インジケーターを動的表示するよう変更した。`--nestsuite` 起動時にファイルパスも指定できるようになった（`--nestsuite project.notenest`）。NoteNest 単体版 `MainWindow` は引き続き維持する。
+
+### 追加・変更内容
+
+#### 1. ファイルメニュー追加（`NoteNest/NestSuite/NestSuiteShellWindow.xaml`）
+
+NestSuite のファイルメニューを整備し、既存の `MainViewModel` コマンドへバインドした。
+
+- 新規プロジェクト（`Command="{Binding NewProjectCommand}"`）
+- プロジェクトを開く（`Command="{Binding OpenProjectCommand}"`）
+- 上書き保存（`Command="{Binding SaveProjectCommand}"`）
+- 名前を付けて保存（`Command="{Binding SaveAsProjectCommand}"`）
+- 終了（`MenuExit_Click`、既存）
+
+ダイアログ呼び出しコールバック（`SelectOpenProjectPath`・`SelectSaveProjectPath`）は v1.6.2 のコンストラクタで配線済みのため、XAML バインディング追加のみで動作する。
+
+#### 2. ツールメニュー追加（`NoteNest/NestSuite/NestSuiteShellWindow.xaml`）
+
+NestSuite のツールメニューを追加した。
+
+- NoteNest：`IsCheckable="True" IsChecked="True"`、チェックを外させない（`MenuToolNoteNest_Click`）
+- IdeaNest / ChatNest：`IsEnabled="False"`、ToolTip で「未統合（将来対応予定）」を表示
+
+#### 3. ステータスバー動的化（`NoteNest/NestSuite/NestSuiteShellWindow.xaml`）
+
+固定テキストのステータスバーを動的表示に変更した。
+
+- `{Binding ProjectDisplayName}` — プロジェクト名を表示
+- `{Binding UnsavedIndicatorText}` / `{Binding IsModified, Converter={StaticResource BoolToVis}}` — 未保存時のみインジケーターを表示（`UnsavedBrush` 色）
+- 末尾に固定テキスト "  /  NestSuite mode" を付加
+
+#### 4. NestSuiteShellWindow コードビハインド更新（`NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs`）
+
+- `LoadInitialFile(string path)` — 公開メソッド追加。ウィンドウ表示後に `ViewModel.OpenFileAtStartup(path)` を呼ぶ
+- `MenuToolNoteNest_Click` — ツールメニューの NoteNest チェックを維持するハンドラ追加
+- クラスコメントを v1.6.3 内容に更新
+
+#### 5. StartupArgParser 更新（`NoteNest/StartupArgParser.cs`）
+
+- `GetFilePath(string[] args)` — '-' で始まらない最初の引数をファイルパスとして返す。`args.FirstOrDefault(a => !a.StartsWith('-'))` で実装
+- 引数仕様ドキュメントを v1.6.3 に更新（`--nestsuite + ファイルパス` を v1.6.3 対応として記載）
+
+#### 6. App.xaml.cs 更新（`NoteNest/App.xaml.cs`）
+
+NestSuite モード起動時にファイルパスを取得し、`shell.LoadInitialFile(filePath)` を呼ぶ分岐を追加した。`shell.Show()` 後に呼ぶことでダイアログのオーナーウィンドウが確立される。
+
+#### 7. テスト追加
+
+**StartupArgParserTests.cs**（5 件追加）：
+
+- `GetFilePath_WithFilePath_ReturnsPath`
+- `GetFilePath_WithNestSuitePlusFilePath_ReturnsPath`
+- `GetFilePath_WithFilePathBeforeFlag_ReturnsPath`
+- `GetFilePath_WithOnlyFlag_ReturnsNull`
+- `GetFilePath_WithNoArgs_ReturnsNull`
+
+**NestSuiteShellTests.cs**（2 件追加）：
+
+- `NestSuiteShellWindow_HasLoadInitialFileMethod` — `LoadInitialFile(string)` の存在確認
+- `NestSuiteShellWindow_ViewModelProperty_IsMainViewModelType` — private `ViewModel` プロパティが `MainViewModel` 型を返すことをリフレクションで確認
+
+### 変更しなかったもの
+
+- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
+- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
+- DataContext（引き続き `MainViewModel`）
+- `NoteNestWorkspaceViewModel` の新設なし
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest / ChatNest の実統合（本バージョン対象外）
+- NestSuiteToolRegistry（変更なし）
+- StartDialog・最近使ったファイル・エクスポート（NestSuite 側への整理は将来課題）
+
+### v1.6.x 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.6.4 | NestSuite ツール切替モデル整理（ツール選択時に Workspace を切り替える最小モデルの試作） |
+| v1.6.5 | IdeaNest / ChatNest を載せるための前提条件整理 |
+| v1.7.0 | IdeaNest または ChatNest の最初の統合検証 |
+| 将来 | MainViewModel の Workspace Facade 分離（N6） |
+
+### ドキュメント
+
+- `docs/design-decisions.md`：§33「v1.6.3 NestSuite ファイル操作整備の設計判断」追加
+- `docs/nestsuite-preparation.md`：進捗表に v1.6.3 行を追加、v1.6.x 候補を更新
+- `docs/backlog.md`：N9 完了記録を追加
+- `docs/release-notes.md`：本エントリを追加
+- `README.md`：制限テーブルのバージョン見出しを v1.6.3 に更新
+
+---
+
 ## v1.6.2 — NestSuite 統合母体の最小成立
 
 **リリース日：** 2026-06-14

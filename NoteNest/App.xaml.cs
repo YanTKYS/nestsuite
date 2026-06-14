@@ -17,6 +17,10 @@ public partial class App : Application
             MainWindow = shell;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
             shell.Show();
+            // v1.6.3: --nestsuite + ファイルパス指定時はそのファイルを開く
+            var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
+            if (nestSuiteFilePath != null)
+                shell.LoadInitialFile(nestSuiteFilePath);
             return;
         }
 

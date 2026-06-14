@@ -743,3 +743,39 @@ v1.6.2 では、NestSuite 統合母体としての最小メニュー（ファイ
 NoteNest 単体版の全メニュー機能（保存・開く・エクスポート等）は NestSuite 内でも必要だが、v1.6.3 以降で NestSuite 側への段階的な整理を行う（backlog N9）。v1.6.2 では `NoteNestWorkspaceView` 内部の既存操作で代替する。
 
 詳細は [`docs/nestsuite-preparation.md`](nestsuite-preparation.md)「v1.6.x 以降の候補」を参照。
+
+---
+
+## 33. v1.6.3 NestSuite ファイル操作整備の設計判断
+
+### 「最低限操作できる」ための最小変更
+
+v1.6.3 の目標は、NestSuite 内で NoteNest プロジェクトを実際に操作できる最低限の状態を実現することだった。v1.6.2 では `NoteNestWorkspaceView` 内の操作だけで代替していたが、ファイルの新規作成・開く・保存がメニューから行えない状態は「検証用」の域を出なかった。
+
+### MainViewModel コマンドへの直接バインド
+
+ファイル操作メニューは `MainViewModel` の既存コマンド（`NewProjectCommand`・`OpenProjectCommand`・`SaveProjectCommand`・`SaveAsProjectCommand`）へ `Command="{Binding ...}"` でバインドするだけで実現できた。
+
+**これが成立した理由：**
+- `NestSuiteShellWindow` の DataContext は `MainViewModel` のため、XAML バインディングがそのまま機能する
+- ダイアログ呼び出しコールバック（`SelectOpenProjectPath`・`SelectSaveProjectPath`）は v1.6.2 のコンストラクタで既に配線済み
+- `MainViewModel` のコマンドは `RelayCommand` で実装されており、外部からの呼び出しを想定した設計になっている
+
+新規に ViewModel やコマンドを追加する必要はなかった。
+
+### LoadInitialFile をコンストラクタ引数にしなかった理由
+
+`--nestsuite + ファイルパス` 起動時のファイル読み込みは、コンストラクタ引数ではなく公開メソッド `LoadInitialFile(string path)` として実装した。
+
+- `App_Startup` で `shell.Show()` の **後** に呼ぶことで、ウィンドウが Owner として確立された後にエラーダイアログを出せる
+- コンストラクタで呼ぶと、ウィンドウが表示される前にダイアログが出て Owner なしになる恐れがある
+- `MainWindow` も同様のパターン（コンストラクタ引数でパスを受け取り、`Show()` 後に内部で `OpenFileAtStartup` を呼ぶ）を採用している
+
+### ツールメニューの IsChecked 固定
+
+ツールメニューの NoteNest を `IsChecked="True"` で固定し、クリックでチェックを外せないようにした（`MenuToolNoteNest_Click` でチェックを強制維持）。
+
+- ツール切替の実装は v1.6.4 以降のため、現時点では切り替えを許可しない
+- 視覚的に「NoteNest が選択中」であることを示す目的のみ
+
+詳細は [`docs/nestsuite-preparation.md`](nestsuite-preparation.md)「v1.6.x 以降の候補」を参照。

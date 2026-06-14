@@ -8,14 +8,15 @@ using NoteNest.Views;
 namespace NoteNest.NestSuite;
 
 /// <summary>
-/// v1.6.2 NestSuite 統合母体の最小構成。
-/// ツール選択領域・Workspace 領域・最小メニュー・ステータスバーを備え、
+/// v1.6.3 NestSuite 統合母体の最小構成（NoteNest ファイル操作対応）。
+/// ツール選択領域・Workspace 領域・メニュー（ファイル操作・ツール選択）・ステータスバーを備え、
 /// NoteNestWorkspaceView を最初の内蔵ツール Workspace としてホストする WPF Window。
 ///
-/// <para><b>v1.6.2 の位置づけ</b><br/>
-/// NoteNest を NestSuite の最初の内蔵ツールとして搭載し、IdeaNest / ChatNest は
-/// 将来統合予定のプレースホルダーとして表示する。本格統合ではない。
-/// NoteNest 単体版 MainWindow は引き続き維持する。</para>
+/// <para><b>v1.6.3 の位置づけ</b><br/>
+/// NestSuite 内の NoteNest を最低限操作できるよう、ファイルメニューに新規・開く・保存を追加した。
+/// ツールメニューで NoteNest の選択状態を表示する（切替機能は v1.6.4 以降）。
+/// ステータスバーはプロジェクト名・未保存インジケーターを動的表示する。
+/// IdeaNest / ChatNest の実統合は本バージョン対象外。NoteNest 単体版 MainWindow は維持する。</para>
 ///
 /// <para><b>IWorkspaceDialogHost 方針（WPF 前提）</b><br/>
 /// NestSuite も WPF ベースの想定のため、TextBox や MessageBoxImage を含む
@@ -92,9 +93,24 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         base.OnClosed(e);
     }
 
+    // ── v1.6.3: 起動時ファイル読み込み ──────────────────────────────────
+
+    /// <summary>
+    /// 起動時にファイルパスを受け取り NoteNest プロジェクトを開く。
+    /// App_Startup で <c>--nestsuite + ファイルパス</c> 指定時に呼び出す。
+    /// ウィンドウ表示後に呼ぶことでエラーダイアログのオーナーが確立される。
+    /// </summary>
+    public void LoadInitialFile(string path) => ViewModel.OpenFileAtStartup(path);
+
     // ── NestSuite メニューハンドラ ──────────────────────────────────────
 
     private void MenuExit_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void MenuToolNoteNest_Click(object sender, RoutedEventArgs e)
+    {
+        // NoteNest は統合済み唯一のツール。選択を維持する（チェックを外させない）。
+        if (sender is MenuItem mi) mi.IsChecked = true;
+    }
 
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => _dialogs.ShowInfo(

@@ -1,14 +1,14 @@
 namespace NoteNest;
 
 /// <summary>
-/// v1.6.1 起動引数解析。App_Startup から呼び出す。
+/// v1.6.3 起動引数解析。App_Startup から呼び出す。
 ///
-/// <para><b>引数仕様（v1.6.1）</b></para>
+/// <para><b>引数仕様（v1.6.3）</b></para>
 /// <list type="bullet">
 ///   <item>引数なし     → NoteNest 単体版通常起動（StartDialog 表示）</item>
 ///   <item>ファイルパス → NoteNest 単体版でそのファイルを開く</item>
 ///   <item>--nestsuite  → 開発・検証用 NestSuiteShellWindow を起動</item>
-///   <item>--nestsuite + ファイルパス同時指定 → v1.6.1 非対応。NestSuite モードで起動（ファイルは無視）</item>
+///   <item>--nestsuite + ファイルパス → v1.6.3 以降対応。NestSuite モードでそのファイルを開く</item>
 /// </list>
 /// </summary>
 public static class StartupArgParser
@@ -19,4 +19,11 @@ public static class StartupArgParser
     /// </summary>
     public static bool IsNestSuiteMode(string[] args) =>
         args.Contains("--nestsuite", StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// 引数リストからファイルパスを返す。
+    /// '-' で始まらない最初の引数をファイルパスとみなす。見つからない場合は null。
+    /// </summary>
+    public static string? GetFilePath(string[] args) =>
+        args.FirstOrDefault(a => !a.StartsWith('-'));
 }
