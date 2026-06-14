@@ -1,0 +1,242 @@
+using NoteNest.NestSuite;
+using Xunit;
+
+namespace NoteNest.Tests;
+
+/// <summary>
+/// v1.7.2: ファイル単位タブの最小設計モデルを確認するテスト。
+///
+/// NestSuite の最終タブはツール単位ではなくファイル／作業単位（NestSuiteDocumentTab）であることを
+/// 型・プロパティ・ファクトリ動作を通じて検証する。本格的な TabControl・ファイル I/O は対象外。
+/// </summary>
+public class NestSuiteDocumentTabTests
+{
+    // ── NestSuiteDocumentTab 基本構造 ────────────────────────────────────
+
+    [Fact]
+    public void DocumentTab_HasId()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "abc",
+            WorkspaceKind = NestSuiteWorkspaceKind.NoteNest,
+            DisplayName = "A.notenest",
+        };
+        Assert.Equal("abc", tab.Id);
+    }
+
+    [Fact]
+    public void DocumentTab_HasWorkspaceKind()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "x",
+            WorkspaceKind = NestSuiteWorkspaceKind.ChatNest,
+            DisplayName = "会議メモ.chatnest",
+        };
+        Assert.Equal(NestSuiteWorkspaceKind.ChatNest, tab.WorkspaceKind);
+    }
+
+    // ── ToolId は WorkspaceKind から導出される ──────────────────────────
+
+    [Fact]
+    public void DocumentTab_NoteNest_ToolId_IsNoteNest()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "1", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest, DisplayName = "A.notenest",
+        };
+        Assert.Equal(NestSuiteToolRegistry.NoteNestToolId, tab.ToolId);
+    }
+
+    [Fact]
+    public void DocumentTab_ChatNest_ToolId_IsChatNest()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "2", WorkspaceKind = NestSuiteWorkspaceKind.ChatNest, DisplayName = "会議メモ.chatnest",
+        };
+        Assert.Equal(NestSuiteToolRegistry.ChatNestToolId, tab.ToolId);
+    }
+
+    [Fact]
+    public void DocumentTab_IdeaNest_ToolId_IsIdeaNest()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "3", WorkspaceKind = NestSuiteWorkspaceKind.IdeaNest, DisplayName = "案出し.ideanest",
+        };
+        Assert.Equal(NestSuiteToolRegistry.IdeaNestToolId, tab.ToolId);
+    }
+
+    // ── IsUntitled / FilePath ────────────────────────────────────────────
+
+    [Fact]
+    public void DocumentTab_WithoutFilePath_IsUntitled()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "u", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest, DisplayName = "無題.notenest",
+        };
+        Assert.True(tab.IsUntitled);
+        Assert.Null(tab.FilePath);
+    }
+
+    [Fact]
+    public void DocumentTab_WithFilePath_IsNotUntitled()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "f", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest, DisplayName = "A.notenest",
+            FilePath = @"C:\projects\A.notenest",
+        };
+        Assert.False(tab.IsUntitled);
+        Assert.NotNull(tab.FilePath);
+    }
+
+    // ── IsModified ───────────────────────────────────────────────────────
+
+    [Fact]
+    public void DocumentTab_DefaultIsModified_IsFalse()
+    {
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "m", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest, DisplayName = "A.notenest",
+        };
+        Assert.False(tab.IsModified);
+    }
+
+    [Fact]
+    public void DocumentTab_CanBeMarkedModified()
+    {
+        var original = new NestSuiteDocumentTab
+        {
+            Id = "m", WorkspaceKind = NestSuiteWorkspaceKind.ChatNest, DisplayName = "会議.chatnest",
+        };
+        // sealed record は with 式で非破壊更新できる（IsModified の反映を確認）
+        var modified = original with { IsModified = true };
+        Assert.False(original.IsModified);
+        Assert.True(modified.IsModified);
+    }
+
+    // ── ツール定義とタブ定義の区別 ──────────────────────────────────────
+
+    [Fact]
+    public void ToolDefinitionAndDocumentTab_AreDistinctTypes()
+    {
+        // NestSuiteTool はツールの「機能定義」、NestSuiteDocumentTab は「開いている作業単位」
+        // 型が分かれていることで混同を防ぐ
+        Assert.NotEqual(typeof(NestSuiteTool), typeof(NestSuiteDocumentTab));
+    }
+
+    [Fact]
+    public void MultipleDocumentTabs_CanHaveSameWorkspaceKind()
+    {
+        // 1 ツールから複数タブを開ける設計を表現できることを確認
+        var tabA = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+        var tabB = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, tabA.WorkspaceKind);
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, tabB.WorkspaceKind);
+        Assert.NotEqual(tabA.Id, tabB.Id); // 別タブとして区別できる
+    }
+
+    // ── NestSuiteTabFactory ─────────────────────────────────────────────
+
+    [Fact]
+    public void TabFactory_CreateUntitled_NoteNest_IsUntitled()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, tab.WorkspaceKind);
+        Assert.True(tab.IsUntitled);
+        Assert.False(tab.IsModified);
+        Assert.NotEmpty(tab.Id);
+    }
+
+    [Fact]
+    public void TabFactory_CreateUntitled_ChatNest_DisplayName_HasChatNestExtension()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
+
+        Assert.Equal(NestSuiteWorkspaceKind.ChatNest, tab.WorkspaceKind);
+        Assert.EndsWith(".chatnest", tab.DisplayName, StringComparison.OrdinalIgnoreCase);
+        Assert.True(tab.IsUntitled);
+    }
+
+    [Fact]
+    public void TabFactory_CreateUntitled_IdeaNest_DisplayName_HasIdeaNestExtension()
+    {
+        // IdeaNest は v1.7.2 では未統合だが、タブモデルは定義済み
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest);
+
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, tab.WorkspaceKind);
+        Assert.EndsWith(".ideanest", tab.DisplayName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void TabFactory_FromFilePath_NoteNest_ResolvesCorrectly()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\project.notenest");
+
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, tab.WorkspaceKind);
+        Assert.Equal("project.notenest", tab.DisplayName);
+        Assert.Equal(@"C:\work\project.notenest", tab.FilePath);
+        Assert.False(tab.IsUntitled);
+        Assert.False(tab.IsModified);
+    }
+
+    [Fact]
+    public void TabFactory_FromFilePath_ChatNest_ResolvesCorrectly()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\notes\会議メモ.chatnest");
+
+        Assert.Equal(NestSuiteWorkspaceKind.ChatNest, tab.WorkspaceKind);
+        Assert.Equal("会議メモ.chatnest", tab.DisplayName);
+        Assert.False(tab.IsUntitled);
+    }
+
+    [Fact]
+    public void TabFactory_FromFilePath_UnknownExtension_Throws()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            NestSuiteTabFactory.FromFilePath(@"C:\data\file.txt"));
+    }
+
+    [Fact]
+    public void TabFactory_TryGetKind_NoteNestExtension_ReturnsNoteNest()
+    {
+        var result = NestSuiteTabFactory.TryGetKind(@"any\path\A.notenest", out var kind);
+
+        Assert.True(result);
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, kind);
+    }
+
+    [Fact]
+    public void TabFactory_TryGetKind_UnknownExtension_ReturnsFalse()
+    {
+        var result = NestSuiteTabFactory.TryGetKind(@"file.unknown", out _);
+
+        Assert.False(result);
+    }
+
+    // ── NestSuiteWorkspaceKind の全値確認 ───────────────────────────────
+
+    [Fact]
+    public void WorkspaceKind_HasThreeValues_NoteNest_ChatNest_IdeaNest()
+    {
+        var values = Enum.GetValues<NestSuiteWorkspaceKind>();
+        Assert.Equal(3, values.Length);
+        Assert.Contains(NestSuiteWorkspaceKind.NoteNest, values);
+        Assert.Contains(NestSuiteWorkspaceKind.ChatNest, values);
+        Assert.Contains(NestSuiteWorkspaceKind.IdeaNest, values);
+    }
+
+    [Fact]
+    public void GetExtension_ReturnsCorrectExtension_ForEachKind()
+    {
+        Assert.Equal(".notenest", NestSuiteTabFactory.GetExtension(NestSuiteWorkspaceKind.NoteNest));
+        Assert.Equal(".chatnest", NestSuiteTabFactory.GetExtension(NestSuiteWorkspaceKind.ChatNest));
+        Assert.Equal(".ideanest", NestSuiteTabFactory.GetExtension(NestSuiteWorkspaceKind.IdeaNest));
+    }
+}
