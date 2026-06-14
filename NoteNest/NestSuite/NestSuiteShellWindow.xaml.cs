@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using NoteNest.Services;
@@ -28,6 +29,7 @@ namespace NoteNest.NestSuite;
 public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 {
     private readonly DialogService _dialogs;
+    private MainViewModel ViewModel => (MainViewModel)DataContext;
 
     public NestSuiteShellWindow()
     {
@@ -66,6 +68,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         };
 
         vm.SyncTreeSelectionCallback = note => WorkspaceView.SyncTreeSelection(note);
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (!ViewModel.ConfirmCloseIfModified())
+        {
+            e.Cancel = true;
+            return;
+        }
+        base.OnClosing(e);
     }
 
     protected override void OnClosed(EventArgs e)

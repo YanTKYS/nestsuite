@@ -60,4 +60,20 @@ public class NestSuiteShellTests
             baseType = baseType.BaseType;
         }
     }
+
+    // ── 終了確認の構造確認 ───────────────────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_OverridesOnClosing()
+    {
+        // OnClosing が NestSuiteShellWindow 自身で宣言されていることを確認
+        // （継承のみで終了確認なしの状態ではないことの静的チェック）
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("OnClosing",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(System.ComponentModel.CancelEventArgs)],
+                null);
+        Assert.NotNull(method);
+    }
 }
