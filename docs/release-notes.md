@@ -1,5 +1,82 @@
 # リリースノート
 
+## v1.6.0 — NestSuite 最小 AppShell 骨格
+
+**リリース日：** 2026-06-14
+
+### 概要
+
+NestSuite 統合母体の最小構成として、`NestSuiteShellWindow` を追加した。`NoteNestWorkspaceView` をホストできる WPF Window の骨格を確認することが目的で、本格統合ではない。NoteNest 単体版（`MainWindow`・起動フロー）は変更なし。
+
+### 追加内容
+
+#### 1. NestSuiteShellWindow（`NoteNest/NestSuite/`）
+
+`NoteNest.NestSuite` 名前空間に `NestSuiteShellWindow` を新設。
+
+- **クラス：** `NestSuiteShellWindow : Window, IWorkspaceDialogHost`
+- **XAML：** `NestSuite/NestSuiteShellWindow.xaml`（最小ヘッダー + `NoteNestWorkspaceView` 配置）
+- **コードビハインド：** `NestSuite/NestSuiteShellWindow.xaml.cs`
+
+**実装方針：**
+- `DialogService(this)` を所有し、`IWorkspaceDialogHost` を明示的インターフェース実装で委譲（MainWindow と同様のパターン）
+- コンストラクタで `MainViewModel` を生成・`DataContext` に設定、`WorkspaceView.DialogHost = this` をセット
+- ViewModel の全コールバック（`ShowInputDialog`・`ShowConfirmDialog`・`ShowErrorDialog`・`SelectOpenProjectPath`・`SelectSaveProjectPath`・`NavigateToLine`・`NavigateToMarker`・`SyncTreeSelectionCallback`・`RequestClose`）を配線
+- Workspace 側に `DialogService`・`Window.GetWindow`・`OpenFileDialog`・`SaveFileDialog` を持ち込まない方針を維持
+
+**IWorkspaceDialogHost WPF 前提：**
+- NestSuite も WPF ベースの計画のため、`TextBox`・`MessageBoxImage` を含む現インターフェース形状をそのまま利用
+- 非 WPF 抽象化は現時点で不要
+
+**v1.6.0 での位置づけ：**
+- メニュー・ステータスバー・ウィンドウ設定は未実装（骨格のみ）
+- App.xaml.cs の起動フローは変更しない（開発・テスト用途として追加）
+- 将来のバージョンで起動導線を検討する
+
+#### 2. テスト（`NoteNest.Tests/NestSuiteShellTests.cs`）
+
+リフレクションベースの型境界確認テスト（UI は起動しない）：
+
+- `NestSuiteShellWindow_IsWindowSubclass` — Window サブクラスであることを確認
+- `NestSuiteShellWindow_ImplementsIWorkspaceDialogHost` — インターフェース実装を確認
+- `NestSuiteShellWindow_HasNoteNestWorkspaceViewField` — WorkspaceView フィールドの型を確認
+- `NoteNest_StandaloneMainWindow_StillExists` — 単体版 MainWindow が残っていることを確認
+- `NoteNestWorkspaceView_StillIsNotWindow` — WorkspaceView が Window を継承していないことを確認
+
+### 変更しなかったもの
+
+- NoteNest 単体版 `MainWindow`・`App.xaml.cs`・起動フロー
+- `IWorkspaceDialogHost` のシグネチャ
+- `MainViewModel`（改名・分割なし）
+- `NoteNestWorkspaceViewModel` の新設なし
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest / ChatNest の統合（v1.6.0 対象外）
+
+### v1.6.x 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.6.1 | NestSuiteShellWindow の起動導線検討（App.xaml.cs から切り替える仕組みの試作） |
+| v1.6.2 | NoteNest 単体版と NestSuite 版の起動切替の検討 |
+| v1.6.3 | Workspace ホストの共通化・N6（MainViewModel Workspace Facade 分離）着手 |
+| v1.6.x | IdeaNest / ChatNest を載せる前提条件整理 |
+| 将来 | MainViewModel の Workspace Facade と AppShell 接続層への分割 |
+
+### ドキュメント
+
+- `docs/design-decisions.md`：§30「v1.6.0 NestSuiteShellWindow 設計判断」追加
+- `docs/nestsuite-preparation.md`：進捗表に v1.6.0 行を追加
+- `docs/backlog.md`：N5 を完了済みとして記載、v1.6.x 候補を追加
+- `docs/release-notes.md`：本エントリを追加
+- `README.md`：制限テーブルのバージョン見出しを v1.6.0 に更新
+
+### バージョン
+
+- アプリケーションバージョン：`1.6.0`
+- 保存スキーマバージョン：`1.4.1`（変更なし）
+
+---
+
 ## v1.5.8 — v1.5.x 総合回帰確認・v1.6.0 ロードマップ整理
 
 **リリース日：** 2026-06-14
