@@ -90,9 +90,9 @@ public class StartupArgParserTests
     }
 
     [Fact]
-    public void GetFilePath_WithUnsupportedExtension_ReturnsNull()
+    public void GetFilePath_WithUnsupportedExtension_ReturnsPath()
     {
-        // .notenest 以外の拡張子はファイルパスとして認識しない（将来オプション引数の値と区別）
-        Assert.Null(StartupArgParser.GetFilePath(["--nestsuite", "project.json"]));
+        // 未対応拡張子もファイルパス候補として返す。拡張子検証は LoadInitialFile() が担当する。
+        Assert.Equal("project.json", StartupArgParser.GetFilePath(["--nestsuite", "project.json"]));
     }
 }

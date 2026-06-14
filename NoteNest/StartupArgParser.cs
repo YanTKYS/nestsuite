@@ -21,11 +21,10 @@ public static class StartupArgParser
         args.Contains("--nestsuite", StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// 引数リストから .notenest ファイルパスを返す。
-    /// .notenest 拡張子を持つ最初の引数を返す。見つからない場合は null。
-    /// 拡張子チェックにより、将来の追加オプション引数の値をパスと誤認しない。
-    /// ファイルの存在確認は呼び出し側で行う。
+    /// 引数リストからファイルパス候補を返す。
+    /// '-' で始まらない最初の引数をファイルパス候補として返す。見つからない場合は null。
+    /// 拡張子・存在確認は呼び出し側（LoadInitialFile / OpenStartupFile）が担当する。
     /// </summary>
     public static string? GetFilePath(string[] args) =>
-        args.FirstOrDefault(a => a.EndsWith(".notenest", StringComparison.OrdinalIgnoreCase));
+        args.FirstOrDefault(a => !a.StartsWith('-'));
 }
