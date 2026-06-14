@@ -701,3 +701,45 @@ v1.6.1 では NestSuiteShellWindow の起動導線として Candidate A（コマ
 - `App.xaml` は `Light.xaml` をデフォルトリソースとして登録しているため、`--nestsuite` 起動時も Light テーマが初期値になる
 - `App_Startup` の `--nestsuite` 分岐では `NestSuiteShellWindow` コンストラクタ前にテーマ初期化を行う機会がないため、コンストラクタ内で自律的にテーマを適用する
 - `InitializeComponent()` 前に適用することで `DynamicResource` が正しい値に解決される（`MainWindow` と同一パターン）
+
+---
+
+## 32. v1.6.2 NestSuite 統合母体最小成立の設計判断
+
+### 「統合母体の最小成立」の目標
+
+v1.6.2 の目標は `NestSuiteShellWindow` を、検証 Window ではなく統合アプリの器として成立させることだった。
+
+**確立した責務境界：**
+- NestSuite AppShell として：ツール選択・Workspace 表示・最小メニュー・ステータスバー
+- NoteNest Workspace として：`NoteNestWorkspaceView`（既存のまま再利用）
+- 橋渡し：`IWorkspaceDialogHost`（WPF 前提の現形状を維持）
+
+### NestSuiteToolRegistry の役割
+
+ツールの統合状態を文書化・テスト可能な形で明示するため、`NestSuiteToolRegistry` 静的クラスを新設した。
+
+- **UI との分離：** ツール一覧・統合状態をコードで定義し、XAML のハードコーディングと役割を分担する
+- **テスト可能性：** WPF・UI 不要で `IsIntegrated()` を単体テストできる
+- **将来の拡張：** ツール切替実装（N10・v1.6.4 以降）の際に `NestSuiteToolRegistry` をロジックの起点として活用できる
+
+### UI 構成の選択
+
+左側ツール選択領域（固定幅 120px）+ 右側 Workspace 領域（残り幅）のシンプルな 2 列レイアウトを採用した。
+
+**採用理由：**
+- GridSplitter 不要で v1.6.2 の範囲内に収まる
+- 将来のツール切替ロジック追加時に列幅調整や GridSplitter 追加が容易
+- `NoteNestWorkspaceView` の再利用を維持したまま、周囲に領域を追加するのみ
+
+**IdeaNest / ChatNest のプレースホルダー表示：**
+- `Opacity="0.45"` で半透明表示し、未統合であることを視覚的に示す
+- `ToolTip="未統合（将来対応予定）"` でホバー時に状態を明示する
+
+### 最小メニューの範囲
+
+v1.6.2 では、NestSuite 統合母体としての最小メニュー（ファイル → 終了、ヘルプ → NestSuite について）のみを実装した。
+
+NoteNest 単体版の全メニュー機能（保存・開く・エクスポート等）は NestSuite 内でも必要だが、v1.6.3 以降で NestSuite 側への段階的な整理を行う（backlog N9）。v1.6.2 では `NoteNestWorkspaceView` 内部の既存操作で代替する。
+
+詳細は [`docs/nestsuite-preparation.md`](nestsuite-preparation.md)「v1.6.x 以降の候補」を参照。
