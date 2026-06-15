@@ -2106,3 +2106,27 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 1. `ApplicationVersionTests` でアプリバージョンが `1.8.6` であることを確認する（自動）。
 2. `NestSuiteShellTests` で `EnsureDefaultTab` メソッドの存在と、コンストラクタがオプション文字列引数を受け取ることを確認する（自動）。
 3. ファイル不存在・未対応拡張子でアプリが継続することを確認する。
+
+
+## §57 v1.9.0 同一ツール複数ファイル対応の設計整理
+
+v1.9.0 は設計整理版のため、複数ファイル対応の実機シナリオはまだ存在しない。
+ここでは設計が既存挙動を壊していないこと（回帰）と、設計固定テストの自動確認のみを行う。
+
+### 設計固定の自動確認
+1. `ApplicationVersionTests` でアプリバージョンが `1.9.0`、スキーマバージョンが `1.4.1` であることを確認する（自動）。
+2. `NestSuiteMultiFileTabsDesignTests` で以下を確認する（自動）。
+   - `TabFactory.CreateUntitled` が一意な TabId を生成する（複数ファイル対応の前提）。
+   - 同じファイルパスから生成したタブでも TabId は別になる。
+   - `NestSuiteOpenFilePolicy.IsSameFile` の比較方針（同一パス→true、大文字小文字無視→true、別パス→false、null→false）。
+   - 同一 WorkspaceKind の複数タブが表現できる（既存挙動）。
+   - 拡張子判定（`.notenest`/`.chatnest`/`.ideanest`）が既存どおり動く。
+
+### 回帰確認（既存機能を壊していないこと）
+1. 引数なし起動が NoteNest 単体版になることを確認する。
+2. `.notenest` 単独指定起動が NoteNest 単体版になることを確認する。
+3. `--nestsuite` 起動、および `--nestsuite sample.notenest` / `sample.chatnest` / `sample.ideanest` が
+   従来どおり 1 タブで開くことを確認する（§55・§56 を再確認）。
+4. `NestSuiteShellTests` / `NestSuiteDocumentTabTests` / `StartupArgParserTests` /
+   `ChatNestFileServiceTests` / `IdeaNestFileServiceTests` / `ArchitectureBoundaryTests` /
+   `WorkspaceViewRegressionTests` が全件パスすることを確認する（自動）。
