@@ -7,6 +7,11 @@ using NoteNest.NestSuite.IdeaNest.ViewModels;
 
 namespace NoteNest.NestSuite.IdeaNest.Services;
 
+/// <summary>
+/// WPF-free card mutation logic.
+/// IdeaNestWorkspaceViewModel holds one instance and re-creates it via CreateCardOps()
+/// whenever the workspace is replaced.
+/// </summary>
 public class CardOperationsService
 {
     private readonly List<Idea> _ideas;

@@ -196,9 +196,10 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteToolRegistry_IdeaNest_IsNotIntegrated()
+    public void NestSuiteToolRegistry_IdeaNest_IsIntegrated()
     {
-        Assert.False(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.IdeaNestToolId));
+        // v1.8.0: IdeaNest 統合検証段階として IsIntegrated=true
+        Assert.True(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.IdeaNestToolId));
     }
 
     [Fact]
@@ -236,9 +237,11 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteToolRegistry_IdeaNestDef_IsNotIntegrated()
+    public void NestSuiteToolRegistry_IdeaNestDef_IsIntegrated()
     {
-        Assert.False(NestSuiteToolRegistry.IdeaNestDef.IsIntegrated);
+        // v1.8.0: IdeaNest 統合検証段階として IsIntegrated=true、StatusText="統合検証"
+        Assert.True(NestSuiteToolRegistry.IdeaNestDef.IsIntegrated);
+        Assert.Equal("統合検証", NestSuiteToolRegistry.IdeaNestDef.StatusText);
     }
 
     [Fact]
@@ -250,14 +253,14 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteToolRegistry_IdeaNest_RemainsOnlyUnintegratedTool()
+    public void NestSuiteToolRegistry_AllThreeTools_AreIntegrated()
     {
-        // v1.7.0: 未統合は IdeaNest のみ。NoteNest・ChatNest は統合済み
+        // v1.8.0: IdeaNest 統合検証段階追加により、全ツールが統合済みまたは統合検証段階
         var unintegrated = NestSuiteToolRegistry.ToolDefinitions
             .Where(t => !t.IsIntegrated)
             .Select(t => t.Id)
             .ToList();
-        Assert.Equal(new[] { NestSuiteToolRegistry.IdeaNestToolId }, unintegrated);
+        Assert.Empty(unintegrated);
     }
 
     // ── v1.7.3: ファイル単位タブ UI 最小骨格の確認 ──────────────────────
@@ -359,6 +362,55 @@ public class NestSuiteShellTests
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
                 [typeof(string)],
+                null);
+        Assert.NotNull(method);
+    }
+
+    // ── v1.8.0: IdeaNest 統合検証 ────────────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasIdeaNestWorkspaceViewField()
+    {
+        // v1.8.0: XAML x:Name="IdeaNestWorkspaceView" による IdeaNest Workspace フィールドの存在・型確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "IdeaNestWorkspaceView");
+        Assert.NotNull(field);
+        Assert.Equal(
+            typeof(NoteNest.NestSuite.IdeaNest.Views.IdeaNestWorkspaceView),
+            field!.FieldType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HoldsIdeaNestViewModelField()
+    {
+        // v1.8.0: 終了時の変更確認のため、IdeaNest ViewModel をフィールドとして保持していることを確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.FieldType ==
+                typeof(NoteNest.NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel));
+        Assert.NotNull(field);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSyncIdeaNestTabMethod()
+    {
+        // v1.8.0: SyncIdeaNestTab が IdeaNest 変更状態をタブに反映するメソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("SyncIdeaNestTab",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasConfirmAndResetIdeaNestMethod()
+    {
+        // v1.8.0: ConfirmAndResetIdeaNest がタブ閉じ確認・リセットメソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("ConfirmAndResetIdeaNest",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteDocumentTab)],
                 null);
         Assert.NotNull(method);
     }

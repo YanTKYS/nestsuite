@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:NoteNest.Views"
         xmlns:chatnest="clr-namespace:NoteNest.NestSuite.ChatNest"
+        xmlns:ideanest="clr-namespace:NoteNest.NestSuite.IdeaNest.Views;assembly=NoteNest"
         Title="NestSuite — NoteNest"
         Height="720" Width="1280"
         MinHeight="500" MinWidth="800"
@@ -97,17 +98,17 @@
                                    Text="NoteNest" FontSize="12"
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
-                    <!-- IdeaNest: 未統合。クリックでプレースホルダータブを開く -->
+                    <!-- IdeaNest: 統合検証中。クリックで IdeaNest タブを開く -->
                     <Border x:Name="IdeaNestToolBorder"
                             Tag="IdeaNest"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
-                            ToolTip="未統合（将来対応予定）"
+                            ToolTip="統合検証（v1.8.0）"
                             MouseLeftButtonDown="ToolBorder_MouseDown">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="IdeaNest" FontSize="12"
-                                       Foreground="{DynamicResource SubtleFg}"/>
-                            <TextBlock Text=" 未統合" FontSize="9"
+                                       Foreground="{DynamicResource PrimaryFg}"/>
+                            <TextBlock Text=" 検証" FontSize="9"
                                        Foreground="{DynamicResource MutedFg}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -190,6 +191,8 @@
                     <views:NoteNestWorkspaceView x:Name="WorkspaceView"/>
                     <!-- v1.7.0: ChatNest 統合検証用 Workspace（ChatNest タブ選択時に表示） -->
                     <chatnest:ChatNestWorkspaceView x:Name="ChatWorkspaceView" Visibility="Collapsed"/>
+                    <!-- v1.8.0: IdeaNest 統合検証用 Workspace（IdeaNest タブ選択時に表示） -->
+                    <ideanest:IdeaNestWorkspaceView x:Name="IdeaNestWorkspaceView" ShowMenu="False" Visibility="Collapsed"/>
                     <!-- 未統合ツールタブ選択時のプレースホルダー -->
                     <Border x:Name="UnintegratedPlaceholder" Visibility="Collapsed"
                             Background="{DynamicResource SidebarBg}">

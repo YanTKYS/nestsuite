@@ -19,6 +19,7 @@ public static class IdeaNestWorkspaceService
     public static string NormalizeTag(string raw)
     {
         var s = (raw ?? string.Empty).Trim();
+        // Strip one or more leading '#' characters
         while (s.StartsWith('#')) s = s[1..].TrimStart();
         return s;
     }
@@ -81,7 +82,7 @@ public static class IdeaNestWorkspaceService
             }
             catch
             {
-                // Best-effort backup
+                // Best-effort backup; do not block save on .bak failure.
             }
         }
 

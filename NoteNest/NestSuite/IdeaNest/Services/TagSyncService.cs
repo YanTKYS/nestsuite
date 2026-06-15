@@ -4,8 +4,16 @@ using NoteNest.NestSuite.IdeaNest.ViewModels;
 
 namespace NoteNest.NestSuite.IdeaNest.Services;
 
+/// <summary>
+/// WPF-free tag aggregation logic.
+/// </summary>
 public static class TagSyncService
 {
+    /// <summary>
+    /// Computes tag names and their usage counts from the full card collection.
+    /// Returns items sorted alphabetically by tag name (Ordinal comparison).
+    /// Blank or whitespace-only tag strings are excluded.
+    /// </summary>
     public static IReadOnlyList<TagItemViewModel> ComputeTagItems(
         IEnumerable<IdeaCardViewModel> allCards)
     {

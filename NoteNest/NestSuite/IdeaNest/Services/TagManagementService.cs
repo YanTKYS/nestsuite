@@ -6,6 +6,13 @@ using NoteNest.NestSuite.IdeaNest.ViewModels;
 
 namespace NoteNest.NestSuite.IdeaNest.Services;
 
+/// <summary>
+/// WPF-free tag rename / delete / merge logic.
+/// Mutates the supplied cards in place, drives the selected-tag adjustment via
+/// callbacks, and fans out the standard dirty / refresh-tags / refresh-visible
+/// notifications. Tag rename collapses into a merge automatically when the
+/// destination tag already exists on the same card (via NormalizeTags).
+/// </summary>
 public class TagManagementService
 {
     private readonly ObservableCollection<IdeaCardViewModel> _allCards;

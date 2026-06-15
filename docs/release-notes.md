@@ -1,5 +1,70 @@
 # リリースノート
 
+## v1.8.0 — IdeaNest 統合検証
+
+**リリース日：** 2026-06-15
+
+### 概要
+
+NestSuite に IdeaNest を 3 つ目の Workspace として統合した（統合検証段階）。
+IdeaNest タブを選択すると `IdeaNestWorkspaceView` が表示され、カードの追加・編集・ピン・
+アーカイブ・削除・プレビュー・タグ管理・フィルタリングが動作する。
+`.ideanest` 保存／読込・起動時ファイル指定は v1.8.0 では未対応（情報ダイアログを表示）。
+
+### 追加した機能
+
+#### IdeaNest 統合（NestSuite）
+
+- IdeaNest タブ選択時に `IdeaNestWorkspaceView` を表示（`NestSuiteShellWindow`）
+- カード追加（`EditIdeaWindow`）・編集・削除・ピン・アーカイブ・プレビュー（`PreviewIdeaWindow`）
+- タグ管理（`TagManagementWindow`）
+- 検索・タグフィルタ・色フィルタ・アーカイブ表示切替
+- カードサイズ（小/中/大）・高さモード（固定/本文に合わせる）・ソート（更新順/作成順/タイトル順/シャッフル）
+- 変更あり時の閉じる確認ダイアログ（`ConfirmAndResetIdeaNest`）
+- 終了時の未保存確認ダイアログ
+
+#### ファイルメニュー IdeaNest 対応
+
+- 新規・開く・保存・名前を付けて保存 → v1.8.0 では未対応ダイアログを表示
+
+#### バージョン更新
+
+- アプリバージョン: `1.7.8` → `1.8.0`
+- `NestSuiteToolRegistry.IdeaNestDef.IsIntegrated`: `false` → `true`（統合検証段階）
+
+### 追加したファイル（35 件）
+
+| 分類 | ファイル |
+|------|---------|
+| Models | `Idea.cs`, `Workspace.cs`, `WorkspaceSettings.cs` |
+| Commands | `IdeaNestRelayCommand.cs` |
+| Converters | `IdeaBoolToVisibilityConverter.cs`, `IdeaColorNameToBrushConverter.cs`, `IdeaHexStringToBrushConverter.cs`, `IdeaStringIsEmptyToVisibilityConverter.cs` |
+| Services | `IdeaNestWorkspaceService.cs`, `CardOperationsService.cs`, `TagManagementService.cs`, `TagSyncService.cs` |
+| ViewModels | `IdeaNestViewModelBase.cs`, `IdeaNestWorkspaceViewModel.cs`, `IdeaNestWorkspaceUiService.cs`, `IdeaCardViewModel.cs`, `CardDisplayViewModel.cs`, `EditIdeaViewModel.cs`, `FilterViewModel.cs`, `TagItemViewModel.cs`, `TagPanelViewModel.cs`, `SortOptionViewModel.cs`, `ColorFilterItemViewModel.cs` |
+| Views | `IdeaNestResources.xaml`, `IdeaNestWorkspaceView.xaml/.cs`, `EditIdeaWindow.xaml/.cs`, `IdeaConfirmWindow.xaml/.cs`, `IdeaPromptWindow.xaml/.cs`, `PreviewIdeaWindow.xaml/.cs`, `TagManagementWindow.xaml/.cs` |
+
+### 変更したファイル（6 件）
+
+| ファイル | 変更内容 |
+|---------|---------|
+| `NoteNest/App.xaml` | `IdeaNestResources.xaml` を MergedDictionaries に追加 |
+| `NoteNest/NestSuite/NestSuiteToolRegistry.cs` | IdeaNest の `IsIntegrated=true`、`StatusText="統合検証"` |
+| `NoteNest/NestSuite/NestSuiteShellWindow.xaml` | `IdeaNestWorkspaceView` を追加、IdeaNest サイドバーに統合検証ラベル |
+| `NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs` | IdeaNest ViewModel・同期・閉じる確認・ActivateTab 分岐を追加 |
+| `NoteNest/NoteNest.csproj` | バージョン `1.7.8` → `1.8.0` |
+| `NoteNest/app.manifest` | バージョン `1.7.8.0` → `1.8.0.0` |
+
+### 変更しなかったもの
+
+- NoteNest 単体版の通常起動フロー（引数なし → `MainWindow`）
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- ChatNest 統合（変更なし）
+- `.ideanest` 保存・読込（v1.8.0 では未対応）
+- 複数 IdeaNest タブ（未対応）
+- 共通プロジェクト形式（未対応）
+
+---
+
 ## v1.7.8 — IdeaNest統合前の回帰確認・小修正
 
 **リリース日：** 2026-06-15

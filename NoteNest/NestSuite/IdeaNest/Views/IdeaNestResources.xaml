@@ -1,0 +1,256 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="clr-namespace:NoteNest.NestSuite.IdeaNest.Converters;assembly=NoteNest">
+
+    <!-- IdeaNest converters (prefixed with "Idea" to avoid conflicts) -->
+    <conv:IdeaBoolToVisibilityConverter x:Key="IdeaBoolToVis" />
+    <conv:IdeaBoolToVisibilityConverter x:Key="IdeaBoolToVisInverse" Invert="True" />
+    <conv:IdeaStringIsEmptyToVisibilityConverter x:Key="IdeaStringToVis" />
+    <conv:IdeaHexStringToBrushConverter x:Key="IdeaHexToBrush" />
+    <conv:IdeaColorNameToBrushConverter x:Key="IdeaColorNameToBrush" />
+
+    <!-- IdeaNest color palette (static light theme) -->
+    <SolidColorBrush x:Key="IdeaAppBackgroundBrush" Color="#F6F7F9" />
+    <SolidColorBrush x:Key="IdeaSurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="IdeaBorderBrush" Color="#E5E7EB" />
+    <SolidColorBrush x:Key="IdeaTextPrimaryBrush" Color="#1F2937" />
+    <SolidColorBrush x:Key="IdeaTextSecondaryBrush" Color="#6B7280" />
+    <SolidColorBrush x:Key="IdeaAccentBrush" Color="#E8773A" />
+    <SolidColorBrush x:Key="IdeaAccentHoverBrush" Color="#D6652A" />
+    <SolidColorBrush x:Key="IdeaAccentPressedBrush" Color="#B85320" />
+    <SolidColorBrush x:Key="IdeaChipBackgroundBrush" Color="#EEF2F7" />
+    <SolidColorBrush x:Key="IdeaChipForegroundBrush" Color="#475569" />
+    <SolidColorBrush x:Key="IdeaHoverOverlayBrush" Color="#F3F4F6" />
+
+    <!-- Modern TextBox style (IdeaNest) -->
+    <Style x:Key="IdeaModernTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource IdeaSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource IdeaTextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource IdeaBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Background="Transparent" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource IdeaAccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Search TextBox -->
+    <Style x:Key="IdeaSearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource IdeaModernTextBoxStyle}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="MinHeight" Value="30" />
+    </Style>
+
+    <!-- Card container style -->
+    <Style x:Key="IdeaCardContainerStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="{StaticResource IdeaSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource IdeaBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="8" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#1F2937" Opacity="0.08"
+                                  BlurRadius="14" ShadowDepth="2" Direction="270" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Icon button -->
+    <Style x:Key="IdeaIconButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="MinWidth" Value="30" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Foreground" Value="{StaticResource IdeaTextSecondaryBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaHoverOverlayBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#E5E7EB" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Secondary button: outlined, soft -->
+    <Style x:Key="IdeaSecondaryButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource IdeaTextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource IdeaBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="MinWidth" Value="92" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaHoverOverlayBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#E5E7EB" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Primary button (accent fill) -->
+    <Style x:Key="IdeaPrimaryButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource IdeaAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="MinWidth" Value="92" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaAccentHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaAccentPressedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Floating add button -->
+    <Style x:Key="IdeaFloatingAddButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="60" />
+        <Setter Property="Height" Value="60" />
+        <Setter Property="Background" Value="{StaticResource IdeaAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" CornerRadius="30"
+                            Background="{TemplateBinding Background}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#1F2937" Opacity="0.30"
+                                              BlurRadius="16" ShadowDepth="3" Direction="270" />
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaAccentHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource IdeaAccentPressedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Tag chip -->
+    <Style x:Key="IdeaTagChipStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Background" Value="{StaticResource IdeaChipBackgroundBrush}" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="Margin" Value="0,0,4,4" />
+    </Style>
+
+    <Style x:Key="IdeaTagChipTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource IdeaChipForegroundBrush}" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+
+    <!-- Section header -->
+    <Style x:Key="IdeaSectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource IdeaTextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- Field label -->
+    <Style x:Key="IdeaFieldLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource IdeaTextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+
+    <!-- Aliases for ConfirmWindow code-behind which calls FindResource("PrimaryButtonStyle") -->
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource IdeaPrimaryButtonStyle}"/>
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource IdeaSecondaryButtonStyle}"/>
+
+</ResourceDictionary>

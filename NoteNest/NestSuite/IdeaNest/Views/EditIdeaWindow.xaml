@@ -1,0 +1,104 @@
+<Window x:Class="NoteNest.NestSuite.IdeaNest.Views.EditIdeaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="アイデア編集"
+        Width="600" Height="620"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource IdeaAppBackgroundBrush}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+    <Border Margin="24" Background="{StaticResource IdeaSurfaceBrush}" CornerRadius="12" Padding="24">
+        <Border.Effect>
+            <DropShadowEffect Color="#1F2937" Opacity="0.08" BlurRadius="14" ShadowDepth="2" Direction="270" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="タイトル" Style="{StaticResource IdeaFieldLabelStyle}" />
+            <TextBox Grid.Row="1" Style="{StaticResource IdeaModernTextBoxStyle}"
+                     Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,16" />
+
+            <TextBlock Grid.Row="2" Text="本文" Style="{StaticResource IdeaFieldLabelStyle}" />
+            <TextBox Grid.Row="3" Style="{StaticResource IdeaModernTextBoxStyle}"
+                     Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     VerticalContentAlignment="Top"
+                     MinHeight="200" Margin="0,0,0,16" />
+
+            <TextBlock Grid.Row="4" Text="タグ (カンマ区切り)" Style="{StaticResource IdeaFieldLabelStyle}" />
+            <TextBox Grid.Row="5" Style="{StaticResource IdeaModernTextBoxStyle}"
+                     Text="{Binding TagsText, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,16" />
+
+            <StackPanel Grid.Row="6" Orientation="Vertical" Margin="0,0,0,16">
+                <TextBlock Text="色" Style="{StaticResource IdeaFieldLabelStyle}" />
+                <ListBox ItemsSource="{Binding AvailableColors}"
+                         SelectedItem="{Binding Color}"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="ToolTip" Value="{Binding}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Ring" Width="34" Height="34" CornerRadius="17"
+                                                Background="Transparent"
+                                                BorderBrush="Transparent" BorderThickness="2"
+                                                Padding="3">
+                                            <Ellipse Fill="{Binding Converter={StaticResource IdeaColorNameToBrush}}"
+                                                     Stroke="#D1D5DB" StrokeThickness="1" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Ring" Property="BorderBrush" Value="#FFE4D2" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Ring" Property="BorderBrush" Value="{StaticResource IdeaAccentBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,0,0,20">
+                <CheckBox Content="ピン留め" IsChecked="{Binding IsPinned}"
+                          Foreground="{StaticResource IdeaTextPrimaryBrush}" Margin="0,0,20,0" />
+                <CheckBox Content="アーカイブ" IsChecked="{Binding IsArchived}"
+                          Foreground="{StaticResource IdeaTextPrimaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="キャンセル" Style="{StaticResource IdeaSecondaryButtonStyle}"
+                        Margin="0,0,10,0" IsCancel="True" Click="OnCancel" />
+                <Button Content="OK" Style="{StaticResource IdeaPrimaryButtonStyle}"
+                        IsDefault="True" Click="OnOk" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

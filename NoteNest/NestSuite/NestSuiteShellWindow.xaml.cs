@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using NoteNest.NestSuite.ChatNest;
+using NoteNest.NestSuite.IdeaNest.ViewModels;
 using NoteNest.Services;
 using NoteNest.ViewModels;
 using NoteNest.Views;
@@ -37,6 +38,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 {
     private readonly DialogService _dialogs;
     private readonly ChatNestWorkspaceViewModel _chatNestViewModel = new();
+    private readonly IdeaNestWorkspaceViewModel _ideaNestViewModel = new();
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
     public NestSuiteShellWindow()
@@ -78,6 +80,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // 終了時の破棄確認のためフィールドとして保持する。
         ChatWorkspaceView.DataContext = _chatNestViewModel;
 
+        // v1.8.0: IdeaNest 統合検証用 Workspace は独立した ViewModel を持つ
+        IdeaNestWorkspaceView.DataContext = _ideaNestViewModel;
+        _ideaNestViewModel.DirtyRequested += (_, _) => SyncIdeaNestTab();
+
         vm.ShowInputDialog   = (title, prompt) => _dialogs.ShowInput(title, prompt);
         vm.ShowConfirmDialog = (title, message) => _dialogs.Confirm(message, title);
         vm.ShowErrorDialog   = (title, message) => _dialogs.ShowError(message, title);
@@ -109,6 +115,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // v1.7.3: タブモデルを Workspace の実際の状態（ファイルパス・未保存）と同期する
         vm.PropertyChanged += OnNoteNestViewModelPropertyChanged;
         _chatNestViewModel.PropertyChanged += OnChatNestPropertyChanged;
+        _ideaNestViewModel.PropertyChanged += OnIdeaNestPropertyChanged;
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -117,6 +124,15 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         {
             e.Cancel = true;
             return;
+        }
+
+        // v1.8.0: IdeaNest 変更確認
+        if (_ideaNestViewModel.HasChanges)
+        {
+            if (!_dialogs.Confirm(
+                "IdeaNest に未保存の変更があります（保存は未対応）。\n終了すると内容は失われます。終了しますか？",
+                "未保存の IdeaNest", MessageBoxImage.Warning))
+            { e.Cancel = true; return; }
         }
 
         // v1.7.4: ChatNest に保存パスがある場合は「保存してから終了」を促す。
@@ -199,16 +215,18 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
             bool isNoteNest = toolId == NestSuiteToolRegistry.NoteNestToolId;
             bool isChatNest = toolId == NestSuiteToolRegistry.ChatNestToolId;
+            bool isIdeaNest = toolId == NestSuiteToolRegistry.IdeaNestToolId;
 
             // Workspace 表示切替（選択タブに対応する Workspace のみ表示）
             WorkspaceView.Visibility = isNoteNest ? Visibility.Visible : Visibility.Collapsed;
             ChatWorkspaceView.Visibility = isChatNest ? Visibility.Visible : Visibility.Collapsed;
+            IdeaNestWorkspaceView.Visibility = isIdeaNest ? Visibility.Visible : Visibility.Collapsed;
             UnintegratedPlaceholder.Visibility = tool.IsIntegrated ? Visibility.Collapsed : Visibility.Visible;
             if (!tool.IsIntegrated)
             {
                 PlaceholderTitle.Text = tool.DisplayName;
                 PlaceholderMessage.Text =
-                    $"{tool.DisplayName} はまだ統合されていません。\nv1.8.0 以降で統合検証予定です。";
+                    $"{tool.DisplayName} はまだ統合されていません。\n将来のバージョンで統合予定です。";
             }
 
             // サイドバー選択ハイライト更新
@@ -330,6 +348,36 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.HasUnsavedChanges))
             SyncChatNestTab();
+    }
+
+    private void OnIdeaNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IdeaNestWorkspaceViewModel.HasChanges))
+            SyncIdeaNestTab();
+    }
+
+    /// <summary>
+    /// IdeaNest の HasChanges を IdeaNest タブモデルの IsModified に反映する。
+    /// </summary>
+    private void SyncIdeaNestTab()
+    {
+        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        if (tab == null) return;
+        ReplaceTab(tab, tab with { IsModified = _ideaNestViewModel.HasChanges });
+    }
+
+    /// <summary>
+    /// IdeaNest タブを閉じる前の確認とリセット。
+    /// </summary>
+    private bool ConfirmAndResetIdeaNest(NestSuiteDocumentTab tab)
+    {
+        if (tab.IsModified &&
+            !_dialogs.Confirm(
+                "IdeaNest に未保存の変更があります（保存は未対応）。\n閉じると変更は失われます。閉じますか？",
+                "タブを閉じる", MessageBoxImage.Warning))
+            return false;
+        _ideaNestViewModel.LoadFromWorkspace(new NoteNest.NestSuite.IdeaNest.Models.Workspace());
+        return true;
     }
 
     // ── v1.7.4: ChatNest ファイル操作 ─────────────────────────────────────
@@ -519,7 +567,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 break;
 
             case NestSuiteWorkspaceKind.IdeaNest:
-                // 未統合プレースホルダー：変更なし、確認不要
+                if (!ConfirmAndResetIdeaNest(tab)) return;
                 break;
         }
 
@@ -593,7 +641,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 NewChatNestSession();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest のファイル操作はまだ利用できません。", "未統合");
+                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
                 break;
         }
     }
@@ -609,7 +657,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 OpenChatNestFile();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest のファイル操作はまだ利用できません。", "未統合");
+                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
                 break;
         }
     }
@@ -625,7 +673,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 SaveChatNestFile();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest のファイル操作はまだ利用できません。", "未統合");
+                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
                 break;
         }
     }
@@ -641,7 +689,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 SaveChatNestFileAs();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest のファイル操作はまだ利用できません。", "未統合");
+                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
                 break;
         }
     }
@@ -726,7 +774,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => _dialogs.ShowInfo(
             $"NestSuite（開発版）\n\nNoteNest v{MainViewModel.ApplicationVersion} 搭載\n" +
-            "ChatNest 統合検証中 / IdeaNest は将来統合予定",
+            "ChatNest 統合検証中 / IdeaNest 統合検証中（v1.8.0）",
             "NestSuite について");
 
     // ── IWorkspaceDialogHost（明示的実装 — WorkspaceView の境界を明確に保つ）──
