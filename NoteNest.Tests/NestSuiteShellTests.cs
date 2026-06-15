@@ -321,4 +321,30 @@ public class NestSuiteShellTests
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
         Assert.NotNull(method);
     }
+
+    // ── v1.7.6: タブを閉じる操作 ──────────────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasCloseTabMethod()
+    {
+        // v1.7.6: CloseTab がタブ閉じ操作の中心メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("CloseTab",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteDocumentTab)],
+                null);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasIsClosingTabField()
+    {
+        // v1.7.6: _isClosingTab フラグが NoteNest VM リセット中の二重同期を抑制するために宣言されていることを確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "_isClosingTab");
+        Assert.NotNull(field);
+        Assert.Equal(typeof(bool), field!.FieldType);
+    }
 }

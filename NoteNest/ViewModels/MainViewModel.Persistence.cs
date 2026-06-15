@@ -26,6 +26,13 @@ public partial class MainViewModel
         return ShowConfirmDialog?.Invoke("未保存の変更", "保存されていない変更があります。終了しますか？") ?? true;
     }
 
+    /// <summary>
+    /// 確認なしで新規プロジェクトを作成する。
+    /// NestSuite がタブ閉じ操作でユーザー確認を完了済みの場合に呼ぶ。
+    /// 通常の新規作成（ユーザー操作）には <see cref="NewProjectCommand"/> を使用すること。
+    /// </summary>
+    public void CreateNewProjectDirect() => _lifecycle.CreateNew();
+
     private bool EnsureCanDiscardChanges(string question)
     {
         if (!_session.IsModified) return true;

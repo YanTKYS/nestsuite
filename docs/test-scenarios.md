@@ -1773,3 +1773,56 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 4. `StartupArgParserTests` が全件パスすることを確認する（自動）
 5. `WorkspaceViewRegressionTests` が全件パスすることを確認する（自動）
 6. `ApplicationVersionTests` でスキーマバージョンが `1.4.1` のままであることを確認する（自動）
+
+---
+
+## §48 v1.7.6 タブを閉じる操作の最小対応
+
+### §48-1 NoteNest タブを閉じる（未保存なし）
+
+1. `--nestsuite` で NestSuite を起動し、NoteNest タブが表示されていることを確認する
+2. NoteNest タブの × ボタンをクリックする
+3. 確認ダイアログが表示されないこと（未保存なしのため）を確認する
+4. 無題の NoteNest タブが自動作成され表示されることを確認する
+
+### §48-2 NoteNest タブを閉じる（未保存あり）
+
+1. `--nestsuite` で NestSuite を起動し、NoteNest でノートを追加する（未保存状態）
+2. タブに ` *` が表示されていることを確認する
+3. NoteNest タブの × ボタンをクリックする
+4. 「未保存の変更があります。閉じますか？」確認ダイアログが表示されることを確認する
+5. キャンセル → タブが閉じないことを確認する
+6. 再度 × をクリックして OK → タブが閉じ、新しい無題 NoteNest タブが作成されることを確認する
+
+### §48-3 ChatNest タブを閉じる（未保存あり）
+
+1. `--nestsuite` で NestSuite を起動し、ChatNest タブを開く
+2. メッセージを投稿し未保存状態にする
+3. ChatNest タブの × ボタンをクリックする
+4. 「未保存の変更があります。閉じますか？」確認ダイアログが表示されることを確認する
+5. OK → ChatNest タブが閉じることを確認する
+
+### §48-4 最後の 1 枚を閉じた場合の無題タブ自動作成
+
+1. NoteNest タブ 1 枚だけの状態で × ボタンをクリックする
+2. タブが閉じた後、無題 NoteNest タブが自動的に作成されて表示されることを確認する
+3. タブ数が 0 にならないことを確認する
+
+### §48-5 隣接タブへの移動
+
+1. NoteNest タブと ChatNest タブの 2 枚が開いた状態で、ChatNest タブをアクティブにする
+2. ChatNest タブの × ボタンをクリックして閉じる（未保存なし）
+3. NoteNest タブがアクティブになることを確認する
+
+### §48-6 自動テスト（v1.7.6 追加分）
+
+1. `NestSuiteShellTests` に追加された `HasCloseTabMethod` / `HasIsClosingTabField` が全件パスすることを確認する（自動）
+2. アプリケーションバージョンが `1.7.6` であることを確認する（自動）
+
+### §48-7 回帰確認（自動）
+
+1. `NestSuiteShellTests` 全件パスすることを確認する（自動）
+2. `ChatNestFileServiceTests` が全件パスすることを確認する（自動）
+3. `ChatNestWorkspaceViewModelTests` が全件パスすることを確認する（自動）
+4. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+5. `ApplicationVersionTests` でスキーマバージョンが `1.4.1` のままであることを確認する（自動）

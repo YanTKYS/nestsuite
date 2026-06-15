@@ -164,10 +164,21 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding DisplayName}" FontSize="12"/>
+                                    <TextBlock Text="{Binding DisplayName}" FontSize="12"
+                                               VerticalAlignment="Center"/>
                                     <TextBlock Text=" *" FontSize="12"
+                                               VerticalAlignment="Center"
                                                Foreground="{DynamicResource UnsavedBrush}"
                                                Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
+                                    <!-- v1.7.6: タブ閉じるボタン。Tag に自身のタブモデルをバインドして渡す -->
+                                    <Button Content="×" FontSize="10"
+                                            Margin="6,0,0,0" Padding="3,1"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent" BorderThickness="0"
+                                            Cursor="Hand"
+                                            ToolTip="このタブを閉じる"
+                                            Tag="{Binding}"
+                                            Click="TabClose_Click"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

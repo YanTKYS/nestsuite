@@ -1033,3 +1033,46 @@ Yes → 保存してから終了、No → 保存せずに終了、Cancel → 終
 ChatNest v0.4.1 以前のバージョンが `"要約"` という発言者名を使用していた可能性がある。
 読込時に `"結論"` へ変換することでファイルの互換性を維持できる。
 書き込み時は常に現在の enum 名（`"結論"`）を使用するため、次に保存すれば互換マッピングは不要になる。
+
+---
+
+## 39. v1.7.6 タブを閉じる操作の設計判断
+
+v1.7.6 では、NestSuite のタブストリップに × 閉じボタンを追加し、`CloseTab` メソッドを中心とした閉じ操作を実装した。
+
+### Id でタブを検索する理由（record 値等価ではなく）
+
+`NestSuiteDocumentTab` は sealed record のため、`Tab1 with { IsModified = true }` はフィールドの値が変わった別のインスタンスになる。
+`ReplaceTab` はこの「新しいインスタンス」で `_tabs` を更新するが、タブテンプレート内の `Button.Tag` はデータバインディングで初期設定された「古いインスタンス」を保持し続ける。
+`TabClose_Click` で取得した `Button.Tag` を `_tabs.IndexOf(oldTab)` で探すと `-1` が返り、`CloseTab` が何もしない不具合になる。
+`Id` フィールドは `ReplaceTab` でも同じ値が引き継がれる（`with { Id = tab.Id }` パターン）ため、Id による線形検索で正しい最新インスタンスを見つけることができる。
+
+### _isClosingTab フラグの必要性
+
+`CloseTab` の NoteNest タブ閉じ処理は次の順序で進む：
+
+1. `ConfirmAndResetNoteNest` 内で `ViewModel.CreateNewProjectDirect()` を呼ぶ
+2. `CreateNewProjectDirect` が `_lifecycle.CreateNew()` を呼ぶ
+3. `CurrentFilePath`・`IsModified` の PropertyChanged が発火する
+4. `OnNoteNestViewModelPropertyChanged` → `SyncNoteNestTabToViewModel` → `ReplaceTab` が走る
+5. `_tabs[idx]` の参照が変わり、直後の `_tabs.RemoveAt(idx)` が別のインスタンスを削除してしまう
+
+`_isClosingTab = true` ガードをステップ 1 の前に立てることで、ステップ 3〜4 の PropertyChanged による再入を抑制し、`_tabs.RemoveAt(idx)` が正しいインスタンスを削除できるようにした。
+
+### CreateNewProjectDirect を MainViewModel に追加した理由
+
+既存の `NewProjectCommand`（→ `NewProject()`）は内部で `EnsureCanDiscardChanges` を呼び、ユーザー確認を行う。
+`CloseTab` はすでに `ConfirmAndResetNoteNest` で確認を済ませているため、二重確認になってしまう。
+`CreateNewProjectDirect()` を別メソッドとして公開し、NestSuite の「確認済み閉じ操作」からのみ呼ぶ設計にした。
+通常の NoteNest 単体操作は引き続き `NewProjectCommand` を使い確認ダイアログを経由する。
+
+### 最後の 1 枚を閉じた場合の無題タブ自動作成
+
+タブが 0 枚の状態を UI 上に作らない設計にした。
+「無題 — NoteNest タブ」を自動作成して `ActivateTab` することで、常に 1 枚以上のタブが存在する状態を維持する。
+これは多くのタブ型 IDE が採用する挙動と一致し、空白のワークスペースで操作手段がなくなる状態を防ぐ。
+
+### IdeaNest タブは確認なしで閉じる
+
+IdeaNest は未統合のため、実質的なデータを持たないプレースホルダータブである。
+未保存確認をスキップし、単純削除するだけで十分。

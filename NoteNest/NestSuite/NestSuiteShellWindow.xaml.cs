@@ -172,6 +172,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly ObservableCollection<NestSuiteDocumentTab> _tabs = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
+    private bool _isClosingTab;
 
     /// <summary>現在選択中のタブのツール ID。タブ未選択時は <see cref="DefaultToolId"/>。</summary>
     public string SelectedToolId => _selectedTab?.ToolId ?? DefaultToolId;
@@ -318,6 +319,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     private void OnNoteNestViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        // _isClosingTab 中は NoteNest ViewModel のリセットによる通知を無視する
+        // （CloseTab 内で CreateNewProjectDirect を呼んだ際の二重更新を防ぐ）
+        if (_isClosingTab) return;
         if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified))
             SyncNoteNestTabToViewModel();
     }
@@ -455,6 +459,117 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
         tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
         ActivateTab(tab);
+    }
+
+    // ── v1.7.6: タブを閉じる操作 ──────────────────────────────────────────
+
+    /// <summary>
+    /// タブの × ボタンクリックハンドラ。Button.Tag にバインドされたタブモデルを取り出し、
+    /// <see cref="CloseTab"/> に委譲する。e.Handled = true で ListBoxItem 選択変更の
+    /// 余分な伝播を抑制する。
+    /// </summary>
+    private void TabClose_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).Tag is NestSuiteDocumentTab tab)
+            CloseTab(tab);
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// 指定タブを閉じる。
+    /// 未保存の場合は確認ダイアログを表示し、キャンセル時はタブを残す。
+    /// 閉じた後は右隣または左隣のタブをアクティブ化する。
+    /// タブが 0 件になった場合は無題 NoteNest タブを自動作成する。
+    ///
+    /// <para>NoteNest: <see cref="MainViewModel.CreateNewProjectDirect"/> でリセット（確認済み後）。
+    /// _isClosingTab フラグで <see cref="OnNoteNestViewModelPropertyChanged"/> を抑制し、
+    /// SyncNoteNestTabToViewModel による二重更新を防ぐ。</para>
+    /// <para>ChatNest: <see cref="ChatNestWorkspaceViewModel.Clear"/> でリセット。</para>
+    /// <para>IdeaNest: 未統合のため確認なしで即閉じる。</para>
+    /// </summary>
+    private void CloseTab(NestSuiteDocumentTab tab)
+    {
+        // Id で検索して最新のタブを取得（Button.Tag バインドが古いレコードを持つ場合に備える）
+        var idx = -1;
+        for (int i = 0; i < _tabs.Count; i++)
+        {
+            if (_tabs[i].Id == tab.Id)
+            {
+                idx = i;
+                tab = _tabs[i];
+                break;
+            }
+        }
+        if (idx < 0) return;
+
+        switch (tab.WorkspaceKind)
+        {
+            case NestSuiteWorkspaceKind.NoteNest:
+                if (!ConfirmAndResetNoteNest(tab)) return;
+                break;
+
+            case NestSuiteWorkspaceKind.ChatNest:
+                if (!ConfirmAndResetChatNest(tab)) return;
+                break;
+
+            case NestSuiteWorkspaceKind.IdeaNest:
+                // 未統合プレースホルダー：変更なし、確認不要
+                break;
+        }
+
+        _tabs.RemoveAt(idx);
+
+        if (_tabs.Count == 0)
+        {
+            // 最後のタブを閉じた場合は無題 NoteNest タブを自動作成する
+            var newTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+            _tabs.Add(newTab);
+            ActivateTab(newTab);
+        }
+        else
+        {
+            // 右隣を優先、なければ左隣（最後のタブなら idx-1）
+            var nextIdx = Math.Min(idx, _tabs.Count - 1);
+            ActivateTab(_tabs[nextIdx]);
+        }
+    }
+
+    /// <summary>
+    /// NoteNest タブを閉じる前の確認とリセット。
+    /// 未保存の場合は確認ダイアログを表示。確認後は <see cref="MainViewModel.CreateNewProjectDirect"/>
+    /// でリセットする（<see cref="_isClosingTab"/> フラグで SyncNoteNestTabToViewModel の
+    /// 二重更新を防ぐ）。
+    /// </summary>
+    private bool ConfirmAndResetNoteNest(NestSuiteDocumentTab tab)
+    {
+        if (tab.IsModified &&
+            !_dialogs.Confirm(
+                "NoteNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
+                "タブを閉じる", MessageBoxImage.Warning))
+            return false;
+
+        _isClosingTab = true;
+        try { ViewModel.CreateNewProjectDirect(); }
+        finally { _isClosingTab = false; }
+
+        return true;
+    }
+
+    /// <summary>
+    /// ChatNest タブを閉じる前の確認とリセット。
+    /// 未保存の場合は確認ダイアログを表示。確認後は <see cref="ChatNestWorkspaceViewModel.Clear"/>
+    /// でリセットする。
+    /// </summary>
+    private bool ConfirmAndResetChatNest(NestSuiteDocumentTab tab)
+    {
+        if (tab.IsModified &&
+            !_dialogs.Confirm(
+                "ChatNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
+                "タブを閉じる", MessageBoxImage.Warning))
+            return false;
+
+        _chatNestViewModel.Clear();
+        return true;
     }
 
     // ── v1.7.4: ファイルメニューハンドラ（タブ種別でディスパッチ） ─────────

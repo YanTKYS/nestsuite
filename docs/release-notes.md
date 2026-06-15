@@ -1,5 +1,67 @@
 # リリースノート
 
+## v1.7.6 — タブを閉じる操作の最小対応
+
+**リリース日：** 2026-06-15
+
+### 概要
+
+NestSuite のタブストリップに × 閉じボタンを追加し、タブを閉じる基本操作を実装した。
+未保存確認・最後の 1 枚を閉じた場合の無題タブ自動作成・隣接タブへの移動を含む。
+
+### 追加した機能
+
+#### タブ閉じボタン（×）
+
+TabStrip の各タブに × ボタンを追加した（`NestSuiteShellWindow.xaml`）。
+`Tag="{Binding}"` でタブモデルを渡し、`TabClose_Click` ハンドラで `CloseTab(tab)` を呼ぶ。
+
+#### `CloseTab` メソッド（`NestSuiteShellWindow.xaml.cs`）
+
+タブ閉じ操作の中心メソッド。
+
+- タブを Id で検索する（sealed record の値等価ではなく Id 一致でルックアップ。Button.Tag のバインディングが ReplaceTab 後に古い record を保持するため）
+- `WorkspaceKind` で分岐し、NoteNest / ChatNest の未保存確認を行う
+- 確認後タブを削除し、隣接タブへ移動（右優先、なければ左）
+- 最後の 1 枚を閉じた場合は無題 NoteNest タブを自動作成して表示する
+
+#### `ConfirmAndResetNoteNest` / `ConfirmAndResetChatNest`
+
+- `ConfirmAndResetNoteNest`：未保存確認後、`_isClosingTab = true` ガード下で `ViewModel.CreateNewProjectDirect()` を呼ぶ
+- `ConfirmAndResetChatNest`：未保存確認後、`_chatNestViewModel.Clear()` を呼ぶ
+
+#### `_isClosingTab` フラグ
+
+`CreateNewProjectDirect()` 呼び出し中は `OnNoteNestViewModelPropertyChanged` が早期リターンする。
+`CreateNewProjectDirect` が `_lifecycle.CreateNew()` を呼ぶと NoteNest の CurrentFilePath・IsModified が変化し、
+`SyncNoteNestTabToViewModel` → `ReplaceTab` が発火して `_tabs` の参照が変わってしまうことを防ぐ。
+
+#### `MainViewModel.CreateNewProjectDirect()`（`MainViewModel.Persistence.cs`）
+
+確認ダイアログを挟まずに新規プロジェクトを作成する公開メソッド。
+NestSuite がタブ閉じ操作でユーザー確認を完了済みの場合に呼ぶ。
+
+### 追加したテスト（`NestSuiteShellTests.cs`）
+
+- `NestSuiteShellWindow_HasCloseTabMethod` — `CloseTab(NestSuiteDocumentTab)` が宣言されていることを確認
+- `NestSuiteShellWindow_HasIsClosingTabField` — `_isClosingTab` フィールドが宣言されていることを確認
+
+### 変更しなかったもの
+
+- NoteNest 単体版の通常起動フロー
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest タブの閉じ操作（未保存確認なし、単純削除）
+- 複数 NoteNest タブの独立した ViewModel 管理（`WorkspaceView` は 1 つのまま）
+
+### v1.7.7 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.7.7 | 複数 NoteNest タブの独立した ViewModel 管理 |
+| v1.8.0 | IdeaNest 統合検証 |
+
+---
+
 ## v1.7.5 — ファイル単位タブ・ChatNest 保存の回帰確認・小修正
 
 **リリース日：** 2026-06-15
