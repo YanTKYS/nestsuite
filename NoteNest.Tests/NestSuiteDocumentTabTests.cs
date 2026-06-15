@@ -284,4 +284,30 @@ public class NestSuiteDocumentTabTests
         Assert.True(result);
         Assert.Equal(NestSuiteWorkspaceKind.ChatNest, kind);
     }
+
+    // ── v1.7.8: IdeaNest 統合前の基盤確認 ──────────────────────────────────
+
+    [Fact]
+    public void TabFactory_FromFilePath_IdeaNestExtension_ResolvesCorrectly()
+    {
+        // v1.7.8: IdeaNest 統合検証（v1.8.0 予定）の前に、タブモデルが .ideanest を正しく扱えることを確認する
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\ideas\brainstorm.ideanest");
+
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, tab.WorkspaceKind);
+        Assert.Equal("brainstorm.ideanest", tab.DisplayName);
+        Assert.Equal(@"C:\ideas\brainstorm.ideanest", tab.FilePath);
+        Assert.False(tab.IsUntitled);
+        Assert.False(tab.IsModified);
+        Assert.Equal(NestSuiteToolRegistry.IdeaNestToolId, tab.ToolId);
+    }
+
+    [Fact]
+    public void TabFactory_TryGetKind_IdeaNestExtension_ReturnsIdeaNest()
+    {
+        // v1.7.8: .ideanest 拡張子が NestSuiteWorkspaceKind.IdeaNest に解決されることを確認する
+        var result = NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
+
+        Assert.True(result);
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
+    }
 }

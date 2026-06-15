@@ -1887,3 +1887,43 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 5. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
 6. `ArchitectureBoundaryTests` が全件パスすることを確認する（自動）
 7. `ApplicationVersionTests` でスキーマバージョンが `1.4.1` のままであることを確認する（自動）
+
+---
+
+## §50 v1.7.8 IdeaNest統合前の回帰確認・小修正
+
+### §50-1 スタレコードバグ修正後の ChatNest ファイル開き直し
+
+1. NestSuite を `--nestsuite` 起動し、ChatNest に切り替える
+2. メッセージを入力する（タブが `*` 付き未保存状態になることを確認する）
+3. ファイルメニュー → 開く で別の `.chatnest` ファイルを選択する
+4. 「変更を破棄しますか？」確認ダイアログが表示されることを確認する
+5. 「はい」を選択する
+6. タブ名が新しいファイル名に変わっていることを確認する（旧ファイル名のままにならないこと）
+7. メッセージ一覧が新しいファイルの内容に変わっていることを確認する
+8. タブに `*`（未保存表示）がないことを確認する
+
+### §50-2 スタレコードバグ修正後の新規 ChatNest セッション
+
+1. NestSuite を `--nestsuite` 起動し、ChatNest にメッセージを入力する（未保存状態）
+2. ファイルメニュー → 新規 ChatNest セッションを選択する
+3. 「変更を破棄しますか？」確認ダイアログが表示されることを確認する
+4. 「はい」を選択する
+5. タブが「無題.chatnest」にリセットされていることを確認する
+6. ChatNest のメッセージ一覧が空になっていることを確認する
+
+### §50-3 IdeaNest 拡張子テスト確認（自動）
+
+1. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+   - `TabFactory_FromFilePath_IdeaNestExtension_ResolvesCorrectly` を含むこと
+   - `TabFactory_TryGetKind_IdeaNestExtension_ReturnsIdeaNest` を含むこと
+
+### §50-4 回帰確認（自動）
+
+1. `StartupArgParserTests` が全件パスすることを確認する（自動）
+2. `NestSuiteShellTests` が全件パスすることを確認する（自動）
+3. `ChatNestFileServiceTests` が全件パスすることを確認する（自動）
+4. `ChatNestWorkspaceViewModelTests` が全件パスすることを確認する（自動）
+5. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+6. `ArchitectureBoundaryTests` が全件パスすることを確認する（自動）
+7. `ApplicationVersionTests` でアプリバージョンが `1.7.8`、スキーマバージョンが `1.4.1` であることを確認する（自動）

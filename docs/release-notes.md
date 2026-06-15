@@ -1,5 +1,96 @@
 # リリースノート
 
+## v1.7.8 — IdeaNest統合前の回帰確認・小修正
+
+**リリース日：** 2026-06-15
+
+### 概要
+
+v1.8.0 で IdeaNest 統合検証へ進む前に、NoteNest / ChatNest / ファイル単位タブ / 起動時読込の
+回帰確認を行い、発見した不整合を小修正した安定化版。
+
+### 修正した不整合
+
+#### `OpenChatNestFile` の stale record バグ（`NestSuiteShellWindow.xaml.cs`）
+
+**問題：** `_chatNestViewModel.LoadMessages(messages)` が `HasUnsavedChanges` の変更通知を発火し、
+`SyncChatNestTab` がタブレコードを `tab with { IsModified = false }` で置き換える。
+`tab` ローカル変数は置き換え前の古い record を指したままになる（stale reference）。
+このとき `tab.IsModified` が `true` だった場合、後続の `ReplaceTab(tab, ...)` が
+`_tabs.IndexOf(tab)` で -1 を返して no-op になり、タブの `FilePath`・`DisplayName` が更新されない。
+
+**発生条件：** 変更済み ChatNest タブ（`*` 表示）がある状態で「ファイル > 開く」を実行し、破棄確認で OK を選択した場合。
+
+**修正：** `LoadMessages` の後、`tab.Id` を使って `_tabs` から最新レコードを再取得してから `ReplaceTab` を呼ぶ。
+
+```csharp
+var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab;
+ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
+```
+
+#### `NewChatNestSession` の stale record バグ（同）
+
+**問題：** 同様に `_chatNestViewModel.Clear()` が `HasUnsavedChanges` 変更通知を発火し、
+`SyncChatNestTab` がタブレコードを置き換える。後続の `ReplaceTab(tab, ...)` が no-op になり、
+「新規」後もタブが古いファイル名のまま残る。
+
+**発生条件：** 変更済み ChatNest タブがある状態で「ファイル > 新規」を実行した場合。
+
+**修正：** `Clear()` の後、`tab.Id` で再取得してから `ReplaceTab` を呼ぶ。
+
+### 回帰確認結果
+
+| 項目 | 結果 |
+|------|------|
+| 引数なし起動（NoteNest 単体版） | 変更なし |
+| `.notenest` 単独指定起動（NoteNest 単体版） | 変更なし |
+| `--nestsuite` 起動（NestSuite） | 変更なし |
+| `--nestsuite sample.notenest` | 変更なし |
+| `--nestsuite sample.chatnest` | 変更なし |
+| NoteNest タブ表示・切替 | 変更なし |
+| ChatNest タブ表示・切替 | 変更なし |
+| IdeaNest 未統合プレースホルダー表示 | 変更なし |
+| タブを閉じる操作 | 変更なし |
+| ChatNest 保存（名前を付けて・上書き） | 変更なし |
+| ChatNest 読込（`OpenChatNestFile`） | stale record バグを修正 |
+| ChatNest 新規（`NewChatNestSession`） | stale record バグを修正 |
+| NoteNest 保存スキーマ | `1.4.1` 変更なし |
+| ファイルメニュー分岐（NoteNest / ChatNest / IdeaNest） | 変更なし |
+| アプリ終了時の未保存確認 | 変更なし |
+
+### 追加したテスト（`NestSuiteDocumentTabTests.cs` に 2 件追加）
+
+- `TabFactory_FromFilePath_IdeaNestExtension_ResolvesCorrectly` — `.ideanest` の `FromFilePath` が正しく解決されることを確認（v1.8.0 IdeaNest 統合前の基盤確認）
+- `TabFactory_TryGetKind_IdeaNestExtension_ReturnsIdeaNest` — `.ideanest` 拡張子が `IdeaNest` に解決されることを確認
+
+### IdeaNest 統合前の状態確認
+
+- `NestSuiteWorkspaceKind.IdeaNest` はモデルとして定義済み ✓
+- `NestSuiteTabFactory` が `.ideanest` を扱える ✓
+- `NestSuiteToolRegistry.IdeaNestDef.IsIntegrated = false` ✓
+- `EnsureTabForToolId("IdeaNest")` で IdeaNest タブが作成できる ✓
+- `ActivateTab` で IdeaNest タブ選択時に未統合プレースホルダーが表示される ✓
+- `CloseTab` で IdeaNest タブを確認なしで閉じられる ✓
+- `LoadInitialFile` で `.ideanest` を指定した場合はエラー表示で継続する ✓
+
+### 変更しなかったもの
+
+- NoteNest 単体版の通常起動フロー
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- IdeaNest（未統合のまま・統合は v1.8.0 で予定）
+- タブ復元（未実装のまま）
+- 複数ファイル同時オープン（未実装のまま）
+
+### v1.8.0 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.8.0 | IdeaNest 統合検証 |
+| v1.8.1 | IdeaNest 統合後の回帰確認・小修正 |
+| 将来 | タブ復元・複数ファイル同時オープン・`.ideanest` 保存形式確立 |
+
+---
+
 ## v1.7.7 — 起動時 .chatnest ファイル指定の最小対応
 
 **リリース日：** 2026-06-15

@@ -417,6 +417,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         {
             var messages = ChatNestFileService.Load(path);
             _chatNestViewModel.LoadMessages(messages);
+            // LoadMessages は HasUnsavedChanges 変更通知を発火し、SyncChatNestTab がタブレコードを
+            // 置き換える可能性がある。tab 変数が stale にならないよう Id で再取得する。
             if (tab == null)
             {
                 tab = NestSuiteTabFactory.FromFilePath(path);
@@ -424,7 +426,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             }
             else
             {
-                ReplaceTab(tab, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
+                var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab;
+                ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
                 tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
             }
             ActivateTab(tab);
@@ -448,6 +451,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
 
         _chatNestViewModel.Clear();
+        // Clear() は HasUnsavedChanges 変更通知を発火し、SyncChatNestTab がタブレコードを
+        // 置き換える可能性がある。tab 変数が stale にならないよう Id で再取得する。
         if (tab == null)
         {
             tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
@@ -455,7 +460,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
         else
         {
-            ReplaceTab(tab, NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest) with { Id = tab.Id });
+            var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab;
+            ReplaceTab(current, NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest) with { Id = tab.Id });
         }
         tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
         ActivateTab(tab);
