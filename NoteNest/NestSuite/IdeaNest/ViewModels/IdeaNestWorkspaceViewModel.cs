@@ -314,7 +314,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase
             "不要な場合は、削除ではなくアーカイブ (📥) も検討してください。",
             primaryText: "削除",
             cancelText: "キャンセル");
-        if (ok != ConfirmResult.Primary) return;
+        if (ok != NoteNest.NestSuite.IdeaNest.Views.ConfirmResult.Primary) return;
         _cardOps.CommitDelete(card);
     }
 
