@@ -528,4 +528,34 @@ public class NestSuiteShellTests
         Assert.Equal(NestSuiteToolRegistry.IdeaNestToolId, NestSuiteToolRegistry.ToolDefinitions[1].Id);
         Assert.Equal(NestSuiteToolRegistry.ChatNestToolId, NestSuiteToolRegistry.ToolDefinitions[2].Id);
     }
+
+    // ── v1.8.6: 起動時ファイル指定時の無題タブ生成修正 ─────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_Constructor_AcceptsOptionalStringParameter()
+    {
+        // v1.8.6: コンストラクタが string? initialFilePath = null を受け取れることを確認
+        var ctor = typeof(NestSuiteShellWindow)
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(c =>
+            {
+                var p = c.GetParameters();
+                return p.Length == 1 &&
+                       p[0].ParameterType == typeof(string) &&
+                       p[0].IsOptional;
+            });
+        Assert.NotNull(ctor);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasEnsureDefaultTabMethod()
+    {
+        // v1.8.6: EnsureDefaultTab がフォールバック NoteNest タブ生成の中心メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("EnsureDefaultTab",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
 }

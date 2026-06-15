@@ -1,3 +1,13 @@
+## v1.8.6 — 起動時ファイル指定時の無題NoteNestタブ生成修正
+
+- `--nestsuite sample.chatnest` や `--nestsuite sample.ideanest` 起動時に、指定ファイルのタブと並んで不要な無題NoteNestタブが作成されるバグを修正した。
+- `NestSuiteShellWindow` コンストラクタに `string? initialFilePath = null` を追加し、ファイル指定ありの場合は初期タブを作成しないようにした。
+- フォールバック用の `EnsureDefaultTab()` プライベートメソッドを追加した。ファイル不存在・未対応拡張子・読込エラー時にのみ無題NoteNestタブを作成する。
+- `LoadInitialFile` の各失敗パスと `LoadInitialChatNestFile` のcatchブロックで `EnsureDefaultTab()` を呼ぶようにした。
+- `App.xaml.cs` でファイルパスをコンストラクタ呼び出し前に取得し、コンストラクタへ渡すよう変更した。
+- 6パターンの起動動作（ファイルなし・各拡張子成功・存在しない・未対応拡張子）を確認するテストを追加した。
+- NoteNest保存形式・スキーマ1.4.1、ChatNest・IdeaNest保存形式は変更していない。
+
 ## v1.8.5 — 3ツール統合後の回帰確認・小修正
 
 - NoteNest / ChatNest / IdeaNest の拡張子判定、起動時読込経路、ファイルメニュー分岐、保存／読込、未保存状態、タブ作成・切替・閉じる操作を回帰確認した。

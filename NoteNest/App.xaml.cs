@@ -13,12 +13,12 @@ public partial class App : Application
         // v1.6.1: --nestsuite 引数指定時は開発・検証用 NestSuiteShellWindow を起動
         if (StartupArgParser.IsNestSuiteMode(e.Args))
         {
-            var shell = new NestSuiteShellWindow();
+            // v1.8.6: ファイルパスをコンストラクタに渡して初期タブ生成を制御する
+            var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
+            var shell = new NestSuiteShellWindow(nestSuiteFilePath);
             MainWindow = shell;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
             shell.Show();
-            // v1.6.3: --nestsuite + ファイルパス指定時はそのファイルを開く
-            var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
             if (nestSuiteFilePath != null)
                 shell.LoadInitialFile(nestSuiteFilePath);
             return;

@@ -43,7 +43,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly IdeaNestWorkspaceViewModel _ideaNestViewModel = new();
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
-    public NestSuiteShellWindow()
+    public NestSuiteShellWindow(string? initialFilePath = null)
     {
         _dialogs = new DialogService(this);
 
@@ -66,11 +66,15 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             { NestSuiteToolRegistry.ChatNestToolId, ToolMenuChatNest },
         };
 
-        // v1.7.3: タブストリップをバインドし、初期 NoteNest タブを作成・アクティブ化する
+        // v1.8.6: ファイル指定なし起動のみ初期 NoteNest タブを作成する。
+        // ファイル指定ありの場合は LoadInitialFile 内で適切なタブが作成される。
         TabStrip.ItemsSource = _tabs;
-        var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
-        _tabs.Add(initialTab);
-        ActivateTab(initialTab);
+        if (string.IsNullOrEmpty(initialFilePath))
+        {
+            var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+            _tabs.Add(initialTab);
+            ActivateTab(initialTab);
+        }
 
         var vm = new MainViewModel();
         DataContext = vm;
@@ -777,12 +781,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// 未対応拡張子・ファイル不存在はエラーダイアログを表示してアプリを継続する。</para>
     ///
     /// <para>v1.8.3: .ideanest を IdeaNest タブとして読み込む。</para>
+    ///
+    /// <para>v1.8.6: 読込失敗時（ファイル不存在・未対応拡張子・読込エラー）は
+    /// EnsureDefaultTab() でフォールバック NoteNest タブを保証する。</para>
     /// </summary>
     public void LoadInitialFile(string path)
     {
         if (!File.Exists(path))
         {
             _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{path}", "ファイルを開けません");
+            EnsureDefaultTab();
             return;
         }
 
@@ -791,25 +799,44 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             _dialogs.ShowError(
                 $"NestSuite では開けないファイル形式です。\n対応形式: .notenest / .chatnest / .ideanest\n\n{path}",
                 "未対応のファイル形式");
+            EnsureDefaultTab();
             return;
         }
 
         switch (kind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
+                // v1.8.6: SyncNoteNestTabToViewModel が更新する NoteNest タブが存在しなければならない
+                EnsureDefaultTab();
                 ViewModel.OpenFileAtStartup(path);
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 LoadInitialChatNestFile(path);
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                TryLoadIdeaNestFile(path);
+                if (!TryLoadIdeaNestFile(path))
+                    EnsureDefaultTab();
                 break;
             default:
                 _dialogs.ShowError(
                     $"このファイル形式は NestSuite ではまだ対応していません。\n\n{path}",
                     "未対応");
+                EnsureDefaultTab();
                 break;
+        }
+    }
+
+    /// <summary>
+    /// タブが空の場合のみ無題 NoteNest タブを作成してアクティブ化する。
+    /// 起動時ファイル読込の失敗フォールバックに使用する。
+    /// </summary>
+    private void EnsureDefaultTab()
+    {
+        if (_tabs.Count == 0)
+        {
+            var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+            _tabs.Add(tab);
+            ActivateTab(tab);
         }
     }
 
@@ -831,6 +858,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         catch (Exception ex)
         {
             _dialogs.ShowError($"ChatNest ファイルを開けませんでした。\n\n{ex.Message}", "読込エラー");
+            EnsureDefaultTab();
         }
     }
 

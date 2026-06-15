@@ -2074,4 +2074,35 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 ### シナリオD: 起動時読込
 1. `--nestsuite sample.notenest`、`--nestsuite sample.chatnest`、`--nestsuite sample.ideanest` を個別に実行する。
 2. 各ファイルが正しいWorkspaceKindのタブとして開き、FilePath・表示名・未保存状態が正しいことを確認する。
+
+
+## §56 v1.8.6 起動時ファイル指定時の無題NoteNestタブ生成修正
+
+### シナリオA: ファイル指定なし起動
+1. `--nestsuite` のみで起動する。
+2. `[無題.notenest]` タブが1枚だけ表示されることを確認する。
+
+### シナリオB: NoteNestファイル指定起動
+1. `--nestsuite sample.notenest` で起動する。
+2. `[sample.notenest]` タブ1枚だけが表示される（無題タブは作られない）ことを確認する。
+
+### シナリオC: ChatNestファイル指定起動
+1. `--nestsuite sample.chatnest` で起動する。
+2. `[sample.chatnest]` タブ1枚だけが表示される（無題NoteNestタブは作られない）ことを確認する。
+
+### シナリオD: IdeaNestファイル指定起動
+1. `--nestsuite sample.ideanest` で起動する。
+2. `[sample.ideanest]` タブ1枚だけが表示される（無題NoteNestタブは作られない）ことを確認する。
+
+### シナリオE: 存在しないファイル指定起動
+1. `--nestsuite missing.ideanest`（存在しないファイル）で起動する。
+2. エラーダイアログが表示され、ダイアログを閉じると `[無題.notenest]` タブが1枚表示されることを確認する。
+
+### シナリオF: 未対応拡張子指定起動
+1. `--nestsuite sample.txt`（未対応拡張子）で起動する。
+2. 未対応形式エラーダイアログが表示され、ダイアログを閉じると `[無題.notenest]` タブが1枚表示されることを確認する。
+
+### 自動確認
+1. `ApplicationVersionTests` でアプリバージョンが `1.8.6` であることを確認する（自動）。
+2. `NestSuiteShellTests` で `EnsureDefaultTab` メソッドの存在と、コンストラクタがオプション文字列引数を受け取ることを確認する（自動）。
 3. ファイル不存在・未対応拡張子でアプリが継続することを確認する。
