@@ -214,7 +214,7 @@ public string? SelectIdeaNestSavePath(string defaultFileName)
 
 ## 9. 起動時ファイル指定（v1.8.4 以降の計画）
 
-`LoadInitialFile` の IdeaNest ケースは v1.8.1 時点で「未対応」エラーを表示している。
+`LoadInitialFile` の IdeaNest ケースは v1.8.3 で共通読込処理 `TryLoadIdeaNestFile` へ接続した。
 v1.8.3 で保存・読込が実装された後、v1.8.4 で以下の変更を行う。
 
 ```

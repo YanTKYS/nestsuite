@@ -473,8 +473,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteShellWindow_HasLoadInitialFileMethod_AcceptsIdeaNestExtension()
     {
-        // v1.8.1: LoadInitialFile が .ideanest を含む全拡張子に対して呼び出し可能であることを確認
-        // （.ideanest は認識されるが読込未対応としてエラーを表示する）
+        // v1.8.3: LoadInitialFile が .ideanest を IdeaNest 読込経路へ分岐できることを確認
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialFile",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
@@ -485,10 +484,21 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteTabFactory_IdeaNestExtension_IsRecognizedButUnsupported()
+    public void NestSuiteShellWindow_HasSharedIdeaNestLoadMethod()
     {
-        // v1.8.1: .ideanest は NestSuiteTabFactory で認識される（TryGetKind が true を返す）
-        // ただし LoadInitialFile の switch で IdeaNest ケースに分岐し、読込未対応エラーが出る
+        var method = typeof(NestSuiteShellWindow).GetMethod(
+            "TryLoadIdeaNestFile",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+        Assert.Equal(typeof(string), method.GetParameters().Single().ParameterType);
+    }
+
+    [Fact]
+    public void NestSuiteTabFactory_IdeaNestExtension_IsRecognizedForLoading()
+    {
+        // v1.8.3: .ideanest は NestSuiteTabFactory で認識され、LoadInitialFile から読み込まれる
         var result = NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
         Assert.True(result);
         Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
