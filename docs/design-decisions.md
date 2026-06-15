@@ -1226,3 +1226,31 @@ v1.8.0 の目標は「NestSuite 上で IdeaNest の Workspace が動作するこ
 参照ソースの `WorkspaceView.xaml` は `RelativeSource AncestorType=Window` でバインドしていた。
 NestSuite では `IdeaNestWorkspaceView` は `UserControl` として `NestSuiteShellWindow` にホストされるため、
 `AncestorType=UserControl` に変更した。`ShowMenu` 添付プロパティのバインドも同様。
+
+---
+
+## 43. v1.8.1 IdeaNest統合後の回帰確認・小修正
+
+### `LoadInitialFile` に IdeaNest 明示ケースを追加した理由
+
+v1.8.0 では `.ideanest` 起動時指定が `LoadInitialFile` の switch の `default:` に落ちていた。
+`NestSuiteTabFactory.TryGetKind` は `.ideanest` を認識して `true` を返すため、
+未対応拡張子の早期リターンブロックをすり抜け、汎用的な「まだ対応していません」メッセージが表示されていた。
+
+`case NestSuiteWorkspaceKind.IdeaNest:` を明示的に追加し、
+「.ideanest の読込は v1.8.x では未対応」という具体的なメッセージを表示するよう修正した。
+`default:` は将来 WorkspaceKind が追加された場合のフォールスルー用として残す。
+
+### 変更通知を PropertyChanged 経路に一本化した理由（v1.8.0 後の整理）
+
+v1.8.0 の `IdeaNestWorkspaceViewModel.MarkDirty()` は次の3経路で `SyncIdeaNestTab()` を呼んでいた:
+1. `HasChanges` setter（`SetField` が `PropertyChanged` を発火）
+2. `DirtyRequested` イベント（`NestSuiteShellWindow` が購読）
+3. `MarkDirty()` 末尾の明示的 `OnPropertyChanged(nameof(HasChanges))`
+
+これにより1回の変更操作でタブレコードが最大3回置換されていた（コードレビューで指摘）。
+
+修正方針: `PropertyChanged` 経路のみを使用する。
+- `DirtyRequested` イベントの宣言・発火・購読をすべて削除
+- 末尾の明示的 `OnPropertyChanged` を削除
+- `SetField` が値変化時のみ通知する性質により、`HasChanges` が `true` のまま追加操作しても不要な同期が発生しない

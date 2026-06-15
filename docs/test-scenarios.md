@@ -1982,3 +1982,39 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 1. `ApplicationVersionTests` でアプリバージョンが `1.8.0`、スキーマバージョンが `1.4.1` であることを確認する（自動）
 2. `NestSuiteShellTests` が全件パスすることを確認する（IdeaNest 統合検証テスト 4 件追加含む）（自動）
 3. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+
+---
+
+## §52 v1.8.1 IdeaNest統合後の回帰確認・小修正
+
+### §52-1 `.ideanest` 起動時指定（未対応エラー表示）
+
+1. NestSuite を `--nestsuite sample.ideanest` で起動する（ファイルは存在しなくてよい）
+2. ファイルが存在しない場合は「ファイルが見つかりません」エラーが表示されることを確認する
+3. 存在する `.ideanest` ファイルを指定した場合、「.ideanest ファイルの読込は v1.8.x では未対応です」エラーが表示されることを確認する
+4. いずれの場合もアプリが落ちないことを確認する
+5. エラーダイアログを閉じた後、NoteNest 初期タブが表示されて操作できることを確認する
+
+### §52-2 IdeaNest 変更通知の経路確認
+
+1. IdeaNest タブでカードを追加する
+2. タブに `*`（未保存表示）が表示されることを確認する
+3. 同一タブでさらに別のカードを追加・編集・検索入力してもタブが余分に点滅・更新されないことを確認する
+4. IdeaNest タブを閉じて「変更を破棄しますか？」確認が出ることを確認する
+5. 破棄後に IdeaNest タブを再度開き、未保存表示が `*` なしになっていることを確認する
+
+### §52-3 NoteNest / ChatNest 回帰確認
+
+1. NoteNest タブで保存・読込が正常に動作することを確認する（NoteNest 保存スキーマ `1.4.1` 維持）
+2. ChatNest タブで `.chatnest` 保存・読込が正常に動作することを確認する
+3. タブ切替（NoteNest → ChatNest → IdeaNest → NoteNest）が正常に動作することを確認する
+4. 各タブを閉じる操作が正常に動作することを確認する
+
+### §52-4 回帰確認（自動）
+
+1. `ApplicationVersionTests` でアプリバージョンが `1.8.1`、スキーマバージョンが `1.4.1` であることを確認する（自動）
+2. `NestSuiteShellTests` が全件パスすることを確認する（IdeaNest 回帰確認テスト 9 件追加含む）（自動）
+3. `StartupArgParserTests` が全件パスすることを確認する（`.ideanest` 起動引数テスト 2 件追加含む）（自動）
+4. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+5. `ChatNestFileServiceTests` が全件パスすることを確認する（自動）
+6. `ArchitectureBoundaryTests` が全件パスすることを確認する（自動）

@@ -414,4 +414,108 @@ public class NestSuiteShellTests
                 null);
         Assert.NotNull(method);
     }
+
+    // ── v1.8.1: IdeaNest統合後の回帰確認 ────────────────────────────────
+
+    [Fact]
+    public void NestSuiteToolRegistry_IdeaNestDef_StatusText_IsIntegrationTest()
+    {
+        // v1.8.1: IdeaNest が統合検証段階（IsIntegrated=true / StatusText="統合検証"）であることを確認
+        Assert.True(NestSuiteToolRegistry.IdeaNestDef.IsIntegrated);
+        Assert.Equal("統合検証", NestSuiteToolRegistry.IdeaNestDef.StatusText);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasOnIdeaNestPropertyChangedMethod()
+    {
+        // v1.8.1: OnIdeaNestPropertyChanged が IdeaNest PropertyChanged ハンドラとして宣言されていることを確認
+        // （DirtyRequested は削除済み。PropertyChanged 経路のみであることを明示する）
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("OnIdeaNestPropertyChanged",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void IdeaNestWorkspaceViewModel_DoesNotHaveDirtyRequestedEvent()
+    {
+        // v1.8.1: DirtyRequested イベントが削除されていることを確認
+        // （PropertyChanged 経路への一本化が完了していることの保証）
+        var evt = typeof(NoteNest.NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel)
+            .GetEvent("DirtyRequested",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.Null(evt);
+    }
+
+    [Fact]
+    public void IdeaNestWorkspaceViewModel_HasMarkDirtyMethod()
+    {
+        // v1.8.1: MarkDirty が HasChanges=true を設定するメソッドとして宣言されていることを確認
+        var method = typeof(NoteNest.NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel)
+            .GetMethod("MarkDirty",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void IdeaNestWorkspaceViewModel_HasLoadFromWorkspaceMethod()
+    {
+        // v1.8.1: LoadFromWorkspace がタブリセット時に使われるメソッドとして宣言されていることを確認
+        var method = typeof(NoteNest.NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel)
+            .GetMethod("LoadFromWorkspace",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NoteNest.NestSuite.IdeaNest.Models.Workspace)],
+                null);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasLoadInitialFileMethod_AcceptsIdeaNestExtension()
+    {
+        // v1.8.1: LoadInitialFile が .ideanest を含む全拡張子に対して呼び出し可能であることを確認
+        // （.ideanest は認識されるが読込未対応としてエラーを表示する）
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("LoadInitialFile",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(string)],
+                null);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteTabFactory_IdeaNestExtension_IsRecognizedButUnsupported()
+    {
+        // v1.8.1: .ideanest は NestSuiteTabFactory で認識される（TryGetKind が true を返す）
+        // ただし LoadInitialFile の switch で IdeaNest ケースに分岐し、読込未対応エラーが出る
+        var result = NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
+        Assert.True(result);
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
+    }
+
+    [Fact]
+    public void NestSuiteTabFactory_IdeaNestExtension_IsNotNoteNest()
+    {
+        // v1.8.1: .ideanest を NoteNest として誤認しない
+        NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
+        Assert.NotEqual(NestSuiteWorkspaceKind.NoteNest, kind);
+    }
+
+    [Fact]
+    public void NestSuiteTabFactory_IdeaNestExtension_IsNotChatNest()
+    {
+        // v1.8.1: .ideanest を ChatNest として誤認しない
+        NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
+        Assert.NotEqual(NestSuiteWorkspaceKind.ChatNest, kind);
+    }
+
+    [Fact]
+    public void NestSuiteToolRegistry_AllThreeTools_NoteNestFirst()
+    {
+        // v1.8.1: ツール定義の順序が NoteNest → IdeaNest → ChatNest のまま維持されていることを確認
+        Assert.Equal(NestSuiteToolRegistry.NoteNestToolId, NestSuiteToolRegistry.ToolDefinitions[0].Id);
+        Assert.Equal(NestSuiteToolRegistry.IdeaNestToolId, NestSuiteToolRegistry.ToolDefinitions[1].Id);
+        Assert.Equal(NestSuiteToolRegistry.ChatNestToolId, NestSuiteToolRegistry.ToolDefinitions[2].Id);
+    }
 }

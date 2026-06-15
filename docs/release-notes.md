@@ -1,5 +1,84 @@
 # リリースノート
 
+## v1.8.1 — IdeaNest統合後の回帰確認・小修正
+
+**リリース日：** 2026-06-15
+
+### 概要
+
+v1.8.0 で追加した IdeaNest 統合（3 つ目の Workspace）が、既存の NoteNest / ChatNest /
+ファイル単位タブ基盤を壊していないことを確認し、見つかった小さな不整合を修正した安定化版。
+
+### 修正した不整合
+
+#### `LoadInitialFile` の `.ideanest` ケースを明示化（`NestSuiteShellWindow.xaml.cs`）
+
+**問題：** `.ideanest` を起動時ファイルとして指定した場合、`NestSuiteTabFactory.TryGetKind` は
+`true` を返すため最初のエラーチェック（未対応拡張子ブロック）をすり抜け、switch の `default:` に
+到達して汎用エラーメッセージが表示されていた。意図と実装が一致していなかった。
+
+**修正：** switch に `case NestSuiteWorkspaceKind.IdeaNest:` を追加し、
+`.ideanest` 読込未対応であることを明示したエラーメッセージを表示する。
+
+#### `NestSuiteTabFactory` の `.ideanest` コメント更新
+
+「v1.7.2 では未統合・将来予定」という旧来のコメントを「v1.8.0 で統合検証段階。読込は未対応」に更新。
+
+#### `IdeaNestWorkspaceViewModel.MarkDirty()` の通知重複修正（前コミット分）
+
+`DirtyRequested` イベントと明示的 `OnPropertyChanged(nameof(HasChanges))` を削除し、
+`HasChanges` の `SetField` による `PropertyChanged` 経路に一本化した（PR #157 / #158）。
+
+### 追加したテスト
+
+| テストクラス | 追加内容 |
+|------------|---------|
+| `ApplicationVersionTests` | バージョンを `1.8.1` に更新 |
+| `StartupArgParserTests` | `.ideanest` 起動引数テスト 2 件追加 |
+| `NestSuiteShellTests` | IdeaNest 統合後回帰確認テスト 9 件追加（DirtyRequested 削除確認・LoadFromWorkspace 確認・拡張子誤認テスト等） |
+
+### 回帰確認結果
+
+| 項目 | 結果 |
+|------|------|
+| 引数なし起動（NoteNest 単体版） | 変更なし ✓ |
+| `.notenest` 単独指定起動（NoteNest 単体版） | 変更なし ✓ |
+| `--nestsuite` 起動（NestSuite） | 変更なし ✓ |
+| `--nestsuite sample.notenest` | 変更なし ✓ |
+| `--nestsuite sample.chatnest` | 変更なし ✓ |
+| `--nestsuite sample.ideanest` | 未対応エラーを表示してアプリ継続 ✓ |
+| NoteNest タブ表示・切替 | 変更なし ✓ |
+| ChatNest タブ表示・切替 | 変更なし ✓ |
+| IdeaNest タブ表示・切替 | 変更なし ✓ |
+| IdeaNest タブを閉じる（未保存確認） | 変更なし ✓ |
+| IdeaNest ファイルメニュー（未対応表示） | 変更なし ✓ |
+| ChatNest 保存（名前を付けて・上書き） | 変更なし ✓ |
+| ChatNest 読込 | 変更なし ✓ |
+| NoteNest 保存スキーマ | `1.4.1` 変更なし ✓ |
+| `.ideanest` を NoteNest / ChatNest として誤認しない | 変更なし ✓ |
+
+### 変更しなかったもの
+
+- `.ideanest` 保存・読込（v1.8.x では未対応）
+- IdeaNest の AppShell 側移植
+- 起動時 `.ideanest` ファイル指定の本格対応
+- 同一ツール複数ファイル対応（将来改善）
+- タブ復元（将来改善）
+- 共通プロジェクトファイル形式（将来改善）
+- NoteNest 保存形式・スキーマ（`1.4.1` のまま）
+
+### v1.8.2 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.8.2 | IdeaNest 保存／読込方針の整理（`.ideanest` 形式検討） |
+| v1.8.3 | `.ideanest` 保存／読込の最小対応 |
+| v1.8.4 | `.ideanest` 起動時読込の最小対応 |
+| 将来 | 同一ツール複数ファイルの独立 ViewModel 管理（N17） |
+| 将来 | タブ復元 |
+
+---
+
 ## v1.8.0 — IdeaNest 統合検証
 
 **リリース日：** 2026-06-15

@@ -112,4 +112,22 @@ public class StartupArgParserTests
         // v1.7.7: --nestsuite sample.chatnest でも NestSuite モードと判定される
         Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.chatnest"]));
     }
+
+    // ── v1.8.1: .ideanest 起動引数 ───────────────────────────────────────
+
+    [Fact]
+    public void GetFilePath_WithNestSuitePlusIdeaNestFilePath_ReturnsPath()
+    {
+        // v1.8.1: --nestsuite sample.ideanest でもパスが取得できることを確認
+        // （LoadInitialFile が未対応エラーを表示するが、引数解析は成功する）
+        Assert.Equal("sample.ideanest",
+            StartupArgParser.GetFilePath(["--nestsuite", "sample.ideanest"]));
+    }
+
+    [Fact]
+    public void IsNestSuiteMode_WithNestSuitePlusIdeaNestFilePath_ReturnsTrue()
+    {
+        // v1.8.1: --nestsuite sample.ideanest でも NestSuite モードと判定される
+        Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.ideanest"]));
+    }
 }

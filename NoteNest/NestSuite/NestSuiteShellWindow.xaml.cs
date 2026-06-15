@@ -703,6 +703,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// <para>v1.7.7: .chatnest ファイルの読込に対応。
     /// .notenest → NoteNest タブ（既存挙動維持）、.chatnest → ChatNest タブとして開く。
     /// 未対応拡張子・ファイル不存在はエラーダイアログを表示してアプリを継続する。</para>
+    ///
+    /// <para>v1.8.0: .ideanest は NestSuiteTabFactory で認識されるが、読込は未対応。
+    /// switch の IdeaNest ケースでエラーダイアログを表示してアプリを継続する。</para>
     /// </summary>
     public void LoadInitialFile(string path)
     {
@@ -727,6 +730,11 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 LoadInitialChatNestFile(path);
+                break;
+            case NestSuiteWorkspaceKind.IdeaNest:
+                _dialogs.ShowError(
+                    $".ideanest ファイルの読込は v1.8.x では未対応です。\n\n{path}",
+                    "IdeaNest 読込未対応");
                 break;
             default:
                 _dialogs.ShowError(
