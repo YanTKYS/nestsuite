@@ -1,5 +1,67 @@
 # リリースノート
 
+## v1.7.7 — 起動時 .chatnest ファイル指定の最小対応
+
+**リリース日：** 2026-06-15
+
+### 概要
+
+`NoteNest.exe --nestsuite sample.chatnest` のように起動時に `.chatnest` ファイルを指定した場合、
+NestSuite が ChatNest タブとして開けるようになった。
+`.notenest` の起動時読込（`--nestsuite sample.notenest`）は従来どおり維持する。
+
+### 追加した機能
+
+#### `LoadInitialFile` の拡張（`NestSuiteShellWindow.xaml.cs`）
+
+v1.6.3 以降、`LoadInitialFile` は `.notenest` のみを受け付けていた。v1.7.7 では以下の分岐に対応した。
+
+- `.notenest` → 既存の `ViewModel.OpenFileAtStartup(path)` を呼ぶ（挙動変更なし）
+- `.chatnest` → 新規 `LoadInitialChatNestFile(path)` を呼ぶ
+- 未対応拡張子（`.txt` 等）→ エラーダイアログを表示してアプリを継続
+- ファイル不存在 → エラーダイアログを表示してアプリを継続（チェック順を先頭に移動）
+
+#### `LoadInitialChatNestFile` の追加（private）
+
+`ChatNestFileService.Load` でメッセージを読み込み、`ChatNestWorkspaceViewModel.LoadMessages` に反映後、
+`NestSuiteTabFactory.FromFilePath` でタブを作成してアクティブ化する。
+
+- `FilePath` = 指定パス
+- `DisplayName` = ファイル名
+- `IsModified = false`（LoadMessages 後 HasUnsavedChanges が false になるため）
+- ChatNestWorkspaceView が前面表示される
+
+### 追加したテスト
+
+#### `StartupArgParserTests.cs` に 2 件追加
+
+- `GetFilePath_WithNestSuitePlusChatNestFilePath_ReturnsPath` — `.chatnest` のパスが取得できることを確認
+- `IsNestSuiteMode_WithNestSuitePlusChatNestFilePath_ReturnsTrue` — `.chatnest` 指定でも NestSuite モードと判定されることを確認
+
+#### `NestSuiteShellTests.cs` に 1 件追加
+
+- `NestSuiteShellWindow_HasLoadInitialChatNestFileMethod` — `LoadInitialChatNestFile(string)` が宣言されていることを確認
+
+### 変更しなかったもの
+
+- NoteNest 単体版の通常起動フロー（引数なし・`.notenest` 単独指定）
+- `.notenest` 保存スキーマ（`1.4.1` のまま）
+- ChatNest の `.chatnest` 保存・読込（メニュー操作）
+- タブを閉じる操作
+- IdeaNest（未統合のまま）
+- タブ復元（未実装のまま）
+- 複数ファイル同時オープン（未実装のまま）
+
+### v1.7.8 以降の候補
+
+| バージョン候補 | 内容 |
+|--------------|------|
+| v1.7.8 | 起動時 `.chatnest` 指定の回帰確認・小修正 |
+| v1.8.0 | IdeaNest 統合検証 |
+| 将来 | タブ復元・複数ファイル同時オープン・`.ideanest` 対応 |
+
+---
+
 ## v1.7.6 — タブを閉じる操作の最小対応
 
 **リリース日：** 2026-06-15

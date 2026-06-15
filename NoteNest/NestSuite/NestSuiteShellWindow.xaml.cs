@@ -640,28 +640,68 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
     }
 
-    // ── v1.6.3: 起動時ファイル読み込み ──────────────────────────────────
+    // ── v1.7.7: 起動時ファイル読み込み（.notenest / .chatnest 対応） ────
 
     /// <summary>
-    /// 起動時にファイルパスを受け取り NoteNest プロジェクトを開く。
+    /// 起動時にファイルパスを受け取り、拡張子に応じて適切な Workspace で開く。
     /// App_Startup で <c>--nestsuite + ファイルパス</c> 指定時に呼び出す。
     /// ウィンドウ表示後に呼ぶことでエラーダイアログのオーナーが確立される。
+    ///
+    /// <para>v1.7.7: .chatnest ファイルの読込に対応。
+    /// .notenest → NoteNest タブ（既存挙動維持）、.chatnest → ChatNest タブとして開く。
+    /// 未対応拡張子・ファイル不存在はエラーダイアログを表示してアプリを継続する。</para>
     /// </summary>
     public void LoadInitialFile(string path)
     {
-        if (!path.EndsWith(".notenest", StringComparison.OrdinalIgnoreCase))
-        {
-            _dialogs.ShowError(
-                $"NoteNest で開けるファイルではありません。\n.notenest ファイルを指定してください。\n\n{path}",
-                "ファイルを開けません");
-            return;
-        }
         if (!File.Exists(path))
         {
             _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{path}", "ファイルを開けません");
             return;
         }
-        ViewModel.OpenFileAtStartup(path);
+
+        if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
+        {
+            _dialogs.ShowError(
+                $"NestSuite では開けないファイル形式です。\n対応形式: .notenest / .chatnest\n\n{path}",
+                "未対応のファイル形式");
+            return;
+        }
+
+        switch (kind)
+        {
+            case NestSuiteWorkspaceKind.NoteNest:
+                ViewModel.OpenFileAtStartup(path);
+                break;
+            case NestSuiteWorkspaceKind.ChatNest:
+                LoadInitialChatNestFile(path);
+                break;
+            default:
+                _dialogs.ShowError(
+                    $"このファイル形式は NestSuite ではまだ対応していません。\n\n{path}",
+                    "未対応");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 起動時に .chatnest ファイルを ChatNest タブとして読み込む。
+    /// <see cref="ChatNestFileService"/> でメッセージを読み込み、ChatNest タブを作成してアクティブ化する。
+    /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
+    /// </summary>
+    private void LoadInitialChatNestFile(string path)
+    {
+        try
+        {
+            var messages = ChatNestFileService.Load(path);
+            _chatNestViewModel.LoadMessages(messages);
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+            _tabs.Add(tab);
+            ActivateTab(tab);
+        }
+        catch (Exception ex)
+        {
+            _dialogs.ShowError($"ChatNest ファイルを開けませんでした。\n\n{ex.Message}", "読込エラー");
+        }
     }
 
     // ── NestSuite メニューハンドラ ──────────────────────────────────────

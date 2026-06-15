@@ -95,4 +95,21 @@ public class StartupArgParserTests
         // 未対応拡張子もファイルパス候補として返す。拡張子検証は LoadInitialFile() が担当する。
         Assert.Equal("project.json", StartupArgParser.GetFilePath(["--nestsuite", "project.json"]));
     }
+
+    // ── v1.7.7: .chatnest 起動引数 ───────────────────────────────────────
+
+    [Fact]
+    public void GetFilePath_WithNestSuitePlusChatNestFilePath_ReturnsPath()
+    {
+        // v1.7.7: --nestsuite sample.chatnest 起動時にファイルパスが取得できることを確認
+        Assert.Equal("sample.chatnest",
+            StartupArgParser.GetFilePath(["--nestsuite", "sample.chatnest"]));
+    }
+
+    [Fact]
+    public void IsNestSuiteMode_WithNestSuitePlusChatNestFilePath_ReturnsTrue()
+    {
+        // v1.7.7: --nestsuite sample.chatnest でも NestSuite モードと判定される
+        Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.chatnest"]));
+    }
 }

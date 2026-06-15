@@ -347,4 +347,19 @@ public class NestSuiteShellTests
         Assert.NotNull(field);
         Assert.Equal(typeof(bool), field!.FieldType);
     }
+
+    // ── v1.7.7: 起動時 .chatnest ファイル指定の最小対応 ─────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasLoadInitialChatNestFileMethod()
+    {
+        // v1.7.7: LoadInitialChatNestFile が起動時 .chatnest 読込ヘルパーとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("LoadInitialChatNestFile",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(string)],
+                null);
+        Assert.NotNull(method);
+    }
 }

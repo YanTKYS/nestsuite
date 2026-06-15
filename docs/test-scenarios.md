@@ -1826,3 +1826,64 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 3. `ChatNestWorkspaceViewModelTests` が全件パスすることを確認する（自動）
 4. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
 5. `ApplicationVersionTests` でスキーマバージョンが `1.4.1` のままであることを確認する（自動）
+
+
+---
+
+## §49 v1.7.7 起動時 .chatnest ファイル指定の最小対応
+
+### §49-1 --nestsuite + .chatnest 起動
+
+1. `NoteNest.exe --nestsuite sample.chatnest` で起動する
+2. NestSuite が起動し、ChatNest タブが開いていることを確認する
+3. タブ名が `sample.chatnest` になっていることを確認する
+4. ChatNestWorkspaceView が表示されていることを確認する
+5. メッセージ一覧が復元されていることを確認する
+6. タブに ` *`（未保存表示）がないことを確認する
+
+### §49-2 --nestsuite + .notenest 起動（既存挙動の回帰確認）
+
+1. `NoteNest.exe --nestsuite sample.notenest` で起動する
+2. NestSuite が起動し、NoteNest タブが開いていることを確認する（既存挙動）
+3. タブ名がファイル名になっていることを確認する
+4. NoteNest プロジェクトの内容が表示されていることを確認する
+
+### §49-3 --nestsuite + 未対応拡張子
+
+1. `NoteNest.exe --nestsuite sample.txt` で起動する
+2. NestSuite が起動し、「未対応のファイル形式」エラーダイアログが表示されることを確認する
+3. アプリが落ちず、初期 NoteNest タブが表示されていることを確認する
+
+### §49-4 --nestsuite + 存在しないファイル
+
+1. `NoteNest.exe --nestsuite notexist.chatnest` で起動する
+2. NestSuite が起動し、「ファイルが見つかりません」エラーダイアログが表示されることを確認する
+3. アプリが落ちず、初期 NoteNest タブが表示されていることを確認する
+
+### §49-5 引数なし起動（回帰確認）
+
+1. 引数なしで `NoteNest.exe` を起動する
+2. NoteNest 単体版（`MainWindow`）が起動することを確認する
+3. NestSuite は起動しないことを確認する
+
+### §49-6 .notenest 単独指定起動（回帰確認）
+
+1. `NoteNest.exe sample.notenest` で起動する（`--nestsuite` なし）
+2. NoteNest 単体版（`MainWindow`）が起動することを確認する
+3. NestSuite は起動しないことを確認する
+
+### §49-7 自動テスト（v1.7.7 追加分）
+
+1. `StartupArgParserTests`（2 件追加）が全件パスすることを確認する（自動）
+2. `NestSuiteShellTests`（`HasLoadInitialChatNestFileMethod` 追加）が全件パスすることを確認する（自動）
+3. アプリケーションバージョンが `1.7.7` であることを確認する（自動）
+
+### §49-8 回帰確認（自動）
+
+1. `StartupArgParserTests` が全件パスすることを確認する（自動）
+2. `NestSuiteShellTests` が全件パスすることを確認する（自動）
+3. `ChatNestFileServiceTests` が全件パスすることを確認する（自動）
+4. `ChatNestWorkspaceViewModelTests` が全件パスすることを確認する（自動）
+5. `NestSuiteDocumentTabTests` が全件パスすることを確認する（自動）
+6. `ArchitectureBoundaryTests` が全件パスすることを確認する（自動）
+7. `ApplicationVersionTests` でスキーマバージョンが `1.4.1` のままであることを確認する（自動）
