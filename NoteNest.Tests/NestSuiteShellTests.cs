@@ -600,4 +600,78 @@ public class NestSuiteShellTests
         Assert.False(NestSuiteStartupTabPolicy.ShouldEnsureFallbackTab(1));
         Assert.False(NestSuiteStartupTabPolicy.ShouldEnsureFallbackTab(2));
     }
+
+    // ── v1.9.1: WorkspaceSession / SessionManager 骨格の確認 ─────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSessionManagerField()
+    {
+        // v1.9.1: _sessionManager フィールドが追加されていることを確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.FieldType == typeof(NestSuiteWorkspaceSessionManager));
+        Assert.NotNull(field);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasCreateSessionForTabMethod()
+    {
+        // v1.9.1: CreateSessionForTab がタブ→Session生成の中心メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("CreateSessionForTab",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteDocumentTab)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(NestSuiteWorkspaceSession), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasTryGetActiveSessionMethod()
+    {
+        // v1.9.1: TryGetActiveSession が選択タブのSession取得ヘルパーとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TryGetActiveSession",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteWorkspaceSession_HasTabIdProperty()
+    {
+        var prop = typeof(NestSuiteWorkspaceSession).GetProperty("TabId");
+        Assert.NotNull(prop);
+        Assert.Equal(typeof(string), prop!.PropertyType);
+    }
+
+    [Fact]
+    public void NestSuiteWorkspaceSession_HasWorkspaceKindProperty()
+    {
+        var prop = typeof(NestSuiteWorkspaceSession).GetProperty("WorkspaceKind");
+        Assert.NotNull(prop);
+        Assert.Equal(typeof(NestSuiteWorkspaceKind), prop!.PropertyType);
+    }
+
+    [Fact]
+    public void NestSuiteWorkspaceSession_HasMutableFilePathAndIsModified()
+    {
+        // FilePath と IsModified は ReplaceTab から更新されるため setter が必要
+        var filePath   = typeof(NestSuiteWorkspaceSession).GetProperty("FilePath");
+        var isModified = typeof(NestSuiteWorkspaceSession).GetProperty("IsModified");
+        Assert.NotNull(filePath);
+        Assert.NotNull(isModified);
+        Assert.NotNull(filePath!.GetSetMethod());
+        Assert.NotNull(isModified!.GetSetMethod());
+    }
+
+    [Fact]
+    public void NestSuiteWorkspaceSessionManager_HasAddRemoveTryGetMethods()
+    {
+        var type = typeof(NestSuiteWorkspaceSessionManager);
+        Assert.NotNull(type.GetMethod("Add",    BindingFlags.Public | BindingFlags.Instance));
+        Assert.NotNull(type.GetMethod("Remove", BindingFlags.Public | BindingFlags.Instance));
+        Assert.NotNull(type.GetMethod("TryGet", BindingFlags.Public | BindingFlags.Instance));
+    }
 }

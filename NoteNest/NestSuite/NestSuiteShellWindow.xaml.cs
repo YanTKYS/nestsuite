@@ -68,11 +68,13 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // v1.8.6: ファイル指定なし起動のみ初期 NoteNest タブを作成する。
         // ファイル指定ありの場合は LoadInitialFile 内で適切なタブが作成される。
+        // v1.9.1: タブ作成と同時に Session も作成する。
         TabStrip.ItemsSource = _tabs;
         if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
             var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
             _tabs.Add(initialTab);
+            _sessionManager.Add(CreateSessionForTab(initialTab));
             ActivateTab(initialTab);
         }
 
@@ -191,6 +193,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     public const string DefaultToolId = NestSuiteToolRegistry.NoteNestToolId;
 
     private readonly ObservableCollection<NestSuiteDocumentTab> _tabs = new();
+    private readonly NestSuiteWorkspaceSessionManager _sessionManager = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private bool _isClosingTab;
@@ -200,6 +203,33 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     private Dictionary<string, Border> _sidebarBorders = null!;
     private Dictionary<string, MenuItem> _toolMenuItems = null!;
+
+    /// <summary>
+    /// v1.9.1: タブに対応する WorkspaceSession を生成する。
+    /// v1.9.1 では各ツールの単一 ViewModel（既存フィールド）を参照する。
+    /// タブごとの独立 ViewModel 生成は v1.9.2〜v1.9.4 で行う。
+    /// </summary>
+    private NestSuiteWorkspaceSession CreateSessionForTab(NestSuiteDocumentTab tab)
+    {
+        object vm = tab.WorkspaceKind switch
+        {
+            NestSuiteWorkspaceKind.NoteNest => ViewModel,
+            NestSuiteWorkspaceKind.ChatNest => _chatNestViewModel,
+            NestSuiteWorkspaceKind.IdeaNest => _ideaNestViewModel,
+            _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
+        };
+        return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
+    }
+
+    /// <summary>
+    /// v1.9.1: 選択中タブに対応する Session を取得する。
+    /// v1.9.2 以降でファイルメニュー処理を Session 経由へ置き換える際の導線。
+    /// </summary>
+    private bool TryGetActiveSession(out NestSuiteWorkspaceSession? session)
+    {
+        if (_selectedTab is null) { session = null; return false; }
+        return _sessionManager.TryGet(_selectedTab.Id, out session);
+    }
 
     /// <summary>
     /// 指定タブをアクティブ化し、Workspace 表示・サイドバーハイライト・メニュー・ステータスバーを同期する。
@@ -277,6 +307,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         var tab = NestSuiteTabFactory.CreateUntitled(kind);
         _tabs.Add(tab);
+        _sessionManager.Add(CreateSessionForTab(tab));
         ActivateTab(tab);
     }
 
@@ -304,6 +335,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var index = _tabs.IndexOf(oldTab);
         if (index < 0) return;
         _tabs[index] = newTab;
+        // v1.9.1: TabId は変わらないため Session は既存のものを更新する（削除・再追加しない）
+        if (_sessionManager.TryGet(oldTab.Id, out var session) && session != null)
+        {
+            session.FilePath = newTab.FilePath;
+            session.IsModified = newTab.IsModified;
+        }
         if (_selectedTab?.Id == oldTab.Id)
         {
             _selectedTab = newTab;
@@ -433,7 +470,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             var workspace = IdeaNestFileService.Load(path);
             var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
             _ideaNestViewModel.LoadFromWorkspace(workspace);
-            if (tab == null) { tab = NestSuiteTabFactory.FromFilePath(path); _tabs.Add(tab); }
+            if (tab == null)
+            {
+                tab = NestSuiteTabFactory.FromFilePath(path);
+                _tabs.Add(tab);
+                _sessionManager.Add(CreateSessionForTab(tab));
+            }
             else { var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab; ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false }); tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest); }
             ActivateTab(tab);
             return true;
@@ -450,7 +492,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
         if (tab != null && _ideaNestViewModel.HasChanges && !_dialogs.Confirm("IdeaNest に未保存の変更があります。\n新規作成すると現在の内容は失われます。続けますか？", "未保存の変更", MessageBoxImage.Warning)) return;
         _ideaNestViewModel.LoadFromWorkspace(new Workspace());
-        if (tab == null) { tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest); _tabs.Add(tab); }
+        if (tab == null)
+        {
+            tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest);
+            _tabs.Add(tab);
+            _sessionManager.Add(CreateSessionForTab(tab));
+        }
         else ReplaceTab(tab, NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest) with { Id = tab.Id });
         ActivateTab(_tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest));
     }
@@ -546,6 +593,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             {
                 tab = NestSuiteTabFactory.FromFilePath(path);
                 _tabs.Add(tab);
+                _sessionManager.Add(CreateSessionForTab(tab));
             }
             else
             {
@@ -580,6 +628,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         {
             tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
             _tabs.Add(tab);
+            _sessionManager.Add(CreateSessionForTab(tab));
         }
         else
         {
@@ -646,6 +695,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 break;
         }
 
+        // v1.9.1: タブ削除と同時に対応 Session を破棄する
+        _sessionManager.Remove(tab.Id);
         _tabs.RemoveAt(idx);
 
         if (_tabs.Count == 0)
@@ -653,6 +704,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             // 最後のタブを閉じた場合は無題 NoteNest タブを自動作成する
             var newTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
             _tabs.Add(newTab);
+            _sessionManager.Add(CreateSessionForTab(newTab));
             ActivateTab(newTab);
         }
         else
@@ -836,6 +888,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         {
             var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
             _tabs.Add(tab);
+            _sessionManager.Add(CreateSessionForTab(tab));
             ActivateTab(tab);
         }
     }
@@ -853,6 +906,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             _chatNestViewModel.LoadMessages(messages);
             var tab = NestSuiteTabFactory.FromFilePath(path);
             _tabs.Add(tab);
+            _sessionManager.Add(CreateSessionForTab(tab));
             ActivateTab(tab);
         }
         catch (Exception ex)

@@ -1,3 +1,15 @@
+## v1.9.1 — WorkspaceSession / TabSession 管理の最小骨格
+
+- `NestSuiteWorkspaceSession` を追加した。タブ表示情報（`NestSuiteDocumentTab`）と分離した Workspace 実体（ViewModel 参照・FilePath・IsModified）を保持し、`TabId` で `NestSuiteDocumentTab` と対応付ける。
+- `NestSuiteWorkspaceSessionManager` を追加した。TabId をキーに Session を管理し、Add / TryGet / Remove / Contains / Sessions を提供する。
+- `NestSuiteShellWindow` に `_sessionManager` フィールドを追加し、タブ作成と同時に Session も作成、タブ削除と同時に Session も破棄するよう全タブ操作を更新した。
+- `CreateSessionForTab` ヘルパーを追加した。v1.9.1 では各ツールの既存単一 ViewModel を Session から参照する（タブごとの独立 ViewModel 生成は v1.9.2〜v1.9.4 で行う）。
+- `TryGetActiveSession` ヘルパーを追加した。選択タブの Session を取得する導線として、v1.9.2 以降のファイルメニュー Session 経由化への接続点を設けた。
+- `ReplaceTab` 内で Session の FilePath / IsModified をタブ表示情報と同期するよう変更した。
+- `NestSuiteWorkspaceSessionManagerTests` を新規追加した（16 件：Add/TryGet/Remove/Contains/Sessions/Session プロパティ/共有 VM 参照の確認）。
+- `NestSuiteShellTests` に Session 骨格の存在確認テスト 7 件を追加した。
+- 同一ツール複数ファイルの本格実装は行っていない。NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+
 ## v1.9.0 — 同一ツール複数ファイル対応の設計整理
 
 - 同一ツールの複数ファイルを並行利用できるようにするための設計整理版。本格実装は行わない（v1.9.1 以降）。
