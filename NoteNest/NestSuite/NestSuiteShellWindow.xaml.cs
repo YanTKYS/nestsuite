@@ -82,7 +82,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // v1.8.0: IdeaNest 統合検証用 Workspace は独立した ViewModel を持つ
         IdeaNestWorkspaceView.DataContext = _ideaNestViewModel;
-        _ideaNestViewModel.DirtyRequested += (_, _) => SyncIdeaNestTab();
 
         vm.ShowInputDialog   = (title, prompt) => _dialogs.ShowInput(title, prompt);
         vm.ShowConfirmDialog = (title, message) => _dialogs.Confirm(message, title);

@@ -336,7 +336,6 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase
     {
         HasChanges = true;
         DirtyRequested?.Invoke(this, EventArgs.Empty);
-        OnPropertyChanged(nameof(HasChanges));
     }
 
     public void SetOwnerResolver(Func<Window?> resolver) => _ui.SetOwnerResolver(resolver);
