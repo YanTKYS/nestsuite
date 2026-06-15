@@ -1,3 +1,13 @@
+## v1.9.0 — 同一ツール複数ファイル対応の設計整理
+
+- 同一ツールの複数ファイルを並行利用できるようにするための設計整理版。本格実装は行わない（v1.9.1 以降）。
+- 現在のタブ／Workspace 構造を棚卸しし、`docs/nestsuite-multi-file-tabs-plan.md` に課題・目標・設計案・ロードマップを整理した。
+- 採用案として「案B：タブ ID と WorkspaceSession を別管理する」を選定した。タブ表示情報（`NestSuiteDocumentTab`）と実体（WorkspaceSession）を分離し、TabId で結ぶ。案A（タブが ViewModel を直接持つ）・案C（ツール別 SessionManager）は不採用とし理由を記録した。
+- 二重オープン判定の比較方針を `NestSuiteOpenFilePolicy.IsSameFile` として UI 非依存の純粋ロジックで固定した（同じファイルが既に開かれている場合は既存タブをアクティブにする方針）。
+- 設計固定テスト `NestSuiteMultiFileTabsDesignTests` を追加した（タブ ID の一意性・同一ファイル判定・拡張子判定の不変確認）。
+- ツール別難易度を整理し、最重量の NoteNest を最後（v1.9.4）に回し、最も軽い ChatNest を最初の実証対象とするロードマップへ調整した。
+- 本格実装・タブ復元・共通プロジェクト形式は導入していない。NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+
 ## v1.8.6 — 起動時ファイル指定時の無題NoteNestタブ生成修正
 
 - `--nestsuite sample.chatnest` や `--nestsuite sample.ideanest` 起動時に、指定ファイルのタブと並んで不要な無題NoteNestタブが作成されるバグを修正した。
