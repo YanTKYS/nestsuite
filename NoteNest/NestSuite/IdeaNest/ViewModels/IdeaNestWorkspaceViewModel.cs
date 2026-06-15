@@ -366,8 +366,21 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase
     public Workspace BuildWorkspaceForSave()
     {
         SyncSettings();
-        return _workspace;
+        return new Workspace
+        {
+            Version = IdeaNestSchema.CurrentVersion,
+            WorkspaceName = _workspace.WorkspaceName,
+            Ideas = _workspace.Ideas.ToList(),
+            Settings = new WorkspaceSettings
+            {
+                CardSize = _workspace.Settings.CardSize,
+                CardHeightMode = _workspace.Settings.CardHeightMode,
+                SortMode = _workspace.Settings.SortMode,
+            },
+        };
     }
+
+    public void MarkSaved() => HasChanges = false;
 
     public void SyncSettings()
     {

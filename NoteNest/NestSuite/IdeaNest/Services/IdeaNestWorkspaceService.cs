@@ -73,6 +73,8 @@ public static class IdeaNestWorkspaceService
 
     public static void Save(string path, Workspace workspace)
     {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(path));
+        if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
         if (File.Exists(path))
         {
             var bakPath = path + ".bak";
@@ -88,15 +90,17 @@ public static class IdeaNestWorkspaceService
 
         var json = JsonSerializer.Serialize(workspace, JsonOptions);
         var tempPath = path + ".tmp";
-        File.WriteAllText(tempPath, json, new UTF8Encoding(false));
-
-        if (File.Exists(path))
+        try
         {
-            File.Replace(tempPath, path, destinationBackupFileName: null);
+            File.WriteAllText(tempPath, json, new UTF8Encoding(false));
+            if (File.Exists(path))
+                File.Replace(tempPath, path, destinationBackupFileName: null);
+            else
+                File.Move(tempPath, path);
         }
-        else
+        finally
         {
-            File.Move(tempPath, path);
+            if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
 }
