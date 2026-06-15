@@ -97,7 +97,7 @@ v1.8.2 ではスケルトンのみ（定数定義）。v1.8.3 で実装する。
 public static class IdeaNestFileService
 {
     public const string FileExtension = ".ideanest";
-    public const string SchemaVersion = "1.1.4";
+    public const string SchemaVersion = IdeaNestSchema.CurrentVersion;
 
     // v1.8.3 で実装予定:
     // - OpenWithDialog(DialogService dialogs, IdeaNestWorkspaceViewModel vm) → bool
