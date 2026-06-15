@@ -115,14 +115,21 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteShellWindow_HoldsChatNestViewModelField_ForCloseConfirmation()
+    public void NestSuiteShellWindow_ChatNestViewModels_ManagedBySessionManager_NotSingleField()
     {
-        // v1.7.0: 終了時の破棄確認のため、ChatNest ViewModel をローカル変数ではなく
-        // フィールドとして保持していることを確認する（OnClosing から参照するため）。
-        var field = typeof(NestSuiteShellWindow)
+        // v1.9.2: ChatNest ViewModel はタブごとの独立インスタンスになった。
+        // v1.7.0 時点の単一 _chatNestViewModel フィールドは削除され、
+        // OnClosing での破棄確認は _sessionManager 経由で全 ChatNest Session を走査する。
+        var chatNestVmField = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.FieldType == typeof(ChatNestWorkspaceViewModel));
-        Assert.NotNull(field);
+        Assert.Null(chatNestVmField);
+
+        // セッションマネージャは引き続き存在する
+        var sessionMgrField = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.FieldType == typeof(NestSuiteWorkspaceSessionManager));
+        Assert.NotNull(sessionMgrField);
     }
 
     // ── v1.6.4: ツール切替モデルの確認 ──────────────────────────────────
@@ -673,5 +680,57 @@ public class NestSuiteShellTests
         Assert.NotNull(type.GetMethod("Add",    BindingFlags.Public | BindingFlags.Instance));
         Assert.NotNull(type.GetMethod("Remove", BindingFlags.Public | BindingFlags.Instance));
         Assert.NotNull(type.GetMethod("TryGet", BindingFlags.Public | BindingFlags.Instance));
+    }
+
+    // ── v1.9.2: ChatNest 複数ファイルタブ対応 ────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasCreateChatNestViewModelMethod()
+    {
+        // v1.9.2: CreateChatNestViewModel がタブごとの独立 ViewModel 生成メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("CreateChatNestViewModel",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(ChatNestWorkspaceViewModel), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSyncChatNestTabForViewModelMethod()
+    {
+        // v1.9.2: SyncChatNestTabForViewModel が ChatNest タブ同期メソッドとして宣言されていることを確認
+        // （v1.9.1 の単一タブ想定の SyncChatNestTab から置き換え）
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("SyncChatNestTabForViewModel",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasNewChatNestSessionMethod_NoParameters()
+    {
+        // v1.9.2: NewChatNestSession が新規 ChatNest タブ作成メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("NewChatNestSession",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_TrySaveChatNestToPath_TakesSessionParameter()
+    {
+        // v1.9.2: TrySaveChatNestToPath が session + path を受け取るシグネチャに変わったことを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TrySaveChatNestToPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
     }
 }

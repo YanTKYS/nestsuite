@@ -194,8 +194,8 @@ public class NestSuiteWorkspaceSessionManagerTests
     [Fact]
     public void MultipleSessionsOfSameKind_CanShareSameViewModelReference()
     {
-        // v1.9.1 では同一ツールの複数 Session が同じ VM インスタンスを共有する（仕様）
-        // v1.9.2 以降でタブごとの独立 VM に移行する
+        // SessionManager 自体は VM の共有／独立を問わない。
+        // v1.9.2: ChatNest は Shell がタブごとに独立 VM を生成する。NoteNest/IdeaNest は引き続き単一 VM。
         var sharedVm = new ChatNestWorkspaceViewModel();
         var s1 = new NestSuiteWorkspaceSession("tab-1", NestSuiteWorkspaceKind.ChatNest, sharedVm);
         var s2 = new NestSuiteWorkspaceSession("tab-2", NestSuiteWorkspaceKind.ChatNest, sharedVm);

@@ -39,7 +39,6 @@ namespace NoteNest.NestSuite;
 public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 {
     private readonly DialogService _dialogs;
-    private readonly ChatNestWorkspaceViewModel _chatNestViewModel = new();
     private readonly IdeaNestWorkspaceViewModel _ideaNestViewModel = new();
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
@@ -83,12 +82,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         WorkspaceView.DialogHost = this;
 
-        // v1.7.0: ChatNest 統合検証用 Workspace は独立した ViewModel を持つ
-        // （MainViewModel とは別の DataContext。NoteNest 保存形式とは無関係）。
-        // 終了時の破棄確認のためフィールドとして保持する。
-        ChatWorkspaceView.DataContext = _chatNestViewModel;
-
         // v1.8.0: IdeaNest 統合検証用 Workspace は独立した ViewModel を持つ
+        // v1.9.2: ChatNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
         IdeaNestWorkspaceView.DataContext = _ideaNestViewModel;
 
         vm.ShowInputDialog   = (title, prompt) => _dialogs.ShowInput(title, prompt);
@@ -121,7 +116,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // v1.7.3: タブモデルを Workspace の実際の状態（ファイルパス・未保存）と同期する
         vm.PropertyChanged += OnNoteNestViewModelPropertyChanged;
-        _chatNestViewModel.PropertyChanged += OnChatNestPropertyChanged;
         _ideaNestViewModel.PropertyChanged += OnIdeaNestPropertyChanged;
     }
 
@@ -143,26 +137,28 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
 
         // v1.7.4: ChatNest に保存パスがある場合は「保存してから終了」を促す。
-        // パスがない場合は従来どおり「終了すると失われる」確認。
-        if (_chatNestViewModel.HasUnsavedChanges)
+        // v1.9.2: 複数 ChatNest タブが存在するため、すべての Session を順に確認する。
+        foreach (var chatSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest).ToList())
         {
-            var chatTab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-            var hasPath = chatTab?.FilePath != null;
-            if (hasPath)
+            var chatVm = (ChatNestWorkspaceViewModel)chatSession.WorkspaceViewModel;
+            if (!chatVm.HasUnsavedChanges) continue;
+            var chatTab = _tabs.FirstOrDefault(t => t.Id == chatSession.TabId);
+            if (chatSession.FilePath != null)
             {
                 var result = MessageBox.Show(
                     this,
-                    "ChatNest に未保存の変更があります。\n終了前に保存しますか？",
+                    $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
                     "未保存の ChatNest",
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Warning);
                 if (result == MessageBoxResult.Cancel) { e.Cancel = true; return; }
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (!TrySaveChatNestToPath(chatTab!.FilePath!)) { e.Cancel = true; return; }
+                    if (!TrySaveChatNestToPath(chatSession, chatSession.FilePath!)) { e.Cancel = true; return; }
                     // MarkSaved() で IsDirty は解消されるが InputText が残っている場合
                     // HasUnsavedChanges は依然 true になる。保存対象外の入力テキストを破棄確認する。
-                    if (_chatNestViewModel.HasUnsavedChanges &&
+                    if (chatVm.HasUnsavedChanges &&
                         !_dialogs.Confirm(
                             "入力欄の未投稿テキストは .chatnest に保存されません。\n破棄して終了しますか？",
                             "未投稿テキスト", MessageBoxImage.Warning))
@@ -172,7 +168,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             else
             {
                 if (!_dialogs.Confirm(
-                    "ChatNest の内容は保存されていません。\n終了すると入力した発言は失われます。終了しますか？",
+                    $"ChatNest「{chatTab?.DisplayName ?? "無題"}」の内容は保存されていません。\n終了すると入力した発言は失われます。終了しますか？",
                     "未保存の ChatNest", MessageBoxImage.Warning))
                 { e.Cancel = true; return; }
             }
@@ -206,19 +202,30 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     /// <summary>
     /// v1.9.1: タブに対応する WorkspaceSession を生成する。
-    /// v1.9.1 では各ツールの単一 ViewModel（既存フィールド）を参照する。
-    /// タブごとの独立 ViewModel 生成は v1.9.2〜v1.9.4 で行う。
+    /// v1.9.2: ChatNest はタブごとに独立した ViewModel を生成する。
+    /// NoteNest / IdeaNest の独立 ViewModel 生成は v1.9.4〜v1.9.6 で行う。
     /// </summary>
     private NestSuiteWorkspaceSession CreateSessionForTab(NestSuiteDocumentTab tab)
     {
         object vm = tab.WorkspaceKind switch
         {
             NestSuiteWorkspaceKind.NoteNest => ViewModel,
-            NestSuiteWorkspaceKind.ChatNest => _chatNestViewModel,
+            NestSuiteWorkspaceKind.ChatNest => CreateChatNestViewModel(),
             NestSuiteWorkspaceKind.IdeaNest => _ideaNestViewModel,
             _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
         };
         return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
+    }
+
+    /// <summary>
+    /// v1.9.2: ChatNest タブ用の独立 ViewModel を生成し、PropertyChanged を購読する。
+    /// タブを閉じる際（<see cref="ConfirmAndResetChatNest"/>）に購読を解除する。
+    /// </summary>
+    private ChatNestWorkspaceViewModel CreateChatNestViewModel()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.PropertyChanged += OnChatNestPropertyChanged;
+        return vm;
     }
 
     /// <summary>
@@ -257,6 +264,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             ChatWorkspaceView.Visibility = isChatNest ? Visibility.Visible : Visibility.Collapsed;
             IdeaNestWorkspaceView.Visibility = isIdeaNest ? Visibility.Visible : Visibility.Collapsed;
             UnintegratedPlaceholder.Visibility = tool.IsIntegrated ? Visibility.Collapsed : Visibility.Visible;
+
+            // v1.9.2: ChatNest タブ切替時に選択タブの ViewModel に DataContext を差し替える
+            if (isChatNest && _sessionManager.TryGet(tab.Id, out var chatSession) && chatSession != null)
+                ChatWorkspaceView.DataContext = chatSession.WorkspaceViewModel;
             if (!tool.IsIntegrated)
             {
                 PlaceholderTitle.Text = tool.DisplayName;
@@ -370,13 +381,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     }
 
     /// <summary>
-    /// ChatNest の HasUnsavedChanges を ChatNest タブモデルの IsModified に反映する。
+    /// v1.9.2: 指定した ChatNest ViewModel に対応するタブの IsModified を同期する。
+    /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// </summary>
-    private void SyncChatNestTab()
+    private void SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel vm)
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
+        var session = _sessionManager.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vm));
+        if (session == null) return;
+        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
         if (tab == null) return;
-        ReplaceTab(tab, tab with { IsModified = _chatNestViewModel.HasUnsavedChanges });
+        ReplaceTab(tab, tab with { IsModified = vm.HasUnsavedChanges });
     }
 
     private void OnNoteNestViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -390,8 +404,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     private void OnChatNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.HasUnsavedChanges))
-            SyncChatNestTab();
+        if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.HasUnsavedChanges) &&
+            sender is ChatNestWorkspaceViewModel vm)
+            SyncChatNestTabForViewModel(vm);
     }
 
     private void OnIdeaNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -505,33 +520,35 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     // ── v1.7.4: ChatNest ファイル操作 ─────────────────────────────────────
 
     /// <summary>
-    /// ChatNest タブのファイルパスを更新し、タブモデルを最新化する。
-    /// 保存成功時に <see cref="ChatNestWorkspaceViewModel.MarkSaved"/> と組み合わせて呼ぶ。
+    /// v1.9.2: 指定 Session に対応する ChatNest タブのファイルパスを更新し、タブモデルを最新化する。
+    /// 保存成功時に <see cref="ChatNestWorkspaceViewModel.MarkSaved"/> の後で呼ぶ。
     ///
     /// <para>案A: IsModified は MarkSaved() 後の HasUnsavedChanges を引き継ぐ。
     /// IsDirty は解消されるが InputText が残っている場合は HasUnsavedChanges が true のままになるため、
-    /// IsModified = false を固定せず _chatNestViewModel.HasUnsavedChanges を参照する。</para>
+    /// IsModified = false を固定せず vm.HasUnsavedChanges を参照する。</para>
     /// </summary>
-    private void SetChatNestTabPath(string path)
+    private void UpdateChatNestTabPath(NestSuiteWorkspaceSession session, string path)
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
+        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
         if (tab == null) return;
+        var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
         var updated = NestSuiteTabFactory.FromFilePath(path) with
         {
             Id         = tab.Id,
-            IsModified = _chatNestViewModel.HasUnsavedChanges
+            IsModified = vm.HasUnsavedChanges
         };
         ReplaceTab(tab, updated);
     }
 
-    /// <summary>指定パスへ ChatNest を保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
-    private bool TrySaveChatNestToPath(string path)
+    /// <summary>v1.9.2: 指定 Session の ChatNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path)
     {
+        var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
         try
         {
-            ChatNestFileService.Save(path, _chatNestViewModel.Messages);
-            _chatNestViewModel.MarkSaved();
-            SetChatNestTabPath(path);
+            ChatNestFileService.Save(path, vm.Messages);
+            vm.MarkSaved();
+            UpdateChatNestTabPath(session, path);
             return true;
         }
         catch (Exception ex)
@@ -541,66 +558,60 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
     }
 
-    /// <summary>上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    /// <summary>v1.9.2: 選択中 ChatNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveChatNestFile()
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-        if (tab?.FilePath != null)
-            TrySaveChatNestToPath(tab.FilePath);
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        if (_selectedTab.FilePath != null)
+            TrySaveChatNestToPath(session, _selectedTab.FilePath);
         else
             SaveChatNestFileAs();
     }
 
-    /// <summary>名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
+    /// <summary>v1.9.2: 選択中 ChatNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
     private void SaveChatNestFileAs()
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-        var defaultName = tab?.FilePath != null
-            ? Path.GetFileName(tab.FilePath)
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        var defaultName = _selectedTab.FilePath != null
+            ? Path.GetFileName(_selectedTab.FilePath)
             : "chat.chatnest";
         var path = _dialogs.SelectChatNestSavePath(defaultName);
         if (path == null) return;
-        TrySaveChatNestToPath(path);
+        TrySaveChatNestToPath(session, path);
     }
 
     /// <summary>
-    /// .chatnest ファイルを開き、ChatNest Workspace にロードする。
-    /// ChatNest タブがない場合は作成する。変更がある場合は破棄確認を行う。
-    /// ファイル選択ダイアログを先に表示し、選択後に破棄確認することで
-    /// キャンセル時に不要な破棄確認が出ないようにする。
+    /// v1.9.2: .chatnest ファイルを開き、新しい ChatNest タブ／Session を作成してロードする。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
     /// </summary>
     private void OpenChatNestFile()
     {
         var path = _dialogs.SelectChatNestOpenPath();
         if (path == null) return;
 
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-        if (tab != null && _chatNestViewModel.HasUnsavedChanges)
+        // 同じファイルが既に開いている場合は既存タブをアクティブ化する
+        var existingTab = _tabs.FirstOrDefault(t =>
+            t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        if (existingTab != null)
         {
-            if (!_dialogs.Confirm(
-                "ChatNest に未保存の変更があります。\nファイルを開くと現在の内容は失われます。続けますか？",
-                "未保存の変更", MessageBoxImage.Warning))
-                return;
+            ActivateTab(existingTab);
+            return;
         }
 
         try
         {
+            var newVm = new ChatNestWorkspaceViewModel();
             var messages = ChatNestFileService.Load(path);
-            _chatNestViewModel.LoadMessages(messages);
-            // LoadMessages は HasUnsavedChanges 変更通知を発火し、SyncChatNestTab がタブレコードを
-            // 置き換える可能性がある。tab 変数が stale にならないよう Id で再取得する。
-            if (tab == null)
-            {
-                tab = NestSuiteTabFactory.FromFilePath(path);
-                _tabs.Add(tab);
-                _sessionManager.Add(CreateSessionForTab(tab));
-            }
-            else
-            {
-                var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab;
-                ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
-                tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-            }
+            newVm.LoadMessages(messages);
+
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, path, false);
+            _tabs.Add(tab);
+            _sessionManager.Add(session);
+            newVm.PropertyChanged += OnChatNestPropertyChanged;
             ActivateTab(tab);
         }
         catch (Exception ex)
@@ -609,33 +620,15 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         }
     }
 
-    /// <summary>新規 ChatNest セッションを開始する。変更がある場合は破棄確認を行う。</summary>
+    /// <summary>
+    /// v1.9.2: 新規 ChatNest タブを作成する。既存の ChatNest タブには影響しない。
+    /// 各タブは独立した ViewModel を持つため、破棄確認や Clear() は不要。
+    /// </summary>
     private void NewChatNestSession()
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
-        if (tab != null && _chatNestViewModel.HasUnsavedChanges)
-        {
-            if (!_dialogs.Confirm(
-                "ChatNest に未保存の変更があります。\n新規作成すると現在の内容は失われます。続けますか？",
-                "未保存の変更", MessageBoxImage.Warning))
-                return;
-        }
-
-        _chatNestViewModel.Clear();
-        // Clear() は HasUnsavedChanges 変更通知を発火し、SyncChatNestTab がタブレコードを
-        // 置き換える可能性がある。tab 変数が stale にならないよう Id で再取得する。
-        if (tab == null)
-        {
-            tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
-            _tabs.Add(tab);
-            _sessionManager.Add(CreateSessionForTab(tab));
-        }
-        else
-        {
-            var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab;
-            ReplaceTab(current, NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest) with { Id = tab.Id });
-        }
-        tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
+        _tabs.Add(tab);
+        _sessionManager.Add(CreateSessionForTab(tab));
         ActivateTab(tab);
     }
 
@@ -749,7 +742,11 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
 
-        _chatNestViewModel.Clear();
+        // v1.9.2: ViewModel はタブごとの独立インスタンス。Clear() は不要。イベント購読を解除する
+        if (_sessionManager.TryGet(tab.Id, out var session) &&
+            session?.WorkspaceViewModel is ChatNestWorkspaceViewModel vm)
+            vm.PropertyChanged -= OnChatNestPropertyChanged;
+
         return true;
     }
 
@@ -894,19 +891,32 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     }
 
     /// <summary>
-    /// 起動時に .chatnest ファイルを ChatNest タブとして読み込む。
-    /// <see cref="ChatNestFileService"/> でメッセージを読み込み、ChatNest タブを作成してアクティブ化する。
+    /// v1.9.2: 起動時に .chatnest ファイルを新しい ChatNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため）。
     /// </summary>
     private void LoadInitialChatNestFile(string path)
     {
+        var existingTab = _tabs.FirstOrDefault(t =>
+            t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        if (existingTab != null)
+        {
+            ActivateTab(existingTab);
+            return;
+        }
+
         try
         {
+            var newVm = new ChatNestWorkspaceViewModel();
             var messages = ChatNestFileService.Load(path);
-            _chatNestViewModel.LoadMessages(messages);
+            newVm.LoadMessages(messages);
+
             var tab = NestSuiteTabFactory.FromFilePath(path);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, path, false);
             _tabs.Add(tab);
-            _sessionManager.Add(CreateSessionForTab(tab));
+            _sessionManager.Add(session);
+            newVm.PropertyChanged += OnChatNestPropertyChanged;
             ActivateTab(tab);
         }
         catch (Exception ex)

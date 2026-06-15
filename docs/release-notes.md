@@ -1,3 +1,18 @@
+## v1.9.2 — ChatNest 複数ファイルタブ対応の最小実装
+
+- ChatNest について、複数の `.chatnest` ファイルを別タブとして並行利用できるようにした。各タブは独立した `ChatNestWorkspaceViewModel`・FilePath・IsModified・入力中テキストを持つ。
+- `_chatNestViewModel` フィールド（単一インスタンス）を削除し、`CreateChatNestViewModel()` ヘルパーでタブ作成ごとに新規 ViewModel を生成するよう変更した。`PropertyChanged` 購読はタブ作成時に開始し、タブを閉じる際（`ConfirmAndResetChatNest`）に解除する。
+- `ActivateTab` で ChatNest タブへの切替時に `ChatWorkspaceView.DataContext` を選択タブの Session の ViewModel に差し替えるようにした。
+- `SyncChatNestTab()` を `SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel)` に置き換えた。`OnChatNestPropertyChanged` の sender から ViewModel を特定し、Session Manager で逆引きしてタブを同期する。
+- `NewChatNestSession()` を「既存タブをクリアする」動作から「新規タブを作成する」動作に変更した。
+- `OpenChatNestFile()` / `LoadInitialChatNestFile()` で `NestSuiteOpenFilePolicy.IsSameFile` による二重オープン検出を追加した。同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+- `TrySaveChatNestToPath(session, path)` / `UpdateChatNestTabPath(session, path)` / `SaveChatNestFile()` / `SaveChatNestFileAs()` を選択タブの Session 経由で動作するよう変更した。他の ChatNest タブの状態には影響しない。
+- `OnClosing` の ChatNest 確認を単一 ViewModel チェックから全 ChatNest Session の走査（`foreach`）に変更した。タブごとに個別の保存確認ダイアログを表示する。
+- `ChatNestMultiTabSessionTests` を新規追加した（14 件：ViewModel 独立性・Session 逆引き・ファイルパス独立性・PropertyChanged 独立性・二重オープン検出）。
+- `NestSuiteShellTests` に v1.9.2 の型境界確認テストを 4 件追加した（`CreateChatNestViewModel` 存在・`SyncChatNestTabForViewModel` 存在・`TrySaveChatNestToPath` シグネチャ変更・`_chatNestViewModel` フィールド削除確認）。
+- NoteNest / IdeaNest の複数ファイル対応は行っていない。NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+- v1.9.3 以降の候補：回帰確認・小修正（v1.9.3）、IdeaNest 複数ファイルタブ対応（v1.9.4）、NoteNest 複数ファイルタブ対応の設計（v1.9.5）、NoteNest 最小実装（v1.9.6）。
+
 ## v1.9.1 — WorkspaceSession / TabSession 管理の最小骨格
 
 - `NestSuiteWorkspaceSession` を追加した。タブ表示情報（`NestSuiteDocumentTab`）と分離した Workspace 実体（ViewModel 参照・FilePath・IsModified）を保持し、`TabId` で `NestSuiteDocumentTab` と対応付ける。
