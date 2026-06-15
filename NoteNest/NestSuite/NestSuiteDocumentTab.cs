@@ -29,7 +29,7 @@ public sealed record NestSuiteDocumentTab
     /// <list type="bullet">
     ///   <item><term>NoteNest</term><description>NoteNestWorkspaceView を表示</description></item>
     ///   <item><term>ChatNest</term><description>ChatNestWorkspaceView を表示</description></item>
-    ///   <item><term>IdeaNest</term><description>未統合プレースホルダーを表示（統合後は IdeaNestWorkspaceView）</description></item>
+    ///   <item><term>IdeaNest</term><description>IdeaNestWorkspaceView を表示</description></item>
     /// </list>
     /// </summary>
     public required NestSuiteWorkspaceKind WorkspaceKind { get; init; }

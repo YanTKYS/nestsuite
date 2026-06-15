@@ -1987,11 +1987,11 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 
 ## §52 v1.8.1 IdeaNest統合後の回帰確認・小修正
 
-### §52-1 `.ideanest` 起動時指定（未対応エラー表示）
+### §52-1 `.ideanest` 起動時指定
 
 1. NestSuite を `--nestsuite sample.ideanest` で起動する（ファイルは存在しなくてよい）
 2. ファイルが存在しない場合は「ファイルが見つかりません」エラーが表示されることを確認する
-3. 存在する `.ideanest` ファイルを指定した場合、「.ideanest ファイルの読込は v1.8.x では未対応です」エラーが表示されることを確認する
+3. 存在する `.ideanest` ファイルを指定した場合、IdeaNest タブとしてカード・タグ・並び順が復元されることを確認する
 4. いずれの場合もアプリが落ちないことを確認する
 5. エラーダイアログを閉じた後、NoteNest 初期タブが表示されて操作できることを確認する
 
@@ -2047,3 +2047,11 @@ NestSuite のタブモデル（v1.7.2 で導入した設計用クラス）の動
 3. `NestSuiteShellTests` が全件パスすることを確認する（自動）
 4. `ChatNestFileServiceTests` が全件パスすることを確認する（自動）
 5. `ArchitectureBoundaryTests` が全件パスすることを確認する（自動）
+
+
+## §54 v1.8.4 IdeaNest 保存／読込回帰確認
+
+1. `IdeaNestFileServiceTests` で `.ideanest` の保存／読込、カード順、タグ、スキーマバージョン、異常ファイル拒否、tmp 後始末を確認する（自動）。
+2. `IdeaNestWorkspaceViewModelTests` でカード・タグ・日時・順序の復元、保存対象、一時検索状態の除外、読込後・保存後の未保存状態解除を確認する（自動）。
+3. `StartupArgParserTests` と `NestSuiteShellTests` で `--nestsuite sample.ideanest` の起動時読込経路を確認する（自動）。
+4. NoteNest スキーマ `1.4.1` と ChatNest 保存／読込が維持されることを全体テストで確認する（自動）。

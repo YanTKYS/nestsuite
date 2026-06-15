@@ -1,0 +1,53 @@
+using NoteNest.NestSuite.IdeaNest.Models;
+using NoteNest.NestSuite.IdeaNest.ViewModels;
+using Xunit;
+
+namespace NoteNest.Tests;
+
+public class IdeaNestWorkspaceViewModelTests
+{
+    [Fact]
+    public void LoadAndBuildSaveWorkspace_RestoresCardsOrderTagsDatesAndClearsDirty()
+    {
+        var created = new DateTime(2026, 1, 2, 3, 4, 5);
+        var updated = created.AddHours(1);
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.MarkDirty();
+
+        vm.LoadFromWorkspace(new Workspace
+        {
+            WorkspaceName = "回帰確認",
+            Ideas =
+            [
+                new Idea { Id = "first", Body = "本文", Tags = ["タグ"], CreatedAt = created, UpdatedAt = updated },
+                new Idea { Id = "second", Title = "2番目" },
+            ],
+            Settings = new WorkspaceSettings { CardSize = "large", SearchText = "一時検索" },
+        });
+
+        Assert.False(vm.HasChanges);
+        Assert.Equal(new[] { "first", "second" }, vm.AllCards.Select(card => card.Id));
+
+        var saved = vm.BuildWorkspaceForSave();
+        Assert.Equal(IdeaNestSchema.CurrentVersion, saved.Version);
+        Assert.Equal(new[] { "first", "second" }, saved.Ideas.Select(idea => idea.Id));
+        Assert.Equal("本文", saved.Ideas[0].Body);
+        Assert.Equal("タグ", saved.Ideas[0].Tags.Single());
+        Assert.Equal(created, saved.Ideas[0].CreatedAt);
+        Assert.Equal(updated, saved.Ideas[0].UpdatedAt);
+        Assert.Equal("large", saved.Settings.CardSize);
+        Assert.Empty(saved.Settings.SearchText);
+    }
+
+    [Fact]
+    public void MarkDirtyAndMarkSaved_UpdateHasChanges()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+
+        vm.MarkDirty();
+        Assert.True(vm.HasChanges);
+
+        vm.MarkSaved();
+        Assert.False(vm.HasChanges);
+    }
+}

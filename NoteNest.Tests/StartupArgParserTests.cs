@@ -113,13 +113,12 @@ public class StartupArgParserTests
         Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.chatnest"]));
     }
 
-    // ── v1.8.1: .ideanest 起動引数 ───────────────────────────────────────
+    // ── v1.8.4: .ideanest 起動引数回帰確認 ───────────────────────────────
 
     [Fact]
     public void GetFilePath_WithNestSuitePlusIdeaNestFilePath_ReturnsPath()
     {
-        // v1.8.1: --nestsuite sample.ideanest でもパスが取得できることを確認
-        // （LoadInitialFile が未対応エラーを表示するが、引数解析は成功する）
+        // --nestsuite sample.ideanest のパスを LoadInitialFile へ渡せることを確認
         Assert.Equal("sample.ideanest",
             StartupArgParser.GetFilePath(["--nestsuite", "sample.ideanest"]));
     }
