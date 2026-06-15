@@ -232,9 +232,9 @@ case NestSuiteWorkspaceKind.IdeaNest:
 
 - [ ] `DialogService.SelectIdeaNestOpenPath()` 追加
 - [ ] `DialogService.SelectIdeaNestSavePath(string)` 追加
-- [ ] `IdeaNestFileService.OpenWithDialog(...)` 実装
-- [ ] `IdeaNestFileService.SaveWithDialog(...)` 実装
-- [ ] `IdeaNestFileService.SaveAsWithDialog(...)` 実装
+- [x] NestSuite 経由の `.ideanest` Open 実装
+- [x] NestSuite 経由の `.ideanest` Save 実装
+- [x] NestSuite 経由の `.ideanest` Save As 実装
 - [ ] `NestSuiteShellWindow.SaveIdeaNestFile(NestSuiteDocumentTab)` 追加
 - [ ] `NestSuiteShellWindow.SaveIdeaNestFileAs(NestSuiteDocumentTab)` 追加
 - [ ] `NestSuiteShellWindow.OpenIdeaNestFile(NestSuiteDocumentTab)` 追加

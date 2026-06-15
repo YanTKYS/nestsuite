@@ -3,6 +3,7 @@ using System.Reflection;
 using NoteNest.NestSuite.IdeaNest.Models;
 using NoteNest.NestSuite.IdeaNest.Services;
 using Xunit;
+using System.Text.Json;
 
 namespace NoteNest.Tests;
 
@@ -13,6 +14,45 @@ namespace NoteNest.Tests;
 /// </summary>
 public class IdeaNestFileServiceTests
 {
+    [Fact]
+    public void SaveAndLoad_RoundTripsCardsTagsOrderAndVersion()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            var workspace = new Workspace
+            {
+                Ideas = new()
+                {
+                    new Idea { Id = "first", Title = "A", Tags = new() { "tag-a" } },
+                    new Idea { Id = "second", Body = "B", Tags = new() { "tag-b" } },
+                }
+            };
+            IdeaNestFileService.Save(path, workspace);
+            var loaded = IdeaNestFileService.Load(path);
+            Assert.Equal(IdeaNestSchema.CurrentVersion, loaded.Version);
+            Assert.Equal(new[] { "first", "second" }, loaded.Ideas.Select(i => i.Id));
+            Assert.Equal("tag-a", loaded.Ideas[0].Tags.Single());
+            Assert.False(File.Exists(path + ".tmp"));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Load_RejectsWrongExtensionBrokenJsonAndUnsupportedVersion()
+    {
+        var wrong = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+        Assert.Throws<NotSupportedException>(() => IdeaNestFileService.Load(wrong));
+        var path = Path.ChangeExtension(wrong, ".ideanest");
+        try
+        {
+            File.WriteAllText(path, "{broken");
+            Assert.Throws<JsonException>(() => IdeaNestFileService.Load(path));
+            File.WriteAllText(path, """{"version":"99.0","ideas":[],"settings":{}}""");
+            Assert.Throws<NotSupportedException>(() => IdeaNestFileService.Load(path));
+        }
+        finally { File.Delete(path); }
+    }
     // ── IdeaNestFileService 定数 ─────────────────────────────────────────
 
     [Fact]

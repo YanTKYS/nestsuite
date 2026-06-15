@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using NoteNest.NestSuite.ChatNest;
 using NoteNest.NestSuite.IdeaNest.ViewModels;
+using NoteNest.NestSuite.IdeaNest.Models;
+using NoteNest.NestSuite.IdeaNest.Services;
 using NoteNest.Services;
 using NoteNest.ViewModels;
 using NoteNest.Views;
@@ -129,7 +131,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         if (_ideaNestViewModel.HasChanges)
         {
             if (!_dialogs.Confirm(
-                "IdeaNest に未保存の変更があります（保存は未対応）。\n終了すると内容は失われます。終了しますか？",
+                "IdeaNest に未保存の変更があります。\n終了すると内容は失われます。終了しますか？",
                 "未保存の IdeaNest", MessageBoxImage.Warning))
             { e.Cancel = true; return; }
         }
@@ -372,11 +374,64 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         if (tab.IsModified &&
             !_dialogs.Confirm(
-                "IdeaNest に未保存の変更があります（保存は未対応）。\n閉じると変更は失われます。閉じますか？",
+                "IdeaNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
         _ideaNestViewModel.LoadFromWorkspace(new NoteNest.NestSuite.IdeaNest.Models.Workspace());
         return true;
+    }
+
+    private bool TrySaveIdeaNestToPath(string path)
+    {
+        try
+        {
+            IdeaNestFileService.Save(path, _ideaNestViewModel.BuildWorkspaceForSave());
+            _ideaNestViewModel.MarkSaved();
+            var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+            if (tab != null) ReplaceTab(tab, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
+            return true;
+        }
+        catch (Exception ex) { _dialogs.ShowError($"IdeaNest ファイルの保存に失敗しました。\n\n{ex.Message}", "保存エラー"); return false; }
+    }
+
+    private void SaveIdeaNestFile()
+    {
+        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        if (tab?.FilePath != null) TrySaveIdeaNestToPath(tab.FilePath); else SaveIdeaNestFileAs();
+    }
+
+    private void SaveIdeaNestFileAs()
+    {
+        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        var path = _dialogs.SelectIdeaNestSavePath(tab?.FilePath != null ? Path.GetFileName(tab.FilePath) : "ideas.ideanest");
+        if (path != null) TrySaveIdeaNestToPath(path);
+    }
+
+    private void OpenIdeaNestFile()
+    {
+        var path = _dialogs.SelectIdeaNestOpenPath();
+        if (path == null) return;
+        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        if (tab != null && _ideaNestViewModel.HasChanges && !_dialogs.Confirm("IdeaNest に未保存の変更があります。\nファイルを開くと現在の内容は失われます。続けますか？", "未保存の変更", MessageBoxImage.Warning)) return;
+        try
+        {
+            var workspace = IdeaNestFileService.Load(path);
+            _ideaNestViewModel.LoadFromWorkspace(workspace);
+            if (tab == null) { tab = NestSuiteTabFactory.FromFilePath(path); _tabs.Add(tab); }
+            else { var current = _tabs.FirstOrDefault(t => t.Id == tab.Id) ?? tab; ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false }); tab = _tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest); }
+            ActivateTab(tab);
+        }
+        catch (Exception ex) { _dialogs.ShowError($"IdeaNest ファイルを開けませんでした。\n\n{ex.Message}", "読込エラー"); }
+    }
+
+    private void NewIdeaNestWorkspace()
+    {
+        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        if (tab != null && _ideaNestViewModel.HasChanges && !_dialogs.Confirm("IdeaNest に未保存の変更があります。\n新規作成すると現在の内容は失われます。続けますか？", "未保存の変更", MessageBoxImage.Warning)) return;
+        _ideaNestViewModel.LoadFromWorkspace(new Workspace());
+        if (tab == null) { tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest); _tabs.Add(tab); }
+        else ReplaceTab(tab, NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest) with { Id = tab.Id });
+        ActivateTab(_tabs.First(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest));
     }
 
     // ── v1.7.4: ChatNest ファイル操作 ─────────────────────────────────────
@@ -640,7 +695,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 NewChatNestSession();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
+                NewIdeaNestWorkspace();
                 break;
         }
     }
@@ -656,7 +711,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 OpenChatNestFile();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
+                OpenIdeaNestFile();
                 break;
         }
     }
@@ -672,7 +727,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 SaveChatNestFile();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
+                SaveIdeaNestFile();
                 break;
         }
     }
@@ -688,7 +743,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 SaveChatNestFileAs();
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                _dialogs.ShowInfo("IdeaNest の保存／読込は v1.8.0 では未対応です。\n将来のバージョンで対応予定です。", "未対応");
+                SaveIdeaNestFileAs();
                 break;
         }
     }
