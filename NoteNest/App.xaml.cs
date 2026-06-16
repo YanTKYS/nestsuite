@@ -10,38 +10,32 @@ public partial class App : Application
     {
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        // v1.6.1: --nestsuite 引数指定時は開発・検証用 NestSuiteShellWindow を起動
-        if (StartupArgParser.IsNestSuiteMode(e.Args))
+        // v1.11.0: --classic-notenest 指定時のみ従来 NoteNest 単体版（互換ルート）を起動
+        if (StartupArgParser.IsClassicMode(e.Args))
         {
-            // v1.8.6: ファイルパスをコンストラクタに渡して初期タブ生成を制御する
-            var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
-            var shell = new NestSuiteShellWindow(nestSuiteFilePath);
-            MainWindow = shell;
+            var startupPath = StartupArgParser.GetFilePath(e.Args);
+            if (startupPath == null)
+            {
+                var uiSettings = new UiSettingsService().Load();
+                new ThemeService().Apply(uiSettings.Theme);
+                startupPath = DialogService.ShowStartupDialog();
+            }
+            var window = new MainWindow(startupPath);
+            MainWindow = window;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
-            // v1.10.2: LoadInitialFile を Show() より前に呼ぶことで、指定ファイルタブを
-            // ウィンドウ表示前に生成する。Show() 後に呼ぶと一瞬だけ空／NoteNest 状態が
-            // 見えるちらつきが発生するため、順序を入れ替えた。
-            // エラーダイアログは Show() 前でも MessageBox として表示できる。
-            if (nestSuiteFilePath != null)
-                shell.LoadInitialFile(nestSuiteFilePath);
-            shell.Show();
+            window.Show();
             return;
         }
 
-        // 通常起動: NoteNest 単体版（変更なし）
-        var startupPath = e.Args.Length > 0 ? e.Args[0] : null;
-
-        if (startupPath == null)
-        {
-            var uiSettings = new UiSettingsService().Load();
-            new ThemeService().Apply(uiSettings.Theme);
-
-            startupPath = DialogService.ShowStartupDialog();
-        }
-
-        var window = new MainWindow(startupPath);
-        MainWindow = window;
+        // v1.11.0: 既定起動は NestSuite。--nestsuite フラグも互換として維持（同じ動作）。
+        // ファイルパス指定時は拡張子に応じて NoteNest / ChatNest / IdeaNest タブを開く。
+        // LoadInitialFile を Show() より前に呼ぶことで起動時ちらつきを防ぐ（v1.10.2）。
+        var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
+        var shell = new NestSuiteShellWindow(nestSuiteFilePath);
+        MainWindow = shell;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
-        window.Show();
+        if (nestSuiteFilePath != null)
+            shell.LoadInitialFile(nestSuiteFilePath);
+        shell.Show();
     }
 }
