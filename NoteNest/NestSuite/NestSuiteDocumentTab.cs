@@ -68,4 +68,24 @@ public sealed record NestSuiteDocumentTab
         NestSuiteWorkspaceKind.IdeaNest => NestSuiteToolRegistry.IdeaNestToolId,
         _ => throw new ArgumentOutOfRangeException(nameof(WorkspaceKind), WorkspaceKind, null)
     };
+
+    /// <summary>
+    /// v1.9.9: タブのツールチップ表示用テキスト。ツール種別・ファイルパス・保存状態を含む。
+    /// </summary>
+    public string TooltipText
+    {
+        get
+        {
+            var kindLabel = WorkspaceKind switch
+            {
+                NestSuiteWorkspaceKind.NoteNest => "NoteNest",
+                NestSuiteWorkspaceKind.ChatNest => "ChatNest",
+                NestSuiteWorkspaceKind.IdeaNest => "IdeaNest",
+                _ => "不明"
+            };
+            var fileText = FilePath ?? "未保存（無題）";
+            var stateText = IsModified ? "未保存の変更あり" : "保存済み";
+            return $"種類: {kindLabel}\nファイル: {fileText}\n状態: {stateText}";
+        }
+    }
 }

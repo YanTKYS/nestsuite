@@ -337,4 +337,70 @@ public class NestSuiteDocumentTabTests
         Assert.True(result);
         Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
     }
+
+    // ── v1.9.9: TooltipText ─────────────────────────────────────────────
+
+    [Fact]
+    public void TooltipText_NoteNest_SavedTab_ContainsKindAndPath()
+    {
+        // v1.9.9: ツールチップにツール種別・ファイルパス・保存状態が含まれることを確認
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "t", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest,
+            DisplayName = "A.notenest", FilePath = @"C:\work\A.notenest", IsModified = false,
+        };
+        Assert.Contains("NoteNest", tab.TooltipText);
+        Assert.Contains(@"C:\work\A.notenest", tab.TooltipText);
+        Assert.Contains("保存済み", tab.TooltipText);
+    }
+
+    [Fact]
+    public void TooltipText_UntitledTab_ShowsUntitledAndUnsaved()
+    {
+        // v1.9.9: 無題タブのツールチップに「未保存（無題）」と「保存済み」が含まれる
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "u", WorkspaceKind = NestSuiteWorkspaceKind.ChatNest,
+            DisplayName = "無題.chatnest",
+        };
+        Assert.Contains("ChatNest", tab.TooltipText);
+        Assert.Contains("未保存（無題）", tab.TooltipText);
+    }
+
+    [Fact]
+    public void TooltipText_ModifiedTab_ShowsUnsavedState()
+    {
+        // v1.9.9: IsModified=true のタブのツールチップに「未保存の変更あり」が含まれる
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "m", WorkspaceKind = NestSuiteWorkspaceKind.IdeaNest,
+            DisplayName = "案出し.ideanest", FilePath = @"C:\ideas\案出し.ideanest", IsModified = true,
+        };
+        Assert.Contains("IdeaNest", tab.TooltipText);
+        Assert.Contains("未保存の変更あり", tab.TooltipText);
+    }
+
+    [Fact]
+    public void TooltipText_SavedTab_ShowsSavedState()
+    {
+        // v1.9.9: IsModified=false のタブのツールチップに「保存済み」が含まれ「未保存の変更あり」は含まれない
+        var tab = new NestSuiteDocumentTab
+        {
+            Id = "s", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest,
+            DisplayName = "B.notenest", FilePath = @"C:\work\B.notenest", IsModified = false,
+        };
+        Assert.Contains("保存済み", tab.TooltipText);
+        Assert.DoesNotContain("未保存の変更あり", tab.TooltipText);
+    }
+
+    [Theory]
+    [InlineData(NestSuiteWorkspaceKind.NoteNest, "NoteNest")]
+    [InlineData(NestSuiteWorkspaceKind.ChatNest, "ChatNest")]
+    [InlineData(NestSuiteWorkspaceKind.IdeaNest, "IdeaNest")]
+    public void TooltipText_ContainsCorrectKindLabel_ForEachTool(NestSuiteWorkspaceKind kind, string expectedKindLabel)
+    {
+        // v1.9.9: ツールチップにツール種別が正しく含まれることを3ツール横断で確認
+        var tab = NestSuiteTabFactory.CreateUntitled(kind);
+        Assert.Contains(expectedKindLabel, tab.TooltipText);
+    }
 }

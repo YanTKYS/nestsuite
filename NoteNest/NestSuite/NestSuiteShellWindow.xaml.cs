@@ -471,7 +471,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         if (tab.IsModified &&
             !_dialogs.Confirm(
-                "IdeaNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
+                $"「{tab.DisplayName}」には保存されていない変更があります。\n保存せずに閉じますか？",
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
 
@@ -535,7 +535,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         if (duplicateTab != null)
         {
             _dialogs.ShowError(
-                "この IdeaNest ファイルは既に別タブで開かれています。",
+                $"「{Path.GetFileName(normalizedPath)}」は既に別のタブで開かれています。\n既存のタブを表示します。",
                 "保存できません");
             ActivateTab(duplicateTab);
             return;
@@ -658,7 +658,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, normalizedPath));
         if (duplicateTab != null)
         {
-            _dialogs.ShowError("この ChatNest ファイルは既に別タブで開かれています。", "保存できません");
+            _dialogs.ShowError(
+                $"「{Path.GetFileName(normalizedPath)}」は既に別のタブで開かれています。\n既存のタブを表示します。",
+                "保存できません");
             ActivateTab(duplicateTab);
             return;
         }
@@ -800,7 +802,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         if (tab.IsModified &&
             !_dialogs.Confirm(
-                "NoteNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
+                $"「{tab.DisplayName}」には保存されていない変更があります。\n保存せずに閉じますか？",
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
 
@@ -825,7 +827,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         if (tab.IsModified &&
             !_dialogs.Confirm(
-                "ChatNest に未保存の変更があります。\n閉じると変更は失われます。閉じますか？",
+                $"「{tab.DisplayName}」には保存されていない変更があります。\n保存せずに閉じますか？",
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
 
@@ -1031,7 +1033,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, normalizedPath));
         if (duplicateTab != null)
         {
-            _dialogs.ShowError("この NoteNest ファイルは既に別タブで開かれています。", "保存できません");
+            _dialogs.ShowError(
+                $"「{Path.GetFileName(normalizedPath)}」は既に別のタブで開かれています。\n既存のタブを表示します。",
+                "保存できません");
             ActivateTab(duplicateTab);
             return;
         }

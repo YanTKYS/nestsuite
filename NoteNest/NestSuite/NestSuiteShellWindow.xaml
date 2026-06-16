@@ -30,12 +30,10 @@
                 <MenuItem x:Name="ToolMenuIdeaNest" Header="IdeaNest"
                           Tag="IdeaNest"
                           IsCheckable="True"
-                          ToolTip="未統合（将来対応予定）"
                           Click="MenuTool_Click"/>
                 <MenuItem x:Name="ToolMenuChatNest" Header="ChatNest"
                           Tag="ChatNest"
                           IsCheckable="True"
-                          ToolTip="統合検証（v1.7.0）"
                           Click="MenuTool_Click"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
@@ -98,35 +96,23 @@
                                    Text="NoteNest" FontSize="12"
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
-                    <!-- IdeaNest: 統合検証中。クリックで IdeaNest タブを開く -->
+                    <!-- IdeaNest: v1.8.0 統合済み。クリックで IdeaNest タブを開く -->
                     <Border x:Name="IdeaNestToolBorder"
                             Tag="IdeaNest"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
-                            ToolTip="統合検証（v1.8.0）"
                             MouseLeftButtonDown="ToolBorder_MouseDown">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="IdeaNest" FontSize="12"
-                                       Foreground="{DynamicResource PrimaryFg}"/>
-                            <TextBlock Text=" 検証" FontSize="9"
-                                       Foreground="{DynamicResource MutedFg}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="IdeaNest" FontSize="12"
+                                   Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
-                    <!-- ChatNest: v1.7.0 統合検証。クリックで ChatNest タブを開く -->
+                    <!-- ChatNest: v1.7.0 統合済み。クリックで ChatNest タブを開く -->
                     <Border x:Name="ChatNestToolBorder"
                             Tag="ChatNest"
                             CornerRadius="4" Margin="6,1" Padding="8,5"
                             Cursor="Hand"
-                            ToolTip="統合検証（v1.7.0）"
                             MouseLeftButtonDown="ToolBorder_MouseDown">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="ChatNest" FontSize="12"
-                                       Foreground="{DynamicResource PrimaryFg}"/>
-                            <TextBlock Text=" 検証" FontSize="9"
-                                       Foreground="{DynamicResource MutedFg}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="ChatNest" FontSize="12"
+                                   Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                 </StackPanel>
             </Border>
@@ -164,7 +150,9 @@
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
+                                <!-- v1.9.9: ツールチップにツール種別・ファイルパス・保存状態を表示 -->
+                                <StackPanel Orientation="Horizontal"
+                                            ToolTip="{Binding TooltipText}">
                                     <TextBlock Text="{Binding DisplayName}" FontSize="12"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Text=" *" FontSize="12"
