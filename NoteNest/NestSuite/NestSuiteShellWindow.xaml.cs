@@ -65,12 +65,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             { NestSuiteToolRegistry.ChatNestToolId, ToolMenuChatNest },
         };
 
-        var vm = new MainViewModel();
-        DataContext = vm;
+        WorkspaceView.DialogHost = this;
 
+        // v1.8.0: IdeaNest 統合検証用 Workspace は独立した ViewModel を持つ
+        // v1.9.2: ChatNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
+        IdeaNestWorkspaceView.DataContext = _ideaNestViewModel;
+
+        // v1.9.5: DataContext は ActivateTab でアクティブ NoteNest タブの MainViewModel に設定する。
+        // NoteNest タブ作成（CreateSessionForTab → CreateNoteNestViewModel）と同時に DataContext が確立される。
         // v1.8.6: ファイル指定なし起動のみ初期 NoteNest タブを作成する。
         // ファイル指定ありの場合は LoadInitialFile 内で適切なタブが作成される。
-        // v1.9.1: タブ作成と同時に Session も作成する。DataContext (ViewModel) は必ずここより前に設定する。
         TabStrip.ItemsSource = _tabs;
         if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
@@ -80,51 +84,21 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             ActivateTab(initialTab);
         }
 
-        WorkspaceView.DialogHost = this;
-
-        // v1.8.0: IdeaNest 統合検証用 Workspace は独立した ViewModel を持つ
-        // v1.9.2: ChatNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
-        IdeaNestWorkspaceView.DataContext = _ideaNestViewModel;
-
-        vm.ShowInputDialog   = (title, prompt) => _dialogs.ShowInput(title, prompt);
-        vm.ShowConfirmDialog = (title, message) => _dialogs.Confirm(message, title);
-        vm.ShowErrorDialog   = (title, message) => _dialogs.ShowError(message, title);
-        vm.SelectOpenProjectPath = _dialogs.SelectProjectOpenPath;
-        vm.SelectSaveProjectPath = _dialogs.SelectProjectSavePath;
-        vm.RequestClose = Close;
-
-        vm.NavigateToLine = WorkspaceView.NavigateToLine;
-
-        vm.NavigateToMarker = m =>
-        {
-            bool shouldSwitch = m.SourceNote != null &&
-                                (m.SourceNote != vm.SelectedNote || vm.IsTaskCommentMode);
-            if (shouldSwitch)
-            {
-                vm.SelectNote(m.SourceNote!);
-                WorkspaceView.SyncTreeSelection(m.SourceNote!);
-            }
-            var line = m.LineNumber;
-            if (shouldSwitch)
-                Dispatcher.BeginInvoke(() => vm.NavigateToLine?.Invoke(line),
-                    System.Windows.Threading.DispatcherPriority.Loaded);
-            else
-                vm.NavigateToLine?.Invoke(line);
-        };
-
-        vm.SyncTreeSelectionCallback = note => WorkspaceView.SyncTreeSelection(note);
-
-        // v1.7.3: タブモデルを Workspace の実際の状態（ファイルパス・未保存）と同期する
-        vm.PropertyChanged += OnNoteNestViewModelPropertyChanged;
         _ideaNestViewModel.PropertyChanged += OnIdeaNestPropertyChanged;
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
-        if (!ViewModel.ConfirmCloseIfModified())
+        // v1.9.5: すべての NoteNest Session を順に確認する
+        foreach (var noteSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest).ToList())
         {
-            e.Cancel = true;
-            return;
+            var noteVm = (MainViewModel)noteSession.WorkspaceViewModel;
+            if (!noteVm.ConfirmCloseIfModified())
+            {
+                e.Cancel = true;
+                return;
+            }
         }
 
         // v1.8.0: IdeaNest 変更確認
@@ -203,18 +177,54 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// <summary>
     /// v1.9.1: タブに対応する WorkspaceSession を生成する。
     /// v1.9.2: ChatNest はタブごとに独立した ViewModel を生成する。
-    /// NoteNest / IdeaNest の独立 ViewModel 生成は v1.9.4〜v1.9.6 で行う。
+    /// v1.9.5: NoteNest もタブごとに独立した MainViewModel を生成する。
     /// </summary>
     private NestSuiteWorkspaceSession CreateSessionForTab(NestSuiteDocumentTab tab)
     {
         object vm = tab.WorkspaceKind switch
         {
-            NestSuiteWorkspaceKind.NoteNest => ViewModel,
+            NestSuiteWorkspaceKind.NoteNest => CreateNoteNestViewModel(),
             NestSuiteWorkspaceKind.ChatNest => CreateChatNestViewModel(),
             NestSuiteWorkspaceKind.IdeaNest => _ideaNestViewModel,
             _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
         };
         return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
+    }
+
+    /// <summary>
+    /// v1.9.5: NoteNest タブ用の独立 MainViewModel を生成し、ダイアログ・コールバック・PropertyChanged を設定する。
+    /// ChatNest の <see cref="CreateChatNestViewModel"/> と対称な実装。
+    /// タブを閉じる際（<see cref="ConfirmAndResetNoteNest"/>）に PropertyChanged 購読を解除する。
+    /// </summary>
+    private MainViewModel CreateNoteNestViewModel()
+    {
+        var vm = new MainViewModel();
+        vm.ShowInputDialog   = (title, prompt) => _dialogs.ShowInput(title, prompt);
+        vm.ShowConfirmDialog = (title, message) => _dialogs.Confirm(message, title);
+        vm.ShowErrorDialog   = (title, message) => _dialogs.ShowError(message, title);
+        vm.SelectOpenProjectPath = _dialogs.SelectProjectOpenPath;
+        vm.SelectSaveProjectPath = _dialogs.SelectProjectSavePath;
+        vm.RequestClose = Close;
+        vm.NavigateToLine = WorkspaceView.NavigateToLine;
+        vm.NavigateToMarker = m =>
+        {
+            bool shouldSwitch = m.SourceNote != null &&
+                                (m.SourceNote != vm.SelectedNote || vm.IsTaskCommentMode);
+            if (shouldSwitch)
+            {
+                vm.SelectNote(m.SourceNote!);
+                WorkspaceView.SyncTreeSelection(m.SourceNote!);
+            }
+            var line = m.LineNumber;
+            if (shouldSwitch)
+                Dispatcher.BeginInvoke(() => vm.NavigateToLine?.Invoke(line),
+                    System.Windows.Threading.DispatcherPriority.Loaded);
+            else
+                vm.NavigateToLine?.Invoke(line);
+        };
+        vm.SyncTreeSelectionCallback = note => WorkspaceView.SyncTreeSelection(note);
+        vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
+        return vm;
     }
 
     /// <summary>
@@ -271,6 +281,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             ChatWorkspaceView.Visibility = isChatNest ? Visibility.Visible : Visibility.Collapsed;
             IdeaNestWorkspaceView.Visibility = isIdeaNest ? Visibility.Visible : Visibility.Collapsed;
             UnintegratedPlaceholder.Visibility = tool.IsIntegrated ? Visibility.Collapsed : Visibility.Visible;
+
+            // v1.9.5: NoteNest タブ切替時に選択タブの MainViewModel に DataContext を差し替える
+            if (isNoteNest && _sessionManager.TryGet(tab.Id, out var noteNestSession) && noteNestSession != null)
+                DataContext = noteNestSession.WorkspaceViewModel;
 
             // v1.9.2: ChatNest タブ切替時に選択タブの ViewModel に DataContext を差し替える
             if (isChatNest && _sessionManager.TryGet(tab.Id, out var chatSession) && chatSession != null)
@@ -369,14 +383,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     }
 
     /// <summary>
-    /// MainViewModel の CurrentFilePath・IsModified を NoteNest タブモデルに反映する。
-    /// ファイルを開く・保存する・新規作成するたびに呼ばれ、タブ名と未保存マーカーを最新化する。
+    /// v1.9.5: 指定した NoteNest MainViewModel に対応するタブの FilePath・IsModified を同期する。
+    /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
+    /// ChatNest の <see cref="SyncChatNestTabForViewModel"/> と対称な実装。
     /// </summary>
-    private void SyncNoteNestTabToViewModel()
+    private void SyncNoteNestTabForViewModel(MainViewModel vm)
     {
-        var tab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest);
+        var session = _sessionManager.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vm));
+        if (session == null) return;
+        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
         if (tab == null) return;
-        var vm = ViewModel;
         NestSuiteDocumentTab updatedTab;
         if (vm.CurrentFilePath is string path &&
             NestSuiteTabFactory.TryGetKind(path, out var kind) &&
@@ -400,13 +416,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         ReplaceTab(tab, tab with { IsModified = vm.HasUnsavedChanges });
     }
 
-    private void OnNoteNestViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnNoteNestSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        // _isClosingTab 中は NoteNest ViewModel のリセットによる通知を無視する
-        // （CloseTab 内で CreateNewProjectDirect を呼んだ際の二重更新を防ぐ）
         if (_isClosingTab) return;
-        if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified))
-            SyncNoteNestTabToViewModel();
+        if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified) &&
+            sender is MainViewModel vm)
+            SyncNoteNestTabForViewModel(vm);
     }
 
     private void OnChatNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -721,9 +736,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     /// <summary>
     /// NoteNest タブを閉じる前の確認とリセット。
-    /// 未保存の場合は確認ダイアログを表示。確認後は <see cref="MainViewModel.CreateNewProjectDirect"/>
-    /// でリセットする（<see cref="_isClosingTab"/> フラグで SyncNoteNestTabToViewModel の
-    /// 二重更新を防ぐ）。
+    /// 未保存の場合は確認ダイアログを表示。確認後は PropertyChanged 購読を解除する。
+    /// v1.9.5: ViewModel はタブごとの独立インスタンスのため CreateNewProjectDirect() は不要。
     /// </summary>
     private bool ConfirmAndResetNoteNest(NestSuiteDocumentTab tab)
     {
@@ -733,9 +747,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 "タブを閉じる", MessageBoxImage.Warning))
             return false;
 
-        _isClosingTab = true;
-        try { ViewModel.CreateNewProjectDirect(); }
-        finally { _isClosingTab = false; }
+        // v1.9.5: ViewModel はタブごとの独立インスタンス。PropertyChanged 購読を解除する
+        if (_sessionManager.TryGet(tab.Id, out var session) &&
+            session?.WorkspaceViewModel is MainViewModel vm)
+            vm.PropertyChanged -= OnNoteNestSessionPropertyChanged;
 
         return true;
     }
@@ -770,7 +785,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (_selectedTab?.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                ViewModel.NewProjectCommand.Execute(null);
+                NewNoteNestSession();
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 NewChatNestSession();
@@ -786,7 +801,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (_selectedTab?.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                ViewModel.OpenProjectCommand.Execute(null);
+                OpenNoteNestFile();
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 OpenChatNestFile();
@@ -802,7 +817,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (_selectedTab?.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                ViewModel.SaveProjectCommand.Execute(null);
+                SaveNoteNestFile();
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 SaveChatNestFile();
@@ -818,7 +833,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (_selectedTab?.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                ViewModel.SaveAsProjectCommand.Execute(null);
+                SaveNoteNestFileAs();
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 SaveChatNestFileAs();
@@ -866,9 +881,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (kind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                // v1.8.6: SyncNoteNestTabToViewModel が更新する NoteNest タブが存在しなければならない
-                EnsureDefaultTab();
-                ViewModel.OpenFileAtStartup(path);
+                LoadInitialNoteNestFile(path);
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
                 LoadInitialChatNestFile(path);
@@ -883,6 +896,99 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                     "未対応");
                 EnsureDefaultTab();
                 break;
+        }
+    }
+
+    // ── v1.9.5: NoteNest ファイル操作 ─────────────────────────────────────
+
+    /// <summary>v1.9.5: 新規 NoteNest タブを作成する。既存の NoteNest タブには影響しない。</summary>
+    private void NewNoteNestSession()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+        _tabs.Add(tab);
+        _sessionManager.Add(CreateSessionForTab(tab));
+        ActivateTab(tab);
+    }
+
+    /// <summary>
+    /// v1.9.5: .notenest ファイルを開き、新しい NoteNest タブ／Session を作成してロードする。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+    /// </summary>
+    private void OpenNoteNestFile()
+    {
+        var rawPath = _dialogs.SelectProjectOpenPath();
+        if (rawPath == null) return;
+        var path = NormalizeFilePath(rawPath);
+
+        var existingTab = _tabs.FirstOrDefault(t =>
+            t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        if (existingTab != null) { ActivateTab(existingTab); return; }
+
+        try
+        {
+            var vm = CreateNoteNestViewModel();
+            if (!vm.OpenFileAtStartup(path)) return;
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
+            _tabs.Add(tab);
+            _sessionManager.Add(session);
+            ActivateTab(tab);
+        }
+        catch (Exception ex)
+        {
+            _dialogs.ShowError($"NoteNest ファイルを開けませんでした。\n\n{ex.Message}", "読込エラー");
+        }
+    }
+
+    /// <summary>v1.9.5: 選択中 NoteNest タブを上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    private void SaveNoteNestFile()
+    {
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        var vm = (MainViewModel)session.WorkspaceViewModel;
+        if (_selectedTab.FilePath != null)
+            vm.SaveProjectCommand.Execute(null);
+        else
+            vm.SaveAsProjectCommand.Execute(null);
+    }
+
+    /// <summary>v1.9.5: 選択中 NoteNest タブを名前を付けて保存する。</summary>
+    private void SaveNoteNestFileAs()
+    {
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        ((MainViewModel)session.WorkspaceViewModel).SaveAsProjectCommand.Execute(null);
+    }
+
+    /// <summary>
+    /// v1.9.5: 起動時に .notenest ファイルを新しい NoteNest タブ／Session として読み込む。
+    /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+    /// </summary>
+    private void LoadInitialNoteNestFile(string path)
+    {
+        path = NormalizeFilePath(path);
+
+        var existingTab = _tabs.FirstOrDefault(t =>
+            t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        if (existingTab != null) { ActivateTab(existingTab); return; }
+
+        try
+        {
+            var vm = CreateNoteNestViewModel();
+            if (!vm.OpenFileAtStartup(path)) { EnsureDefaultTab(); return; }
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
+            _tabs.Add(tab);
+            _sessionManager.Add(session);
+            ActivateTab(tab);
+        }
+        catch (Exception ex)
+        {
+            _dialogs.ShowError($"NoteNest ファイルを開けませんでした。\n\n{ex.Message}", "読込エラー");
+            EnsureDefaultTab();
         }
     }
 

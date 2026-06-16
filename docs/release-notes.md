@@ -1,3 +1,20 @@
+## v1.9.5 — NoteNest 複数ファイルタブ対応の最小実装
+
+- NoteNest について、複数の `.notenest` ファイルを別タブとして並行利用できるようにした。各タブは独立した `MainViewModel`（ProjectSessionViewModel / NoteWorkspaceViewModel / TaskBoardViewModel / MarkerPanelViewModel / EditorStateViewModel を含む）・FilePath・IsModified を持つ。
+- `CreateNoteNestViewModel()` ヘルパーを追加した。タブ作成ごとに新規 `MainViewModel` を生成し、ダイアログ委譲・コールバック（`NavigateToLine` / `NavigateToMarker` / `SyncTreeSelectionCallback`）・`PropertyChanged` 購読をまとめて設定する。ChatNest の `CreateChatNestViewModel()` と対称な実装。
+- `CreateSessionForTab` の NoteNest ケースを `ViewModel`（共有インスタンス）から `CreateNoteNestViewModel()`（タブ独立インスタンス）に変更した。
+- `ActivateTab` で NoteNest タブへの切替時に `DataContext` を選択タブの Session の `MainViewModel` に差し替えるようにした。ステータスバーのバインディング（`ProjectDisplayName` / `UnsavedIndicatorText`）はウィンドウ `DataContext` を参照するため自動更新される。
+- `SyncNoteNestTabToViewModel()` を `SyncNoteNestTabForViewModel(MainViewModel)` に置き換えた。`OnNoteNestSessionPropertyChanged` の sender から `MainViewModel` を特定し、Session Manager で逆引きしてタブを同期する。
+- `NewNoteNestSession()` / `OpenNoteNestFile()` / `SaveNoteNestFile()` / `SaveNoteNestFileAs()` を追加した。各ファイルメニュー操作は選択タブの Session 経由で動作し、他の NoteNest タブの状態には影響しない。
+- `LoadInitialNoteNestFile(string)` を追加した。起動時 `.notenest` ファイル指定を新しい NoteNest タブ／Session として読み込む。同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+- `ConfirmAndResetNoteNest` を変更した。`CreateNewProjectDirect()` 呼び出しを削除し、`PropertyChanged` 購読解除のみ行うよう変更した。
+- `OnClosing` の NoteNest 確認を単一 `ViewModel.ConfirmCloseIfModified()` チェックから全 NoteNest Session の走査（`foreach`）に変更した。タブごとに個別の保存確認を行う。
+- コンストラクタから共有 `MainViewModel` の生成とコールバック設定を削除した。`DataContext` は初期 NoteNest タブの `ActivateTab` 時に設定されるため、コンストラクタでの事前設定は不要になった。
+- `NoteNestMultiTabSessionTests` を新規追加した（14 件：ViewModel 独立性・Session 逆引き・FilePath 独立性・IsModified 独立性・NoteNest/ChatNest 混在フィルタ・二重オープン検出・WorkspaceKind 確認）。
+- `NestSuiteShellTests` に v1.9.5 の型境界確認テストを 7 件追加した（`CreateNoteNestViewModel` 存在・`NewNoteNestSession` 存在・`OpenNoteNestFile` 存在・`SaveNoteNestFile` 存在・`LoadInitialNoteNestFile` 存在・`OnNoteNestSessionPropertyChanged` 存在・`ConfirmAndResetNoteNest` 戻り値）。`SyncNoteNestTabToViewModel` テストを `SyncNoteNestTabForViewModel` テストに更新した。
+- NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。IdeaNest の複数ファイル対応は行っていない。
+- v1.9.6 以降の候補：回帰確認・小修正（v1.9.6）、IdeaNest 複数ファイルタブ対応（v1.9.7）、3 ツール複数ファイル対応後の回帰確認（v1.9.8）。
+
 ## v1.9.4 — NoteNest 複数ファイルタブ対応の設計・分割
 
 - NoteNest 複数ファイルタブ対応に向けた現状棚卸しと設計整理を行った。本格実装は行っていない。
