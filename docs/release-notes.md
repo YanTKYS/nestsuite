@@ -2,6 +2,7 @@
 
 - v1.9.7 で完成した 3ツール（NoteNest / ChatNest / IdeaNest）複数ファイルタブ対応の回帰確認を行い、小修正を適用した安定化版。新機能の追加はない。
 - `SaveChatNestFileAs()` に別タブでの重複パス検出を追加した。`SaveIdeaNestFileAs()` と同様に、別タブで同じ ChatNest ファイルが既に開かれている場合はエラーダイアログを表示して既存タブをアクティブ化し、上書きを防ぐ。
+- `SaveNoteNestFileAs()` に別タブでの重複パス検出を追加した（v1.9.8 コードレビュー指摘）。従来は `MainViewModel.SaveAsProjectCommand` をそのまま実行していたため Shell 側でパスを確認できなかった。`MainViewModel` に `SaveToPath(string path)` を追加し、Shell 側でダイアログ・重複チェック・保存を一貫して制御するよう変更した。3ツール横断で Save As の重複ガードが揃った。
 - `_isClosingTab` フィールドを削除した。このフラグは宣言されていたが一度も `true` に設定されておらず、`OnNoteNestSessionPropertyChanged` 内のガードは機能していなかった。`ConfirmAndResetNoteNest` が `PropertyChanged` 購読を解除した後に `vm.Dispose()` を呼ぶため、タブ閉鎖中に `OnNoteNestSessionPropertyChanged` が呼ばれることはなく、ガード自体も不要であることを確認した。
 - `CloseTab` の docstring を更新した。古い v1.9.4 のメソッド名（`OnNoteNestViewModelPropertyChanged` / `SyncNoteNestTabToViewModel`）への参照を削除し、現行の `ConfirmAndResetNoteNest` / `ConfirmAndResetChatNest` / `ConfirmAndResetIdeaNest` へのリンクに置き換えた。
 - `NestSuiteWorkspaceSessionManagerTests` の誤ったコメント「NoteNest/IdeaNest は引き続き単一 VM」を更新した。v1.9.5（NoteNest）と v1.9.7（IdeaNest）でいずれもタブ独立 VM に移行済みであることを反映した。

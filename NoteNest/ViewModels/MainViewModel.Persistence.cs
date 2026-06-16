@@ -67,6 +67,9 @@ public partial class MainViewModel
         if (path != null) DoSave(path);
     }
 
+    /// <summary>Shell が重複パス検出後にパス指定で保存するためのエントリポイント。</summary>
+    public bool SaveToPath(string path) => DoSave(path);
+
     private bool DoSave(string path)
     {
         try
