@@ -1000,4 +1000,20 @@ public class NestSuiteShellTests
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);
     }
+
+    // ── v1.9.8 fix: NoteNest Save As の重複パス検出 ───────────────────────
+
+    [Fact]
+    public void MainViewModel_HasSaveToPathMethod_ReturnsBool()
+    {
+        // v1.9.8 fix: Shell が重複パス検出後にパス指定で保存するため MainViewModel.SaveToPath を追加
+        var method = typeof(NoteNest.ViewModels.MainViewModel)
+            .GetMethod("SaveToPath",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(string)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
 }

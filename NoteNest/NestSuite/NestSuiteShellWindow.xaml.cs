@@ -1013,12 +1013,29 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             vm.SaveAsProjectCommand.Execute(null);
     }
 
-    /// <summary>v1.9.5: 選択中 NoteNest タブを名前を付けて保存する。</summary>
+    /// <summary>
+    /// v1.9.5: 選択中 NoteNest タブを名前を付けて保存する。
+    /// v1.9.8 fix: 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
+    /// </summary>
     private void SaveNoteNestFileAs()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;
         if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
-        ((MainViewModel)session.WorkspaceViewModel).SaveAsProjectCommand.Execute(null);
+        var vm = (MainViewModel)session.WorkspaceViewModel;
+        var rawPath = _dialogs.SelectProjectSavePath(vm.ProjectName);
+        if (rawPath == null) return;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        var duplicateTab = _tabs.FirstOrDefault(t =>
+            t.Id != _selectedTab.Id &&
+            t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, normalizedPath));
+        if (duplicateTab != null)
+        {
+            _dialogs.ShowError("この NoteNest ファイルは既に別タブで開かれています。", "保存できません");
+            ActivateTab(duplicateTab);
+            return;
+        }
+        vm.SaveToPath(normalizedPath);
     }
 
     /// <summary>
