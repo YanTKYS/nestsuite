@@ -1,3 +1,14 @@
+## v1.9.8 — 3ツール複数ファイル対応後の回帰確認・小修正
+
+- v1.9.7 で完成した 3ツール（NoteNest / ChatNest / IdeaNest）複数ファイルタブ対応の回帰確認を行い、小修正を適用した安定化版。新機能の追加はない。
+- `SaveChatNestFileAs()` に別タブでの重複パス検出を追加した。`SaveIdeaNestFileAs()` と同様に、別タブで同じ ChatNest ファイルが既に開かれている場合はエラーダイアログを表示して既存タブをアクティブ化し、上書きを防ぐ。
+- `_isClosingTab` フィールドを削除した。このフラグは宣言されていたが一度も `true` に設定されておらず、`OnNoteNestSessionPropertyChanged` 内のガードは機能していなかった。`ConfirmAndResetNoteNest` が `PropertyChanged` 購読を解除した後に `vm.Dispose()` を呼ぶため、タブ閉鎖中に `OnNoteNestSessionPropertyChanged` が呼ばれることはなく、ガード自体も不要であることを確認した。
+- `CloseTab` の docstring を更新した。古い v1.9.4 のメソッド名（`OnNoteNestViewModelPropertyChanged` / `SyncNoteNestTabToViewModel`）への参照を削除し、現行の `ConfirmAndResetNoteNest` / `ConfirmAndResetChatNest` / `ConfirmAndResetIdeaNest` へのリンクに置き換えた。
+- `NestSuiteWorkspaceSessionManagerTests` の誤ったコメント「NoteNest/IdeaNest は引き続き単一 VM」を更新した。v1.9.5（NoteNest）と v1.9.7（IdeaNest）でいずれもタブ独立 VM に移行済みであることを反映した。
+- `ThreeToolsMultiTabRegressionTests` を新規追加した（20 件：3ツール混在の SessionManager 管理・各ツールのフィルタリング・ツール間 Session 削除の独立性・ツール間 FilePath/IsModified の独立性・ViewModel 型確認・6 タブ混在の集計・OpenFilePolicy の拡張子別動作）。
+- NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+- v1.9.9 以降の候補：タブ運用の細部改善、将来：タブ復元、将来：複数ファイル同時オープン。
+
 ## v1.9.7 — IdeaNest 複数ファイルタブ対応の設計・最小実装
 
 - IdeaNest について、複数の `.ideanest` ファイルを別タブとして並行利用できるようにした。各タブは独立した `IdeaNestWorkspaceViewModel`（カード一覧・タグ一覧・フィルタ・表示設定・未保存状態を含む）・FilePath・IsModified を持つ。

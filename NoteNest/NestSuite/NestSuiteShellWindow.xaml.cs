@@ -164,7 +164,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly NestSuiteWorkspaceSessionManager _sessionManager = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
-    private bool _isClosingTab;
 
     /// <summary>現在選択中のタブのツール ID。タブ未選択時は <see cref="DefaultToolId"/>。</summary>
     public string SelectedToolId => _selectedTab?.ToolId ?? DefaultToolId;
@@ -432,7 +431,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     private void OnNoteNestSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (_isClosingTab) return;
         if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified) &&
             sender is MainViewModel vm)
             SyncNoteNestTabForViewModel(vm);
@@ -640,7 +638,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             SaveChatNestFileAs();
     }
 
-    /// <summary>v1.9.2: 選択中 ChatNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
+    /// <summary>
+    /// v1.9.2: 選択中 ChatNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
+    /// v1.9.8: 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
+    /// </summary>
     private void SaveChatNestFileAs()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest) return;
@@ -648,9 +649,20 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var defaultName = _selectedTab.FilePath != null
             ? Path.GetFileName(_selectedTab.FilePath)
             : "chat.chatnest";
-        var path = _dialogs.SelectChatNestSavePath(defaultName);
-        if (path == null) return;
-        TrySaveChatNestToPath(session, path);
+        var rawPath = _dialogs.SelectChatNestSavePath(defaultName);
+        if (rawPath == null) return;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        var duplicateTab = _tabs.FirstOrDefault(t =>
+            t.Id != _selectedTab.Id &&
+            t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, normalizedPath));
+        if (duplicateTab != null)
+        {
+            _dialogs.ShowError("この ChatNest ファイルは既に別タブで開かれています。", "保存できません");
+            ActivateTab(duplicateTab);
+            return;
+        }
+        TrySaveChatNestToPath(session, normalizedPath);
     }
 
     /// <summary>
@@ -725,11 +737,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// 閉じた後は右隣または左隣のタブをアクティブ化する。
     /// タブが 0 件になった場合は無題 NoteNest タブを自動作成する。
     ///
-    /// <para>NoteNest: <see cref="MainViewModel.CreateNewProjectDirect"/> でリセット（確認済み後）。
-    /// _isClosingTab フラグで <see cref="OnNoteNestViewModelPropertyChanged"/> を抑制し、
-    /// SyncNoteNestTabToViewModel による二重更新を防ぐ。</para>
-    /// <para>ChatNest: <see cref="ChatNestWorkspaceViewModel.Clear"/> でリセット。</para>
-    /// <para>IdeaNest: 未統合のため確認なしで即閉じる。</para>
+    /// <para>NoteNest: <see cref="ConfirmAndResetNoteNest"/> で確認後 PropertyChanged 購読解除・Dispose。</para>
+    /// <para>ChatNest: <see cref="ConfirmAndResetChatNest"/> で確認後 PropertyChanged 購読解除。</para>
+    /// <para>IdeaNest: <see cref="ConfirmAndResetIdeaNest"/> で確認後 PropertyChanged 購読解除。</para>
     /// </summary>
     private void CloseTab(NestSuiteDocumentTab tab)
     {

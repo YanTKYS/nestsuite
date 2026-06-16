@@ -350,14 +350,14 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteShellWindow_HasIsClosingTabField()
+    public void NestSuiteShellWindow_IsClosingTabField_IsRemovedInV198()
     {
-        // v1.7.6: _isClosingTab フラグが NoteNest VM リセット中の二重同期を抑制するために宣言されていることを確認
+        // v1.9.8: _isClosingTab は一度も true にならない死コードであったため削除した。
+        // ConfirmAndResetNoteNest が PropertyChanged 購読解除後に Dispose() を呼ぶため、ガード不要。
         var field = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.Name == "_isClosingTab");
-        Assert.NotNull(field);
-        Assert.Equal(typeof(bool), field!.FieldType);
+        Assert.Null(field);
     }
 
     // ── v1.7.7: 起動時 .chatnest ファイル指定の最小対応 ─────────────────
