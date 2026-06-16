@@ -733,4 +733,73 @@ public class NestSuiteShellTests
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);
     }
+
+    // ── v1.9.3: v1.9.2 実装の回帰確認 ───────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasNormalizeFilePathMethod()
+    {
+        // v1.9.2 fix: NormalizeFilePath が Path.GetFullPath ラッパーとして宣言されていることを確認
+        // 相対パスと絶対パスの二重オープン検出に使用される
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("NormalizeFilePath",
+                BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(string)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(string), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasUpdateChatNestTabPathMethod()
+    {
+        // v1.9.2: UpdateChatNestTabPath が保存後のタブ表示更新ヘルパーとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("UpdateChatNestTabPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasOpenChatNestFileMethod()
+    {
+        // v1.9.2: OpenChatNestFile がファイルを開くメソッドとして宣言されていることを確認
+        // 二重オープン検出・新規タブ作成・ActivateTab を含む
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("OpenChatNestFile",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method!.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasOnChatNestPropertyChangedMethod()
+    {
+        // v1.9.2: OnChatNestPropertyChanged が PropertyChanged ハンドラとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("OnChatNestPropertyChanged",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasConfirmAndResetChatNestMethod()
+    {
+        // v1.9.2: ConfirmAndResetChatNest がタブ閉じ確認メソッドとして宣言されていることを確認
+        // v1.9.2 では Clear() 呼び出しを削除し PropertyChanged の購読解除のみ行う
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("ConfirmAndResetChatNest",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteDocumentTab)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
 }

@@ -269,4 +269,133 @@ public class ChatNestMultiTabSessionTests
         Assert.True(aCount > 0);
         Assert.Equal(0, bCount);
     }
+
+    // ── v1.9.3 回帰確認テスト ─────────────────────────────────────────────
+
+    // Session 逆引きパターン（ReferenceEquals）の確認
+    [Fact]
+    public void SessionReverseLoopup_ByReferenceEquals_FindsCorrectSession()
+    {
+        var vmA = new ChatNestWorkspaceViewModel();
+        var vmB = new ChatNestWorkspaceViewModel();
+
+        var mgr = new NestSuiteWorkspaceSessionManager();
+        mgr.Add(new NestSuiteWorkspaceSession("tab-a", NestSuiteWorkspaceKind.ChatNest, vmA));
+        mgr.Add(new NestSuiteWorkspaceSession("tab-b", NestSuiteWorkspaceKind.ChatNest, vmB));
+
+        // SyncChatNestTabForViewModel 内で行う逆引きと同等の操作
+        var found = mgr.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vmB));
+
+        Assert.NotNull(found);
+        Assert.Equal("tab-b", found!.TabId);
+        Assert.Same(vmB, found.WorkspaceViewModel);
+    }
+
+    [Fact]
+    public void SessionReverseLoopup_UnknownViewModel_ReturnsNull()
+    {
+        var vmA = new ChatNestWorkspaceViewModel();
+        var vmUnregistered = new ChatNestWorkspaceViewModel();
+
+        var mgr = new NestSuiteWorkspaceSessionManager();
+        mgr.Add(new NestSuiteWorkspaceSession("tab-a", NestSuiteWorkspaceKind.ChatNest, vmA));
+
+        var found = mgr.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vmUnregistered));
+
+        Assert.Null(found);
+    }
+
+    // OnClosing での WorkspaceKind フィルタの確認
+    [Fact]
+    public void Sessions_FilterByChatNestKind_ExcludesOtherKinds()
+    {
+        var mgr = new NestSuiteWorkspaceSessionManager();
+        mgr.Add(new NestSuiteWorkspaceSession("tab-note", NestSuiteWorkspaceKind.NoteNest, new object()));
+        mgr.Add(new NestSuiteWorkspaceSession("tab-chat1", NestSuiteWorkspaceKind.ChatNest, new ChatNestWorkspaceViewModel()));
+        mgr.Add(new NestSuiteWorkspaceSession("tab-chat2", NestSuiteWorkspaceKind.ChatNest, new ChatNestWorkspaceViewModel()));
+        mgr.Add(new NestSuiteWorkspaceSession("tab-idea", NestSuiteWorkspaceKind.IdeaNest, new object()));
+
+        // OnClosing 内の foreach と同等のフィルタ
+        var chatSessions = mgr.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest)
+            .ToList();
+
+        Assert.Equal(2, chatSessions.Count);
+        Assert.All(chatSessions, s => Assert.Equal(NestSuiteWorkspaceKind.ChatNest, s.WorkspaceKind));
+    }
+
+    [Fact]
+    public void Sessions_FilterByChatNestKind_WhenNoChatNestSessions_ReturnsEmpty()
+    {
+        var mgr = new NestSuiteWorkspaceSessionManager();
+        mgr.Add(new NestSuiteWorkspaceSession("tab-note", NestSuiteWorkspaceKind.NoteNest, new object()));
+        mgr.Add(new NestSuiteWorkspaceSession("tab-idea", NestSuiteWorkspaceKind.IdeaNest, new object()));
+
+        var chatSessions = mgr.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest)
+            .ToList();
+
+        Assert.Empty(chatSessions);
+    }
+
+    // IsDirty と HasUnsavedChanges の独立性
+    [Fact]
+    public void TwoViewModels_IsDirty_IsIndependent()
+    {
+        var vmA = new ChatNestWorkspaceViewModel();
+        var vmB = new ChatNestWorkspaceViewModel();
+
+        vmA.LoadMessages([new Message { Speaker = Speaker.自分, Text = "A" }]);
+        vmA.MarkSaved();
+
+        // vmA は既存メッセージをロードしただけなので IsDirty=false
+        Assert.False(vmA.HasUnsavedChanges);
+        Assert.False(vmB.HasUnsavedChanges);
+
+        // vmA に InputText を設定 → vmA のみ未保存
+        vmA.InputText = "入力中";
+        Assert.True(vmA.HasUnsavedChanges);
+        Assert.False(vmB.HasUnsavedChanges);
+    }
+
+    [Fact]
+    public void MarkSaved_ResetsHasUnsavedChanges_OnlyForThatViewModel()
+    {
+        var vmA = new ChatNestWorkspaceViewModel();
+        var vmB = new ChatNestWorkspaceViewModel();
+
+        vmA.LoadMessages([new Message { Speaker = Speaker.自分, Text = "A" }]);
+        vmB.LoadMessages([new Message { Speaker = Speaker.反論, Text = "B" }]);
+
+        // 両方ともメッセージを追加して dirty にする
+        vmA.InputText = "入力A";
+        vmB.InputText = "入力B";
+
+        // vmA のみ MarkSaved（InputText は残るので HasUnsavedChanges=true のまま）
+        vmA.MarkSaved();
+
+        // MarkSaved 後も InputText が残れば HasUnsavedChanges=true のまま
+        Assert.True(vmA.HasUnsavedChanges);
+        Assert.True(vmB.HasUnsavedChanges);
+
+        // vmA の InputText をクリアして完全に保存済み状態にする
+        vmA.InputText = string.Empty;
+        Assert.False(vmA.HasUnsavedChanges);
+        Assert.True(vmB.HasUnsavedChanges);
+    }
+
+    // 二重オープン検出：FilePath null の扱い
+    [Fact]
+    public void OpenFilePolicy_NullPathA_IsNotSameAsAnyPath()
+    {
+        // null（無題タブ）は既存ファイルタブとは別物
+        Assert.False(NestSuiteOpenFilePolicy.IsSameFile(null, @"C:\projects\meeting.chatnest"));
+    }
+
+    [Fact]
+    public void OpenFilePolicy_BothNull_IsNotSameFile()
+    {
+        // null 同士も「同じファイル」とは判定しない（無題タブの二重作成防止は別のロジック）
+        Assert.False(NestSuiteOpenFilePolicy.IsSameFile(null, null));
+    }
 }

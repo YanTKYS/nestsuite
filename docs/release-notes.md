@@ -1,3 +1,14 @@
+## v1.9.3 — ChatNest 複数ファイルタブ対応後の回帰確認・小修正
+
+- v1.9.2 で実装した ChatNest 複数ファイルタブ対応の回帰確認を行い、コードレビューで指摘された小修正を適用した安定化版。新機能の追加はない。
+- `NestSuiteOpenFilePolicy.IsSameFile` に `null` パスを渡した場合の動作（null は null とも既存パスとも「同一ファイル」にならない）を `ChatNestMultiTabSessionTests` で確認した。
+- Session 逆引きパターン（`ReferenceEquals(s.WorkspaceViewModel, vm)`）の確認テスト 2 件を追加した。`vmB` に対応する Session が正しく特定されること、登録外 ViewModel は `null` を返すことを確認する。
+- `OnClosing` での WorkspaceKind フィルタ（`Where(s => s.WorkspaceKind == ChatNest)`）の確認テスト 2 件を追加した。NoteNest/IdeaNest Session を誤って ChatNest として処理しないことを確認する。
+- `HasUnsavedChanges` 独立性確認テスト 2 件を追加した（`MarkSaved` がもう一方の ViewModel に影響しないこと、`InputText` が残る場合は `HasUnsavedChanges=true` のまま維持されることの確認）。
+- `NestSuiteShellTests` に v1.9.2 実装の構造確認テスト 5 件を追加した（`NormalizeFilePath` 静的メソッド・`UpdateChatNestTabPath` メソッド・`OpenChatNestFile` メソッド・`OnChatNestPropertyChanged` ハンドラ・`ConfirmAndResetChatNest` 戻り値）。
+- NoteNest / IdeaNest の複数ファイル対応は行っていない。NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+- v1.9.4 以降の候補：IdeaNest 複数ファイルタブ対応（v1.9.4）、NoteNest 複数ファイルタブ対応の設計（v1.9.5）、NoteNest 最小実装（v1.9.6）。
+
 ## v1.9.2 — ChatNest 複数ファイルタブ対応の最小実装
 
 - ChatNest について、複数の `.chatnest` ファイルを別タブとして並行利用できるようにした。各タブは独立した `ChatNestWorkspaceViewModel`・FilePath・IsModified・入力中テキストを持つ。
