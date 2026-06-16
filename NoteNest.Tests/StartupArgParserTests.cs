@@ -129,4 +129,92 @@ public class StartupArgParserTests
         // v1.8.1: --nestsuite sample.ideanest でも NestSuite モードと判定される
         Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.ideanest"]));
     }
+
+    // ── v1.11.0: --classic-notenest フラグ検出 ───────────────────────────
+
+    [Fact]
+    public void IsClassicMode_WithClassicFlag_ReturnsTrue()
+    {
+        // v1.11.0: --classic-notenest → 従来 NoteNest 単体版（互換ルート）
+        Assert.True(StartupArgParser.IsClassicMode(["--classic-notenest"]));
+    }
+
+    [Fact]
+    public void IsClassicMode_WithClassicFlagMixedCase_ReturnsTrue()
+    {
+        Assert.True(StartupArgParser.IsClassicMode(["--Classic-NoteNest"]));
+    }
+
+    [Fact]
+    public void IsClassicMode_WithNoArgs_ReturnsFalse()
+    {
+        // v1.11.0: 引数なし → NestSuite（既定）
+        Assert.False(StartupArgParser.IsClassicMode([]));
+    }
+
+    [Fact]
+    public void IsClassicMode_WithNestSuiteFlag_ReturnsFalse()
+    {
+        // --nestsuite は互換扱いで NestSuite を起動。IsClassicMode は false
+        Assert.False(StartupArgParser.IsClassicMode(["--nestsuite"]));
+    }
+
+    [Fact]
+    public void IsClassicMode_WithFilePath_ReturnsFalse()
+    {
+        // v1.11.0: ファイルパスのみ → NestSuite で開く（IsClassicMode = false）
+        Assert.False(StartupArgParser.IsClassicMode(["sample.notenest"]));
+    }
+
+    [Fact]
+    public void IsClassicMode_WithClassicFlagAndFilePath_ReturnsTrue()
+    {
+        // --classic-notenest sample.notenest → 単体版でファイルを開く
+        Assert.True(StartupArgParser.IsClassicMode(["--classic-notenest", "sample.notenest"]));
+    }
+
+    // ── v1.11.0: 既定 NestSuite 起動パターンの確認 ──────────────────────
+
+    [Fact]
+    public void GetFilePath_WithNoArgsDefaultNestSuite_ReturnsNull()
+    {
+        // v1.11.0: 引数なし → GetFilePath = null → NestSuite が無題タブを作成
+        Assert.Null(StartupArgParser.GetFilePath([]));
+    }
+
+    [Fact]
+    public void GetFilePath_WithNotenestOnly_ReturnsPath()
+    {
+        // v1.11.0: NoteNest.exe sample.notenest → GetFilePath = "sample.notenest" → NestSuite で開く
+        Assert.Equal("sample.notenest", StartupArgParser.GetFilePath(["sample.notenest"]));
+    }
+
+    [Fact]
+    public void GetFilePath_WithChatnestOnly_ReturnsPath()
+    {
+        // v1.11.0: NoteNest.exe sample.chatnest → GetFilePath = "sample.chatnest" → NestSuite で開く
+        Assert.Equal("sample.chatnest", StartupArgParser.GetFilePath(["sample.chatnest"]));
+    }
+
+    [Fact]
+    public void GetFilePath_WithIdeanestOnly_ReturnsPath()
+    {
+        // v1.11.0: NoteNest.exe sample.ideanest → GetFilePath = "sample.ideanest" → NestSuite で開く
+        Assert.Equal("sample.ideanest", StartupArgParser.GetFilePath(["sample.ideanest"]));
+    }
+
+    [Fact]
+    public void GetFilePath_WithClassicFlagAndFilePath_ReturnsFilePath()
+    {
+        // --classic-notenest sample.notenest → --classic-notenest はフラグ扱い、パスが返る
+        Assert.Equal("sample.notenest",
+            StartupArgParser.GetFilePath(["--classic-notenest", "sample.notenest"]));
+    }
+
+    [Fact]
+    public void GetFilePath_WithClassicFlagOnly_ReturnsNull()
+    {
+        // --classic-notenest のみ → null → MainWindow が StartupDialog を表示
+        Assert.Null(StartupArgParser.GetFilePath(["--classic-notenest"]));
+    }
 }

@@ -1,21 +1,23 @@
-# NestSuite 既定起動化 移行計画（v1.10.3）
+# NestSuite 既定起動化 移行計画（v1.11.0 実装済み）
 
-NoteNest は実質的に NestSuite 統合母体になっており、NoteNest 単体版と NestSuite 版の並行保守を長期的に維持しない方針を整理する。v1.10.3 では設計と計画の文書化のみを行い、起動挙動の変更は v1.11.0 で実施する。
+NoteNest は実質的に NestSuite 統合母体になっており、NoteNest 単体版と NestSuite 版の並行保守を長期的に維持しない方針を整理した。v1.10.3 で設計を整理し、v1.11.0 で既定起動切り替えを実施した。
 
 ---
 
-## 現在の起動ルート（v1.10.x）
+## 現在の起動ルート（v1.11.0）
 
 | 起動方法 | 動作 |
 |---------|------|
-| `NoteNest.exe` | NoteNest 単体版（`MainWindow`） |
-| `NoteNest.exe sample.notenest` | NoteNest 単体版（`MainWindow`）でファイルを開く |
-| `NoteNest.exe --nestsuite` | NestSuite（`NestSuiteShellWindow`）、無題 NoteNest タブ |
-| `NoteNest.exe --nestsuite sample.notenest` | NestSuite で `.notenest` タブを開く |
-| `NoteNest.exe --nestsuite sample.chatnest` | NestSuite で `.chatnest` タブを開く |
-| `NoteNest.exe --nestsuite sample.ideanest` | NestSuite で `.ideanest` タブを開く |
+| `NoteNest.exe` | NestSuite（`NestSuiteShellWindow`）、無題 NoteNest タブ |
+| `NoteNest.exe sample.notenest` | NestSuite で `.notenest` タブを開く |
+| `NoteNest.exe sample.chatnest` | NestSuite で `.chatnest` タブを開く |
+| `NoteNest.exe sample.ideanest` | NestSuite で `.ideanest` タブを開く |
+| `NoteNest.exe --classic-notenest` | 従来 NoteNest 単体版（`MainWindow`）、スタートダイアログ表示 |
+| `NoteNest.exe --classic-notenest sample.notenest` | 従来 NoteNest 単体版でファイルを開く |
+| `NoteNest.exe --nestsuite` | NestSuite（互換、既定と同じ動作） |
+| `NoteNest.exe --nestsuite sample.*` | NestSuite で対象ファイルを開く（互換） |
 
-現時点では `--nestsuite` フラグが必須。フラグなしは従来の NoteNest 単体版が起動する。
+v1.11.0 からフラグなしが NestSuite の既定起動。`--classic-notenest` で従来単体版を起動できる。
 
 ---
 
@@ -54,7 +56,7 @@ v1.11.0 で `NoteNest.exe` の既定起動を NestSuite に切り替え、NoteNe
 | バージョン | 内容 |
 |----------|------|
 | v1.10.x | 現状維持（フラグなしは NoteNest 単体版）。docs に移行方針を整理（v1.10.3） |
-| v1.11.0 | `NoteNest.exe` の既定起動を NestSuite に切り替え。単体版は `--classic-notenest` で継続 |
+| **v1.11.0（実装済み）** | `NoteNest.exe` の既定起動を NestSuite に切り替えた。単体版は `--classic-notenest` で継続 |
 | v1.12.x | `--classic-notenest` ルートの縮退・廃止を検討。前提条件が整った場合のみ |
 
 ---

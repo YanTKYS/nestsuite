@@ -1,3 +1,14 @@
+## v1.11.0 — 既定起動をNestSuiteへ切り替え
+
+- **`NoteNest.exe` の既定起動を NestSuite に切り替えた。** v1.10.x までは `--nestsuite` フラグなしの起動は NoteNest 単体版（`MainWindow`）だった。v1.11.0 からはフラグなしでも NestSuite（`NestSuiteShellWindow`）が起動する。
+- **ファイルパス単独指定に対応した。** `NoteNest.exe sample.notenest` / `NoteNest.exe sample.chatnest` / `NoteNest.exe sample.ideanest` でフラグなしに NestSuite が起動し、拡張子に応じてタブを自動作成する。未対応拡張子や読込失敗時はエラーを表示して無題 NoteNest タブへフォールバックする。
+- **`--classic-notenest` フラグを追加した。** `NoteNest.exe --classic-notenest` で従来の NoteNest 単体版（`MainWindow`）を起動できる互換ルートとして提供する。`--classic-notenest sample.notenest` でファイルを直接開ける。ファイル未指定時はスタートダイアログを表示する。
+- **`--nestsuite` フラグを互換として維持した。** v1.6.1 以降の `--nestsuite` は削除せず、v1.11.0 以降も同じ NestSuite 起動として動作する。既存のスクリプトやショートカットはそのまま使える。
+- **`StartupArgParser` に `IsClassicMode()` を追加した。** `--classic-notenest` フラグ（大文字小文字を区別しない）を判定するメソッドを追加した。`GetFilePath()` は従来どおり `-` で始まらない最初の引数を返すため、`--classic-notenest sample.notenest` では `"sample.notenest"` が返る。
+- `StartupArgParserTests` に `IsClassicMode` と既定 NestSuite 起動パターンの確認テストを 12 件追加した。
+- NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。
+- v1.12.x 以降の候補：`--classic-notenest` ルートの縮退・廃止検討・タブ復元・最近ファイル統合。
+
 ## v1.10.3 — NestSuite既定起動化に向けた設計整理
 
 - **NestSuite 既定起動化の移行計画を `docs/nestsuite-default-startup-plan.md` として新規作成した。** 現在の起動ルート（4 パターン）・NoteNest 単体版と NestSuite 版の並行保守課題・v1.11.0 での既定起動切り替え方針・`--classic-notenest` 退避ルートの位置づけ・v1.12.x 以降の縮退ロードマップ・廃止の前提条件を整理した。

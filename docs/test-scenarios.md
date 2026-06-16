@@ -2330,3 +2330,47 @@ v1.10.3 はコード変更なしのドキュメント整理リリース。起動
 2. 以下の全テストがパスすることを確認する（自動）：
    `NestSuiteShellTests` / `NestSuiteDocumentTabTests` / `ThreeToolsMultiTabRegressionTests` /
    `ApplicationVersionTests` / `NestSuiteMultiFileTabsDesignTests`
+
+## §63 v1.11.0 既定起動 NestSuite 切り替えチェックリスト
+
+v1.11.0 で変更した起動ルートを確認する。
+
+### 既定起動（NestSuite）
+
+- [ ] `NoteNest.exe` で NestSuite が起動すること（無題 NoteNest タブ）
+- [ ] `NoteNest.exe sample.notenest` で NestSuite が起動し NoteNest タブが開くこと
+- [ ] `NoteNest.exe sample.chatnest` で NestSuite が起動し ChatNest タブが開くこと
+- [ ] `NoteNest.exe sample.ideanest` で NestSuite が起動し IdeaNest タブが開くこと
+- [ ] 起動時に不要な無題 NoteNest タブがちらつかないこと
+
+### 未対応拡張子
+
+- [ ] `NoteNest.exe sample.txt` でエラーダイアログが表示されること
+- [ ] エラー後に無題 NoteNest タブへフォールバックすること（アプリが落ちないこと）
+
+### 互換ルート（`--classic-notenest`）
+
+- [ ] `NoteNest.exe --classic-notenest` で従来 NoteNest 単体版（`MainWindow`）が起動すること
+- [ ] `NoteNest.exe --classic-notenest sample.notenest` で NoteNest 単体版がファイルを開くこと
+- [ ] `--classic-notenest` 単独（ファイルなし）でスタートダイアログが表示されること
+
+### 互換フラグ（`--nestsuite`）
+
+- [ ] `NoteNest.exe --nestsuite` で NestSuite が起動すること（フラグなしと同じ動作）
+- [ ] `NoteNest.exe --nestsuite sample.notenest` で NoteNest タブが開くこと
+- [ ] `NoteNest.exe --nestsuite sample.chatnest` で ChatNest タブが開くこと
+- [ ] `NoteNest.exe --nestsuite sample.ideanest` で IdeaNest タブが開くこと
+
+### 回帰確認
+
+- [ ] NestSuite 内の保存・開く・閉じる・未保存確認が引き続き動作すること
+- [ ] NoteNest 単体版（`--classic-notenest`）の保存・開く・閉じる・未保存確認が動作すること
+- [ ] バージョン番号が v1.11.0 になっていること
+
+### 自動確認
+
+1. `ApplicationVersionTests` でアプリバージョンが `1.11.0` であることを確認する（自動）。
+2. `StartupArgParserTests` の新規追加テスト（`IsClassicMode_*` 系・既定 NestSuite パターン系）がパスすることを確認する（自動）。
+3. 以下の全テストがパスすることを確認する（自動）：
+   `StartupArgParserTests` / `NestSuiteShellTests` / `NestSuiteDocumentTabTests` /
+   `ThreeToolsMultiTabRegressionTests` / `ApplicationVersionTests`

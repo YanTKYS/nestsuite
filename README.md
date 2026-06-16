@@ -167,9 +167,9 @@ NoteNest.exe "C:\path\to\project.notenest"
 - NoteNest は複数起動に対応しています。複数のウィンドウでそれぞれ別のプロジェクトを開いて同時利用できます
 - **同じ `.notenest` ファイルを複数ウィンドウで同時編集しないでください。** 後から保存した内容で上書きされます
 
-## NestSuite について（試験統合版・v1.10.0）
+## NestSuite について（v1.11.0）
 
-NestSuite は、NoteNest / ChatNest / IdeaNest の 3 ツールを 1 つのシェル上で並行利用できる統合インターフェースです（試験統合版）。
+NestSuite は、NoteNest / ChatNest / IdeaNest の 3 ツールを 1 つのシェル上で並行利用できる統合インターフェースです。v1.11.0 から既定起動となりました。
 
 タブはツール単位ではなく、**ファイル／作業単位**で作成されます。
 
@@ -177,22 +177,24 @@ NestSuite は、NoteNest / ChatNest / IdeaNest の 3 ツールを 1 つのシェ
 例：[業務改善.notenest] [会議メモ.chatnest] [アイデア整理.ideanest]
 ```
 
-### NestSuite の起動方法
+### 起動方法（v1.11.0）
 
 | コマンド | 動作 |
 |----------|------|
-| `NoteNest.exe` | NoteNest 単体版として起動（従来どおり） |
-| `NoteNest.exe sample.notenest` | NoteNest 単体版で指定ファイルを開く |
-| `NoteNest.exe --nestsuite` | NestSuite として起動 |
-| `NoteNest.exe --nestsuite sample.notenest` | NestSuite を起動し `.notenest` タブを開く |
-| `NoteNest.exe --nestsuite sample.chatnest` | NestSuite を起動し `.chatnest` タブを開く |
-| `NoteNest.exe --nestsuite sample.ideanest` | NestSuite を起動し `.ideanest` タブを開く |
+| `NoteNest.exe` | NestSuite を起動（無題 NoteNest タブ） |
+| `NoteNest.exe sample.notenest` | NestSuite を起動し `.notenest` タブを開く |
+| `NoteNest.exe sample.chatnest` | NestSuite を起動し `.chatnest` タブを開く |
+| `NoteNest.exe sample.ideanest` | NestSuite を起動し `.ideanest` タブを開く |
+| `NoteNest.exe --classic-notenest` | 従来 NoteNest 単体版を起動（互換ルート） |
+| `NoteNest.exe --classic-notenest sample.notenest` | 従来 NoteNest 単体版でファイルを開く |
+| `NoteNest.exe --nestsuite` | NestSuite を起動（v1.6.1 互換、既定と同じ動作） |
+| `NoteNest.exe --nestsuite sample.chatnest` | NestSuite を起動しファイルを開く（互換） |
 
-- `--nestsuite` を指定しない場合は NoteNest 単体版として起動します
-- NestSuite 起動時にファイルを指定すると、そのファイルだけをタブとして開きます（余分な無題タブは作成されません）
+- ファイルパスを指定すると、そのファイルの拡張子に応じて NoteNest / ChatNest / IdeaNest タブを自動作成します
+- 余分な無題タブはちらつきなく作成されません
 - 詳細は [docs/nestsuite-user-guide.md](docs/nestsuite-user-guide.md) を参照してください
 
-## v1.10.0 時点の制限
+## v1.11.0 時点の制限
 
 | 機能 | 状態 |
 |------|------|
@@ -205,6 +207,7 @@ NestSuite は、NoteNest / ChatNest / IdeaNest の 3 ツールを 1 つのシェ
 | マーカークリック時のツリービュー選択同期 | 実装済み（v0.4.0） |
 | NestSuite タブ復元 | 未対応（将来検討） |
 | NestSuite 最近ファイル統合 | 未対応（将来検討） |
+| ファイル関連付けの自動設定 | 未対応（手動設定が必要） |
 
 ## 対象外機能
 
