@@ -167,7 +167,32 @@ NoteNest.exe "C:\path\to\project.notenest"
 - NoteNest は複数起動に対応しています。複数のウィンドウでそれぞれ別のプロジェクトを開いて同時利用できます
 - **同じ `.notenest` ファイルを複数ウィンドウで同時編集しないでください。** 後から保存した内容で上書きされます
 
-## v1.7.8 時点の制限
+## NestSuite について（試験統合版・v1.10.0）
+
+NestSuite は、NoteNest / ChatNest / IdeaNest の 3 ツールを 1 つのシェル上で並行利用できる統合インターフェースです（試験統合版）。
+
+タブはツール単位ではなく、**ファイル／作業単位**で作成されます。
+
+```
+例：[業務改善.notenest] [会議メモ.chatnest] [アイデア整理.ideanest]
+```
+
+### NestSuite の起動方法
+
+| コマンド | 動作 |
+|----------|------|
+| `NoteNest.exe` | NoteNest 単体版として起動（従来どおり） |
+| `NoteNest.exe sample.notenest` | NoteNest 単体版で指定ファイルを開く |
+| `NoteNest.exe --nestsuite` | NestSuite として起動 |
+| `NoteNest.exe --nestsuite sample.notenest` | NestSuite を起動し `.notenest` タブを開く |
+| `NoteNest.exe --nestsuite sample.chatnest` | NestSuite を起動し `.chatnest` タブを開く |
+| `NoteNest.exe --nestsuite sample.ideanest` | NestSuite を起動し `.ideanest` タブを開く |
+
+- `--nestsuite` を指定しない場合は NoteNest 単体版として起動します
+- NestSuite 起動時にファイルを指定すると、そのファイルだけをタブとして開きます（余分な無題タブは作成されません）
+- 詳細は [docs/nestsuite-user-guide.md](docs/nestsuite-user-guide.md) を参照してください
+
+## v1.10.0 時点の制限
 
 | 機能 | 状態 |
 |------|------|
@@ -178,6 +203,8 @@ NoteNest.exe "C:\path\to\project.notenest"
 | タスクへの期限・優先度設定 | 未実装 |
 | タスクのドラッグ並べ替え | 実装済み（v0.6.0、グループ内並べ替え・グループ間移動） |
 | マーカークリック時のツリービュー選択同期 | 実装済み（v0.4.0） |
+| NestSuite タブ復元 | 未対応（将来検討） |
+| NestSuite 最近ファイル統合 | 未対応（将来検討） |
 
 ## 対象外機能
 
@@ -195,6 +222,8 @@ NoteNest.exe "C:\path\to\project.notenest"
 
 | ドキュメント | 内容 |
 |-------------|------|
+| [docs/nestsuite-user-guide.md](docs/nestsuite-user-guide.md) | NestSuite 利用ガイド（起動・操作・既知制約） |
+| [docs/nestsuite-release-checklist.md](docs/nestsuite-release-checklist.md) | NestSuite リリース前確認チェックリスト |
 | [docs/design-decisions.md](docs/design-decisions.md) | 設計判断の背景と理由 |
 | [docs/backlog.md](docs/backlog.md) | v0.2.0 候補・将来検討・対象外機能 |
 | [docs/release-notes.md](docs/release-notes.md) | バージョン別リリースノート |

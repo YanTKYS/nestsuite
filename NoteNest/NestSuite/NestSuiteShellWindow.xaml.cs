@@ -1179,8 +1179,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => _dialogs.ShowInfo(
-            $"NestSuite（開発版）\n\nNoteNest v{MainViewModel.ApplicationVersion} 搭載\n" +
-            "ChatNest 統合検証中 / IdeaNest 統合検証中（v1.8.0）",
+            $"NestSuite（試験統合版）v{MainViewModel.ApplicationVersion}\n\n" +
+            "NoteNest / ChatNest / IdeaNest を搭載\n" +
+            "ファイル単位タブで 3 ツールを並行利用できます。",
             "NestSuite について");
 
     // ── IWorkspaceDialogHost（明示的実装 — WorkspaceView の境界を明確に保つ）──

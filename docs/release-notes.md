@@ -1,3 +1,15 @@
+## v1.10.0 — NestSuite 統合版の実機利用整理
+
+- v1.9.9 までで整備した NestSuite 統合版（NoteNest / ChatNest / IdeaNest の 3 ツールのファイル単位タブ対応）を、実際に試用・説明・リリース判断できる状態へ整理した。新機能の追加はない。
+- **About 文言を更新した。** 従来の「NestSuite（開発版）… ChatNest 統合検証中 / IdeaNest 統合検証中（v1.8.0）」という古い文言を削除し、「NestSuite（試験統合版）v{version} / NoteNest / ChatNest / IdeaNest を搭載 / ファイル単位タブで 3 ツールを並行利用できます」に更新した。
+- **README に NestSuite の概要・起動方法を追加した。** `--nestsuite` フラグの有無による起動の違い（NoteNest 単体版 vs NestSuite 統合版）、ファイル指定起動の一覧表、NestSuite のファイル単位タブの考え方を記載した。制限テーブルも v1.10.0 対応に更新した。
+- **`docs/nestsuite-user-guide.md` を新規作成した。** 起動方法・3 ツールとファイル形式・タブの考え方・基本操作（新規作成・ファイルを開く・保存・タブを閉じる）・タブのツールチップ・既知の制約・実機確認チェックリストへの案内を記載した。
+- **`docs/nestsuite-known-limitations.md` を新規作成した。** 現在の到達点と、制約一覧（起動・タブ管理・ファイル形式・アーキテクチャ）・今後の整理候補を明文化した。
+- **`docs/nestsuite-release-checklist.md` を新規作成した。** ビルド・テスト・起動確認・基本操作・独立性確認・タブ表示・NoteNest 単体版影響・About 表示・ドキュメントの各確認項目をチェックリスト形式でまとめた。
+- **`docs/test-scenarios.md` に §59（v1.10.0 NestSuite 統合版チェックリスト）を追加した。** 起動確認・3 ツール混在利用・保存/読込・二重オープン防止・Save As 重複防止・タブを閉じる・タブ表示・NoteNest 単体版影響・About/バージョン・自動確認のチェックリストを網羅した。
+- NoteNest 保存スキーマ `1.4.1`、ChatNest・IdeaNest 保存形式は変更していない。3 ツール複数ファイルタブ対応は維持している。
+- v1.10.1 以降の候補：NestSuite 実機確認後の小修正（v1.10.1）・タブ復元の設計整理（v1.10.2）・最近ファイル統合の設計整理（v1.10.3）・将来：NoteNestWorkspaceSessionViewModel への軽量化・将来：複数ファイル一括オープン・将来：UI モダン化。
+
 ## v1.9.9 — タブ運用の細部改善
 
 - 大きな構造変更はなく、v1.9.8 までで整備した Session 構造を維持したまま UI / UX の細部を改善した。NoteNest / ChatNest / IdeaNest の保存形式は変更していない。NoteNest 保存スキーマ `1.4.1` を維持している。
