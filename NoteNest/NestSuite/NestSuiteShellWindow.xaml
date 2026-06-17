@@ -57,12 +57,10 @@
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,0,0,1">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Left"
-                           Text="NestSuite" FontWeight="Bold" FontSize="13"
-                           VerticalAlignment="Center" Margin="12,0"
-                           Foreground="{DynamicResource PrimaryFg}"/>
-                <!-- v1.16.2: ツールランチャー（NoteNest / IdeaNest / ChatNest）をヘッダー右側に配置 -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
+                <!-- v1.16.2 fix: DockPanel.Dock="Right" を先に配置し、TextBlock が残り左領域を埋める。
+                     ツールランチャーがヘッダー右端に固定される -->
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
                     <Border x:Name="NoteNestToolBorder"
                             Tag="NoteNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
@@ -89,6 +87,10 @@
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                 </StackPanel>
+                <TextBlock DockPanel.Dock="Left"
+                           Text="NestSuite" FontWeight="Bold" FontSize="13"
+                           VerticalAlignment="Center" Margin="12,0"
+                           Foreground="{DynamicResource PrimaryFg}"/>
             </DockPanel>
         </Border>
 
