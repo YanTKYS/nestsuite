@@ -177,8 +177,20 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
 
     private void CopyToClipboard(string text)
     {
-        Clipboard.SetText(text);
-        CopyStatusText = "コピーしました";
+        try
+        {
+            Clipboard.SetText(text);
+            ShowCopyStatus("コピーしました");
+        }
+        catch
+        {
+            ShowCopyStatus("コピーに失敗しました");
+        }
+    }
+
+    private void ShowCopyStatus(string message)
+    {
+        CopyStatusText = message;
         _copyStatusTimer?.Stop();
         _copyStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _copyStatusTimer.Tick += (_, _) =>
