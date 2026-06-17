@@ -1284,4 +1284,32 @@ public class NestSuiteShellTests
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
         Assert.Null(method);
     }
+
+    // ── v1.16.1: Ctrl+S 上書き保存ショートカット ──────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasCommandSave_ExecutedMethod()
+    {
+        // v1.16.1: ApplicationCommands.Save の CommandBinding ハンドラが private メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("CommandSave_Executed",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        var parameters = method!.GetParameters();
+        Assert.Equal(2, parameters.Length);
+        Assert.Equal(typeof(object), parameters[0].ParameterType);
+        Assert.Equal(typeof(System.Windows.Input.ExecutedRoutedEventArgs), parameters[1].ParameterType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSaveActiveTabMethod()
+    {
+        // v1.16.1: Ctrl+S・メニュー両方から呼ばれる SaveActiveTab が private メソッドとして宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("SaveActiveTab",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
 }

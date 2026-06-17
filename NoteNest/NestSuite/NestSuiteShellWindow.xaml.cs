@@ -1063,19 +1063,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 "ファイルを開けません");
     }
 
-    private void MenuSave_Click(object sender, RoutedEventArgs e)
+    // v1.16.1: Ctrl+S KeyGesture は ApplicationCommands.Save が内包するため InputBinding の追加不要
+    private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e) => SaveActiveTab();
+
+    private void SaveActiveTab()
     {
         switch (_selectedTab?.WorkspaceKind)
         {
-            case NestSuiteWorkspaceKind.NoteNest:
-                SaveNoteNestFile();
-                break;
-            case NestSuiteWorkspaceKind.ChatNest:
-                SaveChatNestFile();
-                break;
-            case NestSuiteWorkspaceKind.IdeaNest:
-                SaveIdeaNestFile();
-                break;
+            case NestSuiteWorkspaceKind.NoteNest: SaveNoteNestFile(); break;
+            case NestSuiteWorkspaceKind.ChatNest: SaveChatNestFile(); break;
+            case NestSuiteWorkspaceKind.IdeaNest: SaveIdeaNestFile(); break;
         }
     }
 

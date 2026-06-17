@@ -1,3 +1,11 @@
+## v1.16.1 — NestSuite Ctrl+S 上書き保存ショートカット
+
+- **NestSuite で Ctrl+S を押すと現在アクティブなタブを上書き保存するようにした。** NoteNest / ChatNest / IdeaNest のいずれのタブでも動作する。保存先が未設定の場合は既存仕様どおり「名前を付けて保存」ダイアログに進む。
+- **`ApplicationCommands.Save` の `CommandBinding` を Window に登録することで実装した。** `ApplicationCommands.Save` は Ctrl+S の `InputGesture` を内包するため、追加の `InputBinding` は不要。メニューの「上書き保存」も同じ `CommandBinding` を経由するよう統合し、メニュー表示に「Ctrl+S」が自動追加された。
+- **保存後のタブタイトル・未保存状態・最近ファイル・セッション保存に副作用はない。** 既存の `SaveNoteNestFile()` / `SaveChatNestFile()` / `SaveIdeaNestFile()` をそのまま流用している。
+- **`--classic-notenest` 側は変更していない。**
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.16.0 — NestSuite 複数ファイル一括オープン
 
 - **NestSuite の「開く...」ダイアログで複数ファイルを同時選択してまとめて開けるようにした。** `.notenest` / `.chatnest` / `.ideanest` を混在して複数選択でき、それぞれファイル単位タブとして追加される。
