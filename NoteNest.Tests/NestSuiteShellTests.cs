@@ -84,14 +84,8 @@ public class NestSuiteShellTests
 
     // ── ツール選択領域・プレースホルダーの存在確認 ──────────────────────
 
-    [Fact]
-    public void NestSuiteShellWindow_HasToolSelectorPanel()
-    {
-        var field = typeof(NestSuiteShellWindow)
-            .GetFields(AllInstance)
-            .FirstOrDefault(f => f.Name == "ToolSelectorPanel");
-        Assert.NotNull(field);
-    }
+    // Note: ToolSelectorPanel (x:Name) は v1.16.2 でヘッダー移動により廃止。
+    // 旧テスト NestSuiteShellWindow_HasToolSelectorPanel は削除。
 
     [Fact]
     public void NestSuiteShellWindow_HasUnintegratedPlaceholderField()
