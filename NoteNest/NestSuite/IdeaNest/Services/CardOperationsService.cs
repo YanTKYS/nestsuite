@@ -71,6 +71,8 @@ public class CardOperationsService
 
     public bool CommitAddFromFileContent(string fileName, string body)
     {
+        // v1.16.6: 空ファイル（本文が空白のみ）はカード作成しない
+        if (string.IsNullOrWhiteSpace(body)) return false;
         var title = string.IsNullOrWhiteSpace(fileName) ? string.Empty : fileName;
         return CommitAdd(new Idea { Title = title, Body = body ?? string.Empty });
     }
