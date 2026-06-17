@@ -99,7 +99,7 @@ public sealed class DialogService
         return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
     }
 
-    public string? SelectNestSuiteOpenPath()
+    public IReadOnlyList<string> SelectNestSuiteOpenPaths()
     {
         var dialog = new OpenFileDialog
         {
@@ -107,9 +107,10 @@ public sealed class DialogService
                      "|NoteNestファイル (*.notenest)|*.notenest" +
                      "|ChatNestファイル (*.chatnest)|*.chatnest" +
                      "|IdeaNestファイル (*.ideanest)|*.ideanest" +
-                     "|すべてのファイル (*.*)|*.*"
+                     "|すべてのファイル (*.*)|*.*",
+            Multiselect = true
         };
-        return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
+        return dialog.ShowDialog(_owner) == true ? dialog.FileNames : [];
     }
 
     public string? SelectIdeaNestSavePath(string defaultFileName) =>

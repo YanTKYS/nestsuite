@@ -1016,40 +1016,51 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private void MenuOpen_Click(object sender, RoutedEventArgs e) => OpenNestSuiteFile();
 
     /// <summary>
-    /// v1.10.1: 共通「開く」ダイアログ。3 形式すべてに対応した単一 OpenFileDialog を表示し、
+    /// v1.10.1: 共通「開く」ダイアログ。3 形式すべてに対応した OpenFileDialog を表示し、
     /// 拡張子から自動的に種別を判定してタブを作成する。ツール選択中に関わらず任意の形式を開ける。
+    /// v1.16.0: 複数ファイル選択に対応。選択されたファイルを順番に開き、ファイル単位タブとして追加する。
+    /// 既に開いているファイルは重複タブを作らず既存タブをアクティブ化する。
+    /// 開けなかったファイルがある場合は最後に概要メッセージを表示する。
     /// </summary>
     private void OpenNestSuiteFile()
     {
-        var rawPath = _dialogs.SelectNestSuiteOpenPath();
-        if (rawPath == null) return;
-        var path = NormalizeFilePath(rawPath);
+        var rawPaths = _dialogs.SelectNestSuiteOpenPaths();
+        if (rawPaths.Count == 0) return;
 
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
+        int failedCount = 0;
+
+        foreach (var rawPath in rawPaths)
         {
+            var path = NormalizeFilePath(rawPath);
+
+            if (!File.Exists(path)) { failedCount++; continue; }
+            if (!NestSuiteTabFactory.TryGetKind(path, out var kind)) { failedCount++; continue; }
+
+            var existingTab = _tabs.FirstOrDefault(t =>
+                t.WorkspaceKind == kind &&
+                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+            if (existingTab != null)
+            {
+                ActivateTab(existingTab);
+                _recentFiles.Add(path);
+                UpdateRecentFilesMenu();
+                continue;
+            }
+
+            int tabsBefore = _tabs.Count;
+            switch (kind)
+            {
+                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
+                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
+                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
+            }
+            if (_tabs.Count == tabsBefore) failedCount++;
+        }
+
+        if (failedCount > 0)
             _dialogs.ShowError(
-                "このファイル形式はNestSuiteでは開けません。\n対応形式: .notenest, .chatnest, .ideanest",
-                "未対応のファイル形式");
-            return;
-        }
-
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == kind &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null)
-        {
-            ActivateTab(existingTab);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            return;
-        }
-
-        switch (kind)
-        {
-            case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
-        }
+                "一部のファイルを開けませんでした。\n対応形式またはファイルの存在を確認してください。",
+                "ファイルを開けません");
     }
 
     private void MenuSave_Click(object sender, RoutedEventArgs e)
