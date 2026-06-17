@@ -58,7 +58,10 @@ public partial class NoteNestWorkspaceView : UserControl
     {
         var width = RightPaneColumn.Width.Value;
         if (width > 0) _savedRightPaneWidth = width;
-        RightSplitterColumn.Width = new GridLength(0);
+        // v1.16.3: Column 3 を 20px 確保して展開ボタンを表示。スクロールバーとの重なりを避けるため
+        // 旧実装では Width=0 にしていたが、ボタンがエディタのスクロールバーに隠れる問題があった
+        RightSplitterColumn.Width = new GridLength(20);
+        RightGridSplitter.Visibility = Visibility.Collapsed;
         RightPaneColumn.MinWidth = 0;
         RightPaneColumn.Width = new GridLength(0);
         _isRightPaneCollapsed = true;
@@ -68,6 +71,7 @@ public partial class NoteNestWorkspaceView : UserControl
     public void ExpandRightPane()
     {
         RightSplitterColumn.Width = new GridLength(4);
+        RightGridSplitter.Visibility = Visibility.Visible;
         RightPaneColumn.MinWidth = 200;
         RightPaneColumn.Width = new GridLength(_savedRightPaneWidth);
         _isRightPaneCollapsed = false;
