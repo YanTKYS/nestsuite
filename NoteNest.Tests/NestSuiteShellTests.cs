@@ -1219,4 +1219,54 @@ public class NestSuiteShellTests
         Assert.Contains("nestsuite-recent-files.json", path, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("recent-files.json\"", path, StringComparison.OrdinalIgnoreCase);
     }
+
+    // ── v1.15.0: NestSuite タブ復元 ──────────────────────────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSessionStateServiceField()
+    {
+        // v1.15.0: _sessionState フィールド（NestSuiteSessionStateService）が追加されていることを確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.FieldType == typeof(NestSuiteSessionStateService));
+        Assert.NotNull(field);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSaveSessionMethod()
+    {
+        // v1.15.0: SaveSession が void・引数なしで宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("SaveSession",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasTryRestoreSessionMethod()
+    {
+        // v1.15.0: TryRestoreSession が bool・引数なしで宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TryRestoreSession",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteSessionStateService_DefaultDataPath_ContainsSessionFileName()
+    {
+        // v1.15.0: デフォルトパスが nestsuite-session.json を含むことを確認
+        // NestSuiteSessionStateService と NestSuiteRecentFilesService のストレージが分離されている
+        var field = typeof(NestSuiteSessionStateService)
+            .GetFields(BindingFlags.Static | BindingFlags.NonPublic)
+            .FirstOrDefault(f => f.Name == "DefaultDataPath");
+        Assert.NotNull(field);
+        var path = (string?)field!.GetValue(null);
+        Assert.NotNull(path);
+        Assert.Contains("nestsuite-session.json", path, StringComparison.OrdinalIgnoreCase);
+    }
 }

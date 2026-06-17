@@ -74,10 +74,14 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         TabStrip.ItemsSource = _tabs;
         if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
-            var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
-            _tabs.Add(initialTab);
-            _sessionManager.Add(CreateSessionForTab(initialTab));
-            ActivateTab(initialTab);
+            // v1.15.0: 引数なし起動はセッション復元を試みる。復元できなければ無題タブを作成する
+            if (!TryRestoreSession())
+            {
+                var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+                _tabs.Add(initialTab);
+                _sessionManager.Add(CreateSessionForTab(initialTab));
+                ActivateTab(initialTab);
+            }
         }
     }
 
@@ -147,6 +151,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             }
         }
 
+        // v1.15.0: ウィンドウが実際に閉じることが確定した時点でセッション状態を保存する
+        SaveSession();
+
         base.OnClosing(e);
     }
 
@@ -164,6 +171,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly ObservableCollection<NestSuiteDocumentTab> _tabs = new();
     private readonly NestSuiteWorkspaceSessionManager _sessionManager = new();
     private readonly NestSuiteRecentFilesService _recentFiles = new();
+    private readonly NestSuiteSessionStateService _sessionState = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
 
@@ -936,6 +944,65 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
             case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
         }
+    }
+
+    // ── v1.15.0: セッション復元 ──────────────────────────────────────────────
+
+    /// <summary>
+    /// v1.15.0: ウィンドウ終了確定時に保存済みファイルタブのパスとアクティブタブを保存する。
+    /// 未保存タブ（FilePath == null）はセッションに含めない。
+    /// </summary>
+    private void SaveSession()
+    {
+        var filePaths = _tabs
+            .Where(t => t.FilePath != null)
+            .Select(t => t.FilePath!)
+            .ToList();
+
+        _sessionState.Save(new NestSuiteSessionState
+        {
+            FilePaths = filePaths,
+            ActiveFilePath = _selectedTab?.FilePath
+        });
+    }
+
+    /// <summary>
+    /// v1.15.0: 前回セッションのタブを復元する。
+    /// 存在しないファイルや未対応拡張子のエントリはスキップする。
+    /// 1 件以上復元できた場合 true を返す。復元対象がない場合 false を返し、呼び元が無題タブを作成する。
+    /// </summary>
+    private bool TryRestoreSession()
+    {
+        var state = _sessionState.Load();
+        if (state.FilePaths.Count == 0) return false;
+
+        int restoredCount = 0;
+        foreach (var filePath in state.FilePaths)
+        {
+            if (!File.Exists(filePath)) continue;
+            if (!NestSuiteTabFactory.TryGetKind(filePath, out var kind)) continue;
+
+            int tabsBefore = _tabs.Count;
+            switch (kind)
+            {
+                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(filePath); break;
+                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(filePath); break;
+                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(filePath); break;
+            }
+            if (_tabs.Count > tabsBefore) restoredCount++;
+        }
+
+        if (restoredCount == 0) return false;
+
+        // 前回アクティブだったタブを選択する
+        if (state.ActiveFilePath != null)
+        {
+            var activeTab = _tabs.FirstOrDefault(t =>
+                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, state.ActiveFilePath));
+            if (activeTab != null) ActivateTab(activeTab);
+        }
+
+        return true;
     }
 
     // ── v1.7.4: ファイルメニューハンドラ（タブ種別でディスパッチ） ─────────

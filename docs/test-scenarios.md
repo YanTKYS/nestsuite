@@ -2518,3 +2518,37 @@ v1.14.1 で修正した最近使ったファイルの動作を確認する。
 1. `ApplicationVersionTests` でアプリバージョンが `1.14.1` であることを確認する（自動）。
 2. `NestSuiteRecentFilesServiceTests` の追加 2 件（`Load_CorruptedJson_ReturnsEmpty`・`Remove_UnsupportedExtensionPath_RemovesFromList`）がパスすることを確認する（自動）。
 3. 全テスト（`dotnet test`）がパスすることを確認する（自動）。
+
+## §69 v1.15.0 NestSuite タブ復元チェックリスト
+
+v1.15.0 で追加した NestSuite タブ復元機能を確認する。
+
+### 基本動作（引数なし起動）
+
+- [ ] `.notenest` タブを開いた状態でアプリを終了し、再起動すると前回の `.notenest` タブが復元される
+- [ ] `.chatnest` タブが復元される
+- [ ] `.ideanest` タブが復元される
+- [ ] 複数タブを開いていた場合、すべて復元される
+- [ ] 前回アクティブだったタブが復元後に選択されている
+
+### 未保存タブは復元しない
+
+- [ ] 未保存タブ（無題タブ）は復元されない
+- [ ] 保存済みタブと未保存タブが混在していた場合、保存済みタブだけが復元される
+
+### ファイル指定起動はタブ復元しない
+
+- [ ] `NoteNest.exe sample.notenest` 起動では、前回セッションではなく指定ファイルのみ開く
+- [ ] `NoteNest.exe --nestsuite sample.chatnest` 起動でも同様
+
+### 復元できないファイルの扱い
+
+- [ ] セッションに記録されたファイルを別の場所に移動してから再起動すると、そのファイルはスキップされ他のファイルは復元される
+- [ ] 復元対象が 1 件もない場合は無題 NoteNest タブが開く
+
+### 自動確認
+
+1. `ApplicationVersionTests` でアプリバージョンが `1.15.0` であることを確認する（自動）。
+2. `NestSuiteSessionStateServiceTests`（8 件）がすべてパスすることを確認する（自動）。
+3. `NestSuiteShellTests` の `v1.15.0` セクション（4 件）がパスすることを確認する（自動）。
+4. 全テスト（`dotnet test`）がパスすることを確認する（自動）。
