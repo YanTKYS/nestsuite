@@ -148,6 +148,9 @@ public partial class IdeaNestWorkspaceView : UserControl
     private static bool IsAcceptableTextFile(string path)
     {
         if (string.IsNullOrEmpty(path) || !File.Exists(path)) return false;
-        return string.Equals(Path.GetExtension(path), ".txt", StringComparison.OrdinalIgnoreCase);
+        var ext = Path.GetExtension(path);
+        // v1.16.6: .md も対象に追加
+        return string.Equals(ext, ".txt", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(ext, ".md", StringComparison.OrdinalIgnoreCase);
     }
 }

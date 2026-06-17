@@ -64,7 +64,9 @@ public class CardOperationsService
     public bool CommitAddFromText(string body)
     {
         if (string.IsNullOrWhiteSpace(body)) return false;
-        return CommitAdd(new Idea { Body = body });
+        // v1.16.6: タイトルを Paste_yyyyMMddHHmm 形式で自動生成する
+        var title = $"Paste_{_now():yyyyMMddHHmm}";
+        return CommitAdd(new Idea { Title = title, Body = body });
     }
 
     public bool CommitAddFromFileContent(string fileName, string body)

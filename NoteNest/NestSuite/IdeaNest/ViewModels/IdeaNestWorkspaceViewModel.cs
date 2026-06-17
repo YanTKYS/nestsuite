@@ -480,7 +480,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase
         {
             _ui.ShowWarning("次のファイルを読み込めませんでした:\n\n" + string.Join("\n", errors));
         }
-        if (created > 0) ShowStatus($"{created}件のテキストファイルからカードを作成しました");
+        if (created > 0) ShowStatus($"{created}件のファイルからカードを作成しました");
         return created;
     }
 
