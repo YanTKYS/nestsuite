@@ -1,3 +1,12 @@
+## v1.16.5 — ChatNest Workspace コピー機能
+
+- **ChatNest Workspace に「Copy NestSuite」「Copy Markdown」ボタンを追加した。** スピーカー選択行の右端に配置した 2 つの小ボタンで、現在開いている `.chatnest` タブのチャット内容をクリップボードへコピーできる。コピー後は「コピーしました」を 2 秒間表示する。
+- **Copy NestSuite** は NoteNest / IdeaNest へ貼り付けやすいプレーンテキスト形式で出力する。発言者名を `[自分]` `[反論]` のように角括弧で括り、本文を改行区切りで並べる。
+- **Copy Markdown** は `# ChatNest Export` を先頭に、各発言を `## 発言者名` の見出しと本文で Markdown 形式として出力する。
+- **メッセージが 0 件のときはボタンが無効化**され、操作してもアプリが落ちない。複数 ChatNest タブを開いている場合はアクティブなタブの内容だけがコピー対象になる。
+- **既存機能・保存形式への副作用はない。** `.chatnest` 保存スキーマは変更なし。NoteNest / IdeaNest タブに影響なし。最近ファイル・タブ復元・Ctrl+S 保存も従来どおり。`--classic-notenest` 側は変更なし。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.16.4 — NestSuite / NoteNest Workspace UI 不具合修正（2 件）
 
 - **NestSuite タブストリップの水平スクロールバーがタブと重なる不具合を修正した。** タブ行の `RowDefinition` を固定 32px から `Height="Auto"` に変更し、外側 `Border` に `MinHeight="50"` を設定した。`Auto` により WPF の Measure フェーズでタブの実高さ（32px）が確保され、Arrange フェーズで現れるスクロールバー（約 17px）のための余白が得られる。`MinHeight="50"` は多数タブで折り返しが起きないウィンドウ幅での最小保証として機能する。

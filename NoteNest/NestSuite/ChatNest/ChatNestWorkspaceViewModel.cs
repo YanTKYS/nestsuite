@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace NoteNest.NestSuite.ChatNest;
 
@@ -26,8 +28,12 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
     private string _inputText = string.Empty;
     private Speaker _selectedSpeaker = Speaker.自分;
     private bool _isDirty;
+    private string _copyStatusText = string.Empty;
+    private DispatcherTimer? _copyStatusTimer;
 
     private readonly ChatNestRelayCommand _postCommand;
+    private readonly ChatNestRelayCommand _copyNestSuiteCommand;
+    private readonly ChatNestRelayCommand _copyMarkdownCommand;
 
     public ObservableCollection<Message> Messages { get; } = new();
     public Speaker[] Speakers { get; } = Enum.GetValues<Speaker>();
@@ -63,8 +69,19 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
     /// </summary>
     public bool HasUnsavedChanges => IsDirty || !string.IsNullOrWhiteSpace(InputText);
 
+    /// <summary>v1.16.5: コピー操作後に一時表示するステータスメッセージ。</summary>
+    public string CopyStatusText
+    {
+        get => _copyStatusText;
+        private set { _copyStatusText = value; OnPropertyChanged(); }
+    }
+
     public ICommand PostCommand => _postCommand;
     public ICommand DeleteMessageCommand { get; }
+
+    // v1.16.5: クリップボードコピーコマンド
+    public ICommand CopyNestSuiteCommand => _copyNestSuiteCommand;
+    public ICommand CopyMarkdownCommand => _copyMarkdownCommand;
 
     public event EventHandler? WorkspaceModified;
 
@@ -72,6 +89,15 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
     {
         _postCommand = new ChatNestRelayCommand(Post, () => !string.IsNullOrWhiteSpace(InputText));
         DeleteMessageCommand = new ChatNestRelayCommand<Message>(DeleteMessage);
+
+        _copyNestSuiteCommand = new ChatNestRelayCommand(ExecuteCopyNestSuite, () => Messages.Count > 0);
+        _copyMarkdownCommand = new ChatNestRelayCommand(ExecuteCopyMarkdown, () => Messages.Count > 0);
+
+        Messages.CollectionChanged += (_, _) =>
+        {
+            _copyNestSuiteCommand.RaiseCanExecuteChanged();
+            _copyMarkdownCommand.RaiseCanExecuteChanged();
+        };
     }
 
     public void CycleSpeaker(bool forward)
@@ -100,6 +126,67 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
         foreach (var m in messages)
             Messages.Add(m);
         IsDirty = false;
+    }
+
+    /// <summary>
+    /// v1.16.5: NoteNest / IdeaNest への貼り付けに適したプレーンテキスト形式を生成する。
+    /// 発言者名を [] で括ったラベルと本文を改行区切りで並べる。
+    /// </summary>
+    public string BuildNestSuiteText()
+    {
+        if (Messages.Count == 0) return string.Empty;
+        var sb = new StringBuilder();
+        foreach (var m in Messages)
+        {
+            sb.AppendLine($"[{m.Speaker}]");
+            sb.AppendLine(m.Text);
+            sb.AppendLine();
+        }
+        return sb.ToString().TrimEnd();
+    }
+
+    /// <summary>
+    /// v1.16.5: Markdown 形式のエクスポートテキストを生成する。
+    /// 発言者名を ## 見出しとして本文を続ける。
+    /// </summary>
+    public string BuildMarkdownText()
+    {
+        if (Messages.Count == 0) return string.Empty;
+        var sb = new StringBuilder();
+        sb.AppendLine("# ChatNest Export");
+        foreach (var m in Messages)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"## {m.Speaker}");
+            sb.AppendLine(m.Text);
+        }
+        return sb.ToString().TrimEnd();
+    }
+
+    private void ExecuteCopyNestSuite()
+    {
+        if (Messages.Count == 0) return;
+        CopyToClipboard(BuildNestSuiteText());
+    }
+
+    private void ExecuteCopyMarkdown()
+    {
+        if (Messages.Count == 0) return;
+        CopyToClipboard(BuildMarkdownText());
+    }
+
+    private void CopyToClipboard(string text)
+    {
+        Clipboard.SetText(text);
+        CopyStatusText = "コピーしました";
+        _copyStatusTimer?.Stop();
+        _copyStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _copyStatusTimer.Tick += (_, _) =>
+        {
+            CopyStatusText = string.Empty;
+            _copyStatusTimer?.Stop();
+        };
+        _copyStatusTimer.Start();
     }
 
     private void Post()

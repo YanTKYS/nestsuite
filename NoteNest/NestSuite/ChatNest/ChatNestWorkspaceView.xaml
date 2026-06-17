@@ -77,6 +77,40 @@
             </Setter>
         </Style>
 
+        <!-- v1.16.5: コピーボタン用スタイル -->
+        <Style x:Key="CopyButton" TargetType="Button">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#EEEEEE"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="SpeakerToggle" TargetType="RadioButton">
             <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
             <Setter Property="FontSize" Value="12"/>
@@ -219,11 +253,12 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Speaker selector + shortcut hint -->
+                <!-- Speaker selector + shortcut hint + copy buttons (v1.16.5) -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -256,6 +291,36 @@
                                Foreground="#C8C8C8"
                                VerticalAlignment="Center"
                                Margin="12,0,6,0"/>
+
+                    <!-- v1.16.5: コピーボタン群 + 状態テキスト -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="8,0,0,0">
+                        <TextBlock Text="{Binding CopyStatusText}"
+                                   FontSize="10"
+                                   Foreground="#9E9E9E"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CopyStatusText}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Style="{StaticResource CopyButton}"
+                                Content="Copy NestSuite"
+                                Command="{Binding CopyNestSuiteCommand}"
+                                ToolTip="NoteNest / IdeaNest に貼り付けやすい形式でコピー"/>
+                        <Button Style="{StaticResource CopyButton}"
+                                Content="Copy Markdown"
+                                Command="{Binding CopyMarkdownCommand}"
+                                ToolTip="Markdown 形式でコピー"
+                                Margin="4,0,0,0"/>
+                    </StackPanel>
                 </Grid>
 
                 <!-- Input row: TextBox + Post button -->

@@ -242,4 +242,91 @@ public class ChatNestWorkspaceViewModelTests
         Assert.True(vm.IsDirty);
         Assert.True(vm.HasUnsavedChanges);
     }
+
+    // ── v1.16.5: コピー機能 ───────────────────────────────────────────────
+
+    [Fact]
+    public void BuildNestSuiteText_WithMessages_FormatsCorrectly()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([
+            new Message { Speaker = Speaker.自分,  Text = "考えA" },
+            new Message { Speaker = Speaker.反論, Text = "考えB" },
+        ]);
+
+        var text = vm.BuildNestSuiteText();
+
+        Assert.Contains("[自分]", text);
+        Assert.Contains("考えA", text);
+        Assert.Contains("[反論]", text);
+        Assert.Contains("考えB", text);
+    }
+
+    [Fact]
+    public void BuildNestSuiteText_EmptyMessages_ReturnsEmptyString()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+
+        Assert.Equal(string.Empty, vm.BuildNestSuiteText());
+    }
+
+    [Fact]
+    public void BuildMarkdownText_WithMessages_StartsWithH1AndContainsSpeakerH2()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([
+            new Message { Speaker = Speaker.自分,  Text = "主張" },
+            new Message { Speaker = Speaker.結論, Text = "まとめ" },
+        ]);
+
+        var text = vm.BuildMarkdownText();
+
+        Assert.StartsWith("# ChatNest Export", text);
+        Assert.Contains("## 自分", text);
+        Assert.Contains("主張", text);
+        Assert.Contains("## 結論", text);
+        Assert.Contains("まとめ", text);
+    }
+
+    [Fact]
+    public void BuildMarkdownText_EmptyMessages_ReturnsEmptyString()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+
+        Assert.Equal(string.Empty, vm.BuildMarkdownText());
+    }
+
+    [Fact]
+    public void CopyNestSuiteCommand_CanExecute_FalseWhenEmpty()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+
+        Assert.False(vm.CopyNestSuiteCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void CopyMarkdownCommand_CanExecute_FalseWhenEmpty()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+
+        Assert.False(vm.CopyMarkdownCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void CopyNestSuiteCommand_CanExecute_TrueAfterMessageLoaded()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([new Message { Speaker = Speaker.自分, Text = "test" }]);
+
+        Assert.True(vm.CopyNestSuiteCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void CopyMarkdownCommand_CanExecute_TrueAfterMessageLoaded()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([new Message { Speaker = Speaker.自分, Text = "test" }]);
+
+        Assert.True(vm.CopyMarkdownCommand.CanExecute(null));
+    }
 }
