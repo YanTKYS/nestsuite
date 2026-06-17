@@ -263,11 +263,51 @@ public class ChatNestWorkspaceViewModelTests
     }
 
     [Fact]
+    public void BuildNestSuiteText_ConsecutiveSameSpeaker_GroupsIntoOneBlock()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([
+            new Message { Speaker = Speaker.自分, Text = "一言目" },
+            new Message { Speaker = Speaker.自分, Text = "二言目" },
+            new Message { Speaker = Speaker.反論, Text = "反論" },
+        ]);
+
+        var text = vm.BuildNestSuiteText();
+
+        // [自分] は集約されて 1 回のみ現れる
+        Assert.Equal(1, text.Split("[自分]").Length - 1);
+        // 両メッセージがブロック内に存在する
+        Assert.Contains("一言目", text);
+        Assert.Contains("二言目", text);
+        // 別発言者は独立したブロックになる
+        Assert.Contains("[反論]", text);
+    }
+
+    [Fact]
     public void BuildNestSuiteText_EmptyMessages_ReturnsEmptyString()
     {
         var vm = new ChatNestWorkspaceViewModel();
 
         Assert.Equal(string.Empty, vm.BuildNestSuiteText());
+    }
+
+    [Fact]
+    public void BuildMarkdownText_ConsecutiveSameSpeaker_GroupsIntoOneBlock()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([
+            new Message { Speaker = Speaker.自分, Text = "A" },
+            new Message { Speaker = Speaker.自分, Text = "B" },
+            new Message { Speaker = Speaker.結論, Text = "まとめ" },
+        ]);
+
+        var text = vm.BuildMarkdownText();
+
+        // ## 自分 は集約されて 1 回のみ現れる
+        Assert.Equal(1, text.Split("## 自分").Length - 1);
+        Assert.Contains("A", text);
+        Assert.Contains("B", text);
+        Assert.Contains("## 結論", text);
     }
 
     [Fact]
