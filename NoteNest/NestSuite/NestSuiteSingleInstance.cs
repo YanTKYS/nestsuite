@@ -18,8 +18,12 @@ public sealed class NestSuiteSingleInstance : IDisposable
     private static string SafeUserTag { get; } = new string(
         Environment.UserName.Select(c => char.IsLetterOrDigit(c) ? c : '_').Take(24).ToArray());
 
+    // SessionId を含めることで RDP / Fast User Switching の別セッション間で Pipe 名が衝突しない。
+    // Mutex の Local\ プレフィックスもセッションスコープのため、識別子の粒度が一致する。
+    private static int SessionId { get; } = System.Diagnostics.Process.GetCurrentProcess().SessionId;
+
     private static string MutexName => $"Local\\NoteNest_NestSuite_{SafeUserTag}";
-    private static string PipeName  => $"NoteNest_NestSuite_{SafeUserTag}";
+    private static string PipeName  => $"NoteNest_NestSuite_{SafeUserTag}_S{SessionId}";
 
     private Mutex? _mutex;
     private bool _isMutexOwner;
