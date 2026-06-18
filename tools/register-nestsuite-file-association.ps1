@@ -25,7 +25,8 @@ param(
     [string]$ExePath = (Join-Path $PSScriptRoot "..\NoteNest\bin\Release\net8.0-windows\NoteNest.exe")
 )
 
-$ExePath = (Resolve-Path $ExePath -ErrorAction SilentlyContinue)?.Path
+$resolved = Resolve-Path $ExePath -ErrorAction SilentlyContinue
+if ($resolved) { $ExePath = $resolved.Path }
 if (-not $ExePath -or -not (Test-Path $ExePath)) {
     Write-Error "NoteNest.exe が見つかりません。-ExePath でフルパスを指定してください。"
     exit 1
