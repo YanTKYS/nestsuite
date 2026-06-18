@@ -45,7 +45,10 @@ public partial class App : Application
             return;
         }
 
-        var shell = new NestSuiteShellWindow(nestSuiteFilePath);
+        // v1.18.2: 引数指定起動でも前回セッション復元を行うため、コンストラクターには
+        // ファイルパスを渡さない（null → ShouldCreateInitialTab(null) → true → 復元実行）。
+        // 起動引数ファイルは復元完了後に LoadInitialFile で追加タブとして開く。
+        var shell = new NestSuiteShellWindow();
         MainWindow = shell;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         if (nestSuiteFilePath != null)

@@ -1,3 +1,14 @@
+## v1.18.2 — 関連付け未起動時のタブ復元維持
+
+- **NestSuite 未起動状態でファイル関連付けからファイルを開いたとき、前回終了時のタブが復元されたうえで、対象ファイルが追加タブとして開くようにした。** v1.18.1 では引数指定起動（`NoteNest.exe file.notenest`）でセッション復元をスキップしていたため、前回タブが失われていた。
+- **処理順序を「タブ復元 → 引数ファイルを追加で開く」に変更した。** `NestSuiteShellWindow` コンストラクターへのファイルパス渡しをやめ、コンストラクターは常に通常起動と同じセッション復元を行う。その後 `LoadInitialFile` で引数ファイルを追加タブとして開く。
+- **起動引数ファイルが復元済みタブと同じ場合は重複タブを作らず既存タブをアクティブにする。** v1.18.1 の「起動済みウィンドウへの転送」と同じ重複抑止動作。
+- **既存の `LoadInitialFile` / `Load*FileAt` / `NestSuiteOpenFilePolicy.IsSameFile` を再利用しており、別系統の読み込み処理は追加していない。**
+- **v1.18.1 のシングルインスタンス制御（Named Pipe IPC）は変更なし。** NestSuite 起動済みの場合の動作は v1.18.1 と同じ。
+- **`NestSuiteStartupTabPolicy.ShouldCreateInitialTab` の変更なし。** ポリシークラスの動作・テストは維持される。コンストラクター呼び出し側（`App.xaml.cs`）が `null` を渡すようにしたことで `ShouldCreateInitialTab(null) = true` → 常に復元が行われる。
+- **既存 NestSuite 機能・保存スキーマに副作用はない。**
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.18.1 — NestSuite シングルインスタンス対応
 
 - **NestSuite 起動済み状態でファイルをダブルクリックすると、新規 NestSuite を起動せず既存ウィンドウにタブが追加されるようにした。** ファイル関連付けや `NoteNest.exe file.notenest` 呼び出しで 2 プロセス目が起動した場合、Named Pipe 経由でファイルパスを既存プロセスへ転送してから終了する。
