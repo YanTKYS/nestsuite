@@ -72,18 +72,18 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // v1.9.5: DataContext は ActivateTab でアクティブ NoteNest タブの MainViewModel に設定する
         // v1.9.7: IdeaNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
         // v1.8.6: ファイル指定なし起動のみ初期 NoteNest タブを作成する。
-        // ファイル指定ありの場合は LoadInitialFile 内で適切なタブが作成される。
+        // v1.18.2: 引数指定起動でも前回セッション復元を試みる。
+        //          復元失敗時の無題タブ作成は initialFilePath がない場合のみ行う。
+        //          こうすることで「有セッション＋引数ファイル」→ [復元タブ + 引数タブ]、
+        //          「無セッション＋引数ファイル」→ [引数タブのみ] となり、
+        //          無題タブが不要に混入しない。
         TabStrip.ItemsSource = _tabs;
-        if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
+        if (!TryRestoreSession() && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
-            // v1.15.0: 引数なし起動はセッション復元を試みる。復元できなければ無題タブを作成する
-            if (!TryRestoreSession())
-            {
-                var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
-                _tabs.Add(initialTab);
-                _sessionManager.Add(CreateSessionForTab(initialTab));
-                ActivateTab(initialTab);
-            }
+            var initialTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+            _tabs.Add(initialTab);
+            _sessionManager.Add(CreateSessionForTab(initialTab));
+            ActivateTab(initialTab);
         }
     }
 

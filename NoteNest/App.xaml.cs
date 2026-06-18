@@ -45,10 +45,11 @@ public partial class App : Application
             return;
         }
 
-        // v1.18.2: 引数指定起動でも前回セッション復元を行うため、コンストラクターには
-        // ファイルパスを渡さない（null → ShouldCreateInitialTab(null) → true → 復元実行）。
-        // 起動引数ファイルは復元完了後に LoadInitialFile で追加タブとして開く。
-        var shell = new NestSuiteShellWindow();
+        // v1.18.2: ファイルパスをコンストラクターへ渡すことで ShouldCreateInitialTab が
+        // 復元失敗時の無題タブ作成を抑止する（無セッション＋引数ファイルで無題タブが混入しない）。
+        // セッション復元はコンストラクター内で引数有無を問わず常に試みる（v1.18.2 fix）。
+        // 起動引数ファイルは復元完了後に LoadInitialFile で追加タブとして開く（v1.18.2）。
+        var shell = new NestSuiteShellWindow(nestSuiteFilePath);
         MainWindow = shell;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         if (nestSuiteFilePath != null)
