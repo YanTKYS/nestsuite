@@ -1,3 +1,12 @@
+## v1.17.0 — NestSuite タブ並び替え対応
+
+- **NestSuite のタブストリップでタブをドラッグ＆ドロップして並び替えられるようにした。** `.notenest` / `.chatnest` / `.ideanest` が混在していても任意の順に移動できる。
+- **並び替え後も選択中タブ・Workspace 表示・保存状態・タイトル表示が崩れない。** ドラッグ＆ドロップによる並び替えは内部コレクション（`ObservableCollection.Move()`）を直接操作するため、選択状態・DataContext・セッションに副作用がない。
+- **タブ復元時に前回終了時のタブ順を維持する。** セッション保存（`SaveSession()`）はタブコレクションの順序に従ってパスリストを構築するため、並び替え後の順序が次回起動時にも再現される。
+- **閉じるボタン上ではドラッグを開始しない。** `×` ボタンのクリックと通常のタブ切替は従来どおり動作する。
+- **`.notenest` / `.chatnest` / `.ideanest` 保存スキーマは変更なし。** 各 Workspace の機能・NoteNest 単体版 (`--classic-notenest`) に影響なし。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.16.8 — IdeaNest 貼り付け時の ChatNest 転記形式対応
 
 - **IdeaNest Workspace へ ChatNest の「Copy NestSuite」出力を貼り付けると、転記カードとして自然に整形されるようにした。** 貼り付けテキストの 1 行目が `[NOTE] ChatNestからの転記: yyyy-MM-dd HH:mm` 形式に一致する場合、転記形式として扱う。

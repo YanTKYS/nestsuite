@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using NoteNest.NestSuite.ChatNest;
 using NoteNest.NestSuite.IdeaNest.ViewModels;
 using NoteNest.NestSuite.IdeaNest.Services;
@@ -174,6 +175,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly NestSuiteSessionStateService _sessionState = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
+    private Point _tabDragStartPoint;
+    private NestSuiteDocumentTab? _tabDragSource;
 
     /// <summary>現在選択中のタブのツール ID。タブ未選択時は <see cref="DefaultToolId"/>。</summary>
     public string SelectedToolId => _selectedTab?.ToolId ?? DefaultToolId;
@@ -379,6 +382,64 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         if (_isActivatingTab) return;
         if (TabStrip.SelectedItem is NestSuiteDocumentTab tab)
             ActivateTab(tab);
+    }
+
+    // ── v1.17.0: タブドラッグ並び替え ─────────────────────────────────────
+
+    private void TabStrip_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (IsDescendantOfButton(e.OriginalSource as DependencyObject)) return;
+        _tabDragStartPoint = e.GetPosition(null);
+        _tabDragSource = GetTabFromVisualTree(e.OriginalSource as DependencyObject);
+    }
+
+    private void TabStrip_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed || _tabDragSource == null) return;
+        var pos = e.GetPosition(null);
+        var diff = _tabDragStartPoint - pos;
+        if (Math.Abs(diff.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(diff.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        var source = _tabDragSource;
+        _tabDragSource = null;
+        DragDrop.DoDragDrop(TabStrip, source, DragDropEffects.Move);
+    }
+
+    private void TabStrip_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(typeof(NestSuiteDocumentTab))
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void TabStrip_Drop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(typeof(NestSuiteDocumentTab))) return;
+        var sourceTab = (NestSuiteDocumentTab)e.Data.GetData(typeof(NestSuiteDocumentTab));
+        var targetTab = GetTabFromVisualTree(e.OriginalSource as DependencyObject);
+        if (targetTab == null || ReferenceEquals(sourceTab, targetTab)) return;
+        int sourceIdx = _tabs.IndexOf(sourceTab);
+        int targetIdx = _tabs.IndexOf(targetTab);
+        if (sourceIdx < 0 || targetIdx < 0) return;
+        _tabs.Move(sourceIdx, targetIdx);
+    }
+
+    private static NestSuiteDocumentTab? GetTabFromVisualTree(DependencyObject? element)
+    {
+        for (var d = element; d != null; d = VisualTreeHelper.GetParent(d))
+        {
+            if (d is FrameworkElement { DataContext: NestSuiteDocumentTab tab })
+                return tab;
+        }
+        return null;
+    }
+
+    private static bool IsDescendantOfButton(DependencyObject? element)
+    {
+        for (var d = element; d != null; d = VisualTreeHelper.GetParent(d))
+            if (d is Button) return true;
+        return false;
     }
 
     /// <summary>

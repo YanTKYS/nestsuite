@@ -130,7 +130,12 @@
                          Background="{DynamicResource GroupHeaderBg}"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                         SelectionChanged="TabStrip_SelectionChanged">
+                         AllowDrop="True"
+                         SelectionChanged="TabStrip_SelectionChanged"
+                         PreviewMouseLeftButtonDown="TabStrip_PreviewMouseLeftButtonDown"
+                         PreviewMouseMove="TabStrip_PreviewMouseMove"
+                         DragOver="TabStrip_DragOver"
+                         Drop="TabStrip_Drop">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
