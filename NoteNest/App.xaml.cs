@@ -6,6 +6,8 @@ namespace NoteNest;
 
 public partial class App : Application
 {
+    private NestSuiteSingleInstance? _singleInstance;
+
     private void App_Startup(object sender, StartupEventArgs e)
     {
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -31,11 +33,30 @@ public partial class App : Application
         // ファイルパス指定時は拡張子に応じて NoteNest / ChatNest / IdeaNest タブを開く。
         // LoadInitialFile を Show() より前に呼ぶことで起動時ちらつきを防ぐ（v1.10.2）。
         var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
+
+        // v1.18.1: シングルインスタンス — 2 つ目以降のプロセスはファイルを転送して終了する
+        _singleInstance = new NestSuiteSingleInstance();
+        if (!_singleInstance.TryBecomePrimary())
+        {
+            if (nestSuiteFilePath != null)
+                NestSuiteSingleInstance.TrySendFiles([nestSuiteFilePath]);
+            _singleInstance.Dispose();
+            Shutdown(0);
+            return;
+        }
+
         var shell = new NestSuiteShellWindow(nestSuiteFilePath);
         MainWindow = shell;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         if (nestSuiteFilePath != null)
             shell.LoadInitialFile(nestSuiteFilePath);
+        _singleInstance.StartServer(path => shell.OpenFileFromPipe(path));
         shell.Show();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _singleInstance?.Dispose();
+        base.OnExit(e);
     }
 }

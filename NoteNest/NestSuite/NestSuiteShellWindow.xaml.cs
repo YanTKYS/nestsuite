@@ -1068,6 +1068,48 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         return true;
     }
 
+    // ── v1.18.1: パイプ経由ファイルオープン（シングルインスタンス） ──────────
+
+    /// <summary>
+    /// v1.18.1: Named Pipe 経由で受け取ったファイルパスを UI スレッドで開く。
+    /// 既存の Load*FileAt メソッドを再利用し、重複タブ検出・最近ファイル更新を維持する。
+    /// </summary>
+    internal void OpenFileFromPipe(string rawPath)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            BringWindowToFront();
+            var path = NormalizeFilePath(rawPath);
+            if (!File.Exists(path) || !NestSuiteTabFactory.TryGetKind(path, out var kind)) return;
+            var existingTab = _tabs.FirstOrDefault(t =>
+                t.WorkspaceKind == kind &&
+                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+            if (existingTab != null)
+            {
+                ActivateTab(existingTab);
+                _recentFiles.Add(path);
+                UpdateRecentFilesMenu();
+                return;
+            }
+            switch (kind)
+            {
+                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
+                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
+                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
+            }
+        });
+    }
+
+    private void BringWindowToFront()
+    {
+        if (WindowState == WindowState.Minimized)
+            WindowState = WindowState.Normal;
+        Activate();
+        Topmost = true;
+        Topmost = false;
+        Focus();
+    }
+
     // ── v1.7.4: ファイルメニューハンドラ（タブ種別でディスパッチ） ─────────
     // ツール種別を明示的に分岐することで、IdeaNest 選択中に非表示の NoteNest へ
     // 操作が流れることを防ぐ。3 ツールすべてを選択中タブの WorkspaceKind で分岐する。

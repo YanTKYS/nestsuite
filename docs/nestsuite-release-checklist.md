@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v1.18.0）
+# NestSuite リリース前確認チェックリスト（v1.18.1）
 
 NestSuite 統合版のリリース前に確認する項目を整理します。v1.13.0 より、NestSuite を主対象とし、`--classic-notenest` の確認は限定的互換ルートのスモーク確認として扱います。
 
@@ -8,7 +8,7 @@ NestSuite 統合版のリリース前に確認する項目を整理します。v
 
 - [ ] `dotnet build` が通る
 - [ ] `dotnet test` が通る（全テスト）
-- [ ] `ApplicationVersionTests` でバージョンが正しく表示されることを確認
+- [ ] `ApplicationVersionTests` でバージョンが正しく表示されることを確認（v1.18.1）
 - [ ] `NoteNest保存スキーマが 1.4.1` のままであることを確認
 
 ---
@@ -151,3 +151,15 @@ NestSuite 統合版のリリース前に確認する項目を整理します。v
 - [ ] `docs/nestsuite-user-guide.md` が存在する
 - [ ] `docs/nestsuite-known-limitations.md` が存在する
 - [ ] `docs/release-notes.md` に最新バージョンエントリが記載されている
+
+---
+
+## 8. シングルインスタンス確認（v1.18.1）
+
+- [ ] NestSuite 起動済みの状態で `.notenest` をダブルクリックすると既存ウィンドウに NoteNest タブが追加される
+- [ ] NestSuite 起動済みの状態で `.chatnest` をダブルクリックすると既存ウィンドウに ChatNest タブが追加される
+- [ ] NestSuite 起動済みの状態で `.ideanest` をダブルクリックすると既存ウィンドウに IdeaNest タブが追加される
+- [ ] 既に開いているファイルを再度開くと既存タブがアクティブになる（重複タブなし）
+- [ ] 既存ウィンドウが最小化されている場合、ファイルを受け取ると前面表示される
+- [ ] ファイル指定なしで 2 プロセス目を起動した場合、既存ウィンドウに変化がない
+- [ ] `--classic-notenest` は NestSuite のシングルインスタンス制御の対象外
