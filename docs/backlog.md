@@ -165,7 +165,7 @@ v1.19.2 で縮退準備・方針明文化を開始した。
 3. 廃止への支障報告がないこと（v1.12.x 以降の猶予期間を経ていること）
 4. 移行説明（docs・リリースノート）が完了していること
 
-詳細は `docs/design/nestsuite-default-startup-plan.md` を参照。
+詳細は `docs/migration/nestsuite-default-startup-plan.md` を参照。
 
 ---
 

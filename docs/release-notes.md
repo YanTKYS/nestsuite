@@ -1,3 +1,15 @@
+## v1.21.1 — docs 構成整理（integration / migration フォルダ追加）
+
+v1.21.0 での NestSuite 名称統一を踏まえ、`docs/design/` に集まっていた統合・移行関連文書を用途別フォルダへ分離した。アプリ本体の機能変更はない。
+
+- **`docs/integration/`** を作成し、NestSuite 統合・Workspace 連携の設計文書を移動した（`nestsuite-preparation.md` / `nestsuite-multi-file-tabs-plan.md` / `nestsuite-notenest-multi-file-plan.md` / `ideanest-save-load-plan.md`）。
+- **`docs/migration/`** を作成し、縮退・移行関連の設計文書を移動した（`nestsuite-default-startup-plan.md`）。
+- **`docs/design/`** には設計判断・制約・外部レビューを残した（`design-decisions.md` / `nestsuite-known-limitations.md` / `review-gemini.md`）。
+- **`docs/README.md`** を更新し、新フォルダを一覧に追加した。
+- ファイル移動に伴い `docs/design/design-decisions.md` / `docs/design/nestsuite-known-limitations.md` / `docs/guide/nestsuite-user-guide.md` / `docs/backlog.md` / `docs/integration/nestsuite-preparation.md` の相対リンク・パス参照を修正した。
+- `docs/backlog.md` と `docs/release-notes.md` は引き続き `docs/` 直下に置いている。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.21.0 — アプリ名称の NestSuite 化
 
 利用者から見えるアプリ名称を NoteNest から NestSuite に統一した。アプリ機能・保存形式の変更はない。

@@ -7,7 +7,9 @@
 | `guide/` | 利用者向けの操作説明 |
 | `testing/` | テスト・回帰確認・リリース確認 |
 | `design/` | 設計方針・構成整理・アーキテクチャメモ |
+| `integration/` | NestSuite 統合・Workspace 連携設計 |
 | `operations/` | 配布・ファイル関連付け・運用メモ |
+| `migration/` | 移行・縮退・互換性 |
 
 ## guide/
 
@@ -27,13 +29,17 @@
 | ファイル | 内容 |
 |----------|------|
 | `design-decisions.md` | 設計判断の背景と理由（全バージョン累積） |
-| `nestsuite-preparation.md` | NestSuite 統合対応準備メモ |
-| `nestsuite-default-startup-plan.md` | NestSuite 既定起動化 移行計画 |
 | `nestsuite-known-limitations.md` | NestSuite 既知の制約 |
+| `review-gemini.md` | ソースコードレビューレポート（外部レビュー） |
+
+## integration/
+
+| ファイル | 内容 |
+|----------|------|
+| `nestsuite-preparation.md` | NestSuite 統合対応準備メモ |
 | `nestsuite-multi-file-tabs-plan.md` | 同一ツール複数ファイル対応 設計計画 |
 | `nestsuite-notenest-multi-file-plan.md` | NoteNest 複数ファイルタブ対応 設計計画 |
 | `ideanest-save-load-plan.md` | IdeaNest `.ideanest` 保存・読込方針 |
-| `review-gemini.md` | ソースコードレビューレポート（外部レビュー） |
 
 ## operations/
 
@@ -41,3 +47,9 @@
 |----------|------|
 | `file-association.md` | ファイル関連付けの設定手順 |
 | `operation-note.md` | 運用上の注意・既知の制限 |
+
+## migration/
+
+| ファイル | 内容 |
+|----------|------|
+| `nestsuite-default-startup-plan.md` | NestSuite 既定起動化 移行計画 |
