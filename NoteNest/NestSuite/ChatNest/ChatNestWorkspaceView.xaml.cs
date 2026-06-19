@@ -10,7 +10,7 @@ namespace NoteNest.NestSuite.ChatNest;
 /// ChatNest Workspace ビュー。参照ソース ChatNest v0.4.1
 /// Views/ChatNestWorkspaceView.xaml(.cs) より、Workspace 部分を中心に取り込み。
 /// メッセージ追加時の自動スクロールと、入力欄のショートカット（Ctrl/Shift+Enter 投稿、
-/// Ctrl/Shift+←→ 発言者切替）を処理する。AppShell（App/MainWindow）は移植しない。
+/// Ctrl/Shift+←→ 発言者切替）を処理する。AppShell（NestSuiteShellWindow）は移植しない。
 /// </summary>
 public partial class ChatNestWorkspaceView : UserControl
 {

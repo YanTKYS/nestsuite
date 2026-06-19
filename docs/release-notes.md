@@ -1,3 +1,17 @@
+## v1.19.4 — classic 削除後の回帰・総点検
+
+classic-notenest 起動ルートを v1.19.3 で削除した後、NestSuite 通常利用・Workspace 各種操作・起動ルートへの副作用がないことを総点検した版。
+
+- **新機能の追加はない。** コード変更はバージョン番号更新とコメント修正のみ。
+- **NestSuite 通常起動・関連付け起動・タブ復元・保存・終了確認に異常なし。** v1.19.3 での classic 削除が NestSuite の動作に影響していないことを確認した。
+- **NoteNest Workspace の基本操作（新規・開く・保存・編集・右ペイン折り畳み）に異常なし。** `.notenest` ファイルは NestSuite 上の NoteNest Workspace として引き続き利用できる。
+- **ChatNest / IdeaNest Workspace の基本操作に異常なし。** Copy NestSuite・Copy Markdown・カード作成・S/M/L 切替が維持されている。
+- **IdeaNest M サイズカードが最小幅（870px）で 3 列表示されることを再確認した。**（v1.19.3 の MinWidth 補正の回帰確認）
+- **`--classic-notenest` を指定してもクラッシュしない。** 未知フラグとして無視され、NestSuite が通常起動する。ファイルパスが併記された場合は NestSuite の NoteNest Workspace で開く。
+- **ソース内コメントから旧 `MainWindow` 表記を修正した。**（`DragDropState.cs` / `IWorkspaceDialogHost.cs` / `NoteNestWorkspaceView.xaml.cs` / `ChatNestWorkspaceView.xaml.cs`）
+- **`docs/backlog.md` を更新した。** classic 縮退フェーズを完了扱いにし、現在の方針を `--classic-notenest` 削除後の状態と整合させた。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.19.3 — classic-notenest 起動ルート削除・NestSuite 一本化
 
 - **`--classic-notenest` による旧 NoteNest 単体起動ルートを削除した。** `NoteNest.exe` の起動は NestSuite に一本化した。

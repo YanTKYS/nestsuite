@@ -3,7 +3,7 @@ using NoteNest.ViewModels;
 
 namespace NoteNest.Services;
 
-/// <summary>MainWindow のドラッグ操作中だけ必要な一時状態を所有します。</summary>
+/// <summary>NoteNestWorkspaceView のドラッグ操作中だけ必要な一時状態を所有します。</summary>
 public sealed class DragDropState
 {
     public Point TaskStartPoint { get; set; }

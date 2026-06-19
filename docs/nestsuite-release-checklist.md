@@ -1,6 +1,6 @@
-# NestSuite リリース前確認チェックリスト（v1.19.3）
+# NestSuite リリース前確認チェックリスト（v1.19.4）
 
-NestSuite 統合版のリリース前に確認する項目を整理します。v1.13.0 より、NestSuite を主対象とし、`--classic-notenest` の確認は限定的互換ルートのスモーク確認として扱います。
+NestSuite 統合版のリリース前に確認する項目を整理します。v1.19.3 で `--classic-notenest` を削除したため、v1.19.4 以降は NestSuite を唯一の起動ルートとして確認します。
 
 ---
 
@@ -8,7 +8,7 @@ NestSuite 統合版のリリース前に確認する項目を整理します。v
 
 - [ ] `dotnet build` が通る
 - [ ] `dotnet test` が通る（全テスト）
-- [ ] `ApplicationVersionTests` でバージョンが正しく表示されることを確認（v1.19.3）
+- [ ] `ApplicationVersionTests` でバージョンが正しく表示されることを確認（v1.19.4）
 - [ ] `NoteNest保存スキーマが 1.4.1` のままであることを確認
 
 ---

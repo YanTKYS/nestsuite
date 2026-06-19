@@ -26,7 +26,7 @@ public partial class NoteNestWorkspaceView : UserControl
         InitializeComponent();
     }
 
-    // ── Public API for MainWindow ──────────────────────────────────────────
+    // ── Public API for AppShell（NestSuiteShellWindow）──────────────────────
 
     public double LeftPaneWidth
     {

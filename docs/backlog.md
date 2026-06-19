@@ -13,7 +13,7 @@
 - **NestSuite が主起動ルート**です（v1.11.0 以降、`NoteNest.exe` 既定 = NestSuite）
 - NoteNest / ChatNest / IdeaNest は、NestSuite 上の **Workspace** として動作しています
 - **IdeaNest / ChatNest は単体アプリとしての新規機能開発を原則凍結しています。** 今後は NestSuite Workspace としての改善・不具合修正・統合調整のみを行います
-- `--classic-notenest` は**限定的互換ルート**です（緊急退避用、恒久保守対象ではない）
+- **`--classic-notenest` は v1.19.3 で削除しました。** 退避が必要な場合は v1.19.2 以前を使用してください
 - 新機能候補は原則として NestSuite Shell または各 Workspace を対象とします。旧 NoteNest 単体版への反映は行いません
 - **v1.19.x は「NestSuite 安定化フェーズ」** です。新機能追加より、起動・関連付け・タブ・保存・復元の安定性を優先します。各 Workspace 個別改善は当面の優先度を下げています
 
@@ -155,7 +155,7 @@ v1.19.2 で縮退準備・方針明文化を開始した。
 |---------|------|
 | v1.19.2（完了） | 縮退準備・方針明文化。docs / test-scenarios / checklist で classic 確認を起動確認中心に縮小 |
 | v1.19.3（完了） | 縮退実施。`--classic-notenest` ルート・`MainWindow` / `StartupDialog` の削除。NestSuite 起動に一本化 |
-| v1.19.4 | 削除後の回帰・総点検 |
+| v1.19.4（完了） | 削除後の回帰・総点検。NestSuite 通常利用に支障なし |
 
 ### v1.19.3 縮退実施条件（すべて揃っていること）
 
@@ -197,4 +197,4 @@ v1.19.2 で縮退準備・方針明文化を開始した。
 | プロジェクト横断ダッシュボード | NestSuite のタブはファイル単位のため、プロジェクト横断集計は設計方針と合わない。複数起動で代替可能 |
 | 文字数表示 | 現時点の主要価値（プロジェクト管理）に対して優先度が低い |
 | Git 連携 | `.notenest` ファイルをコミット対象とすれば外部ツールで完結 |
-| `--classic-notenest` への新機能追加 | 限定的互換ルートであり恒久保守対象ではない。新機能は NestSuite に反映する |
+| `--classic-notenest` への新機能追加 | v1.19.3 で削除済み。新機能は NestSuite に反映する |

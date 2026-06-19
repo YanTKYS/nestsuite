@@ -5,25 +5,21 @@ using NoteNest.ViewModels;
 namespace NoteNest.Views;
 
 /// <summary>
-/// v1.5.x における AppShell と Workspace View の間のダイアログ操作橋渡しインターフェース。
+/// v1.5.x で導入した AppShell と Workspace View の間のダイアログ操作橋渡しインターフェース。
+/// v1.11.0 以降、実装者は <c>NestSuiteShellWindow</c>（AppShell）のみ。
 ///
 /// <para>
 /// <see cref="NoteNestWorkspaceView"/> はダイアログの生成・Owner 管理・ファイル選択を
-/// 直接行わない。代わりにこのインターフェースを通じて AppShell（<c>MainWindow</c>）へ委譲する。
+/// 直接行わない。代わりにこのインターフェースを通じて AppShell（<c>NestSuiteShellWindow</c>）へ委譲する。
 /// </para>
 ///
-/// <para><b>設計制約（v1.5.x）</b></para>
+/// <para><b>設計制約</b></para>
 /// <list type="bullet">
 ///   <item>WorkspaceView は AppShell 側のダイアログサービスを直接保持しない</item>
 ///   <item>WorkspaceView は GetWindow を使った親 Window 参照を行わない</item>
-///   <item><c>MainWindow</c> がこのインターフェースを実装し、AppShell 側のダイアログ操作へ委譲する</item>
+///   <item><c>NestSuiteShellWindow</c> がこのインターフェースを実装し、AppShell 側のダイアログ操作へ委譲する</item>
 ///   <item>メソッドは WorkspaceView が実際に必要とする最小限の操作に絞る</item>
 /// </list>
-///
-/// <para><b>将来の検討（v1.6.0 以降）</b><br/>
-/// NestSuite 側 AppShell への載せ替え時に、このインターフェースの範囲・形状を再評価する。
-/// 現時点では完全な DI 化・抽象化レイヤーの追加は行わない。
-/// </para>
 /// </summary>
 public interface IWorkspaceDialogHost
 {

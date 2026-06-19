@@ -78,7 +78,7 @@ public class ArchitectureBoundaryTests
 
     // AppShell 側として除外する Services ファイル名（ソースチェック対象外）
     // DialogService    : AppShell UI サービス
-    // DragDropState    : MainWindow ドラッグ状態
+    // DragDropState    : NoteNestWorkspaceView ドラッグ操作状態（Application.Current 間接利用）
     // ThemeService     : Application.Current を使う AppShell テーマ管理
     // UiSettingsService: ウィンドウ設定の永続化（AppShell 責務）
     private static readonly HashSet<string> ExcludedServiceFiles =
