@@ -51,6 +51,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         new ThemeService().Apply(uiSettings.Theme);
 
         InitializeComponent();
+        // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
+        ApplyWindowSize(uiSettings);
         UpdateRecentFilesMenu();
 
         _sidebarBorders = new Dictionary<string, Border>(StringComparer.Ordinal)
@@ -155,6 +157,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // v1.15.0: ウィンドウが実際に閉じることが確定した時点でセッション状態を保存する
         SaveSession();
+        // v1.19.1: NestSuite ウィンドウサイズを保存する
+        SaveWindowSize();
 
         base.OnClosing(e);
     }
@@ -163,6 +167,47 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         base.OnClosed(e);
+    }
+
+    // v1.19.1: ウィンドウサイズ復元・保存 ─────────────────────────────────
+
+    private void ApplyWindowSize(UiSettings settings)
+    {
+        const double minW = 860, minH = 500;
+        if (settings.NestSuiteWindowWidth >= minW) Width = settings.NestSuiteWindowWidth;
+        if (settings.NestSuiteWindowHeight >= minH) Height = settings.NestSuiteWindowHeight;
+        if (settings.NestSuiteIsWindowMaximized) WindowState = WindowState.Maximized;
+    }
+
+    private void SaveWindowSize()
+    {
+        var svc = new UiSettingsService();
+        var s = svc.Load();
+        switch (WindowState)
+        {
+            case WindowState.Normal:
+                s.NestSuiteWindowWidth = Width;
+                s.NestSuiteWindowHeight = Height;
+                s.NestSuiteIsWindowMaximized = false;
+                break;
+            case WindowState.Maximized:
+            {
+                var rb = RestoreBounds;
+                if (rb.Width > 0) s.NestSuiteWindowWidth = rb.Width;
+                if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                s.NestSuiteIsWindowMaximized = true;
+                break;
+            }
+            case WindowState.Minimized:
+            {
+                var rb = RestoreBounds;
+                if (rb.Width > 0) s.NestSuiteWindowWidth = rb.Width;
+                if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                s.NestSuiteIsWindowMaximized = false;
+                break;
+            }
+        }
+        svc.Save(s);
     }
 
     // ── v1.7.3: ファイル単位タブ管理 ─────────────────────────────────────

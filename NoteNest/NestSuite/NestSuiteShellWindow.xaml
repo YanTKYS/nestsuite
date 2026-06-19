@@ -6,7 +6,7 @@
         xmlns:ideanest="clr-namespace:NoteNest.NestSuite.IdeaNest.Views"
         Title="NestSuite — NoteNest"
         Height="720" Width="1280"
-        MinHeight="500" MinWidth="800"
+        MinHeight="500" MinWidth="860"
         WindowStartupLocation="CenterScreen">
     <Window.CommandBindings>
         <!-- v1.16.1: Ctrl+S で SaveActiveTab() を実行する。ApplicationCommands.Save は Ctrl+S ジェスチャを内包する -->

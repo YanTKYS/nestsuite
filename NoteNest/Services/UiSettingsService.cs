@@ -20,6 +20,9 @@ public class UiSettings
     public double RightPaneWidth { get; set; } = 280;
     public bool IsRightPaneCollapsed { get; set; } = false;
     public bool IsAutoSaveEnabled { get; set; } = false;
+    public double NestSuiteWindowWidth { get; set; } = 1280;
+    public double NestSuiteWindowHeight { get; set; } = 720;
+    public bool NestSuiteIsWindowMaximized { get; set; } = false;
 }
 
 public class UiSettingsService
