@@ -104,11 +104,11 @@ NestSuite は、**NoteNest / IdeaNest / ChatNest** の 3 つの Workspace を 1 
 ```
 git clone <repository-url>
 cd notenest
-dotnet build NoteNest/NoteNest.csproj -c Release
-dotnet run --project NoteNest/NoteNest.csproj
+dotnet build NestSuite.sln -c Release
+dotnet run --project NestSuite/NestSuite.csproj
 ```
 
-または Visual Studio 2022 でソリューションファイル `NoteNest.sln` を開いて実行してください。
+または Visual Studio 2022 でソリューションファイル `NestSuite.sln` を開いて実行してください。
 
 ### ファイル関連付けからの起動（v1.2.5〜）
 

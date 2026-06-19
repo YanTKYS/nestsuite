@@ -22,16 +22,16 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore NoteNest.sln
+        run: dotnet restore NestSuite.sln
 
       - name: Build
-        run: dotnet build NoteNest.sln -c Release --no-restore
+        run: dotnet build NestSuite.sln -c Release --no-restore
 
       - name: Test
-        run: dotnet test NoteNest.Tests/NoteNest.Tests.csproj -c Release --no-build --no-restore
+        run: dotnet test NestSuite.Tests/NestSuite.Tests.csproj -c Release --no-build --no-restore
 
       - uses: actions/upload-artifact@v4
         with:
           name: build-${{ github.run_number }}
-          path: NoteNest/bin/Release/
+          path: NestSuite/bin/Release/
           retention-days: 1

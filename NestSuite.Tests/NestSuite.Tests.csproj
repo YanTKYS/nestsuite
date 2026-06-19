@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../NoteNest/NoteNest.csproj" />
+    <ProjectReference Include="../NestSuite/NestSuite.csproj" />
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
-    [string]$ExePath = (Join-Path $PSScriptRoot "..\NoteNest\bin\Release\net8.0-windows\NestSuite.exe")
+    [string]$ExePath = (Join-Path $PSScriptRoot "..\NestSuite\bin\Release\net8.0-windows\NestSuite.exe")
 )
 
 $resolved = Resolve-Path $ExePath -ErrorAction SilentlyContinue

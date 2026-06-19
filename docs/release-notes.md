@@ -1,3 +1,19 @@
+## v1.21.2 — プロジェクト名・ソリューション名の NestSuite 化
+
+開発・ビルド・リリース時の入口を NestSuite に統一した。アプリ機能・保存形式・namespace の変更はない。
+
+- **ソリューションファイルを `NoteNest.sln` → `NestSuite.sln` に変更した。**
+- **アプリ本体プロジェクトフォルダを `NoteNest/` → `NestSuite/` に変更した。**
+- **アプリ本体プロジェクトファイルを `NoteNest.csproj` → `NestSuite.csproj` に変更した。**
+- **テストプロジェクトフォルダを `NoteNest.Tests/` → `NestSuite.Tests/` に変更した。**
+- **テストプロジェクトファイルを `NoteNest.Tests.csproj` → `NestSuite.Tests.csproj` に変更した。**
+- **GitHub Actions を新しいプロジェクト構成に更新した。** `ci.yml` は `NestSuite.sln` / `NestSuite.Tests/NestSuite.Tests.csproj` / `NestSuite/bin/Release/` を参照するよう更新。`release.yml` は `NestSuite/NestSuite.csproj` を publish 対象に更新。
+- **README の開発者向けビルドコマンドを更新した。** `dotnet build NoteNest/NoteNest.csproj` → `dotnet build NestSuite.sln`、`dotnet run --project NoteNest/NoteNest.csproj` → `dotnet run --project NestSuite/NestSuite.csproj`。
+- **`tools/register-nestsuite-file-association.ps1` のデフォルトパスを `..\NestSuite\bin\...` に更新した。**
+- **`docs/design/nestsuite-known-limitations.md` の `--classic-notenest` 行を削除済み表記に修正した。** v1.19.3 で起動ルートは削除済みだが「限定的互換ルートとして維持」という旧記述が残っていたため修正。
+- `namespace NoteNest`・ProgId・Mutex 名・Named Pipe 名・UiSettings キー・保存スキーマは変更しない（互換性維持）。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.21.1 — docs 構成整理（integration / migration フォルダ追加）
 
 v1.21.0 での NestSuite 名称統一を踏まえ、`docs/design/` に集まっていた統合・移行関連文書を用途別フォルダへ分離した。アプリ本体の機能変更はない。

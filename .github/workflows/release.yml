@@ -61,7 +61,7 @@ jobs:
       - name: Publish self-contained single-file
         shell: pwsh
         run: |
-          dotnet publish NoteNest/NoteNest.csproj `
+          dotnet publish NestSuite/NestSuite.csproj `
             -c Release `
             -r win-x64 `
             --self-contained `
