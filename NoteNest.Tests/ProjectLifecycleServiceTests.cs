@@ -60,6 +60,20 @@ public class ProjectLifecycleServiceTests : IDisposable
     }
 
     [Fact]
+    public void CreateEmptyLoadsEmptyWorkspaceWithoutSampleData()
+    {
+        // v1.20.0: サンプル無題.notenest で「新規プロジェクト」を押した場合の期待動作
+        var context = CreateContext();
+
+        context.Lifecycle.CreateEmpty();
+
+        Assert.Empty(context.Notes.Notebooks);
+        Assert.False(context.Session.IsSampleProject);   // バナーが消える
+        Assert.False(context.Session.IsModified);
+        Assert.Null(context.Session.CurrentFilePath);    // 保存先未設定のまま
+    }
+
+    [Fact]
     public void ClearRecentFilesSynchronizesSessionWithRecentFilesService()
     {
         var context = CreateContext();

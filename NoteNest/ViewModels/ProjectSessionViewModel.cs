@@ -76,13 +76,13 @@ public sealed class ProjectSessionViewModel : BaseViewModel
     public ObservableCollection<RecentFileViewModel> RecentFiles { get; } = new();
     public bool HasRecentFiles => RecentFiles.Count > 0;
 
-    public void Start(string projectId, string projectName, string? filePath, DateTime? lastSavedAt = null)
+    public void Start(string projectId, string projectName, string? filePath, DateTime? lastSavedAt = null, bool isSampleProject = false)
     {
         SetProperty(ref _projectId, projectId, nameof(ProjectId));
         ProjectName = projectName;
         SetCurrentFilePath(filePath);
         LastSavedAt = lastSavedAt;
-        IsSampleProject = filePath == null;
+        IsSampleProject = isSampleProject;
         IsModified = false;
     }
 

@@ -1,3 +1,9 @@
+## v1.20.0 — Workspace UI 改善
+
+- **NoteNest Workspace のサンプルバナーから「新規プロジェクト」を押すと空のプロジェクトが作成されるようにした。** 従来は `CreateNew()` を呼び出してサンプルデータが再ロードされるだけで、見た目上なにも変わらないという問題があった。`ProjectLifecycleService.CreateEmpty()` を追加し、`NewProject()` が空の `Project` をロードするように修正した。`IsSampleProject` はファイルパスの有無で自動判定する方式から、ロード時に明示的に指定する方式へ変更した。
+- **IdeaNest Workspace のカード本文プレビュー行数を S=3 / M=5 / L=10 に改善した。** 従来は `IdeaCardViewModel.BodyPreview` が常に 4 行分しか返さず、L サイズカードも M サイズカードと同じ行数しか表示されなかった。`CardDisplayViewModel.BodyPreviewMaxLines` プロパティを追加し、XAML の本文 TextBlock を `Text="{Binding Body}"` + `MaxLines` + `TextTrimming="CharacterEllipsis"` に変更した。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.19.4 — classic 削除後の回帰・総点検
 
 classic-notenest 起動ルートを v1.19.3 で削除した後、NestSuite 通常利用・Workspace 各種操作・起動ルートへの副作用がないことを総点検した版。

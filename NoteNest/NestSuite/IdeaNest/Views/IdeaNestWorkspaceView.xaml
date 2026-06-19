@@ -482,10 +482,12 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
 
-                                        <!-- Body preview (fixed mode) -->
-                                        <TextBlock Text="{Binding BodyPreview}"
+                                        <!-- Body preview (fixed mode): MaxLines で行数制限、TextTrimming で省略表示 -->
+                                        <TextBlock Text="{Binding Body}"
                                                    TextWrapping="Wrap" Margin="0,2,0,4"
                                                    FontSize="12"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="{Binding DataContext.BodyPreviewMaxLines, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    Foreground="{StaticResource IdeaTextPrimaryBrush}"
                                                    Opacity="0.85">
                                             <TextBlock.Style>

@@ -50,7 +50,10 @@ public sealed class ProjectLifecycleService
         return true;
     }
 
-    public void CreateNew() => Load(_samples.Create(), null);
+    public void CreateNew() => Load(_samples.Create(), null, isSampleProject: true);
+
+    /// <summary>サンプルデータなしの空プロジェクトを作成する。ユーザーが「新規プロジェクト」を操作した場合に使用。</summary>
+    public void CreateEmpty() => Load(new Models.Project(), null, isSampleProject: false);
 
     public void Open(string path) => Load(_files.Load(path), path);
 
@@ -64,10 +67,11 @@ public sealed class ProjectLifecycleService
     public Project CreateSnapshot() =>
         _documents.Build(_session.ProjectId, _session.ProjectName, _notes, _tasks, _editor);
 
-    private void Load(Project project, string? filePath)
+    private void Load(Project project, string? filePath, bool isSampleProject = false)
     {
         _session.Start(project.ProjectId, project.ProjectName, filePath,
-            filePath != null && File.Exists(filePath) ? File.GetLastWriteTime(filePath) : null);
+            filePath != null && File.Exists(filePath) ? File.GetLastWriteTime(filePath) : null,
+            isSampleProject);
         var lastNote = _documents.Load(project, _notes, _tasks, _editor);
         _markers.Refresh(_notes.AllNotes);
 

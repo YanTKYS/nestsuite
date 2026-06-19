@@ -235,3 +235,28 @@ public class CardOperationsServicePasteTests
         Assert.Contains("## 自分", ideas[0].Body);
     }
 }
+
+public class CardDisplayViewModelTests
+{
+    private static CardDisplayViewModel Create() =>
+        new CardDisplayViewModel(() => { }, () => { });
+
+    // v1.20.0: BodyPreviewMaxLines がカードサイズごとに正しい値を返す
+    [Theory]
+    [InlineData("small",  3)]
+    [InlineData("medium", 5)]
+    [InlineData("large",  10)]
+    public void BodyPreviewMaxLines_ReturnsExpectedLineCountPerSize(string size, int expected)
+    {
+        var vm = Create();
+        vm.CardSize = size;
+        Assert.Equal(expected, vm.BodyPreviewMaxLines);
+    }
+
+    [Fact]
+    public void BodyPreviewMaxLines_DefaultIsMedium()
+    {
+        var vm = Create();
+        Assert.Equal(5, vm.BodyPreviewMaxLines);
+    }
+}

@@ -43,7 +43,7 @@ public partial class MainViewModel
     {
         if (!EnsureCanDiscardChanges("保存されていない変更があります。新規プロジェクトを作成しますか？"))
             return;
-        _lifecycle.CreateNew();
+        _lifecycle.CreateEmpty();
         StatusMessage = "新規プロジェクトを作成しました。";
     }
 

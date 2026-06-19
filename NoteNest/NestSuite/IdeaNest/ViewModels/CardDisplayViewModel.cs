@@ -39,6 +39,7 @@ public class CardDisplayViewModel : IdeaNestViewModelBase
                 OnPropertyChanged(nameof(CardHeight));
                 OnPropertyChanged(nameof(CardMinHeight));
                 OnPropertyChanged(nameof(CardMaxHeight));
+                OnPropertyChanged(nameof(BodyPreviewMaxLines));
                 _onMarkDirty();
             }
             OnPropertyChanged(nameof(IsCardSizeSmall));
@@ -64,6 +65,9 @@ public class CardDisplayViewModel : IdeaNestViewModelBase
     public bool IsCardSizeSmall  => _cardSize == "small";
     public bool IsCardSizeMedium => _cardSize == "medium";
     public bool IsCardSizeLarge  => _cardSize == "large";
+
+    /// <summary>固定高さモードで本文テキストに表示する最大行数。S=3 / M=5 / L=10。</summary>
+    public int BodyPreviewMaxLines => _cardSize switch { "small" => 3, "large" => 10, _ => 5 };
 
     // ── Card height mode ──────────────────────────────────────────────────────
 
