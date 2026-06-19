@@ -16,6 +16,7 @@
 - **`--classic-notenest` は v1.19.3 で削除しました。** 退避が必要な場合は v1.19.2 以前を使用してください
 - 新機能候補は原則として NestSuite Shell または各 Workspace を対象とします。旧 NoteNest 単体版への反映は行いません
 - **v1.21.0 でアプリ名称を NestSuite に統一しました。** 内部 namespace・ProgId は互換維持のため変更していません
+- **v1.21.2 でソリューション名・プロジェクト名・フォルダ名を NestSuite に統一しました**（`NestSuite.sln` / `NestSuite/NestSuite.csproj` / `NestSuite.Tests/`）。namespace `NoteNest` は互換維持のため変更していません
 
 ---
 
