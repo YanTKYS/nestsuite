@@ -1,3 +1,13 @@
+## v1.21.3 — 構造変更後の回帰確認
+
+v1.21.2 のソリューション・プロジェクト名変更後、ビルド・テスト・GitHub Actions・各 Workspace 基本操作に副作用がないことを確認した版。アプリ機能・保存形式の変更はない。
+
+- **`ArchitectureBoundaryTests.FindSolutionRoot()` が `NoteNest.sln` を参照していたバグを修正した。** v1.21.2 の `.sln` 改名後に 1 件のテストが失敗していた。`NestSuite.sln` / `NestSuite/` を参照するよう修正した（v1.21.2 hotfix として先行コミット済み）。
+- **全機能的参照の追従を確認した。** `NoteNest.sln` / `NoteNest.csproj` / `NoteNest.Tests.csproj` を直接参照するビルド・テスト・ワークフロー・ツールスクリプトの漏れがないことを確認した。`docs/design/review-gemini.md` に外部レビュー文中の `NoteNest.Tests` 言及が残るが、機能的参照ではなく文脈説明のため維持する。
+- **`obj/` キャッシュファイルは旧パスを含むが、次回 `dotnet restore` で自動再生成される。** コミット対象外のため問題なし。
+- namespace `NoteNest`・ProgId・Mutex 名・Named Pipe 名・UiSettings キー・保存スキーマは変更しない（互換性維持）。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v1.21.2 — プロジェクト名・ソリューション名の NestSuite 化
 
 開発・ビルド・リリース時の入口を NestSuite に統一した。アプリ機能・保存形式・namespace の変更はない。
