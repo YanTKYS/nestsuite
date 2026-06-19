@@ -47,13 +47,7 @@ public class NestSuiteShellTests
         Assert.Equal(typeof(NoteNestWorkspaceView), field!.FieldType);
     }
 
-    // ── NoteNest 単体版が残っていること ─────────────────────────────────
-
-    [Fact]
-    public void NoteNest_StandaloneMainWindow_StillExists()
-    {
-        Assert.True(typeof(Window).IsAssignableFrom(typeof(NoteNest.MainWindow)));
-    }
+    // v1.19.3: MainWindow 削除により NoteNest_StandaloneMainWindow_StillExists を削除。
 
     [Fact]
     public void NoteNestWorkspaceView_StillIsNotWindow()

@@ -80,13 +80,8 @@ public class WorkspaceViewRegressionTests
 
     // ── IWorkspaceDialogHost 境界 ─────────────────────────────────────
 
-    [Fact]
-    public void MainWindow_ImplementsIWorkspaceDialogHost()
-    {
-        Assert.Contains(
-            typeof(IWorkspaceDialogHost),
-            typeof(NoteNest.MainWindow).GetInterfaces());
-    }
+    // v1.19.3: MainWindow 削除により MainWindow_ImplementsIWorkspaceDialogHost を削除。
+    // NestSuiteShellWindow_ImplementsIWorkspaceDialogHost は NestSuiteShellTests で確認。
 
     [Theory]
     [InlineData("ShowInput")]

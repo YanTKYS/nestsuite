@@ -13,16 +13,7 @@ public class MainWindowEventBoundaryTests
     private static readonly BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly BindingFlags PrivateStatic = BindingFlags.Static | BindingFlags.NonPublic;
 
-    [Theory]
-    [InlineData("Window_PreviewKeyDown")]
-    [InlineData("Window_Closing")]
-    [InlineData("Export_Click")]
-    [InlineData("ClearRecentFiles_Click")]
-    [InlineData("ShowFindReplace_Click")]
-    public void SemanticEventEntryPointsRemainAvailable(string methodName)
-    {
-        Assert.NotNull(typeof(NoteNest.MainWindow).GetMethod(methodName, PrivateInstance));
-    }
+    // v1.19.3: MainWindow 削除により SemanticEventEntryPointsRemainAvailable を削除。
 
     [Fact]
     public void ContextMenuResolutionUsesExplicitlyNamedSharedHelper()
