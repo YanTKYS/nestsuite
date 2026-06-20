@@ -43,6 +43,7 @@ public partial class PreviewIdeaWindow : Window
     private void CommitCurrentEdit()
     {
         if (!_hasEdits) return;
+        _hasEdits = false;
         _editVm.ApplyTo(CurrentCard.Model);
         _onCommitEdit(CurrentCard);
     }
