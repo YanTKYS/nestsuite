@@ -78,7 +78,7 @@ public partial class PreviewIdeaWindow : Window
                 _editVm.ApplyTo(_addedCard.Model);
                 _onCommitEdit(_addedCard);
             }
-            else if (HasContent())
+            else if (HasIdeaContent())
             {
                 _addedCard = _onCommitAdd!(_editVm);
             }
@@ -91,7 +91,7 @@ public partial class PreviewIdeaWindow : Window
         }
     }
 
-    private bool HasContent() =>
+    private bool HasIdeaContent() =>
         !string.IsNullOrWhiteSpace(_editVm.Title)
         || !string.IsNullOrWhiteSpace(_editVm.Body)
         || !string.IsNullOrWhiteSpace(_editVm.TagsText);
