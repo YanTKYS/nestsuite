@@ -78,6 +78,10 @@
                         <Setter Property="Foreground" Value="{DynamicResource AccentBlue}"/>
                         <Setter Property="Background" Value="{DynamicResource IconButtonHoverBg}"/>
                     </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Cursor"   Value="Arrow"/>
+                        <Setter Property="Opacity"  Value="0.45"/>
+                    </Trigger>
                 </Style.Triggers>
             </Style>
 

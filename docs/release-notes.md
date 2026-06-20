@@ -1,3 +1,9 @@
+## v2.3.2 — 無効状態ボタンのカーソル・視覚フィードバック統一（SH-11）
+
+- **無効状態ボタンで `Hand` カーソルが表示されないようにした（SH-11）。** `IconButton`（NoteNest）・`FlatButton` / `CopyButton`（ChatNest）・`IdeaIconButtonStyle` / `IdeaSecondaryButtonStyle` / `IdeaPrimaryButtonStyle` / `IdeaFloatingAddButtonStyle`（IdeaNest）の各スタイルに `IsEnabled=False` トリガーを追加し、無効時は `Cursor="Arrow"` に切り替えるようにした。
+- **無効状態ボタンの視覚フィードバックを追加した（SH-11）。** これまで IsEnabled トリガーが存在しなかった IdeaNest 系ボタンと `IconButton` に対し、`Opacity=0.45` で押せないことが分かる見た目を追加した。ChatNest の `FlatButton` / `CopyButton` は既存の `Opacity=0.4` トリガーを維持しつつ Cursor 変更を追加した。
+- NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.3.1 — ChatNest / IdeaNest ViewModel ライフサイクル整理（TD-1）
 
 - **ChatNestWorkspaceViewModel に `IDisposable` を実装した（TD-1）。** `DispatcherTimer`（コピーステータス消去用）の停止・`MessageViewModel.PropertyChanged` の全解除・`Messages.CollectionChanged` の解除を `Dispose()` で行う。二重 Dispose 対策（`_disposed` フラグ）を持つ。
