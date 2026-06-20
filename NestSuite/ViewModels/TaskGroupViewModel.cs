@@ -1,12 +1,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace NestSuite.ViewModels;
 
 public class TaskGroupViewModel : BaseViewModel
 {
     private bool _isExpanded = true;
-    private bool _hideCompleted = false;
+    private bool _isCompletedSectionExpanded = true;
 
     public TaskGroupViewModel(string title, string key)
     {
@@ -16,13 +17,15 @@ public class TaskGroupViewModel : BaseViewModel
         Tasks.CollectionChanged += (_, _) =>
         {
             RefreshCount();
-            OnPropertyChanged(nameof(VisibleTasks));
+            RefreshTaskViews();
         };
+        ToggleCompletedSectionCommand = new RelayCommand(() => IsCompletedSectionExpanded = !IsCompletedSectionExpanded);
     }
 
     public string Title { get; }
     public string Key { get; }
     public ObservableCollection<TaskViewModel> Tasks { get; }
+    public ICommand ToggleCompletedSectionCommand { get; }
 
     public bool IsExpanded
     {
@@ -30,22 +33,16 @@ public class TaskGroupViewModel : BaseViewModel
         set => SetProperty(ref _isExpanded, value);
     }
 
-    public bool HideCompleted
+    public bool IsCompletedSectionExpanded
     {
-        get => _hideCompleted;
-        set
-        {
-            SetProperty(ref _hideCompleted, value);
-            OnPropertyChanged(nameof(VisibleTasks));
-        }
+        get => _isCompletedSectionExpanded;
+        set => SetProperty(ref _isCompletedSectionExpanded, value);
     }
 
-    // When HideCompleted=false, return Tasks directly so WPF observes CollectionChanged.
-    // When HideCompleted=true, return a snapshot; OnPropertyChanged(VisibleTasks) is raised
-    // whenever a task's IsCompleted changes or the collection changes.
-    public IEnumerable<TaskViewModel> VisibleTasks =>
-        _hideCompleted ? Tasks.Where(t => !t.IsCompleted) : Tasks;
-
+    public IEnumerable<TaskViewModel> IncompleteTasks => Tasks.Where(t => !t.IsCompleted);
+    public IEnumerable<TaskViewModel> CompletedTasks  => Tasks.Where(t => t.IsCompleted);
+    public bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
+    public string CompletedCountText => $"完了済み（{Tasks.Count(t => t.IsCompleted)}）";
     public string CountText => $"{Tasks.Count(t => !t.IsCompleted)}/{Tasks.Count}";
 
     public void AddTask(TaskViewModel task)
@@ -68,12 +65,20 @@ public class TaskGroupViewModel : BaseViewModel
 
     public void RefreshCount() => OnPropertyChanged(nameof(CountText));
 
+    private void RefreshTaskViews()
+    {
+        OnPropertyChanged(nameof(IncompleteTasks));
+        OnPropertyChanged(nameof(CompletedTasks));
+        OnPropertyChanged(nameof(HasCompletedTasks));
+        OnPropertyChanged(nameof(CompletedCountText));
+    }
+
     private void Task_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(TaskViewModel.IsCompleted))
         {
             RefreshCount();
-            OnPropertyChanged(nameof(VisibleTasks));
+            RefreshTaskViews();
         }
     }
 }

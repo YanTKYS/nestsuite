@@ -4,6 +4,90 @@
              xmlns:vm="clr-namespace:NestSuite.ViewModels"
              TextElement.Foreground="{DynamicResource AppFg}">
 
+    <UserControl.Resources>
+        <DataTemplate x:Key="TaskItemTemplate">
+            <Border Padding="10,6"
+                    BorderBrush="{DynamicResource ItemBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    AllowDrop="True"
+                    PreviewMouseLeftButtonDown="TaskItem_PreviewMouseLeftButtonDown"
+                    PreviewMouseMove="TaskItem_PreviewMouseMove"
+                    DragOver="TaskItem_DragOver"
+                    Drop="TaskItem_Drop">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="コメントを編集(_E)..." Click="EditTaskComment_Click"/>
+                        <MenuItem Header="名前変更..." Click="RenameTask_Click"/>
+                        <MenuItem Header="グループを変更">
+                            <MenuItem Header="今日のタスク" Click="MoveTaskToToday_Click"/>
+                            <MenuItem Header="今週のタスク" Click="MoveTaskToWeek_Click"/>
+                            <MenuItem Header="バックログ"   Click="MoveTaskToBacklog_Click"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="関連ノートを開く" Click="OpenRelatedNote_Click"
+                                  Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
+                        <MenuItem Header="関連ノートを設定..." Click="SetRelatedNote_Click"/>
+                        <MenuItem Header="関連ノートをクリア" Click="ClearRelatedNote_Click"
+                                  Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
+                        <Separator/>
+                        <MenuItem Header="削除" Click="DeleteTask_Click"/>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <DockPanel>
+                    <CheckBox IsChecked="{Binding IsCompleted}"
+                              VerticalAlignment="Center"
+                              Margin="0,0,8,0"/>
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="🔗"
+                               FontSize="9"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"
+                               ToolTip="関連ノートが設定されています"
+                               Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="●"
+                               Foreground="{DynamicResource TaskCommentIndicator}"
+                               FontSize="9"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"
+                               ToolTip="このタスクにはコメントがあります"
+                               Visibility="{Binding HasComment, Converter={StaticResource BoolToVis}}"/>
+                    <Button DockPanel.Dock="Right"
+                            Content="✏"
+                            FontSize="10"
+                            VerticalAlignment="Center"
+                            Margin="4,0,0,0"
+                            Padding="3,1"
+                            ToolTip="コメントを編集"
+                            Click="EditTaskComment_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"/>
+                    <TextBlock Text="{Binding Title}"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               FontSize="12.5"
+                               MouseLeftButtonDown="TaskTitle_MouseLeftButtonDown">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="ToolTip" Value="ダブルクリックでコメントを追加"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                        <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TaskCompletedFg}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasComment}" Value="True">
+                                        <Setter Property="ToolTip" Value="ダブルクリックでコメントを編集"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <!-- ═══ Main 3-pane layout ═══ -->
     <Grid>
         <Grid.ColumnDefinitions>
@@ -451,106 +535,58 @@
                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding Key}"
                                                     ToolTip="このグループにタスクを追加"/>
-                                            <CheckBox DockPanel.Dock="Right"
-                                                      IsChecked="{Binding HideCompleted}"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,4,0"
-                                                      FontSize="10.5"
-                                                      Content="完了非表示"
-                                                      ToolTip="完了済みタスクを非表示にする"/>
                                             <TextBlock Text="{Binding Title}"
                                                        FontWeight="SemiBold" FontSize="12"
                                                        VerticalAlignment="Center"/>
                                         </DockPanel>
                                     </Border>
 
-                                    <!-- Tasks in group -->
-                                    <ItemsControl ItemsSource="{Binding VisibleTasks}"
-                                                  Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Padding="10,6"
-                                                        BorderBrush="{DynamicResource ItemBorderBrush}"
-                                                        BorderThickness="0,0,0,1"
-                                                        AllowDrop="True"
-                                                        PreviewMouseLeftButtonDown="TaskItem_PreviewMouseLeftButtonDown"
-                                                        PreviewMouseMove="TaskItem_PreviewMouseMove"
-                                                        DragOver="TaskItem_DragOver"
-                                                        Drop="TaskItem_Drop">
-                                                    <Border.ContextMenu>
-                                                        <ContextMenu>
-                                                            <MenuItem Header="コメントを編集(_E)..." Click="EditTaskComment_Click"/>
-                                                            <MenuItem Header="名前変更..." Click="RenameTask_Click"/>
-                                                            <MenuItem Header="グループを変更">
-                                                                <MenuItem Header="今日のタスク" Click="MoveTaskToToday_Click"/>
-                                                                <MenuItem Header="今週のタスク" Click="MoveTaskToWeek_Click"/>
-                                                                <MenuItem Header="バックログ"   Click="MoveTaskToBacklog_Click"/>
-                                                            </MenuItem>
-                                                            <Separator/>
-                                                            <MenuItem Header="関連ノートを開く" Click="OpenRelatedNote_Click"
-                                                                      Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
-                                                            <MenuItem Header="関連ノートを設定..." Click="SetRelatedNote_Click"/>
-                                                            <MenuItem Header="関連ノートをクリア" Click="ClearRelatedNote_Click"
-                                                                      Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
-                                                            <Separator/>
-                                                            <MenuItem Header="削除" Click="DeleteTask_Click"/>
-                                                        </ContextMenu>
-                                                    </Border.ContextMenu>
-                                                    <DockPanel>
-                                                        <CheckBox IsChecked="{Binding IsCompleted}"
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="0,0,8,0"/>
-                                                        <TextBlock DockPanel.Dock="Right"
-                                                                   Text="🔗"
-                                                                   FontSize="9"
-                                                                   VerticalAlignment="Center"
-                                                                   Margin="4,0,0,0"
-                                                                   ToolTip="関連ノートが設定されています"
-                                                                   Visibility="{Binding HasRelatedNote, Converter={StaticResource BoolToVis}}"/>
-                                                        <TextBlock DockPanel.Dock="Right"
-                                                                   Text="●"
-                                                                   Foreground="{DynamicResource TaskCommentIndicator}"
-                                                                   FontSize="9"
-                                                                   VerticalAlignment="Center"
-                                                                   Margin="4,0,0,0"
-                                                                   ToolTip="このタスクにはコメントがあります"
-                                                                   Visibility="{Binding HasComment, Converter={StaticResource BoolToVis}}"/>
-                                                        <Button DockPanel.Dock="Right"
-                                                                Content="✏"
-                                                                FontSize="10"
-                                                                VerticalAlignment="Center"
-                                                                Margin="4,0,0,0"
-                                                                Padding="3,1"
-                                                                ToolTip="コメントを編集"
-                                                                Click="EditTaskComment_Click"
-                                                                Background="Transparent"
-                                                                BorderThickness="0"
-                                                                Cursor="Hand"/>
-                                                        <TextBlock Text="{Binding Title}"
-                                                                   VerticalAlignment="Center"
-                                                                   TextWrapping="Wrap"
-                                                                   FontSize="12.5"
-                                                                   MouseLeftButtonDown="TaskTitle_MouseLeftButtonDown">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="ToolTip" Value="ダブルクリックでコメントを追加"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding IsCompleted}" Value="True">
-                                                                            <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                                                            <Setter Property="Foreground" Value="{DynamicResource TaskCompletedFg}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding HasComment}" Value="True">
-                                                                            <Setter Property="ToolTip" Value="ダブルクリックでコメントを編集"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                    </DockPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <!-- Incomplete tasks (always visible when group is expanded) -->
+                                    <ItemsControl ItemsSource="{Binding IncompleteTasks}"
+                                                  ItemTemplate="{StaticResource TaskItemTemplate}"
+                                                  Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}"/>
+
+                                    <!-- Completed tasks section -->
+                                    <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                                        <!-- Completed section header: only shown when completed tasks exist -->
+                                        <Border Padding="10,5,10,5"
+                                                Background="{DynamicResource GroupHeaderBg}"
+                                                BorderBrush="{DynamicResource PaneBorder}"
+                                                BorderThickness="0,1,0,1"
+                                                Cursor="Hand"
+                                                Visibility="{Binding HasCompletedTasks, Converter={StaticResource BoolToVis}}">
+                                            <Border.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick"
+                                                              Command="{Binding ToggleCompletedSectionCommand}"/>
+                                            </Border.InputBindings>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           FontSize="9"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource FaintFg}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="▼"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsCompletedSectionExpanded}" Value="False">
+                                                                    <Setter Property="Text" Value="▶"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding CompletedCountText}"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource FaintFg}"
+                                                           VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </Border>
+                                        <!-- Completed task items (dimmed) -->
+                                        <ItemsControl ItemsSource="{Binding CompletedTasks}"
+                                                      ItemTemplate="{StaticResource TaskItemTemplate}"
+                                                      Opacity="0.80"
+                                                      Visibility="{Binding IsCompletedSectionExpanded, Converter={StaticResource BoolToVis}}"/>
+                                    </StackPanel>
 
                                 </StackPanel>
                             </DataTemplate>
