@@ -270,14 +270,10 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase
         var index = cards.IndexOf(card);
         if (index < 0) index = 0;
 
-        PreviewIdeaWindow? dlg = null;
-        dlg = new PreviewIdeaWindow(
+        var dlg = new PreviewIdeaWindow(
             cards,
             index,
-            onEdit: c => EditIdea(c, dlg),
-            onTogglePin: c => TogglePin(c),
-            onToggleArchive: c => ToggleArchive(c),
-            onCopyMarkdown: c => { /* no-op */ })
+            onCommitEdit: c => _cardOps.CommitEdit(c))
         {
             Owner = _ui.Owner,
         };

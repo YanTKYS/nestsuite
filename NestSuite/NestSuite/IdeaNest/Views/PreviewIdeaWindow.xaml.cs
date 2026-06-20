@@ -10,43 +10,50 @@ namespace NestSuite.IdeaNest.Views;
 public partial class PreviewIdeaWindow : Window
 {
     private readonly IReadOnlyList<IdeaCardViewModel> _cards;
-    private readonly Action<IdeaCardViewModel> _onEdit;
-    private readonly Action<IdeaCardViewModel> _onTogglePin;
-    private readonly Action<IdeaCardViewModel> _onToggleArchive;
-    private readonly Action<IdeaCardViewModel> _onCopyMarkdown;
+    private readonly Action<IdeaCardViewModel> _onCommitEdit;
     private int _currentIndex;
+    private EditIdeaViewModel _editVm = null!;
+    private bool _hasEdits;
 
     private IdeaCardViewModel CurrentCard => _cards[_currentIndex];
 
     public PreviewIdeaWindow(
         IReadOnlyList<IdeaCardViewModel> cards,
         int initialIndex,
-        Action<IdeaCardViewModel> onEdit,
-        Action<IdeaCardViewModel> onTogglePin,
-        Action<IdeaCardViewModel> onToggleArchive,
-        Action<IdeaCardViewModel> onCopyMarkdown)
+        Action<IdeaCardViewModel> onCommitEdit)
     {
         InitializeComponent();
         _cards = cards;
-        _onEdit = onEdit;
-        _onTogglePin = onTogglePin;
-        _onToggleArchive = onToggleArchive;
-        _onCopyMarkdown = onCopyMarkdown;
+        _onCommitEdit = onCommitEdit;
         _currentIndex = initialIndex;
-        DataContext = CurrentCard;
+        LoadCard();
         UpdateButtonStates();
-        CurrentCard.PropertyChanged += OnCardPropertyChanged;
-        Closed += (_, _) => CurrentCard.PropertyChanged -= OnCardPropertyChanged;
         PreviewKeyDown += OnPreviewKeyDown;
+        Closed += OnWindowClosed;
+    }
+
+    private void LoadCard()
+    {
+        _hasEdits = false;
+        _editVm = new EditIdeaViewModel(CurrentCard.Model);
+        _editVm.PropertyChanged += OnEditVmPropertyChanged;
+        DataContext = _editVm;
+    }
+
+    private void CommitCurrentEdit()
+    {
+        if (!_hasEdits) return;
+        _editVm.ApplyTo(CurrentCard.Model);
+        _onCommitEdit(CurrentCard);
     }
 
     private void NavigateTo(int index)
     {
         if (index < 0 || index >= _cards.Count) return;
-        CurrentCard.PropertyChanged -= OnCardPropertyChanged;
+        CommitCurrentEdit();
+        _editVm.PropertyChanged -= OnEditVmPropertyChanged;
         _currentIndex = index;
-        DataContext = CurrentCard;
-        CurrentCard.PropertyChanged += OnCardPropertyChanged;
+        LoadCard();
         UpdateButtonStates();
     }
 
@@ -58,37 +65,57 @@ public partial class PreviewIdeaWindow : Window
                 Close();
                 e.Handled = true;
                 break;
+            case Key.S when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                CommitCurrentEdit();
+                e.Handled = true;
+                break;
             case Key.Left:
+                if (FocusManager.GetFocusedElement(this) is System.Windows.Controls.TextBox) break;
                 NavigateTo(_currentIndex - 1);
                 e.Handled = true;
                 break;
             case Key.Right:
+                if (FocusManager.GetFocusedElement(this) is System.Windows.Controls.TextBox) break;
                 NavigateTo(_currentIndex + 1);
                 e.Handled = true;
                 break;
         }
     }
 
-    private void OnCardPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnWindowClosed(object? sender, EventArgs e)
     {
-        if (e.PropertyName is nameof(IdeaCardViewModel.IsPinned) or nameof(IdeaCardViewModel.IsArchived))
-        {
+        CommitCurrentEdit();
+        _editVm.PropertyChanged -= OnEditVmPropertyChanged;
+    }
+
+    private void OnEditVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(EditIdeaViewModel.IsPinned) or nameof(EditIdeaViewModel.IsArchived))
             UpdateButtonStates();
-        }
+        if (e.PropertyName is not nameof(EditIdeaViewModel.BackgroundBrush))
+            _hasEdits = true;
     }
 
     private void UpdateButtonStates()
     {
-        PinButton.Content = CurrentCard.IsPinned ? "📌 ピン留め解除" : "📌 ピン留め";
-        ArchiveButton.Content = CurrentCard.IsArchived ? "📤 アーカイブ解除" : "📥 アーカイブ";
+        PinButton.Content = _editVm.IsPinned ? "📌 ピン留め解除" : "📌 ピン留め";
+        ArchiveButton.Content = _editVm.IsArchived ? "📤 アーカイブ解除" : "📥 アーカイブ";
         PrevButton.IsEnabled = _currentIndex > 0;
         NextButton.IsEnabled = _currentIndex < _cards.Count - 1;
     }
 
     private void OnPrevClick(object sender, RoutedEventArgs e) => NavigateTo(_currentIndex - 1);
     private void OnNextClick(object sender, RoutedEventArgs e) => NavigateTo(_currentIndex + 1);
-    private void OnEditClick(object sender, RoutedEventArgs e) => _onEdit(CurrentCard);
-    private void OnTogglePinClick(object sender, RoutedEventArgs e) => _onTogglePin(CurrentCard);
-    private void OnToggleArchiveClick(object sender, RoutedEventArgs e) => _onToggleArchive(CurrentCard);
+
+    private void OnTogglePinClick(object sender, RoutedEventArgs e)
+    {
+        _editVm.IsPinned = !_editVm.IsPinned;
+    }
+
+    private void OnToggleArchiveClick(object sender, RoutedEventArgs e)
+    {
+        _editVm.IsArchived = !_editVm.IsArchived;
+    }
+
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 }
