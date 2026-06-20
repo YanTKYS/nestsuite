@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using NestSuite.IdeaNest.Models;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Services;
 
 namespace NestSuite.IdeaNest.Views;
 
@@ -28,6 +29,7 @@ public partial class PreviewIdeaWindow : Window
         Action<IdeaCardViewModel> onCommitEdit)
     {
         InitializeComponent();
+        ApplyWindowSettings();
         _cards = cards;
         _onCommitEdit = onCommitEdit;
         _currentIndex = initialIndex;
@@ -44,6 +46,7 @@ public partial class PreviewIdeaWindow : Window
         Action<IdeaCardViewModel> onCommitEdit)
     {
         InitializeComponent();
+        ApplyWindowSettings();
         _cards = Array.Empty<IdeaCardViewModel>();
         _onCommitAdd = onCommitAdd;
         _onCommitEdit = onCommitEdit;
@@ -134,8 +137,69 @@ public partial class PreviewIdeaWindow : Window
 
     private void OnWindowClosed(object? sender, EventArgs e)
     {
+        SaveWindowSettings();
         CommitCurrentEdit();
         _editVm.PropertyChanged -= OnEditVmPropertyChanged;
+    }
+
+    private void ApplyWindowSettings()
+    {
+        try
+        {
+            var s = new UiSettingsService().Load();
+            double w = Math.Clamp(s.PreviewIdeaWindowWidth ?? Width, MinWidth, 2560);
+            double h = Math.Clamp(s.PreviewIdeaWindowHeight ?? Height, MinHeight, 1600);
+            Width = w;
+            Height = h;
+            if (s.PreviewIdeaWindowLeft.HasValue && s.PreviewIdeaWindowTop.HasValue)
+            {
+                double left = s.PreviewIdeaWindowLeft.Value;
+                double top = s.PreviewIdeaWindowTop.Value;
+                if (IsPositionOnScreen(left, top, w, h))
+                {
+                    WindowStartupLocation = WindowStartupLocation.Manual;
+                    Left = left;
+                    Top = top;
+                }
+            }
+        }
+        catch { }
+    }
+
+    private void SaveWindowSettings()
+    {
+        try
+        {
+            double width, height, left, top;
+            if (WindowState == WindowState.Normal)
+            {
+                width = Width; height = Height; left = Left; top = Top;
+            }
+            else
+            {
+                var rb = RestoreBounds;
+                if (rb.Width <= 0 || rb.Height <= 0) return;
+                width = rb.Width; height = rb.Height; left = rb.Left; top = rb.Top;
+            }
+            var svc = new UiSettingsService();
+            var s = svc.Load();
+            s.PreviewIdeaWindowWidth = width;
+            s.PreviewIdeaWindowHeight = height;
+            s.PreviewIdeaWindowLeft = left;
+            s.PreviewIdeaWindowTop = top;
+            svc.Save(s);
+        }
+        catch { }
+    }
+
+    private static bool IsPositionOnScreen(double left, double top, double width, double height)
+    {
+        double vLeft = SystemParameters.VirtualScreenLeft;
+        double vTop = SystemParameters.VirtualScreenTop;
+        double vRight = vLeft + SystemParameters.VirtualScreenWidth;
+        double vBottom = vTop + SystemParameters.VirtualScreenHeight;
+        return left + width > vLeft + 50 && left < vRight - 50 &&
+               top >= vTop && top < vBottom - 50;
     }
 
     private void OnEditVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
