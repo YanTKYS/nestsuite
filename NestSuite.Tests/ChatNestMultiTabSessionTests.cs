@@ -19,7 +19,7 @@ public class ChatNestMultiTabSessionTests
         var vmA = new ChatNestWorkspaceViewModel();
         var vmB = new ChatNestWorkspaceViewModel();
 
-        vmA.Messages.Add(new Message { Speaker = Speaker.自分, Text = "A のメッセージ" });
+        vmA.LoadMessages([new Message { Speaker = Speaker.自分, Text = "A のメッセージ" }]);
 
         Assert.Single(vmA.Messages);
         Assert.Empty(vmB.Messages);
