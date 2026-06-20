@@ -157,7 +157,7 @@
                              SelectionChanged="TabStrip_SelectionChanged"
                              PreviewMouseLeftButtonDown="TabStrip_PreviewMouseLeftButtonDown"
                              PreviewMouseMove="TabStrip_PreviewMouseMove"
-                             PreviewMouseButtonDown="TabStrip_PreviewMouseButtonDown"
+                             PreviewMouseDown="TabStrip_PreviewMouseButtonDown"
                              DragOver="TabStrip_DragOver"
                              Drop="TabStrip_Drop">
                         <ListBox.ItemsPanel>
