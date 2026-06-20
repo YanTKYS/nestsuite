@@ -29,7 +29,17 @@ public class EditIdeaViewModel : IdeaNestViewModelBase
     public string Title { get => _title; set => SetField(ref _title, value); }
     public string Body { get => _body; set => SetField(ref _body, value); }
     public string TagsText { get => _tagsText; set => SetField(ref _tagsText, value); }
-    public string Color { get => _color; set => SetField(ref _color, value); }
+
+    public string Color
+    {
+        get => _color;
+        set
+        {
+            if (SetField(ref _color, value))
+                OnPropertyChanged(nameof(BackgroundBrush));
+        }
+    }
+
     public bool IsPinned { get => _isPinned; set => SetField(ref _isPinned, value); }
     public bool IsArchived { get => _isArchived; set => SetField(ref _isArchived, value); }
 
@@ -37,6 +47,21 @@ public class EditIdeaViewModel : IdeaNestViewModelBase
     {
         "yellow", "pink", "blue", "green", "purple", "orange", "gray", "white",
     };
+
+    public string BackgroundBrush => _color switch
+    {
+        "yellow" => "#FFF7CC",
+        "pink"   => "#FCE7F3",
+        "blue"   => "#DBEAFE",
+        "green"  => "#DCFCE7",
+        "purple" => "#EDE9FE",
+        "orange" => "#FFEDD5",
+        "gray"   => "#F1F3F5",
+        _         => "#FFFFFF",
+    };
+
+    public string CreatedAtText => Original.CreatedAt.ToString("yyyy/MM/dd HH:mm");
+    public string UpdatedAtText => Original.UpdatedAt.ToString("yyyy/MM/dd HH:mm");
 
     public void ApplyTo(Idea idea)
     {
