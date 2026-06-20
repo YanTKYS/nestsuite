@@ -66,9 +66,11 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
 
     /// <summary>
     /// 破棄確認の対象となる未保存状態。投稿・削除・編集による <see cref="IsDirty"/> に加え、
-    /// 投稿前の入力欄テキスト（空白のみを除く）も対象に含める。
+    /// 投稿前の入力欄テキスト（空白のみを除く）と、確定前のインライン編集テキストも対象に含める。
     /// </summary>
-    public bool HasUnsavedChanges => IsDirty || !string.IsNullOrWhiteSpace(InputText);
+    public bool HasUnsavedChanges => IsDirty
+        || !string.IsNullOrWhiteSpace(InputText)
+        || Messages.Any(m => m.IsEditing && m.EditingText != m.Text);
 
     /// <summary>v1.16.5: コピー操作後に一時表示するステータスメッセージ。</summary>
     public string CopyStatusText
@@ -106,8 +108,14 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
         _copyNestSuiteCommand = new ChatNestRelayCommand(ExecuteCopyNestSuite, () => Messages.Count > 0);
         _copyMarkdownCommand  = new ChatNestRelayCommand(ExecuteCopyMarkdown,   () => Messages.Count > 0);
 
-        Messages.CollectionChanged += (_, _) =>
+        Messages.CollectionChanged += (_, e) =>
         {
+            if (e.OldItems != null)
+                foreach (MessageViewModel vm in e.OldItems)
+                    vm.PropertyChanged -= OnMessageViewModelPropertyChanged;
+            if (e.NewItems != null)
+                foreach (MessageViewModel vm in e.NewItems)
+                    vm.PropertyChanged += OnMessageViewModelPropertyChanged;
             _copyNestSuiteCommand.RaiseCanExecuteChanged();
             _copyMarkdownCommand.RaiseCanExecuteChanged();
         };
@@ -127,6 +135,8 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
 
     public void Clear()
     {
+        foreach (var m in Messages)
+            m.PropertyChanged -= OnMessageViewModelPropertyChanged;
         Messages.Clear();
         InputText = string.Empty;
         IsDirty = false;
@@ -134,6 +144,8 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
 
     public void LoadMessages(IEnumerable<Message> messages)
     {
+        foreach (var m in Messages)
+            m.PropertyChanged -= OnMessageViewModelPropertyChanged;
         Messages.Clear();
         InputText = string.Empty;
         foreach (var m in messages)
@@ -219,6 +231,12 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged
     {
         IsDirty = true;
         WorkspaceModified?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnMessageViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MessageViewModel.IsEditing) or nameof(MessageViewModel.EditingText))
+            OnPropertyChanged(nameof(HasUnsavedChanges));
     }
 
     // ── コマンド実装 ───────────────────────────────────────────────────────
