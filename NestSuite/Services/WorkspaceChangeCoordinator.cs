@@ -19,6 +19,7 @@ public sealed class WorkspaceChangeCoordinator
         _editorChanges = new EditorChangeCoordinator(notes, tasks, editor);
         _noteChanges.Changed += Relay;
         _editorChanges.Changed += Relay;
+        tasks.Loaded  += (_, _) => Publish(false, nameof(MainViewModel.TotalIncompleteTaskCountText));
         tasks.Changed += (_, _) => Publish(true,
             nameof(MainViewModel.EditorTitle),
             nameof(MainViewModel.TotalIncompleteTaskCountText));

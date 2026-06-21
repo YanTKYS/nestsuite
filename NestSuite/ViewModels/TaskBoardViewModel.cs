@@ -18,6 +18,7 @@ public sealed class TaskBoardViewModel
     }
 
     public event EventHandler? Changed;
+    public event EventHandler? Loaded;
     public ObservableCollection<TaskGroupViewModel> TaskGroups { get; }
 
     public string TotalIncompleteTaskCountText
@@ -42,6 +43,7 @@ public sealed class TaskBoardViewModel
         LoadGroup("today", tasks.Today);
         LoadGroup("week", tasks.Week);
         LoadGroup("backlog", tasks.Backlog);
+        Loaded?.Invoke(this, EventArgs.Empty);
     }
 
     public TaskCollection BuildModel() => new()
