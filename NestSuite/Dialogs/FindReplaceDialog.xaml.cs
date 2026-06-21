@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using NestSuite.NoteNest.Editor;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Dialogs;
@@ -11,7 +11,7 @@ internal sealed record AllNoteMatchItem(NoteViewModel Note, int CharIndex, strin
 
 public partial class FindReplaceDialog : Window
 {
-    private TextBox _editor;
+    private ITextEditorAdapter _editor;
     private IEnumerable<NoteViewModel>? _allNotes;
     private Action<NoteViewModel>? _navigateToNote;
 
@@ -30,7 +30,7 @@ public partial class FindReplaceDialog : Window
         _normalBrush.Freeze();
     }
 
-    public FindReplaceDialog(TextBox editor)
+    public FindReplaceDialog(ITextEditorAdapter editor)
     {
         InitializeComponent();
         _editor = editor;
@@ -39,17 +39,17 @@ public partial class FindReplaceDialog : Window
         _editor.TextChanged += OnEditorTextChanged;
     }
 
-    private void OnEditorTextChanged(object sender, TextChangedEventArgs e)
+    private void OnEditorTextChanged(object? sender, EventArgs e)
     {
         if (IsVisible && AllNotesCheck.IsChecked != true)
             UpdateMatchCount();
     }
 
-    internal void SetEditor(TextBox editor)
+    internal void SetEditor(ITextEditorAdapter adapter)
     {
-        if (ReferenceEquals(_editor, editor)) return;
+        if (ReferenceEquals(_editor, adapter)) return;
         _editor.TextChanged -= OnEditorTextChanged;
-        _editor = editor;
+        _editor = adapter;
         _editor.TextChanged += OnEditorTextChanged;
         _lastFoundIndex = -1;
         _currentMatchIndex = -1;
@@ -258,7 +258,7 @@ public partial class FindReplaceDialog : Window
             _editor.SelectedText.Equals(keyword, Comparison))
         {
             var caretBefore = _editor.SelectionStart;
-            _editor.SelectedText = ReplaceBox.Text;
+            _editor.ReplaceSelection(ReplaceBox.Text);
             _lastFoundIndex = caretBefore - 1;
             _currentMatchIndex = -1;
         }
@@ -362,7 +362,7 @@ public partial class FindReplaceDialog : Window
         _navigateToNote?.Invoke(item.Note);
         Dispatcher.BeginInvoke(() =>
         {
-            if (charIdx + keyword.Length <= _editor.Text.Length)
+            if (charIdx + keyword.Length <= _editor.TextLength)
             {
                 _editor.Focus();
                 _editor.Select(charIdx, keyword.Length);

@@ -1,6 +1,7 @@
 # NoteNest ITextEditorAdapter 設計
 
 > 作成: v2.5.2 (H0-2)
+> 更新: v2.5.3 (H0-3) — 実装完了。ファイルパスを確定版に修正
 > 前提: `docs/design/notenest-editor-textbox-dependencies.md`（v2.5.1 H0-1 棚卸し結果）
 > 目的: H0-3 での `TextBoxEditorAdapter` 試験実装に向けた、インターフェース設計の確定。
 
@@ -291,8 +292,8 @@ H0-3 の目的は「既存の 3 か所の TextBox 直接依存を Adapter 経由
 
 | 対象 | 変更内容 |
 |------|---------|
-| `NestSuite/Adapters/ITextEditorAdapter.cs`（新規） | インターフェース定義 |
-| `NestSuite/Adapters/TextBoxEditorAdapter.cs`（新規） | WPF TextBox を wrap する最小実装 |
+| `NestSuite/NoteNest/Editor/ITextEditorAdapter.cs`（新規） | インターフェース定義 |
+| `NestSuite/NoteNest/Editor/TextBoxEditorAdapter.cs`（新規） | WPF TextBox を wrap する最小実装 |
 | `FindReplaceDialog.xaml.cs` | `TextBox _editor` → `ITextEditorAdapter _editor` に変更。`SetEditor()` の引数型変更 |
 | `NoteNestWorkspaceView.EditorEvents.cs` | `InsertTextAtCaret()` を Adapter 委譲に変更 |
 | `NoteNestWorkspaceView.xaml.cs` | `NavigateToLine()` を Adapter 委譲に変更。`OpenFindReplace()` の引数を Adapter に変更 |

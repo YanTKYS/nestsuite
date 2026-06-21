@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Controls;
+using NestSuite.NoteNest.Editor;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Views;
@@ -43,7 +43,7 @@ public interface IWorkspaceDialogHost
     /// <paramref name="editor"/> は WorkspaceView が所有するエディタ TextBox で、
     /// ダイアログが直接操作する。Owner 設定・ダイアログ管理は AppShell 側が担う。
     /// </summary>
-    void ShowFindReplace(TextBox editor, IEnumerable<NoteViewModel>? allNotes,
+    void ShowFindReplace(ITextEditorAdapter editor, IEnumerable<NoteViewModel>? allNotes,
         Action<NoteViewModel>? navigateToNote, string lastSearch, string lastReplace, double? left, double? top);
 
     /// <summary>検索・置換ダイアログの現在の状態（検索文字列・位置）を返す。</summary>

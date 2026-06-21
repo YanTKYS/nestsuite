@@ -1,8 +1,8 @@
 using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Win32;
 using NestSuite.Dialogs;
 using NestSuite.Models;
+using NestSuite.NoteNest.Editor;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Services;
@@ -112,7 +112,7 @@ public sealed class DialogService
     public void ShowProjectInfo(string information) =>
         new ProjectInfoDialog(information) { Owner = _owner }.ShowDialog();
 
-    public void ShowFindReplace(TextBox editor, IEnumerable<NoteViewModel>? allNotes,
+    public void ShowFindReplace(ITextEditorAdapter editor, IEnumerable<NoteViewModel>? allNotes,
         Action<NoteViewModel>? navigateToNote, string lastSearchText, string lastReplaceText,
         double? left, double? top)
     {

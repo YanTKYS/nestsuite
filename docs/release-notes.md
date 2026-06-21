@@ -1,3 +1,12 @@
+## v2.5.3 — TextBoxEditorAdapter 試験実装（H0-3）
+
+- **`ITextEditorAdapter` インターフェースと `TextBoxEditorAdapter` クラスを追加した（H0-3）。** `NestSuite/NoteNest/Editor/` に配置し、WPF `TextBox` を薄くラップする最小実装として導入した。`TextChanged` / `SelectionChanged` は `EventHandler?` 型で転送し、呼び出し側が WPF 型に依存しないようにした。
+- **`FindReplaceDialog` の `TextBox _editor` フィールドを `ITextEditorAdapter _editor` に変更した（H0-3）。** コンストラクタ・`SetEditor()` の引数型を `ITextEditorAdapter` に統一し、`OnEditorTextChanged` のシグネチャを `EventHandler` 互換にした。`Replace_Click` 内の `_editor.SelectedText = value` を `_editor.ReplaceSelection()` に置き換えた。
+- **`NoteNestWorkspaceView` に `ITextEditorAdapter _adapter` フィールドを追加した（H0-3）。** コンストラクタで `new TextBoxEditorAdapter(EditorBox)` を生成し、`NavigateToLine()`・`TryOpenNoteLink()`・`OpenFindReplace()` の各メソッド内を `_adapter` 経由に変更した。
+- **`EditorBox_SelectionChanged` と `InsertTextAtCaret()` を Adapter 経由にした（H0-3）。** `EditorEvents.cs` 内の 2 メソッドのボディを `_adapter` 呼び出しに置き換えた。`InsertTextAtCaret()` のロジック（キャレット取得・Select・代入・キャレット移動）は Adapter 内部に隠蔽された。
+- **`IWorkspaceDialogHost.ShowFindReplace()` / `DialogService.ShowFindReplace()` / `NestSuiteShellWindow` の実装をすべて `ITextEditorAdapter` 引数に変更した（H0-3）。** `using System.Windows.Controls` の不要な参照を除去し、`using NestSuite.NoteNest.Editor` を追加した。
+- **アプリ機能・UI・外見・既存動作・保存形式・保存スキーマに変更はない（H0-3）。** TextBox は引き続き使用しており、Adapter は内部実装として包むだけ。NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.5.2 — ITextEditorAdapter 設計（H0-2）
 
 - **H0-2 として、`ITextEditorAdapter` の責務・候補 API・適用範囲・非適用範囲を設計文書として確定した（H0-2）。** 設計文書は `docs/design/notenest-editor-adapter-design.md` に追加した。

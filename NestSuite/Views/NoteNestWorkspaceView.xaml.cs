@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using NestSuite.NoteNest.Editor;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 
@@ -17,6 +18,7 @@ public partial class NoteNestWorkspaceView : UserControl
     private readonly DragDropState _dragDrop = new();
     private ScrollViewer? _editorScrollViewer;
     private ScrollViewer? _lineNumberScrollViewer;
+    private ITextEditorAdapter _adapter = null!;
 
     private bool _isRightPaneCollapsed;
     private double _savedRightPaneWidth = 280;
@@ -25,6 +27,7 @@ public partial class NoteNestWorkspaceView : UserControl
     {
         InitializeComponent();
         InitNoteFilter();
+        _adapter = new TextBoxEditorAdapter(EditorBox);
     }
 
     // ── Public API for AppShell（NestSuiteShellWindow）──────────────────────
@@ -83,12 +86,12 @@ public partial class NoteNestWorkspaceView : UserControl
     {
         if (lineNumber < 1) lineNumber = 1;
         var lineIndex = lineNumber - 1;
-        if (lineIndex >= EditorBox.LineCount) lineIndex = EditorBox.LineCount - 1;
+        if (lineIndex >= _adapter.LineCount) lineIndex = _adapter.LineCount - 1;
         if (lineIndex < 0) return;
-        EditorBox.ScrollToLine(lineIndex);
-        var charIdx = EditorBox.GetCharacterIndexFromLineIndex(lineIndex);
-        EditorBox.CaretIndex = charIdx;
-        EditorBox.Focus();
+        _adapter.ScrollToLine(lineIndex);
+        var charIdx = _adapter.GetCharacterIndexFromLineIndex(lineIndex);
+        _adapter.CaretIndex = charIdx;
+        _adapter.Focus();
     }
 
     public void SyncTreeSelection(NoteViewModel note)
@@ -111,7 +114,7 @@ public partial class NoteNestWorkspaceView : UserControl
 
     public void TryOpenNoteLink()
     {
-        var linkTitle = NoteLinkService.ExtractLinkAtCursor(EditorBox.Text, EditorBox.CaretIndex);
+        var linkTitle = NoteLinkService.ExtractLinkAtCursor(_adapter.Text, _adapter.CaretIndex);
         if (linkTitle == null) return;
         var note = ViewModel.FindNoteByTitle(linkTitle);
         if (note == null)
@@ -124,7 +127,7 @@ public partial class NoteNestWorkspaceView : UserControl
 
     public void OpenFindReplace(string lastSearch, string lastReplace, double? left, double? top,
         Action<NoteViewModel>? navigateToNote = null)
-        => Host.ShowFindReplace(EditorBox, ViewModel.AllNotes, navigateToNote, lastSearch, lastReplace, left, top);
+        => Host.ShowFindReplace(_adapter, ViewModel.AllNotes, navigateToNote, lastSearch, lastReplace, left, top);
 
     public (string LastSearchText, string LastReplaceText, double? Left, double? Top) GetFindReplaceState(
         string fallbackSearch, string fallbackReplace, double? fallbackLeft, double? fallbackTop)
