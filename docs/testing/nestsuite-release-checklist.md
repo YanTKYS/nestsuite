@@ -1,6 +1,8 @@
-# NestSuite リリース前確認チェックリスト（v2.5.5）
+# NestSuite リリース前確認チェックリスト（v2.5.6）
 
-NestSuite のリリース前に確認する項目を整理します。v1.19.3 で `--classic-notenest` を削除し、v1.21.0 からアプリ表示名・EXE 名を NestSuite に統一しています。v2.0.0 で NestSuite 正式リリース、v2.0.1 でリポジトリ名変更前の docs 整理、v2.1.0 で IdeaNest インライン編集、v2.1.1 で IdeaNest 編集導線を統一、v2.1.2 で細部修正、v2.1.3 でフッター表示の文言整理、v2.2.0 でタブ新規追加ボタン（SH-5）・Workspace 種別カラーアクセント（SH-7）・未保存マーク改善、v2.3.0 で ChatNest 自動スクロール（CH-3）・削除確認ダイアログ（CH-4）・インライン編集（CH-6）、v2.3.1 で ChatNest / IdeaNest ViewModel Dispose 実装（TD-1）、v2.3.2 で無効状態ボタンのカーソル・視覚フィードバック統一（SH-11）、v2.4.0 でタブコンテキストメニュー（SH-2）・中クリックで閉じる（SH-3）・タブ切替キーボードショートカット（SH-4）、v2.4.1 で NoteNest ノートタイトル絞り込み（L1/L2）、v2.4.2 で IdeaNest 詳細ウィンドウのサイズ・位置記憶（ID-3）、v2.4.3 で NoteNest 完了済みタスクの薄表示・折り畳み（L7）、v2.4.4 でメニュー・ダイアログのアクセスキー完全化（SH-12）、v2.4.5 で NoteNest 右ペインのタスク・マーカー件数バッジ（L6）、v2.4.6 でステータスバーの Workspace 別情報表示（SH-8）、v2.5.0 で検索／置換の件数表示・前後移動・全ノート検索（M1）、v2.5.1 で NoteNest エディタ TextBox 依存棚卸し（H0-1）、v2.5.2 で ITextEditorAdapter 設計（H0-2）、v2.5.3 で TextBoxEditorAdapter 試験実装（H0-3）、v2.5.4 で EditorHost 導入方針整理（H0-4）、v2.5.5 で H1〜H4 実装方式の再判定（H0-5）を行いました。
+NestSuite のリリース前に確認する項目を整理します。v1.19.3 で `--classic-notenest` を削除し、v1.21.0 からアプリ表示名・EXE 名を NestSuite に統一しています。v2.0.0 で NestSuite 正式リリース、v2.0.1 でリポジトリ名変更前の docs 整理、v2.1.0 で IdeaNest インライン編集、v2.1.1 で IdeaNest 編集導線を統一、v2.1.2 で細部修正、v2.1.3 でフッター表示の文言整理、v2.2.0 でタブ新規追加ボタン（SH-5）・Workspace 種別カラーアクセント（SH-7）・未保存マーク改善、v2.3.0 で ChatNest 自動スクロール（CH-3）・削除確認ダイアログ（CH-4）・インライン編集（CH-6）、v2.3.1 で ChatNest / IdeaNest ViewModel Dispose 実装（TD-1）、v2.3.2 で無効状態ボタンのカーソル・視覚フィードバック統一（SH-11）、v2.4.0 でタブコンテキストメニュー（SH-2）・中クリックで閉じる（SH-3）・タブ切替キーボードショートカット（SH-4）、v2.4.1 で NoteNest ノートタイトル絞り込み（L1/L2）、v2.4.2 で IdeaNest 詳細ウィンドウのサイズ・位置記憶（ID-3）、v2.4.3 で NoteNest 完了済みタスクの薄表示・折り畳み（L7）、v2.4.4 でメニュー・ダイアログのアクセスキー完全化（SH-12）、v2.4.5 で NoteNest 右ペインのタスク・マーカー件数バッジ（L6）、v2.4.6 でステータスバーの Workspace 別情報表示（SH-8）、v2.5.0 で検索／置換の件数表示・前後移動・全ノート検索（M1）、v2.5.1 で NoteNest エディタ TextBox 依存棚卸し（H0-1）、v2.5.2 で ITextEditorAdapter 設計（H0-2）、v2.5.3 で TextBoxEditorAdapter 試験実装（H0-3）、v2.5.4 で EditorHost 導入方針整理（H0-4）、v2.5.5 で H1〜H4 実装方式の再判定（H0-5）、v2.5.6 で NestSuite 開発ルール文書化（TD-8）を行いました。
+
+> **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**
 
 ---
 

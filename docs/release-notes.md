@@ -1,3 +1,10 @@
+## v2.5.6 — NestSuite 開発ルールの文書化（TD-8）
+
+- **毎回の実装プロンプトに含めていた共通ルールを `docs/development/nestsuite-development-guidelines.md` に文書化した（TD-8）。** 保存形式・外部依存・UI 方針・バージョン更新・docs 更新・GitHub Actions 確認・ローカル build/test 非必須方針・実装後報告・共通禁止事項・今後のプロンプト参照例を整理した。
+- **`docs/README.md` に `development/` セクションを追加した（TD-8）。** 開発ルール文書への導線を docs 構成表に追記した。
+- **今後のプロンプトで参照できる短縮テンプレートを文書内に掲載した（TD-8）。** `共通ルール: docs/development/nestsuite-development-guidelines.md を遵守する。今回の指示と矛盾する場合は今回の指示を優先する。` という短縮参照文と、短縮プロンプトテンプレートを追加した。
+- **アプリ機能・UI・既存動作・保存形式・保存スキーマに変更はない（TD-8）。** 今回はドキュメント整理のみ。NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.5.5 — H1〜H4 実装方式の再判定（H0-5）
 
 - **H0-5 として、H0-1〜H0-4 の調査・設計結果をもとに H1〜H4 の実装方式を再判定した（H0-5）。** 再判定結果は `docs/design/notenest-editor-h0-reassessment.md` に文書化した。

@@ -7,6 +7,7 @@
 | `guide/` | 利用者向けの操作説明 |
 | `testing/` | テスト・回帰確認・リリース確認 |
 | `design/` | 設計方針・構成整理・アーキテクチャメモ |
+| `development/` | 開発ルール・実装ガイドライン |
 | `integration/` | NestSuite 統合・Workspace 連携設計 |
 | `operations/` | 配布・ファイル関連付け・運用メモ |
 | `migration/` | 移行・縮退・互換性 |
@@ -48,6 +49,12 @@
 | `file-association.md` | ファイル関連付けの設定手順 |
 | `operation-note.md` | 運用上の注意・既知の制限 |
 | `repository-rename.md` | リポジトリ名変更手順（v2.0.1 リリース後に実施） |
+
+## development/
+
+| ファイル | 内容 |
+|----------|------|
+| `nestsuite-development-guidelines.md` | NestSuite 開発ルール（保存形式・バージョン更新・禁止事項・プロンプト参照例） |
 
 ## migration/
 

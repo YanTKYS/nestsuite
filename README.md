@@ -235,3 +235,4 @@ NestSuite.exe "C:\path\to\project.notenest"
 | [docs/release-notes.md](docs/release-notes.md) | バージョン別リリースノート |
 | [docs/operations/operation-note.md](docs/operations/operation-note.md) | 運用上の注意・既知の制限 |
 | [docs/testing/test-scenarios.md](docs/testing/test-scenarios.md) | 手動テストシナリオ |
+| [docs/development/nestsuite-development-guidelines.md](docs/development/nestsuite-development-guidelines.md) | NestSuite 開発ルール（保存形式・バージョン・禁止事項・プロンプト参照例） |
