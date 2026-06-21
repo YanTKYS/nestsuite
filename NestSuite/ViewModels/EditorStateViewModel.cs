@@ -16,7 +16,7 @@ public sealed class EditorStateViewModel : BaseViewModel
     private string _fontFamily = "Yu Gothic UI";
     private double _fontSize = 14;
     private string _caretPositionText = "";
-    private bool _showLineNumbers;
+    private bool _showLineNumbers = true;
     private bool _isLoading;
     private bool _suppressSettingsChanged;
     private EditorMode _mode = EditorMode.NoteEdit;

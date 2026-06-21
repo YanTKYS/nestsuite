@@ -7,9 +7,8 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Line number gutter with current-line highlight -->
-        <Grid Grid.Column="0"
-              Visibility="{Binding ShowLineNumbers, Converter={StaticResource BoolToVis}}">
+        <!-- Line number gutter with current-line highlight (always visible in NoteNest Workspace) -->
+        <Grid Grid.Column="0">
             <!-- Gutter background -->
             <Rectangle Fill="{DynamicResource LineNumberBg}"/>
             <!-- Current line highlight layer (behind the text) -->
