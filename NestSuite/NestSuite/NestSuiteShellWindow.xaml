@@ -162,6 +162,7 @@
                              PreviewMouseMove="TabStrip_PreviewMouseMove"
                              PreviewMouseDown="TabStrip_PreviewMouseButtonDown"
                              DragOver="TabStrip_DragOver"
+                             DragLeave="TabStrip_DragLeave"
                              Drop="TabStrip_Drop">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>

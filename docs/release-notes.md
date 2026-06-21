@@ -1,3 +1,10 @@
+## v2.6.5 — タブドラッグ中の挿入位置インジケーター（SH-17）
+
+- **通常タブをドラッグ中、挿入予定位置に細い縦線インジケーターを表示するようにした（SH-17）。** WPF のアドーナーレイヤーを使い、`TabStrip` ListBox 上に `TabInsertionAdorner` を重ねる方式を採用した。`DragOver` 時にマウス X 座標と各タブの中点を比較してインジケーター位置を計算し、2px の青縦線（#4A90D9、ライト / ダーク両テーマで視認可能）をリアルタイムに描画する。Drop・DragLeave・ドラッグキャンセル（Esc）のすべてでインジケーターを非表示にする。
+- **Temp タブ左端固定を維持したまま、通常タブの並べ替え位置を分かりやすくした（SH-17）。** インジケーターは index 1（Temp タブ直後）以降の挿入位置のみ表示する。Temp タブ（index 0）の左側への挿入は `GetInsertionIndex` で排除し、Drop 時の `Math.Clamp(insertAt, 1, count-1)` でも二重に防止している。
+- **ドロップ結果とインジケーター位置を一致させた（SH-17）。** 従来の Drop は「ホバー中のタブ位置へ移動」だったが、`_tabDropTargetIndex` に基づく `ObservableCollection.Move` に変更し、インジケーターが示すギャップに正確にタブが挿入される。
+- **保存形式・セッション形式・NoteNest 保存スキーマに変更はない（v2.6.5）。** IdeaNest / ChatNest / TempNest の保存形式も変更していない。
+
 ## v2.6.4 — タブ表示整理・ツールチップ改善（SH-14）
 
 - **タブ見出しの拡張子を省略し、Workspace 種別の絵文字プレフィックスを先頭に表示するようにした（SH-14）。** `NestSuiteDocumentTab` に `ShortDisplayName`（拡張子なしファイル名）・`KindPrefix`（📝 / 💬 / 💡 / 空）・`TabHeaderText`（`KindPrefix + ShortDisplayName`）の 3 プロパティを追加した。タブ見出しのバインディングを `DisplayName` から `TabHeaderText` へ変更したことで、`業務改善.notenest` → `📝 業務改善` のように表示される。Temp タブは種別プレフィックスなし・`DisplayName`（"Temp"）をそのまま返す。
