@@ -1,3 +1,10 @@
+## v2.5.2 — ITextEditorAdapter 設計（H0-2）
+
+- **H0-2 として、`ITextEditorAdapter` の責務・候補 API・適用範囲・非適用範囲を設計文書として確定した（H0-2）。** 設計文書は `docs/design/notenest-editor-adapter-design.md` に追加した。
+- **H0-3 で実装する最小 Adapter 範囲を明確化した（H0-2）。** `FindReplaceDialog`・`InsertTextAtCaret()`・`NavigateToLine()` の 3 か所の TextBox 直接依存を Adapter 経由に置き換えることを H0-3 の実装計画として確定した。
+- **H1〜H4 それぞれへの Adapter の効き方を整理した（H0-2）。** H3（リンク色分け）・H4（マーカー行非表示）は Adapter だけでは実現不可で、エディタ部品差し替えや表示/保存本文の分離設計が別途必要であることを明記した。H1（補完 Popup）は Adapter でキャレット操作は整理できるが、Popup 位置制御は EditorHost 側に残ることを整理した。H2（行番号ハイライト）は Adapter でキャレット行取得は整理できるが、行番号ガター描画変更は別論点であることを整理した。
+- **アプリ機能・UI・既存動作・保存形式・保存スキーマに変更はない（H0-2）。** 今回はドキュメント整理のみ。`ITextEditorAdapter` のコード追加は H0-3 で行う。NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.5.1 — NoteNest エディタ基盤整理・TextBox 依存棚卸し（H0-1）
 
 - **H1〜H4 に着手する前準備として、backlog に H0 系列（エディタ差し替え準備）を追加した（H0-1）。** H0-1〜H0-5 の 5 項目で構成し、将来的な `ITextEditorAdapter` / `EditorHost` 導入へ向けたロードマップを整理した。

@@ -2,6 +2,7 @@
 
 > 作成: v2.5.1 (H0-1)
 > 目的: H1〜H4（ノートリンク補完・行番号ハイライト・リンク色分け・マーカー行非表示）に安全に着手するための、WPF 標準 TextBox 依存の事前整理。
+> 次段階: `docs/design/notenest-editor-adapter-design.md`（v2.5.2 H0-2 — ITextEditorAdapter 設計）。本文書の棚卸し結果をもとに、H0-3 で実装する Adapter の責務・API・範囲を確定している。H0-3 着手前にあわせて参照すること。
 
 ---
 
