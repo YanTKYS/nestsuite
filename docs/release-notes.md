@@ -1,3 +1,10 @@
+## v2.5.1 — NoteNest エディタ基盤整理・TextBox 依存棚卸し（H0-1）
+
+- **H1〜H4 に着手する前準備として、backlog に H0 系列（エディタ差し替え準備）を追加した（H0-1）。** H0-1〜H0-5 の 5 項目で構成し、将来的な `ITextEditorAdapter` / `EditorHost` 導入へ向けたロードマップを整理した。
+- **H0-1 として NoteNest 本文 TextBox（`EditorBox`）への直接依存を棚卸しした（H0-1）。** `NoteNestWorkspaceView.EditorEvents.cs`・`FindReplaceDialog.xaml.cs` が依存の主体で、`Text`, `CaretIndex`, `Select()`, `SelectedText`, `SelectionStart/Length`, `Focus()`, `ScrollToLine()`, `GetLineIndexFromCharacterIndex()`, `GetCharacterIndexFromLineIndex()`, `LineCount`, `TextChanged`, `SelectionChanged` を使用していることを確認した。ViewModel・保存サービス・`NoteLinkService` は TextBox に依存しない構造になっていることも確認した。
+- **EditorAdapter / EditorHost 導入に向けた論点を整理した（H0-1）。** H3（リンク色分け）・H4（マーカー行非表示）は WPF 標準 TextBox では実現困難であること、H1（補完 Popup）・H2（行番号ハイライト）は TextBox 継続でも対応の余地があることを明記した。棚卸し結果は `docs/design/notenest-editor-textbox-dependencies.md` にまとめた。
+- **アプリ機能・UI・既存動作・保存形式・保存スキーマに変更はない（H0-1）。** 今回はドキュメント整理のみ。NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.5.0 — 検索／置換の件数表示・前後移動・全ノート検索（M1）
 
 - **検索ダイアログに一致件数を表示するようにした（M1）。** 検索ボックスの直下に「N 件」「pos / N」「一致なし」をリアルタイム表示する。エディタ本文が変化するたびに自動更新される。
