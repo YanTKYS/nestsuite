@@ -509,6 +509,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var sourceTab = (NestSuiteDocumentTab)e.Data.GetData(typeof(NestSuiteDocumentTab));
         var targetTab = GetTabFromVisualTree(e.OriginalSource as DependencyObject);
         if (targetTab == null || ReferenceEquals(sourceTab, targetTab)) return;
+        // Temp タブ（CanClose=false）はドロップ先にできない（固定ピン留め）
+        if (!targetTab.CanClose) return;
         int sourceIdx = _tabs.IndexOf(sourceTab);
         int targetIdx = _tabs.IndexOf(targetTab);
         if (sourceIdx < 0 || targetIdx < 0) return;
