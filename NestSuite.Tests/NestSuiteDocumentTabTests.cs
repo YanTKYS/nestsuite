@@ -226,10 +226,11 @@ public class NestSuiteDocumentTabTests
     public void WorkspaceKind_HasThreeValues_NoteNest_ChatNest_IdeaNest()
     {
         var values = Enum.GetValues<NestSuiteWorkspaceKind>();
-        Assert.Equal(3, values.Length);
+        Assert.Equal(4, values.Length);
         Assert.Contains(NestSuiteWorkspaceKind.NoteNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.ChatNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.IdeaNest, values);
+        Assert.Contains(NestSuiteWorkspaceKind.Temp, values);
     }
 
     [Fact]
