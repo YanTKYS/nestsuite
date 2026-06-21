@@ -539,8 +539,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         if (insertAt == null) return;
         int sourceIdx = _tabs.IndexOf(sourceTab);
         if (sourceIdx < 0) return;
-        // Temp タブ（index 0）の左側には挿入しない。有効範囲: 1〜Count-1
-        int targetIdx = Math.Clamp(insertAt.Value, 1, _tabs.Count - 1);
+        // Temp タブ（index 0）の左側には挿入しない。insertAt 有効範囲: 1〜Count
+        int rawInsert = Math.Clamp(insertAt.Value, 1, _tabs.Count);
+        // ObservableCollection.Move(from, to) は「from 削除後の配列の to に挿入」する。
+        // 右方向移動（sourceIdx < rawInsert）では削除でインデックスが 1 ずれるため補正する。
+        int targetIdx = sourceIdx < rawInsert ? rawInsert - 1 : rawInsert;
+        targetIdx = Math.Clamp(targetIdx, 1, _tabs.Count - 1);
         if (targetIdx == sourceIdx) return;
         _tabs.Move(sourceIdx, targetIdx);
     }
