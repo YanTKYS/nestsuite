@@ -1,19 +1,17 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Views;
 
 public partial class NoteNestWorkspaceView
 {
-    private void EditorBox_SelectionChanged(object sender, RoutedEventArgs e)
+    private void EditorAdapter_SelectionChanged(object? sender, EventArgs e)
     {
-        var caret     = _adapter.CaretIndex;
-        var lineIndex = _adapter.GetLineIndexFromCharacterIndex(caret);
+        var caret     = EditorHost.Editor.CaretIndex;
+        var lineIndex = EditorHost.Editor.GetLineIndexFromCharacterIndex(caret);
         if (lineIndex < 0) lineIndex = 0;
-        var lineStart = _adapter.GetCharacterIndexFromLineIndex(lineIndex);
+        var lineStart = EditorHost.Editor.GetCharacterIndexFromLineIndex(lineIndex);
         var col       = caret - lineStart + 1;
         ViewModel.CaretPositionText = $"{lineIndex + 1}:{col}";
     }
@@ -68,30 +66,8 @@ public partial class NoteNestWorkspaceView
 
     private void InsertTextAtCaret(string text)
     {
-        _adapter.InsertTextAtCaret(text);
-        _adapter.Focus();
-    }
-
-    private void EditorBox_Loaded(object sender, RoutedEventArgs e)
-    {
-        _editorScrollViewer     = GetDescendant<ScrollViewer>(EditorBox);
-        _lineNumberScrollViewer = GetDescendant<ScrollViewer>(LineNumberBox);
-        if (_editorScrollViewer != null)
-            _editorScrollViewer.ScrollChanged += EditorScrollViewer_ScrollChanged;
-        UpdateLineNumbers();
-    }
-
-    private void EditorBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateLineNumbers();
-
-    private void EditorScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-    {
-        _lineNumberScrollViewer?.ScrollToVerticalOffset(e.VerticalOffset);
-    }
-
-    private void UpdateLineNumbers()
-    {
-        var count = EditorBox.Text.Count(c => c == '\n') + 1;
-        LineNumberBox.Text = string.Join("\n", Enumerable.Range(1, count));
+        EditorHost.Editor.InsertTextAtCaret(text);
+        EditorHost.Editor.Focus();
     }
 
     private void ToggleRightPane_Click(object sender, RoutedEventArgs e)
@@ -101,15 +77,4 @@ public partial class NoteNestWorkspaceView
     }
 
     public event EventHandler? RightPaneToggled;
-
-    private static T? GetDescendant<T>(DependencyObject obj) where T : DependencyObject
-    {
-        if (obj is T t) return t;
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-        {
-            var result = GetDescendant<T>(VisualTreeHelper.GetChild(obj, i));
-            if (result != null) return result;
-        }
-        return null;
-    }
 }

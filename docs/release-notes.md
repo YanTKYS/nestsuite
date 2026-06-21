@@ -1,3 +1,11 @@
+## v2.5.7 — NoteEditorHost 最小実装（EH-1）
+
+- **`NoteEditorHost` UserControl を `NestSuite/NoteNest/Editor/` に追加した（EH-1）。** `LineNumberBox`・`EditorBox` を UserControl 内に移動し、`ITextEditorAdapter Editor` プロパティ・`EditorReady` イベント・`OpenNoteLinkClicked` / `InsertNoteLinkClicked` イベントを公開する最小実装とした。
+- **`NoteNestWorkspaceView.xaml` のエディタ領域を `<editor:NoteEditorHost>` に置き換えた（EH-1）。** `xmlns:editor="clr-namespace:NestSuite.NoteNest.Editor"` を追加し、`OpenNoteLinkClicked` / `InsertNoteLinkClicked` を既存ハンドラに接続した。
+- **`NoteNestWorkspaceView` から `_adapter`・`_editorScrollViewer`・`_lineNumberScrollViewer` フィールドを削除した（EH-1）。** 各機能は `EditorHost.Editor` プロパティ経由に移行した。`EditorBox_Loaded`・`UpdateLineNumbers()`・`EditorScrollViewer_ScrollChanged`・`GetDescendant<T>()` は `NoteEditorHost` 内部に移動した。
+- **`EditorBox_SelectionChanged` を `EditorAdapter_SelectionChanged` に置き換えた（EH-1）。** `EditorHost.EditorReady` イベント後に `EditorHost.Editor.SelectionChanged` へサブスクライブする形に変更した。
+- **アプリ機能・UI・外見・既存動作・保存形式・保存スキーマに変更はない（EH-1）。** エディタ UI の見た目と動作は同一であり、内部構造の整理のみ。NoteNest 保存スキーマ `1.4.1` を維持している。
+
 ## v2.5.6 — NestSuite 開発ルールの文書化（TD-8）
 
 - **毎回の実装プロンプトに含めていた共通ルールを `docs/development/nestsuite-development-guidelines.md` に文書化した（TD-8）。** 保存形式・外部依存・UI 方針・バージョン更新・docs 更新・GitHub Actions 確認・ローカル build/test 非必須方針・実装後報告・共通禁止事項・今後のプロンプト参照例を整理した。
