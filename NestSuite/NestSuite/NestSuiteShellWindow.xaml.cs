@@ -9,6 +9,7 @@ using NestSuite.ChatNest;
 using NestSuite.FileAssociation;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.IdeaNest.Services;
+using NestSuite.NoteNest.Editor;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 using NestSuite.Views;
@@ -1783,7 +1784,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     NoteViewModel? IWorkspaceDialogHost.PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes)
         => _dialogs.PickNote(notes);
 
-    void IWorkspaceDialogHost.ShowFindReplace(TextBox editor, IEnumerable<NoteViewModel>? allNotes,
+    void IWorkspaceDialogHost.ShowFindReplace(ITextEditorAdapter editor, IEnumerable<NoteViewModel>? allNotes,
         Action<NoteViewModel>? navigateToNote, string lastSearch, string lastReplace, double? left, double? top)
         => _dialogs.ShowFindReplace(editor, allNotes, navigateToNote, lastSearch, lastReplace, left, top);
 

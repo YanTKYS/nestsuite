@@ -10,10 +10,10 @@ public partial class NoteNestWorkspaceView
 {
     private void EditorBox_SelectionChanged(object sender, RoutedEventArgs e)
     {
-        var caret     = EditorBox.CaretIndex;
-        var lineIndex = EditorBox.GetLineIndexFromCharacterIndex(caret);
+        var caret     = _adapter.CaretIndex;
+        var lineIndex = _adapter.GetLineIndexFromCharacterIndex(caret);
         if (lineIndex < 0) lineIndex = 0;
-        var lineStart = EditorBox.GetCharacterIndexFromLineIndex(lineIndex);
+        var lineStart = _adapter.GetCharacterIndexFromLineIndex(lineIndex);
         var col       = caret - lineStart + 1;
         ViewModel.CaretPositionText = $"{lineIndex + 1}:{col}";
     }
@@ -68,11 +68,8 @@ public partial class NoteNestWorkspaceView
 
     private void InsertTextAtCaret(string text)
     {
-        var caret = EditorBox.CaretIndex;
-        EditorBox.Select(caret, 0);
-        EditorBox.SelectedText = text;
-        EditorBox.CaretIndex = caret + text.Length;
-        EditorBox.Focus();
+        _adapter.InsertTextAtCaret(text);
+        _adapter.Focus();
     }
 
     private void EditorBox_Loaded(object sender, RoutedEventArgs e)
