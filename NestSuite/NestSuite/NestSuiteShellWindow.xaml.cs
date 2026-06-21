@@ -1039,6 +1039,27 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             if (targetIndex < _tabs.Count)
                 ActivateTab(_tabs[targetIndex]);
             e.Handled = true;
+            return;
+        }
+
+        if (ctrl && !shift && e.Key == Key.F &&
+            _selectedTab?.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest)
+        {
+            if (TryGetActiveSession(out var session) && session?.WorkspaceViewModel is MainViewModel vm)
+            {
+                var state = WorkspaceView.GetFindReplaceState("", "", null, null);
+                WorkspaceView.OpenFindReplace(state.LastSearchText, state.LastReplaceText,
+                    state.Left, state.Top,
+                    note =>
+                    {
+                        if (note != vm.SelectedNote || vm.IsTaskCommentMode)
+                        {
+                            vm.SelectNote(note);
+                            WorkspaceView.SyncTreeSelection(note);
+                        }
+                    });
+            }
+            e.Handled = true;
         }
     }
 
@@ -1762,8 +1783,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     NoteViewModel? IWorkspaceDialogHost.PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes)
         => _dialogs.PickNote(notes);
 
-    void IWorkspaceDialogHost.ShowFindReplace(TextBox editor, string lastSearch, string lastReplace, double? left, double? top)
-        => _dialogs.ShowFindReplace(editor, lastSearch, lastReplace, left, top);
+    void IWorkspaceDialogHost.ShowFindReplace(TextBox editor, IEnumerable<NoteViewModel>? allNotes,
+        Action<NoteViewModel>? navigateToNote, string lastSearch, string lastReplace, double? left, double? top)
+        => _dialogs.ShowFindReplace(editor, allNotes, navigateToNote, lastSearch, lastReplace, left, top);
 
     (string LastSearchText, string LastReplaceText, double? Left, double? Top)
         IWorkspaceDialogHost.GetFindReplaceState(string fallbackSearch, string fallbackReplace, double? fallbackLeft, double? fallbackTop)

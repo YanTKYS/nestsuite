@@ -112,13 +112,18 @@ public sealed class DialogService
     public void ShowProjectInfo(string information) =>
         new ProjectInfoDialog(information) { Owner = _owner }.ShowDialog();
 
-    public void ShowFindReplace(TextBox editor, string lastSearchText, string lastReplaceText, double? left, double? top)
+    public void ShowFindReplace(TextBox editor, IEnumerable<NoteViewModel>? allNotes,
+        Action<NoteViewModel>? navigateToNote, string lastSearchText, string lastReplaceText,
+        double? left, double? top)
     {
         if (_findReplaceDialog == null || !_findReplaceDialog.IsLoaded)
         {
             _findReplaceDialog = new FindReplaceDialog(editor) { Owner = _owner };
             _findReplaceDialog.RestoreState(lastSearchText, lastReplaceText, left, top);
         }
+
+        if (allNotes != null && navigateToNote != null)
+            _findReplaceDialog.SetAllNotes(allNotes, navigateToNote);
 
         _findReplaceDialog.Show();
         _findReplaceDialog.Activate();

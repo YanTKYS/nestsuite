@@ -122,8 +122,9 @@ public partial class NoteNestWorkspaceView : UserControl
         ViewModel.NavigateToNote(note);
     }
 
-    public void OpenFindReplace(string lastSearch, string lastReplace, double? left, double? top)
-        => Host.ShowFindReplace(EditorBox, lastSearch, lastReplace, left, top);
+    public void OpenFindReplace(string lastSearch, string lastReplace, double? left, double? top,
+        Action<NoteViewModel>? navigateToNote = null)
+        => Host.ShowFindReplace(EditorBox, ViewModel.AllNotes, navigateToNote, lastSearch, lastReplace, left, top);
 
     public (string LastSearchText, string LastReplaceText, double? Left, double? Top) GetFindReplaceState(
         string fallbackSearch, string fallbackReplace, double? fallbackLeft, double? fallbackTop)
