@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace NestSuite;
 
 /// <summary>
@@ -35,8 +37,9 @@ public sealed record NestSuiteDocumentTab
     public required NestSuiteWorkspaceKind WorkspaceKind { get; init; }
 
     /// <summary>
-    /// タブに表示するラベル（例：A.notenest、会議メモ.chatnest、無題.chatnest）。
+    /// タブの内部ラベル（例：A.notenest、会議メモ.chatnest、無題.chatnest）。
     /// 保存済みの場合はファイル名、未保存の場合は「無題.拡張子」を設定する想定。
+    /// タブ見出しには拡張子を省いた <see cref="TabHeaderText"/> を使用する。
     /// </summary>
     public required string DisplayName { get; init; }
 
@@ -78,7 +81,35 @@ public sealed record NestSuiteDocumentTab
     };
 
     /// <summary>
-    /// v1.9.9: タブのツールチップ表示用テキスト。ツール種別・ファイルパス・保存状態を含む。
+    /// v2.6.4: タブ見出し用の拡張子なしファイル名。
+    /// TempNest は DisplayName（"Temp"）をそのまま返す。
+    /// </summary>
+    public string ShortDisplayName =>
+        WorkspaceKind == NestSuiteWorkspaceKind.Temp
+            ? DisplayName
+            : Path.GetFileNameWithoutExtension(DisplayName);
+
+    /// <summary>
+    /// v2.6.4: タブ見出し先頭の Workspace 種別プレフィックス。
+    /// </summary>
+    public string KindPrefix => WorkspaceKind switch
+    {
+        NestSuiteWorkspaceKind.NoteNest => "📝 ",
+        NestSuiteWorkspaceKind.ChatNest => "💬 ",
+        NestSuiteWorkspaceKind.IdeaNest => "💡 ",
+        NestSuiteWorkspaceKind.Temp     => "",
+        _ => ""
+    };
+
+    /// <summary>
+    /// v2.6.4: タブ見出しに表示するテキスト。種別プレフィックス＋拡張子なしファイル名。
+    /// 例: "📝 業務改善" / "💬 開発メモ" / "💡 ツール改修" / "Temp"
+    /// </summary>
+    public string TabHeaderText => $"{KindPrefix}{ShortDisplayName}";
+
+    /// <summary>
+    /// v1.9.9 / v2.6.4: タブのツールチップ表示用テキスト。
+    /// 種類・完全ファイル名・フルパス・保存状態を含む。
     /// </summary>
     public string TooltipText
     {
@@ -89,14 +120,19 @@ public sealed record NestSuiteDocumentTab
                 NestSuiteWorkspaceKind.NoteNest => "NoteNest",
                 NestSuiteWorkspaceKind.ChatNest => "ChatNest",
                 NestSuiteWorkspaceKind.IdeaNest => "IdeaNest",
-                NestSuiteWorkspaceKind.Temp => "TempNest",
+                NestSuiteWorkspaceKind.Temp     => "TempNest",
                 _ => "不明"
             };
+
             if (WorkspaceKind == NestSuiteWorkspaceKind.Temp)
-                return $"種類: {kindLabel}\n一時メモ（自動保存）";
-            var fileText = FilePath ?? "未保存（無題）";
+                return $"種類: {kindLabel}\n説明: 一時メモ\n保存: 自動保存";
+
+            if (FilePath is null)
+                return $"種類: {kindLabel}\nファイル名: 未保存（無題）\n場所: —\n状態: 未保存";
+
+            var fileName  = Path.GetFileName(FilePath);
             var stateText = IsModified ? "未保存の変更あり" : "保存済み";
-            return $"種類: {kindLabel}\nファイル: {fileText}\n状態: {stateText}";
+            return $"種類: {kindLabel}\nファイル名: {fileName}\n場所: {FilePath}\n状態: {stateText}";
         }
     }
 }

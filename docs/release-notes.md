@@ -1,3 +1,10 @@
+## v2.6.4 — タブ表示整理・ツールチップ改善（SH-14）
+
+- **タブ見出しの拡張子を省略し、Workspace 種別の絵文字プレフィックスを先頭に表示するようにした（SH-14）。** `NestSuiteDocumentTab` に `ShortDisplayName`（拡張子なしファイル名）・`KindPrefix`（📝 / 💬 / 💡 / 空）・`TabHeaderText`（`KindPrefix + ShortDisplayName`）の 3 プロパティを追加した。タブ見出しのバインディングを `DisplayName` から `TabHeaderText` へ変更したことで、`業務改善.notenest` → `📝 業務改善` のように表示される。Temp タブは種別プレフィックスなし・`DisplayName`（"Temp"）をそのまま返す。
+- **タブのツールチップを 種類・ファイル名・場所・状態 の 4 フィールド形式に整形した（SH-14）。** 保存済みタブは「種類: NoteNest\nファイル名: A.notenest\n場所: C:\work\A.notenest\n状態: 保存済み」、未保存タブは「ファイル名: 未保存（無題）\n場所: —\n状態: 未保存」、Temp タブは「種類: TempNest\n説明: 一時メモ\n保存: 自動保存」を表示する。
+- **`DisplayName` は引き続きフルファイル名（例: A.notenest）を保持し、内部処理・ファイルパス由来の表示では変更なし（v2.6.4）。** タブ見出し専用の表示整形は `TabHeaderText` 経由で行い、`DisplayName` の意味は変えていない。
+- **NoteNest 保存スキーマ `1.4.1` を維持している（v2.6.4）。** IdeaNest / ChatNest / TempNest の保存形式に変更はない。
+
 ## v2.6.3 — 開発規約にプロンプト標準契約を追記（TD-8 補完）
 
 - **通常プロンプトを短くするため、開発規約にプロンプト標準契約を追記した（v2.6.3）。** `docs/development/nestsuite-development-guidelines.md` の §13「プロンプト標準契約」として、変更範囲・保存形式・docs 更新・バージョン更新・テスト確認・実装後報告の標準ルールと短縮テンプレートを追加した。今後の個別プロンプトでは禁止事項・受入条件・報告形式の記述を省略できる。

@@ -201,7 +201,7 @@
                                     <!-- タブラベル・未保存マーク・閉じるボタン -->
                                     <StackPanel Grid.Row="1" Orientation="Horizontal"
                                                 VerticalAlignment="Center" Margin="12,0">
-                                        <TextBlock Text="{Binding DisplayName}" FontSize="12"
+                                        <TextBlock Text="{Binding TabHeaderText}" FontSize="12"
                                                    VerticalAlignment="Center"/>
                                         <!-- v2.2.0: 未保存マークを ● に変更（視認性向上） -->
                                         <TextBlock Text="●" FontSize="10"
