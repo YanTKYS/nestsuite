@@ -509,9 +509,9 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         if (!string.IsNullOrEmpty(query))
         {
             items = items.Where(c =>
-                (c.Title ?? string.Empty).Contains(query, StringComparison.OrdinalIgnoreCase)
-                || (c.Body ?? string.Empty).Contains(query, StringComparison.OrdinalIgnoreCase)
-                || c.Tags.Any(t => t.Contains(query, StringComparison.OrdinalIgnoreCase)));
+                (c.Title ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                || (c.Body ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                || c.Tags.Any(t => t.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0));
         }
 
         var pinned = items.Where(c => c.IsPinned)

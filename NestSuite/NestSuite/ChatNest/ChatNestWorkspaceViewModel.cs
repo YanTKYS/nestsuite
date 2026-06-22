@@ -36,7 +36,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private readonly ChatNestRelayCommand _copyMarkdownCommand;
 
     public ObservableCollection<MessageViewModel> Messages { get; } = new();
-    public Speaker[] Speakers { get; } = Enum.GetValues<Speaker>();
+    public Speaker[] Speakers { get; } = (Speaker[])Enum.GetValues(typeof(Speaker));
 
     /// <summary>v2.3.0: ファイル保存用に Message モデルシーケンスを返す。</summary>
     public IEnumerable<Message> MessageModels => Messages.Select(m => m.Model);
@@ -114,7 +114,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
     public void CycleSpeaker(bool forward)
     {
-        var speakers = Enum.GetValues<Speaker>();
+        var speakers = (Speaker[])Enum.GetValues(typeof(Speaker));
         int idx = Array.IndexOf(speakers, SelectedSpeaker);
         idx = forward
             ? (idx + 1) % speakers.Length

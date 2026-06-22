@@ -166,7 +166,7 @@ public partial class NoteEditorHost : UserControl
                 .ToList();
 
         return titles
-            .Where(t => t.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
             .OrderBy(t => t.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
             .ThenBy(t => t, StringComparer.OrdinalIgnoreCase)
             .Take(20)

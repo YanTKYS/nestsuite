@@ -70,7 +70,7 @@ public partial class NoteNestWorkspaceView
         {
             var view = CollectionViewSource.GetDefaultView(nb.Notes);
             view.Filter = obj => obj is NoteViewModel note &&
-                note.Title.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+                note.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 
@@ -126,7 +126,7 @@ public partial class NoteNestWorkspaceView
                 view.Filter = null;
             else
                 view.Filter = obj => obj is NoteViewModel note &&
-                    note.Title.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+                    note.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         if (string.IsNullOrEmpty(filterText) && vm.SelectedNote != null)
