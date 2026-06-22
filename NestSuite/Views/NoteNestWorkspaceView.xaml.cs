@@ -118,6 +118,12 @@ public partial class NoteNestWorkspaceView : UserControl
         }
     }
 
+    public void CheckBrokenLinks()
+    {
+        var sourceNote = Host.CheckBrokenLinks(ViewModel.AllNotes);
+        if (sourceNote != null) ViewModel.NavigateToNote(sourceNote);
+    }
+
     public void TryOpenNoteLink()
     {
         var linkTitle = NoteLinkService.ExtractLinkAtCursor(EditorHost.Editor.Text, EditorHost.Editor.CaretIndex);
