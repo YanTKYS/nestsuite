@@ -28,7 +28,7 @@
 - **リポジトリ名変更**（`notenest` → `nestsuite`）は v2.0.1 リリース後に実施予定（[repository-rename.md](operations/repository-rename.md) 参照）
 - **`.nestsuite` 統合形式**（全 Workspace を 1 ファイルに収める形式）は将来検討
 - **設定キー・ProgId など互換性識別子の整理**（`NoteNest_*` 系の Mutex 名・Pipe 名・AppData パス等）は必要性が出た場合に検討
-- **.NET Framework 4.8 への正式移行は対応しない。** v2.7.0 で追加した `net48_test` ビルドは軽量化検証用の Experimental asset であり、正式サポートへの移行は今後の実機検証結果を踏まえて別途判断する
+- **.NET Framework 4.8 への正式移行は対応しない（v2.7.3 で保留決定）。** v2.7.0〜v2.7.2 で実施した `net48_test` 検証の結果、実機起動は確認できたが複数 DLL を含む複数ファイル構成となる。単一EXEを重視する NestSuite の配布方針に合致しないため正式採用しない。単一EXE化の手段（Costura.Fody / ILRepack 等）が確立された場合は再検討の余地があるが、現時点では深追いしない。`NestSuite.Net48Test/` プロジェクトは検証履歴として保持するが、通常ビルド・リリースからは参照しない
 
 ---
 

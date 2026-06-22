@@ -97,51 +97,6 @@ jobs:
 
           "zip_path=$zipPath" | Out-File -Append $env:GITHUB_OUTPUT
 
-      # ── Experimental: .NET Framework 4.8 test build ─────────────────────────
-
-      - name: Build net48 test
-        id: build_net48
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          Write-Host "::group::net48 test build"
-          dotnet build NestSuite.Net48Test/NestSuite.Net48Test.csproj `
-            -c Release `
-            -o publish_net48
-          $exitCode = $LASTEXITCODE
-          Write-Host "::endgroup::"
-
-          if ($exitCode -eq 0) {
-            "net48_built=true" | Out-File -Append $env:GITHUB_OUTPUT
-            Write-Host "net48 test build succeeded."
-          } else {
-            Write-Host "::warning::net48 test build failed (exit $exitCode). The .NET 8 release will still be created."
-          }
-
-      - name: Package net48 test ZIP
-        id: package_net48
-        if: steps.build_net48.outputs.net48_built == 'true'
-        shell: pwsh
-        run: |
-          $tag      = "${{ inputs.tag }}"
-          $dirName  = "nestsuite_${tag}_net48_test"
-          $stageDir = Join-Path "stage" $dirName
-
-          New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
-
-          # Copy exe and DLLs; exclude debug/metadata files
-          Get-ChildItem -Path "publish_net48" -File |
-            Where-Object { $_.Extension -notin @('.pdb', '.xml', '.json') } |
-            Copy-Item -Destination $stageDir
-
-          Copy-Item "NestSuite.Net48Test/README_net48_test.txt" -Destination $stageDir
-
-          $zipPath = Join-Path "artifacts" "$dirName.zip"
-          Compress-Archive -Path $stageDir -DestinationPath $zipPath -Force
-
-          "zip_path=$zipPath" | Out-File -Append $env:GITHUB_OUTPUT
-          Write-Host "net48 test ZIP: $zipPath"
-
       # ── Create GitHub Release ─────────────────────────────────────────────────
 
       - name: Create / overwrite GitHub Release
@@ -149,21 +104,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          $tag        = "${{ inputs.tag }}"
-          $title      = "${{ steps.notes.outputs.title }}"
-          $zipPath    = "${{ steps.package.outputs.zip_path }}"
-          $net48Zip   = "${{ steps.package_net48.outputs.zip_path }}"
-
-          # Build upload file list; always include the .NET 8 ZIP
-          $uploadFiles = [System.Collections.Generic.List[string]]::new()
-          $uploadFiles.Add($zipPath)
-
-          if ($net48Zip -and (Test-Path $net48Zip)) {
-            $uploadFiles.Add($net48Zip)
-            Write-Host "Attaching net48 test ZIP: $net48Zip"
-          } else {
-            Write-Host "::notice::net48 test ZIP not found; releasing .NET 8 version only."
-          }
+          $tag     = "${{ inputs.tag }}"
+          $title   = "${{ steps.notes.outputs.title }}"
+          $zipPath = "${{ steps.package.outputs.zip_path }}"
 
           # Delete existing release (ignore error if none exists)
           gh release delete $tag --yes 2>&1 | Out-Null
@@ -175,6 +118,6 @@ jobs:
           git tag -fa $tag -m "Release $tag"
           git push -f origin "refs/tags/$tag"
 
-          gh release create $tag @uploadFiles `
+          gh release create $tag $zipPath `
             --title $title `
             --notes-file release_body.txt
