@@ -33,7 +33,7 @@ public partial class NotePickerDialog : Window
         var filterText = NoteFilterBox.Text;
         NoteList.ItemsSource = string.IsNullOrEmpty(filterText)
             ? _allItems
-            : _allItems.Where(i => i.Note.Title.Contains(filterText, StringComparison.OrdinalIgnoreCase)).ToList();
+            : _allItems.Where(i => i.Note.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
         if (NoteList.Items.Count > 0)
             NoteList.SelectedIndex = 0;
     }

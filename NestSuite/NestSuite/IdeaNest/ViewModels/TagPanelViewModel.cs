@@ -87,7 +87,7 @@ public class TagPanelViewModel : IdeaNestViewModelBase
         var filtered = string.IsNullOrEmpty(query)
             ? _allItems
             : _allItems
-                .Where(t => t.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .Where(t => t.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
 
         VisibleItems.Clear();

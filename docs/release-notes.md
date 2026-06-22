@@ -1,3 +1,12 @@
+## v2.7.1 — net48_test 互換性エラーの最小修正
+
+- **net48_test ビルドで発生していた .NET Framework 4.8 非互換の API 呼び出しを棚卸しし、意味を変えない最小置換で修正した（v2.7.1）。** 現行 .NET 8 ソースを変更する形で対応し、`.NET 8 / net48 両方で動作する古い書き方` へ統一した。`#if NET48` 条件コンパイルは使用していない。
+- **修正した互換性エラー（計14件）:** `Enum.GetValues<T>()` → `(T[])Enum.GetValues(typeof(T))` / `string.Contains(str, StringComparison)` → `string.IndexOf(str, StringComparison) >= 0`（8件）/ `string.Split(char, StringSplitOptions.TrimEntries)` → `Split(new[] { ',' }, RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0)` / `Math.Clamp(x, min, max)` → `Math.Max(min, Math.Min(x, max))`（4件）。
+- **変更対象ファイル:** `ChatNestWorkspaceViewModel.cs`・`NoteEditorHost.xaml.cs`・`NotePickerDialog.xaml.cs`・`NoteNestWorkspaceView.FilterEvents.cs`・`IdeaNestWorkspaceViewModel.cs`・`TagPanelViewModel.cs`・`EditIdeaViewModel.cs`・`NestSuiteShellWindow.xaml.cs`・`PreviewIdeaWindow.xaml.cs`（計9ファイル）。
+- **現行 .NET 8 self-contained 版は継続。** 置換した API はすべて .NET 8 でも動作する。CI（`ci.yml`）への影響なし。
+- **net48_test は引き続き軽量化検証用・正式サポート外とする（v2.7.1）。** 本修正後の実機起動確認は別途手動で行う。
+- **保存形式・NoteNest 保存スキーマ `1.4.1` に変更はない（v2.7.1）。** IdeaNest / ChatNest / TempNest の保存形式に変更はない。
+
 ## v2.7.0 — .NET Framework 4.8 テストビルド追加（GitHub Actions）
 
 - **Release workflow に .NET Framework 4.8 前提の `net48_test` 版ビルドを追加した（v2.7.0）。** `NestSuite.Net48Test.csproj`（`net48` / framework-dependent / 非 self-contained）を新設し、`release.yml` の `Build net48 test` ステップで `dotnet build` する。成功時に `nestsuite_${tag}_net48_test.zip` を生成し、同じ GitHub Release に追加アセットとして添付する。失敗時は警告を出力し、現行 .NET 8 版リリースは継続して作成される。

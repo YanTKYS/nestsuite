@@ -70,7 +70,7 @@ public class EditIdeaViewModel : IdeaNestViewModelBase
         idea.Title = (Title ?? string.Empty).Trim();
         idea.Body  = Body ?? string.Empty;
         idea.Tags  = IdeaNestWorkspaceService.NormalizeTags(
-            (TagsText ?? string.Empty).Split(',', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries));
+            (TagsText ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0));
         idea.Color = string.IsNullOrWhiteSpace(Color) ? "yellow" : Color;
         idea.IsPinned = IsPinned;
         idea.IsArchived = IsArchived;

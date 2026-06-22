@@ -147,8 +147,8 @@ public partial class PreviewIdeaWindow : Window
         try
         {
             var s = new UiSettingsService().Load();
-            double w = Math.Clamp(s.PreviewIdeaWindowWidth ?? Width, MinWidth, 2560);
-            double h = Math.Clamp(s.PreviewIdeaWindowHeight ?? Height, MinHeight, 1600);
+            double w = Math.Max(MinWidth, Math.Min(s.PreviewIdeaWindowWidth ?? Width, 2560));
+            double h = Math.Max(MinHeight, Math.Min(s.PreviewIdeaWindowHeight ?? Height, 1600));
             Width = w;
             Height = h;
             if (s.PreviewIdeaWindowLeft.HasValue && s.PreviewIdeaWindowTop.HasValue)
