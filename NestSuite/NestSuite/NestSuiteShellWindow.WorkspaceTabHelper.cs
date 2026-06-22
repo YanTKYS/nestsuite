@@ -29,4 +29,17 @@ public partial class NestSuiteShellWindow
         _sessionManager.Add(CreateSessionForTab(tab));
         ActivateTab(tab);
     }
+
+    /// <summary>
+    /// ViewModel に対応する Session からタブを逆引きし、IsModified を更新する。
+    /// SyncChatNestTabForViewModel / SyncIdeaNestTabForViewModel の共通処理。
+    /// </summary>
+    private void SyncTabModifiedState(object vm, bool isModified)
+    {
+        var session = _sessionManager.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vm));
+        if (session == null) return;
+        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
+        if (tab == null) return;
+        ReplaceTab(tab, tab with { IsModified = isModified });
+    }
 }

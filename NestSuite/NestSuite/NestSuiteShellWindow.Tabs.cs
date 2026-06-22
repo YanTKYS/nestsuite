@@ -198,14 +198,8 @@ public partial class NestSuiteShellWindow
     /// v1.9.2: 指定した ChatNest ViewModel に対応するタブの IsModified を同期する。
     /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// </summary>
-    private void SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel vm)
-    {
-        var session = _sessionManager.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vm));
-        if (session == null) return;
-        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
-        if (tab == null) return;
-        ReplaceTab(tab, tab with { IsModified = vm.HasUnsavedChanges });
-    }
+    private void SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel vm) =>
+        SyncTabModifiedState(vm, vm.HasUnsavedChanges);
 
     private void OnNoteNestSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -301,14 +295,8 @@ public partial class NestSuiteShellWindow
     /// v1.9.7: 指定 IdeaNest ViewModel に対応するタブの IsModified を HasChanges に同期する。
     /// Session Manager で ViewModel から逆引きしてタブを特定する。
     /// </summary>
-    private void SyncIdeaNestTabForViewModel(IdeaNestWorkspaceViewModel vm)
-    {
-        var session = _sessionManager.Sessions.FirstOrDefault(s => ReferenceEquals(s.WorkspaceViewModel, vm));
-        if (session == null) return;
-        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
-        if (tab == null) return;
-        ReplaceTab(tab, tab with { IsModified = vm.HasChanges });
-    }
+    private void SyncIdeaNestTabForViewModel(IdeaNestWorkspaceViewModel vm) =>
+        SyncTabModifiedState(vm, vm.HasChanges);
 
     /// <summary>
     /// v1.9.7: IdeaNest タブを閉じる前の確認と PropertyChanged 購読解除。

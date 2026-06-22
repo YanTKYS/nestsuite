@@ -459,16 +459,7 @@ public partial class NestSuiteShellWindow
     {
         path = NormalizeFilePath(path);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null)
-        {
-            ActivateTab(existingTab);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            return;
-        }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.NoteNest, path)) return;
 
         try
         {
@@ -514,16 +505,7 @@ public partial class NestSuiteShellWindow
         // v1.9.2 fix: 起動引数は相対パスで渡される可能性があるためフルパスに正規化する
         path = NormalizeFilePath(path);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null)
-        {
-            ActivateTab(existingTab);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            return;
-        }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.ChatNest, path)) return;
 
         try
         {
@@ -551,16 +533,7 @@ public partial class NestSuiteShellWindow
     {
         path = NormalizeFilePath(path);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null)
-        {
-            ActivateTab(existingTab);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            return;
-        }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.IdeaNest, path)) return;
 
         try
         {

@@ -70,22 +70,8 @@ public partial class NestSuiteShellWindow
             UpdateRecentFilesMenu();
             return;
         }
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == kind &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null)
-        {
-            ActivateTab(existingTab);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            return;
-        }
-        switch (kind)
-        {
-            case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
-        }
+        if (TryActivateExistingTab(kind, path)) return;
+        LoadWorkspaceFileAt(kind, path);
     }
 
     // ── v1.15.0: セッション復元 ──────────────────────────────────────────────
@@ -125,12 +111,7 @@ public partial class NestSuiteShellWindow
             if (!NestSuiteTabFactory.TryGetKind(filePath, out var kind)) continue;
 
             int tabsBefore = _tabs.Count;
-            switch (kind)
-            {
-                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(filePath); break;
-                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(filePath); break;
-                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(filePath); break;
-            }
+            LoadWorkspaceFileAt(kind, filePath);
             if (_tabs.Count > tabsBefore) restoredCount++;
         }
 
@@ -160,22 +141,8 @@ public partial class NestSuiteShellWindow
             BringWindowToFront();
             var path = NormalizeFilePath(rawPath);
             if (!File.Exists(path) || !NestSuiteTabFactory.TryGetKind(path, out var kind)) return;
-            var existingTab = _tabs.FirstOrDefault(t =>
-                t.WorkspaceKind == kind &&
-                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-            if (existingTab != null)
-            {
-                ActivateTab(existingTab);
-                _recentFiles.Add(path);
-                UpdateRecentFilesMenu();
-                return;
-            }
-            switch (kind)
-            {
-                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
-                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
-                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
-            }
+            if (TryActivateExistingTab(kind, path)) return;
+            LoadWorkspaceFileAt(kind, path);
         });
     }
 

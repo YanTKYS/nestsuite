@@ -1,3 +1,13 @@
+## v2.7.8 — セッション復元・タブ同期周辺の重複整理（TD-3-3）
+
+- **3 Workspace のセッション復元・タブ同期周辺の重複を整理した（TD-3-3）。** `WorkspaceFileHelper.cs` に 2 つ、`WorkspaceTabHelper.cs` に 1 つ、計 3 つのヘルパーを追加した。
+- **新設ヘルパー（`WorkspaceFileHelper.cs`）:** `TryActivateExistingTab(kind, path)`（kind + path で既存タブを検索し、見つかればアクティブ化・最近ファイル更新して true を返す）/ `LoadWorkspaceFileAt(kind, path)`（WorkspaceKind に応じた `Load*FileAt` への switch dispatch を一元化）。
+- **新設ヘルパー（`WorkspaceTabHelper.cs`）:** `SyncTabModifiedState(vm, isModified)`（ViewModel から Session・タブを逆引きし IsModified を更新する `SyncChatNestTabForViewModel` / `SyncIdeaNestTabForViewModel` の共通処理）。
+- **委譲先メソッド:** `TryRestoreSession`（switch 4 行 → `LoadWorkspaceFileAt` 1 行）/ `MenuRecentFile_Click`（existing tab 検出 4 行 + switch 4 行 → 各 1 行）/ `OpenFileFromPipe`（同）/ `LoadInitialNoteNestFile` / `LoadInitialChatNestFile` / `LoadInitialIdeaNestFile`（existing tab 検出 5 行 → `TryActivateExistingTab` 1 行）/ `SyncChatNestTabForViewModel` / `SyncIdeaNestTabForViewModel`（4 行 → 1 行委譲式）。
+- **既存のメソッド名・外部シグネチャは変更なし。** `TryRestoreSession` / `SyncChatNestTabForViewModel` 等の private メソッド名はすべて維持。セッション復元仕様・最近ファイル仕様・タブタイトル仕様・未保存マーク挙動に変更なし。
+- **UI 動作・セッション形式・保存形式に変更はない。** ErrorLogService の Error 専用方針（Info / Warning ログなし）に変更なし。
+- **保存形式・NoteNest 保存スキーマ `1.4.1` に変更はない（v2.7.8）。** IdeaNest / ChatNest / TempNest の保存形式に変更はない。
+
 ## v2.7.7 — 新規作成・タブクローズ処理共通化（TD-3-2）
 
 - **3 Workspace の新規作成・タブクローズ処理の重複を整理した（TD-3-2）。** `NestSuiteShellWindow.WorkspaceTabHelper.cs` を新設し、共通ヘルパーを導入した。

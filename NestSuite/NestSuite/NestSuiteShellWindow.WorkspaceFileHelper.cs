@@ -76,4 +76,36 @@ public partial class NestSuiteShellWindow
         ActivateTab(duplicate);
         return true;
     }
+
+    /// <summary>
+    /// 指定 kind と path に一致する既存タブを検索し、見つかればアクティブ化・最近ファイル更新して true を返す。
+    /// 見つからなければ false を返す。
+    /// セッション復元・最近ファイルクリック・パイプ経由オープン時の重複タブ検出に使用する。
+    /// </summary>
+    private bool TryActivateExistingTab(NestSuiteWorkspaceKind kind, string path)
+    {
+        var existingTab = _tabs.FirstOrDefault(t =>
+            t.WorkspaceKind == kind &&
+            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        if (existingTab == null) return false;
+        ActivateTab(existingTab);
+        _recentFiles.Add(path);
+        UpdateRecentFilesMenu();
+        return true;
+    }
+
+    /// <summary>
+    /// WorkspaceKind に応じた Load*FileAt メソッドへ委譲する。
+    /// セッション復元・最近ファイルクリック・パイプ経由オープン時に使用する。
+    /// </summary>
+    private void LoadWorkspaceFileAt(NestSuiteWorkspaceKind kind, string path)
+    {
+        switch (kind)
+        {
+            case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
+            case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
+            case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
+        }
+    }
 }
+
