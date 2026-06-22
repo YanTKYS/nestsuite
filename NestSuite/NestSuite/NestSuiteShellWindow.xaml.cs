@@ -375,10 +375,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 if (_sessionManager.TryGet(tab.Id, out var tempSession) && tempSession != null)
                     TempNestWorkspaceView.DataContext = tempSession.WorkspaceViewModel;
 
-                foreach (var (id, border) in _sidebarBorders)
-                    UpdateSidebarHighlight(border, id, "");
-                foreach (var (id, item) in _toolMenuItems)
-                    item.IsChecked = false;
+                foreach (var kvp in _sidebarBorders)
+                    UpdateSidebarHighlight(kvp.Value, kvp.Key, "");
+                foreach (var kvp in _toolMenuItems)
+                    kvp.Value.IsChecked = false;
 
                 NestSuiteModeSuffix.Text = "  /  TempNest";
                 RefreshWorkspaceStatus();
@@ -418,12 +418,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             }
 
             // サイドバー選択ハイライト更新
-            foreach (var (id, border) in _sidebarBorders)
-                UpdateSidebarHighlight(border, id, toolId);
+            foreach (var kvp in _sidebarBorders)
+                UpdateSidebarHighlight(kvp.Value, kvp.Key, toolId);
 
             // ツールメニューのチェック状態更新
-            foreach (var (id, item) in _toolMenuItems)
-                item.IsChecked = id == toolId;
+            foreach (var kvp in _toolMenuItems)
+                kvp.Value.IsChecked = kvp.Key == toolId;
 
             // ステータスバー更新
             NestSuiteModeSuffix.Text = $"  /  {tool.DisplayName}";

@@ -27,5 +27,5 @@ public static class StartupArgParser
     /// 拡張子・存在確認は呼び出し側（LoadInitialFile）が担当する。
     /// </summary>
     public static string? GetFilePath(string[] args) =>
-        args.FirstOrDefault(a => !a.StartsWith('-'));
+        args.FirstOrDefault(a => !a.StartsWith("-"));
 }

@@ -337,7 +337,7 @@ public partial class FindReplaceDialog : Window
         const int contextLen = 35;
         var excerptStart = Math.Max(0, matchStart - contextLen);
         var excerptEnd   = Math.Min(content.Length, matchStart + keyword.Length + contextLen);
-        var excerpt      = content[excerptStart..excerptEnd].Replace('\n', ' ').Replace('\r', ' ');
+        var excerpt      = content.Substring(excerptStart, excerptEnd - excerptStart).Replace('\n', ' ').Replace('\r', ' ');
         var prefix = excerptStart > 0 ? "…" : "";
         var suffix = excerptEnd < content.Length ? "…" : "";
         return $"{prefix}{excerpt}{suffix}";

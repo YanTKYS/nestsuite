@@ -240,7 +240,7 @@ public partial class NoteEditorHost : UserControl
 
         var query = prefix.Substring(bracketIdx + 2);
 
-        if (query.Contains("]]") || query.Contains('\n') || query.Contains('\r') || query.Contains(']'))
+        if (query.Contains("]]") || query.IndexOf('\n') >= 0 || query.IndexOf('\r') >= 0 || query.IndexOf(']') >= 0)
             return (false, -1, "");
 
         return (true, searchFrom + bracketIdx, query);

@@ -16,7 +16,7 @@ public static class IdeaNestFileService
     public static void Save(string path, Workspace workspace)
     {
         ValidateExtension(path);
-        ArgumentNullException.ThrowIfNull(workspace);
+        if (workspace == null) throw new ArgumentNullException(nameof(workspace));
         workspace.Version = SchemaVersion;
         IdeaNestWorkspaceService.Save(path, workspace);
     }

@@ -45,7 +45,7 @@ public sealed class FileAssociationService
         // コマンド形式: "C:\path\to\NestSuite.exe" "%1" — 先頭のパスを取り出す
         var trimmed = cmd.Trim();
         string registeredExe;
-        if (trimmed.StartsWith('"'))
+        if (trimmed.StartsWith("\""))
         {
             var end = trimmed.IndexOf('"', 1);
             registeredExe = end > 0 ? trimmed.Substring(1, end - 1) : trimmed;
