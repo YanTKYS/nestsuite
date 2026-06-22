@@ -183,10 +183,21 @@ public sealed class DialogService
 
     private string? SelectFolderPath(string title)
     {
+#if NET48
+        using var fbDialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = title,
+            ShowNewFolderButton = true
+        };
+        return fbDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK
+            ? fbDialog.SelectedPath
+            : null;
+#else
         var dialog = new OpenFolderDialog
         {
             Title = title
         };
         return dialog.ShowDialog(_owner) == true ? dialog.FolderName : null;
+#endif
     }
 }
