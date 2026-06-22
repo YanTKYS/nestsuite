@@ -23,12 +23,18 @@ public partial class NoteNestWorkspaceView
         addNb.Click += AddNotebook_Click;
         var addNote = new MenuItem { Header = "ノートを追加..." };
         addNote.Click += AddNote_Click;
+        var checkLinks = new MenuItem { Header = "リンク切れを確認..." };
+        checkLinks.Click += CheckBrokenLinks_Click;
         menu.Items.Add(addNb);
         menu.Items.Add(addNote);
+        menu.Items.Add(new Separator());
+        menu.Items.Add(checkLinks);
         menu.PlacementTarget = (Button)sender;
         menu.Placement = PlacementMode.Bottom;
         menu.IsOpen = true;
     }
+
+    private void CheckBrokenLinks_Click(object sender, RoutedEventArgs e) => CheckBrokenLinks();
 
     internal void AddNotebook()
     {

@@ -38,6 +38,9 @@ public interface IWorkspaceDialogHost
     /// <summary>ノート選択ダイアログを表示し、選択されたノートを返す。キャンセル時は null。</summary>
     NoteViewModel? PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes);
 
+    /// <summary>リンク切れチェックを実行してダイアログを表示する。「このノートへ移動」が選択されたときソースノートを返す。それ以外は null。</summary>
+    NoteViewModel? CheckBrokenLinks(IEnumerable<NoteViewModel> allNotes);
+
     /// <summary>
     /// 検索・置換ダイアログを表示する。
     /// <paramref name="editor"/> は WorkspaceView が所有するエディタ TextBox で、

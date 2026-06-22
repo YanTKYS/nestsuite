@@ -30,6 +30,13 @@ public sealed class DialogService
         return dialog.ShowDialog() == true ? dialog.SelectedNote : null;
     }
 
+    public NoteViewModel? CheckBrokenLinks(IEnumerable<NoteViewModel> notes)
+    {
+        var results = BrokenLinkCheckerService.Check(notes);
+        var dialog = new BrokenLinksDialog(results) { Owner = _owner };
+        return dialog.ShowDialog() == true ? dialog.SelectedNote : null;
+    }
+
     public (string FontFamily, double FontSize)? ShowFontSettings(string currentFamily, double currentSize)
     {
         var dialog = new FontSettingsDialog(currentFamily, currentSize) { Owner = _owner };

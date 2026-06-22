@@ -1923,6 +1923,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     NoteViewModel? IWorkspaceDialogHost.PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes)
         => _dialogs.PickNote(notes);
 
+    NoteViewModel? IWorkspaceDialogHost.CheckBrokenLinks(IEnumerable<NoteViewModel> allNotes)
+        => _dialogs.CheckBrokenLinks(allNotes);
+
     void IWorkspaceDialogHost.ShowFindReplace(ITextEditorAdapter editor, IEnumerable<NoteViewModel>? allNotes,
         Action<NoteViewModel>? navigateToNote, string lastSearch, string lastReplace, double? left, double? top)
         => _dialogs.ShowFindReplace(editor, allNotes, navigateToNote, lastSearch, lastReplace, left, top);
