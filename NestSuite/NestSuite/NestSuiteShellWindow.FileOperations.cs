@@ -487,7 +487,7 @@ public partial class NestSuiteShellWindow
         }
         catch (Exception ex)
         {
-            bool logged = ErrorLogService.Log("NoteNestLoad", ex, "NoteNest", path);
+            bool logged = ErrorLogService.Log("NoteNestLoadTab", ex, "NoteNest", path);
             var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
             _dialogs.ShowError(
                 $"NoteNest ファイルを開けませんでした。\n{FileErrorMessages.ForLoad(ex)}{logHint}",
@@ -568,7 +568,7 @@ public partial class NestSuiteShellWindow
         }
         catch (Exception ex)
         {
-            bool logged = ErrorLogService.Log("NoteNestLoadInitial", ex, "NoteNest", path);
+            bool logged = ErrorLogService.Log("NoteNestLoadInitialTab", ex, "NoteNest", path);
             var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
             _dialogs.ShowError(
                 $"NoteNest ファイルを開けませんでした。\n{FileErrorMessages.ForLoad(ex)}{logHint}",

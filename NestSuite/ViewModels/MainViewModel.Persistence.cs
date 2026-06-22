@@ -1,4 +1,5 @@
 using NestSuite.Models;
+using NestSuite.Services;
 
 namespace NestSuite.ViewModels;
 
@@ -82,7 +83,10 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            ShowErrorDialog?.Invoke("エラー", $"保存に失敗しました。\n{ex.Message}");
+            bool logged = ErrorLogService.Log("NoteNestSave", ex, "NoteNest", path);
+            var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
+            ShowErrorDialog?.Invoke("保存エラー",
+                $"保存に失敗しました。\n{FileErrorMessages.ForSave(ex)}{logHint}");
             return false;
         }
     }
@@ -113,7 +117,8 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            StatusMessage = $"自動保存に失敗しました: {ex.Message}";
+            ErrorLogService.Log("NoteNestAutoSave", ex, "NoteNest");
+            StatusMessage = "自動保存に失敗しました。";
         }
     }
 
@@ -127,7 +132,10 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            ShowErrorDialog?.Invoke("エラー", $"ファイルを開けませんでした。\n{ex.Message}");
+            bool logged = ErrorLogService.Log("NoteNestLoad", ex, "NoteNest", path);
+            var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
+            ShowErrorDialog?.Invoke("読込エラー",
+                $"ファイルを開けませんでした。\n{FileErrorMessages.ForLoad(ex)}{logHint}");
             return false;
         }
     }
