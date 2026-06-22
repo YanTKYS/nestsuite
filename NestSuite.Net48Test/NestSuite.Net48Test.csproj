@@ -16,9 +16,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>NestSuite</RootNamespace>
     <AssemblyName>NestSuite</AssemblyName>
-    <AssemblyVersion>2.7.3.0</AssemblyVersion>
-    <FileVersion>2.7.3.0</FileVersion>
-    <InformationalVersion>2.7.3</InformationalVersion>
+    <AssemblyVersion>2.7.4.0</AssemblyVersion>
+    <FileVersion>2.7.4.0</FileVersion>
+    <InformationalVersion>2.7.4</InformationalVersion>
     <ApplicationManifest>../NestSuite/app.manifest</ApplicationManifest>
     <ApplicationIcon>../NestSuite/Assets/icon.ico</ApplicationIcon>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>

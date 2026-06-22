@@ -1,3 +1,9 @@
+## v2.7.4 — NestSuiteShellWindow.xaml.cs を責務別 partial ファイルへ分割（TD-2）
+
+- **`NestSuiteShellWindow.xaml.cs`（1938行）を 6 つの責務別 `partial class` ファイルへ分割した（TD-2）。** 動作ロジックの変更はなく、純粋な機械的再配置のみ。XAML バインディング・コマンドハンドラ・イベント購読はそのまま維持する。
+- **分割後のファイル構成:** `NestSuiteShellWindow.xaml.cs`（コンストラクタ・フィールド・VM生成・IWorkspaceDialogHost、381行）/ `NestSuiteShellWindow.Tabs.cs`（タブ活性化・同期・クローズ・キーボードナビ、589行）/ `NestSuiteShellWindow.DragDrop.cs`（ドラッグ＆ドロップ・TabInsertionAdorner、179行）/ `NestSuiteShellWindow.FileOperations.cs`（全ファイル I/O・LoadInitialFile、658行）/ `NestSuiteShellWindow.Session.cs`（最近ファイル・セッション復元・パイプ、191行）/ `NestSuiteShellWindow.Commands.cs`（メニュー・コマンドハンドラ、49行）。
+- **保存形式・NoteNest 保存スキーマ `1.4.1` に変更はない（v2.7.4）。** IdeaNest / ChatNest / TempNest の保存形式に変更はない。
+
 ## v2.7.3 — net48_test 検証終了・正式採用保留
 
 - **v2.7.0〜v2.7.2 で実施した `.NET Framework 4.8 前提の net48_test` 検証を終了した（v2.7.3）。** 実機起動は確認できた。ただし DLL 等を含む複数ファイル構成となるため、単一EXEを重視する NestSuite の配布方針に合致せず、正式採用しない。

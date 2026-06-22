@@ -11,3 +11,6 @@ obj/
 *.nupkg
 project.lock.json
 packages/
+
+# Claude Code agent state
+.claude/worktrees/
