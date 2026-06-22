@@ -1,3 +1,11 @@
+## v2.7.3 — CI に net48_test ビルド検知を追加
+
+- **CI（`ci.yml`）に `net48-test-build` ジョブを追加し、プッシュ時に .NET Framework 4.8 テストビルドの成否を検知できるようにした（v2.7.3）。** これまで `release.yml` の `continue-on-error: true` ビルドでしか検知できなかった net48_test の互換性崩れを、リリース前の通常 CI で早期発見できる。
+- **`net48-test-build` ジョブは `continue-on-error` を設けず、失敗時は CI が red になる（v2.7.3）。** 既存の `.NET 8 build/test` ジョブと独立して並列実行し、いずれかが失敗した場合にマージ前に検知できる。
+- **`release.yml` の `continue-on-error: true`（`Build net48 test` ステップ）は維持する（v2.7.3）。** リリース時は .NET 8 正式版の成果物生成を最優先とするため、release 側は従来方針を維持する。
+- **net48_test は引き続き軽量化検証用・正式サポート外とする（v2.7.3）。** CI で検知できるようにするが、.NET Framework への正式対応を宣言するものではない。
+- **現行 .NET 8 self-contained single-file 版・保存形式・NoteNest 保存スキーマ `1.4.1` に変更はない（v2.7.3）。**
+
 ## v2.7.2 — net48_test 残存非互換 API の一括修正
 
 - **net48_test ビルドで残存していた .NET Framework 4.8 非互換の API 呼び出しをすべて棚卸しし、意味を変えない最小置換で修正した（v2.7.2）。** v2.7.1 の修正に続く第2弾であり、本対応を最後の軽量互換修正トライアルとする。

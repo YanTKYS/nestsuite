@@ -35,3 +35,20 @@ jobs:
           name: build-${{ github.run_number }}
           path: NestSuite/bin/Release/
           retention-days: 1
+
+  # .NET Framework 4.8 テストビルド検証（軽量化検証用・正式サポート外）
+  # NestSuite.sln には含まれないため独立 job として実行する。
+  # continue-on-error を設けず、ビルド失敗時は CI を red にしてリリース前に検知する。
+  net48-test-build:
+    runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build net48 test
+        run: dotnet build NestSuite.Net48Test/NestSuite.Net48Test.csproj -c Release
