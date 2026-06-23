@@ -23,6 +23,8 @@ public class UiSettings
     public double NestSuiteWindowWidth { get; set; } = 1280;
     public double NestSuiteWindowHeight { get; set; } = 720;
     public bool NestSuiteIsWindowMaximized { get; set; } = false;
+    public double? NestSuiteWindowLeft { get; set; }
+    public double? NestSuiteWindowTop { get; set; }
     public double? PreviewIdeaWindowWidth { get; set; }
     public double? PreviewIdeaWindowHeight { get; set; }
     public double? PreviewIdeaWindowLeft { get; set; }

@@ -1,3 +1,12 @@
+## v2.7.9 — Shell UX 小改善まとめ（SH-6・SH-9・SH-13・SH-18）
+
+- **タブ一覧ドロップダウンを追加した（SH-6）。** タブストリップ右端に「▾」ボタンを追加した。クリックで現在開いている全タブをドロップダウン一覧表示し、選択したタブにジャンプできる。横スクロールが必要な状況でも全タブに素早くアクセスできる。
+- **ウィンドウ位置を記憶・復元するようにした（SH-9）。** 終了時のウィンドウ左上座標（Left/Top）を `UiSettings` に保存し、次回起動時に復元する。`NestSuiteWindowPositionGuard` により仮想スクリーン外への復元を防ぐ（100px 以上表示可能な位置のみ適用）。サイズ復元は v1.19.1 からの既存機能。
+- **保存完了の一時通知をステータスバーに表示するようにした（SH-13）。** NoteNest / ChatNest / IdeaNest のいずれかを保存すると「保存しました」を 2 秒間ステータスバーに表示する。表示中は通常のワークスペース情報（ノート数・タスク数等）の上書きを抑制し、表示終了後に自動復帰する。`ShowStatusNotification(string, int)` を共通ヘルパーとして `WorkspaceTabHelper.cs` に実装した。
+- **ダイアログ閉じた後のフォーカスをワークスペースへ戻すようにした（SH-18）。** `RestoreFocusToWorkspace()` を `WorkspaceTabHelper.cs` に実装した。ファイル関連付けダイアログ（`FileAssociationDialog`）を閉じた後に呼び出し、アクティブな Workspace ビューの最初のフォーカス可能要素にフォーカスを戻す。
+- **外部依存追加なし。** 新設クラス `NestSuiteWindowPositionGuard` は WPF 標準 API（`SystemParameters`）のみ使用。
+- **UI 動作以外の変更はない。** タブモデル・セッション形式・保存形式・スキーマ `1.4.1` に変更はない。ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.7.8 — セッション復元・タブ同期周辺の重複整理（TD-3-3）
 
 - **3 Workspace のセッション復元・タブ同期周辺の重複を整理した（TD-3-3）。** `WorkspaceFileHelper.cs` に 2 つ、`WorkspaceTabHelper.cs` に 1 つ、計 3 つのヘルパーを追加した。

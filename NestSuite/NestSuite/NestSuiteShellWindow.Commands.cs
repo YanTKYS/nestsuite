@@ -38,6 +38,30 @@ public partial class NestSuiteShellWindow
         var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName
             ?? string.Empty;
         new FileAssociationDialog(exePath) { Owner = this }.ShowDialog();
+        RestoreFocusToWorkspace();
+    }
+
+    private void TabListButton_Click(object sender, RoutedEventArgs e)
+    {
+        var btn = (Button)sender;
+        var menu = new ContextMenu
+        {
+            PlacementTarget = btn,
+            Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom
+        };
+        foreach (var tab in _tabs)
+        {
+            var item = new MenuItem
+            {
+                Header      = tab.DisplayName,
+                IsCheckable = true,
+                IsChecked   = tab.Id == _selectedTab?.Id
+            };
+            var capturedTab = tab;
+            item.Click += (_, _) => ActivateTab(capturedTab);
+            menu.Items.Add(item);
+        }
+        menu.IsOpen = true;
     }
 
     private void MenuAbout_Click(object sender, RoutedEventArgs e)

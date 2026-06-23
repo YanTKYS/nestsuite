@@ -199,6 +199,15 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         const double minW = 860, minH = 500;
         if (settings.NestSuiteWindowWidth >= minW) Width = settings.NestSuiteWindowWidth;
         if (settings.NestSuiteWindowHeight >= minH) Height = settings.NestSuiteWindowHeight;
+        if (settings.NestSuiteWindowLeft.HasValue && settings.NestSuiteWindowTop.HasValue &&
+            NestSuiteWindowPositionGuard.IsOnScreen(
+                settings.NestSuiteWindowLeft.Value, settings.NestSuiteWindowTop.Value,
+                Width, Height))
+        {
+            Left = settings.NestSuiteWindowLeft.Value;
+            Top  = settings.NestSuiteWindowTop.Value;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+        }
         if (settings.NestSuiteIsWindowMaximized) WindowState = WindowState.Maximized;
     }
 
@@ -209,23 +218,29 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         switch (WindowState)
         {
             case WindowState.Normal:
-                s.NestSuiteWindowWidth = Width;
+                s.NestSuiteWindowWidth  = Width;
                 s.NestSuiteWindowHeight = Height;
+                s.NestSuiteWindowLeft   = Left;
+                s.NestSuiteWindowTop    = Top;
                 s.NestSuiteIsWindowMaximized = false;
                 break;
             case WindowState.Maximized:
             {
                 var rb = RestoreBounds;
-                if (rb.Width > 0) s.NestSuiteWindowWidth = rb.Width;
-                if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                if (rb.Width  > 0)  s.NestSuiteWindowWidth  = rb.Width;
+                if (rb.Height > 0)  s.NestSuiteWindowHeight = rb.Height;
+                if (rb.Left   > -1) s.NestSuiteWindowLeft   = rb.Left;
+                if (rb.Top    > -1) s.NestSuiteWindowTop    = rb.Top;
                 s.NestSuiteIsWindowMaximized = true;
                 break;
             }
             case WindowState.Minimized:
             {
                 var rb = RestoreBounds;
-                if (rb.Width > 0) s.NestSuiteWindowWidth = rb.Width;
-                if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                if (rb.Width  > 0)  s.NestSuiteWindowWidth  = rb.Width;
+                if (rb.Height > 0)  s.NestSuiteWindowHeight = rb.Height;
+                if (rb.Left   > -1) s.NestSuiteWindowLeft   = rb.Left;
+                if (rb.Top    > -1) s.NestSuiteWindowTop    = rb.Top;
                 s.NestSuiteIsWindowMaximized = false;
                 break;
             }

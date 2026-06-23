@@ -34,6 +34,7 @@ public partial class NestSuiteShellWindow
                 ReplaceTab(tab, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
             _recentFiles.Add(path);
             UpdateRecentFilesMenu();
+            ShowStatusNotification("  |  保存しました");
             return true;
         }
         catch (Exception ex)
@@ -147,6 +148,7 @@ public partial class NestSuiteShellWindow
             UpdateChatNestTabPath(session, path);
             _recentFiles.Add(path);
             UpdateRecentFilesMenu();
+            ShowStatusNotification("  |  保存しました");
             return true;
         }
         catch (Exception ex)

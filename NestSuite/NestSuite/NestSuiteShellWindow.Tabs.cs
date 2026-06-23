@@ -203,6 +203,15 @@ public partial class NestSuiteShellWindow
 
     private void OnNoteNestSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainViewModel.IsModified) &&
+            sender is MainViewModel saveVm && !saveVm.IsModified && saveVm.CurrentFilePath != null)
+        {
+            var s = _sessionManager.Sessions
+                .FirstOrDefault(s2 => ReferenceEquals(s2.WorkspaceViewModel, saveVm));
+            if (s?.IsModified == true)
+                ShowStatusNotification("  |  保存しました");
+        }
+
         if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified) &&
             sender is MainViewModel vm)
             SyncNoteNestTabForViewModel(vm);
@@ -259,6 +268,7 @@ public partial class NestSuiteShellWindow
 
     private void RefreshWorkspaceStatus()
     {
+        if (_isShowingNotification) return;
         if (!TryGetActiveSession(out var session) || session == null)
         {
             WorkspaceStatusText.Text = "";

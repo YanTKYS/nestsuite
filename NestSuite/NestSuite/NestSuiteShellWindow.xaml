@@ -151,6 +151,17 @@
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
+                    <!-- v2.7.9 SH-6: タブ一覧ボタン。クリックで開いているタブをドロップダウン一覧表示 -->
+                    <Button DockPanel.Dock="Right"
+                            Content="▾"
+                            FontSize="12"
+                            Width="28"
+                            VerticalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            ToolTip="タブ一覧"
+                            Click="TabListButton_Click"/>
                     <ListBox x:Name="TabStrip"
                              BorderThickness="0"
                              Background="{DynamicResource GroupHeaderBg}"
