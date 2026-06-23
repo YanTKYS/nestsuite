@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace NestSuite.NoteNest.Editor;
@@ -13,6 +15,8 @@ public partial class NoteEditorHost : UserControl
     private int  _completionLinkStart     = -1;
     private bool _suppressCompletionUpdate;
     private bool _editorEventsAttached;
+    // H3b: cached marker line indices (0-based logical), updated on text change.
+    private IReadOnlyList<int> _markerLineIndices = Array.Empty<int>();
 
     public ITextEditorAdapter Editor { get; private set; } = null!;
 
@@ -28,8 +32,11 @@ public partial class NoteEditorHost : UserControl
     public NoteEditorHost()
     {
         InitializeComponent();
-        IsVisibleChanged += NoteEditorHost_IsVisibleChanged;
-        Unloaded += NoteEditorHost_Unloaded;
+        IsVisibleChanged    += NoteEditorHost_IsVisibleChanged;
+        Unloaded            += NoteEditorHost_Unloaded;
+        DataContextChanged  += NoteEditorHost_DataContextChanged;
+        MarkerHighlightCanvas.SizeChanged += (_, _) =>
+            Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
     }
 
     // ── Initialisation ────────────────────────────────────────────────────
@@ -54,13 +61,22 @@ public partial class NoteEditorHost : UserControl
 
         UpdateLineNumbers();
         UpdateCurrentLineHighlight();
+        _markerLineIndices = MarkerLineDetector.Detect(EditorBox.Text);
+        Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
     }
 
     private void NoteEditorHost_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (IsVisible) UpdateCurrentLineHighlight();
-        else           CloseCompletion();
+        if (IsVisible)
+        {
+            UpdateCurrentLineHighlight();
+            Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
+        }
+        else
+        {
+            CloseCompletion();
+        }
     }
 
     private void Editor_SelectionChanged(object? sender, EventArgs e)
@@ -84,7 +100,10 @@ public partial class NoteEditorHost : UserControl
         }
         EditorBox.PreviewKeyDown -= EditorBox_PreviewKeyDown;
         EditorBox.LostFocus      -= EditorBox_LostFocus;
+        if (DataContext is INotifyPropertyChanged vm)
+            vm.PropertyChanged -= OnViewModelPropertyChanged;
         CloseCompletion();
+        MarkerHighlightCanvas.Children.Clear();
         _editorScrollViewer = null;
         _lineNumberScrollViewer = null;
     }
@@ -93,6 +112,8 @@ public partial class NoteEditorHost : UserControl
     {
         UpdateLineNumbers();
         UpdateCurrentLineHighlight();
+        _markerLineIndices = MarkerLineDetector.Detect(EditorBox.Text);
+        Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
         if (!_suppressCompletionUpdate) UpdateCompletion();
     }
 
@@ -100,6 +121,7 @@ public partial class NoteEditorHost : UserControl
     {
         _lineNumberScrollViewer?.ScrollToVerticalOffset(e.VerticalOffset);
         Dispatcher.InvokeAsync(UpdateCurrentLineHighlight, DispatcherPriority.Render);
+        Dispatcher.InvokeAsync(UpdateMarkerHighlights,     DispatcherPriority.Render);
     }
 
     // ── Line number helpers ────────────────────────────────────────────────
@@ -149,6 +171,69 @@ public partial class NoteEditorHost : UserControl
             ? LineHighlightCanvas.ActualWidth
             : LineNumberBox.ActualWidth;
         CurrentLineHighlight.Visibility = Visibility.Visible;
+    }
+
+    // ── H3b: Marker line highlights (TODO / FIXME / HACK) ────────────────
+
+    private void NoteEditorHost_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is INotifyPropertyChanged oldVm)
+            oldVm.PropertyChanged -= OnViewModelPropertyChanged;
+        if (e.NewValue is INotifyPropertyChanged newVm)
+            newVm.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "EditorFontSize")
+            Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
+    }
+
+    private void UpdateMarkerHighlights()
+    {
+        MarkerHighlightCanvas.Children.Clear();
+        if (Editor == null) return;
+
+        var indices = _markerLineIndices;
+        if (indices.Count == 0) return;
+
+        var brush = TryFindResource("MarkerLineHighlightBrush") as Brush;
+        if (brush == null) return;
+
+        var canvasHeight = MarkerHighlightCanvas.ActualHeight;
+        var canvasWidth  = MarkerHighlightCanvas.ActualWidth;
+        if (canvasWidth <= 0 || canvasHeight <= 0) return;
+
+        var text = EditorBox.Text;
+        foreach (var logicalLine in indices)
+        {
+            var charOffset = GetLineStartCharIndex(text, logicalLine);
+            if (charOffset < 0) continue;
+
+            Rect rect;
+            try   { rect = EditorBox.GetRectFromCharacterIndex(charOffset); }
+            catch { continue; }
+
+            if (rect.IsEmpty || rect.Height <= 0) continue;
+            if (rect.Bottom <= 0 || rect.Top >= canvasHeight) continue;
+
+            var r = new Rectangle { Fill = brush, Width = canvasWidth, Height = rect.Height };
+            Canvas.SetTop(r, rect.Top);
+            MarkerHighlightCanvas.Children.Add(r);
+        }
+    }
+
+    private static int GetLineStartCharIndex(string text, int logicalLineIndex)
+    {
+        if (logicalLineIndex == 0) return 0;
+        int offset = 0;
+        for (int i = 0; i < logicalLineIndex; i++)
+        {
+            var idx = text.IndexOf('\n', offset);
+            if (idx < 0) return -1;
+            offset = idx + 1;
+        }
+        return offset;
     }
 
     // ── Note-link autocomplete (H1a) ──────────────────────────────────────
