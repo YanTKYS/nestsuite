@@ -1,4 +1,5 @@
 using System.Windows;
+using NestSuite.Services;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -56,11 +57,15 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private bool ConfirmTabClose(NestSuiteDocumentTab tab, Action cleanup)
     {
-        if (tab.IsModified &&
-            !_dialogs.Confirm(
-                $"「{tab.DisplayName}」には保存されていない変更があります。\n保存せずに閉じますか？",
-                "タブを閉じる", MessageBoxImage.Warning))
-            return false;
+        var canClose = CloseConfirmationService.CanCloseSingle(
+            tab.IsModified,
+            () => _dialogs.Confirm(
+                    $"「{tab.DisplayName}」には保存されていない変更があります。\n保存せずに閉じますか？",
+                    "タブを閉じる", MessageBoxImage.Warning)
+                ? UnsavedChangeDecision.Discard
+                : UnsavedChangeDecision.Cancel);
+        if (!canClose) return false;
+
         cleanup();
         return true;
     }
