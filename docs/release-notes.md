@@ -1,3 +1,12 @@
+## v2.7.15 — 保存成功後のタブ・セッション更新統一（TD-3-4）
+
+- **保存成功後のタブ・セッション反映経路を整理した。** `SavedWorkspaceStateUpdater` と `ApplySavedWorkspaceState` を追加し、保存成功後の file path / dirty state / tab title / recent files / Session 反映を共通経路へ寄せた。
+- **3 Workspace の保存後状態更新を共通化した。** `UpdateNoteNestTabPath` / `UpdateIdeaNestTabPath` / `UpdateChatNestTabPath` は Workspace 固有の dirty 判定だけを残し、タブ・Session・最近ファイル更新は共通 helper に委譲する。
+- **保存失敗時の状態維持を明確化した。** 保存成功後にだけ共通更新処理を呼び、失敗時は file path、dirty state、tab title、recent files、Session を誤更新しない。
+- **UI 変更なし。** 保存、名前を付けて保存、未保存確認、終了確認、タブクローズ確認のユーザー向け挙動は維持する。
+- **セッション形式・保存形式に変更はない。** `NestSuiteSessionState` は従来どおり `FilePaths` / `ActiveFilePath` のみを保存する。NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.7.14 — Tab と Session の変換境界整理（TD-6）
 
 - **Tab と Session の変換境界を整理した。** `SessionTabMapper` を追加し、タブ一覧から `NestSuiteSessionState` を作る処理と、保存済みセッションの file path から復元対象 Workspace を判定する処理を一箇所に集約した。

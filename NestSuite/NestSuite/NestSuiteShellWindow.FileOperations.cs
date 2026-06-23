@@ -20,6 +20,10 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    /// <summary>v2.7.15: 保存成功後の IdeaNest タブ・Session 更新を共通経路へ委譲する。</summary>
+    private void UpdateIdeaNestTabPath(NestSuiteWorkspaceSession session, string path) =>
+        ApplySavedWorkspaceState(session, path, isModifiedAfterSave: false);
+
     /// <summary>v1.9.7: 指定 Session の IdeaNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
     private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path)
     {
@@ -29,12 +33,7 @@ public partial class NestSuiteShellWindow
         {
             IdeaNestFileService.Save(path, vm.BuildWorkspaceForSave());
             vm.MarkSaved();
-            var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
-            if (tab != null)
-                ReplaceTab(tab, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = false });
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            ShowStatusNotification("  |  保存しました");
+            UpdateIdeaNestTabPath(session, path);
             return true;
         }
         catch (Exception ex)
@@ -124,15 +123,8 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void UpdateChatNestTabPath(NestSuiteWorkspaceSession session, string path)
     {
-        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
-        if (tab == null) return;
         var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
-        var updated = NestSuiteTabFactory.FromFilePath(path) with
-        {
-            Id         = tab.Id,
-            IsModified = vm.HasUnsavedChanges
-        };
-        ReplaceTab(tab, updated);
+        ApplySavedWorkspaceState(session, path, vm.HasUnsavedChanges);
     }
 
     /// <summary>v1.9.2: 指定 Session の ChatNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
@@ -146,9 +138,6 @@ public partial class NestSuiteShellWindow
             ChatNestFileService.Save(path, vm.MessageModels);
             vm.MarkSaved();
             UpdateChatNestTabPath(session, path);
-            _recentFiles.Add(path);
-            UpdateRecentFilesMenu();
-            ShowStatusNotification("  |  保存しました");
             return true;
         }
         catch (Exception ex)
@@ -429,6 +418,10 @@ public partial class NestSuiteShellWindow
         }
     }
 
+    /// <summary>v2.7.15: 保存成功後の NoteNest タブ・Session 更新を共通経路へ委譲する。</summary>
+    private void UpdateNoteNestTabPath(NestSuiteWorkspaceSession session, string path) =>
+        ApplySavedWorkspaceState(session, path, isModifiedAfterSave: false);
+
     /// <summary>v1.9.5: 選択中 NoteNest タブを上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveNoteNestFile()
     {
@@ -436,9 +429,15 @@ public partial class NestSuiteShellWindow
         if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
         var vm = (MainViewModel)session.WorkspaceViewModel;
         if (_selectedTab.FilePath != null)
-            vm.SaveProjectCommand.Execute(null);
+        {
+            var path = NormalizeFilePath(_selectedTab.FilePath);
+            if (vm.SaveToPath(path))
+                UpdateNoteNestTabPath(session, path);
+        }
         else
-            vm.SaveAsProjectCommand.Execute(null);
+        {
+            SaveNoteNestFileAs();
+        }
     }
 
     /// <summary>
@@ -454,7 +453,8 @@ public partial class NestSuiteShellWindow
         if (rawPath == null) return;
         var normalizedPath = NormalizeFilePath(rawPath);
         if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath)) return;
-        vm.SaveToPath(normalizedPath);
+        if (vm.SaveToPath(normalizedPath))
+            UpdateNoteNestTabPath(session, normalizedPath);
     }
 
     /// <summary>
