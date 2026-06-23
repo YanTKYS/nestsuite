@@ -109,7 +109,7 @@ public partial class NestSuiteShellWindow
     // ── v2.4.0 SH-4: タブ切替キーボードショートカット ───────────────────
 
     /// <summary>
-    /// v2.4.0 SH-4: Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 でタブを切り替える。
+    /// v2.4.0 SH-4: Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 / Shift+←→ でタブを切り替える。
     /// NoteNest の Ctrl+Enter / Escape など既存ショートカットは e.Handled = false のままにして
     /// WPF の通常ルーティングへ流す。
     /// </summary>
@@ -124,6 +124,13 @@ public partial class NestSuiteShellWindow
         if (ctrl && e.Key == Key.Tab)
         {
             NavigateTab(forward: !shift);
+            e.Handled = true;
+            return;
+        }
+
+        if (shift && !ctrl && (e.Key == Key.Left || e.Key == Key.Right))
+        {
+            NavigateTab(forward: e.Key == Key.Right);
             e.Handled = true;
             return;
         }

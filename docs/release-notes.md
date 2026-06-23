@@ -1,3 +1,12 @@
+## v2.7.20 — ChatNest ショートカット競合整理
+
+- **ChatNest と Shell のショートカット競合を整理した。** NestSuite Shell 共通操作を優先し、ChatNest タブ上でも `Shift + ← / →` によるタブ切り替えが動作するようにした。
+- **ChatNest の発言者切り替えを `Ctrl + ← / →` に統一した。** `Shift + ← / →` は ChatNest 側では処理せず、Shell のタブ切り替えへ流す。
+- **ChatNest の投稿ショートカットを `Ctrl + Enter` に統一した。** `Shift + Enter` による投稿は廃止し、入力欄では通常の改行操作として扱う。
+- **ショートカット判定 helper と単体テストを追加した。** `Ctrl + ← / →`、`Shift + ← / →`、`Ctrl + Enter`、`Shift + Enter` の判定を固定し、Shift 系が ChatNest 側で握りつぶされないことを確認する。
+- **保存形式変更なし。** `.chatnest` 保存形式、`.notenest` schema `1.4.1`、`.ideanest` 形式、TempNest JSON、セッション形式は変更しない。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.7.19 — Light / Dark テーマ切替（SH-10）
 
 - **Light / Dark テーマ切替を追加した。** 表示メニューに「テーマ」項目を追加し、Light / Dark を明示的に選択できるようにした。
