@@ -1,3 +1,57 @@
+## v2.7.18 — NestSuiteShellWindow.FileOperations.cs の責務分割（TD-16）
+
+- **`NestSuiteShellWindow.FileOperations.cs` の責務を partial class に分割した。** 開く/読込、上書き保存、名前を付けて保存、保存後状態同期、ファイルメニュー入口を責務別ファイルへ移動し、元の `FileOperations.cs` は分割概要を示す入口に整理した。
+- **開く / 保存 / 名前を付けて保存 / 最近ファイル / 保存後状態同期の見通しを改善した。** `FileOpen` / `FileSave` / `FileSaveAs` / `FileSaveStateSync` / `FileCommands` に分け、既存メソッド名と private 可視性は維持した。
+- **動作変更なし。** NoteNest / IdeaNest / ChatNest の開く、保存、名前を付けて保存、保存成功後タブ更新、最近ファイル反映、保存失敗時の扱い、セッション復元は変更しない。
+- **UI変更なし。** ファイルダイアログ、メニュー、エラーダイアログ文言に変更はない。
+- **保存形式・セッション形式に変更はない。** NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
+## v2.7.17 — NestSuiteShellWindow.Tabs.cs の責務分割（TD-15）
+
+- **`NestSuiteShellWindow.Tabs.cs` の責務を partial class に分割した。** タブ選択、タブ生成/同期、タブクローズ、タブコンテキストメニューを責務別ファイルへ移動し、元の `Tabs.cs` は分割概要を示す入口に整理した。
+- **タブ生成・選択・クローズ・タイトル同期等の見通しを改善した。** `TabSelection` / `TabLifecycle` / `TabClose` / `TabContextMenu` に分け、既存メソッド名と private 可視性は維持した。
+- **動作変更なし。** Tempタブ固定、タブ選択、タブクローズ、他を閉じる、右側を閉じる、中クリック、右クリック、Ctrl+Tab / Ctrl+数字、未保存確認、保存後タブ更新、セッション復元の挙動は変更しない。
+- **UI変更なし。** 表示・操作・ダイアログ文言に変更はない。
+- **保存形式・セッション形式に変更はない。** NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
+## v2.7.16 — イベント購読の解除漏れ点検・修正（TD-13）
+
+- **イベント購読の解除漏れを点検・修正した。** Workspace / EditorHost / ViewModel / Timer 周辺の明示的な `+=` を確認し、寿命終了時に解除される経路を補強した。
+- **Workspace / EditorHost / Timer 周辺の寿命管理を改善した。** TempNest、ChatNest、IdeaNest の `DispatcherTimer` は停止に加えて Tick 購読を解除する。`NoteEditorHost` は Unloaded 時にスクロール同期・エディタ選択・キーハンドラを解除し、`TextBoxEditorAdapter` も `IDisposable` で TextBox イベントを解除する。
+- **Dispose の冪等性を確認した。** TempNest / ChatNest / IdeaNest の Dispose を複数回呼んでも例外にならないことを単体テストで確認した。
+- **動作変更なし。** 起動、終了、タブ操作、保存、検索、補完、スクロール同期、未保存確認のユーザー向け挙動は維持する。
+- **保存形式・セッション形式に変更はない。** NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
+## v2.7.15 — 保存成功後のタブ・セッション更新統一（TD-3-4）
+
+- **保存成功後のタブ・セッション反映経路を整理した。** `SavedWorkspaceStateUpdater` と `ApplySavedWorkspaceState` を追加し、保存成功後の file path / dirty state / tab title / recent files / Session 反映を共通経路へ寄せた。
+- **3 Workspace の保存後状態更新を共通化した。** `UpdateNoteNestTabPath` / `UpdateIdeaNestTabPath` / `UpdateChatNestTabPath` は Workspace 固有の dirty 判定だけを残し、タブ・Session・最近ファイル更新は共通 helper に委譲する。
+- **保存失敗時の状態維持を明確化した。** 保存成功後にだけ共通更新処理を呼び、失敗時は file path、dirty state、tab title、recent files、Session を誤更新しない。
+- **UI 変更なし。** 保存、名前を付けて保存、未保存確認、終了確認、タブクローズ確認のユーザー向け挙動は維持する。
+- **セッション形式・保存形式に変更はない。** `NestSuiteSessionState` は従来どおり `FilePaths` / `ActiveFilePath` のみを保存する。NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
+## v2.7.14 — Tab と Session の変換境界整理（TD-6）
+
+- **Tab と Session の変換境界を整理した。** `SessionTabMapper` を追加し、タブ一覧から `NestSuiteSessionState` を作る処理と、保存済みセッションの file path から復元対象 Workspace を判定する処理を一箇所に集約した。
+- **セッション保存・復元時の Workspace 別重複を削減した。** `SaveSession` は mapper 経由で保存状態を作成し、`TryRestoreSession` は mapper が作った復元対象を `LoadWorkspaceFileAt` へ渡す形に整理した。
+- **Tempタブはセッション対象外であることを明確化した。** TempNest と未保存タブは `SessionTabMapper` で明示的にセッション保存対象から除外する。起動時の Temp タブ左端固定仕様は変更しない。
+- **UI 変更なし。** タブ操作、終了確認、タブクローズ確認、最近ファイル、復元失敗時の扱いは既存挙動を維持する。
+- **セッション形式・保存形式に変更はない。** `NestSuiteSessionState` は従来どおり `FilePaths` / `ActiveFilePath` のみを保存する。NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
+## v2.7.13 — 終了・タブクローズ確認フローのテスト容易化（TD-7）
+
+- **終了・タブクローズ時の未保存確認フローをテストしやすく整理した。** `CloseConfirmationService` を追加し、未保存有無、保存 / 破棄 / キャンセル、保存失敗時の中断、複数対象の途中キャンセル、CanClose=false タブ除外の判断を WPF UI から分離した。
+- **既存 UI の確認ダイアログ表示は維持した。** `ConfirmTabClose`、終了時の IdeaNest / ChatNest 確認は既存文言・ボタン構成を維持しつつ、判断部分のみ新 helper に委譲した。
+- **保存 / 破棄 / キャンセル挙動に変更はない。** 保存選択時は保存成功時のみ続行し、保存失敗・キャンセル時は閉じない。複数タブ対象の途中キャンセル時は以後のクローズ処理を中断する既存挙動を維持している。
+- **TempNest 固定タブ仕様に変更はない。** CanClose=false のタブは閉じる対象から除外される判断を単体テストで確認した。
+- **保存形式・セッション形式に変更はない。** NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.7.12 — IdeaNest カードの hover・focus 視覚フィードバック強化（ID-9）
 
 - **マウスホバー時のカード強調表示を追加した。** カードに常時 1px のサーフェスボーダー（`#E5E7EB`）を持たせ、ホバー時にボーダーを中間グレー（`#9CA3AF`）へ変化させると同時に、ドロップシャドウを深くする（不透明度 0.08 → 0.16、ブラー 14 → 20px）。色差とシャドウ差の組み合わせにより色だけに依存しない視覚的区別を実現した。

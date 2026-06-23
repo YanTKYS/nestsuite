@@ -58,6 +58,29 @@ public partial class NestSuiteShellWindow
             "保存エラー");
     }
 
+
+    /// <summary>
+    /// 保存成功後のタブ・Session・最近ファイル・通知を共通更新する。
+    /// 保存失敗時は呼ばない。
+    /// </summary>
+    private bool ApplySavedWorkspaceState(
+        NestSuiteWorkspaceSession session,
+        string path,
+        bool isModifiedAfterSave,
+        bool showNotification = true)
+    {
+        var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
+        if (tab == null) return false;
+        if (!SavedWorkspaceStateUpdater.TryCreate(tab, path, isModifiedAfterSave, out var state)) return false;
+
+        ReplaceTab(tab, state.UpdatedTab);
+        SavedWorkspaceStateUpdater.ApplyToSession(session, state);
+        _recentFiles.Add(state.RecentFilePath);
+        UpdateRecentFilesMenu();
+        if (showNotification) ShowStatusNotification("  |  保存しました");
+        return true;
+    }
+
     /// <summary>
     /// 名前を付けて保存の際に、別タブで同じパスが開かれている場合はエラーを表示して
     /// 既存タブをアクティブ化し true を返す。重複なければ false を返す。

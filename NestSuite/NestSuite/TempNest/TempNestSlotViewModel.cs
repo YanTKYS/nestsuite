@@ -5,12 +5,13 @@ using NestSuite.ViewModels;
 
 namespace NestSuite.TempNest;
 
-public class TempNestSlotViewModel : BaseViewModel
+public class TempNestSlotViewModel : BaseViewModel, IDisposable
 {
     private string _title = "";
     private string _body  = "";
     private bool _showCopyFeedback;
     private readonly DispatcherTimer _feedbackTimer;
+    private bool _disposed;
 
     public string Title
     {
@@ -38,11 +39,7 @@ public class TempNestSlotViewModel : BaseViewModel
     public TempNestSlotViewModel()
     {
         _feedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-        _feedbackTimer.Tick += (_, _) =>
-        {
-            _feedbackTimer.Stop();
-            ShowCopyFeedback = false;
-        };
+        _feedbackTimer.Tick += FeedbackTimer_Tick;
 
         CopyBodyCommand = new RelayCommand(
             _ =>
@@ -61,9 +58,16 @@ public class TempNestSlotViewModel : BaseViewModel
 
     private void StartFeedback()
     {
+        if (_disposed) return;
         _feedbackTimer.Stop();
         ShowCopyFeedback = true;
         _feedbackTimer.Start();
+    }
+
+    private void FeedbackTimer_Tick(object? sender, EventArgs e)
+    {
+        _feedbackTimer.Stop();
+        ShowCopyFeedback = false;
     }
 
     public void StopFeedback()
@@ -87,5 +91,14 @@ public class TempNestSlotViewModel : BaseViewModel
         _body  = slot.Body;
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Body));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        _feedbackTimer.Stop();
+        _feedbackTimer.Tick -= FeedbackTimer_Tick;
+        Changed = null;
     }
 }

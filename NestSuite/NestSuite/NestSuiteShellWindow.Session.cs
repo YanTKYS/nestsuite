@@ -82,16 +82,7 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void SaveSession()
     {
-        var filePaths = _tabs
-            .Where(t => t.FilePath != null)
-            .Select(t => t.FilePath!)
-            .ToList();
-
-        _sessionState.Save(new NestSuiteSessionState
-        {
-            FilePaths = filePaths,
-            ActiveFilePath = _selectedTab?.FilePath
-        });
+        _sessionState.Save(SessionTabMapper.CreateSessionState(_tabs, _selectedTab));
     }
 
     /// <summary>
@@ -105,13 +96,10 @@ public partial class NestSuiteShellWindow
         if (state.FilePaths.Count == 0) return false;
 
         int restoredCount = 0;
-        foreach (var filePath in state.FilePaths)
+        foreach (var target in SessionTabMapper.CreateRestoreTargets(state, File.Exists))
         {
-            if (!File.Exists(filePath)) continue;
-            if (!NestSuiteTabFactory.TryGetKind(filePath, out var kind)) continue;
-
             int tabsBefore = _tabs.Count;
-            LoadWorkspaceFileAt(kind, filePath);
+            LoadWorkspaceFileAt(target.WorkspaceKind, target.FilePath);
             if (_tabs.Count > tabsBefore) restoredCount++;
         }
 

@@ -118,12 +118,15 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest).ToList())
         {
             var ideaVm = (IdeaNestWorkspaceViewModel)ideaSession.WorkspaceViewModel;
-            if (!ideaVm.HasChanges) continue;
             var ideaTab = _tabs.FirstOrDefault(t => t.Id == ideaSession.TabId);
             var ideaTabName = ideaTab?.DisplayName ?? "IdeaNest";
-            if (!_dialogs.Confirm(
-                $"「{ideaTabName}」に未保存の変更があります。\n終了すると内容は失われます。終了しますか？",
-                "未保存の IdeaNest", MessageBoxImage.Warning))
+            if (!CloseConfirmationService.CanCloseSingle(
+                    ideaVm.HasChanges,
+                    () => _dialogs.Confirm(
+                            $"「{ideaTabName}」に未保存の変更があります。\n終了すると内容は失われます。終了しますか？",
+                            "未保存の IdeaNest", MessageBoxImage.Warning)
+                        ? UnsavedChangeDecision.Discard
+                        : UnsavedChangeDecision.Cancel))
             { e.Cancel = true; return; }
         }
 
@@ -133,34 +136,43 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest).ToList())
         {
             var chatVm = (ChatNestWorkspaceViewModel)chatSession.WorkspaceViewModel;
-            if (!chatVm.HasUnsavedChanges) continue;
             var chatTab = _tabs.FirstOrDefault(t => t.Id == chatSession.TabId);
             if (chatSession.FilePath != null)
             {
-                var result = MessageBox.Show(
-                    this,
-                    $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
-                    "未保存の ChatNest",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Cancel) { e.Cancel = true; return; }
-                if (result == MessageBoxResult.Yes)
-                {
-                    if (!TrySaveChatNestToPath(chatSession, chatSession.FilePath!)) { e.Cancel = true; return; }
-                    // MarkSaved() で IsDirty は解消されるが InputText が残っている場合
-                    // HasUnsavedChanges は依然 true になる。保存対象外の入力テキストを破棄確認する。
-                    if (chatVm.HasUnsavedChanges &&
-                        !_dialogs.Confirm(
-                            "入力欄の未投稿テキストは .chatnest に保存されません。\n破棄して終了しますか？",
-                            "未投稿テキスト", MessageBoxImage.Warning))
-                    { e.Cancel = true; return; }
-                }
+                var closeDecision = CloseConfirmationService.EvaluateSingle(
+                    chatVm.HasUnsavedChanges,
+                    () => MessageBox.Show(
+                            this,
+                            $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                            "未保存の ChatNest",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Warning) switch
+                        {
+                            MessageBoxResult.Yes => UnsavedChangeDecision.Save,
+                            MessageBoxResult.No => UnsavedChangeDecision.Discard,
+                            _ => UnsavedChangeDecision.Cancel
+                        },
+                    () => TrySaveChatNestToPath(chatSession, chatSession.FilePath!));
+                if (closeDecision == UnsavedChangeDecision.Cancel) { e.Cancel = true; return; }
+
+                // MarkSaved() で IsDirty は解消されるが InputText が残っている場合
+                // HasUnsavedChanges は依然 true になる。保存対象外の入力テキストを破棄確認する。
+                if (closeDecision == UnsavedChangeDecision.Save &&
+                    chatVm.HasUnsavedChanges &&
+                    !_dialogs.Confirm(
+                        "入力欄の未投稿テキストは .chatnest に保存されません。\n破棄して終了しますか？",
+                        "未投稿テキスト", MessageBoxImage.Warning))
+                { e.Cancel = true; return; }
             }
             else
             {
-                if (!_dialogs.Confirm(
-                    $"ChatNest「{chatTab?.DisplayName ?? "無題"}」の内容は保存されていません。\n終了すると入力した発言は失われます。終了しますか？",
-                    "未保存の ChatNest", MessageBoxImage.Warning))
+                if (!CloseConfirmationService.CanCloseSingle(
+                        chatVm.HasUnsavedChanges,
+                        () => _dialogs.Confirm(
+                                $"ChatNest「{chatTab?.DisplayName ?? "無題"}」の内容は保存されていません。\n終了すると入力した発言は失われます。終了しますか？",
+                                "未保存の ChatNest", MessageBoxImage.Warning)
+                            ? UnsavedChangeDecision.Discard
+                            : UnsavedChangeDecision.Cancel))
                 { e.Cancel = true; return; }
             }
         }
@@ -183,6 +195,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosed(EventArgs e)
     {
+        StopNotificationTimer();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
         foreach (var s in _sessionManager.Sessions)

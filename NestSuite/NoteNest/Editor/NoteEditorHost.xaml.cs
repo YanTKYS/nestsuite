@@ -12,6 +12,7 @@ public partial class NoteEditorHost : UserControl
     private ScrollViewer? _lineNumberScrollViewer;
     private int  _completionLinkStart     = -1;
     private bool _suppressCompletionUpdate;
+    private bool _editorEventsAttached;
 
     public ITextEditorAdapter Editor { get; private set; } = null!;
 
@@ -27,17 +28,17 @@ public partial class NoteEditorHost : UserControl
     public NoteEditorHost()
     {
         InitializeComponent();
-        IsVisibleChanged += (_, _) =>
-        {
-            if (IsVisible) UpdateCurrentLineHighlight();
-            else           CloseCompletion();
-        };
+        IsVisibleChanged += NoteEditorHost_IsVisibleChanged;
+        Unloaded += NoteEditorHost_Unloaded;
     }
 
     // ── Initialisation ────────────────────────────────────────────────────
 
     private void EditorBox_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_editorEventsAttached) return;
+        _editorEventsAttached = true;
+
         _editorScrollViewer     = GetDescendant<ScrollViewer>(EditorBox);
         _lineNumberScrollViewer = GetDescendant<ScrollViewer>(LineNumberBox);
         if (_editorScrollViewer != null)
@@ -46,11 +47,7 @@ public partial class NoteEditorHost : UserControl
         CompletionPopup.PlacementTarget = EditorBox;
 
         Editor = new TextBoxEditorAdapter(EditorBox);
-        Editor.SelectionChanged += (_, _) =>
-        {
-            UpdateCurrentLineHighlight();
-            if (!_suppressCompletionUpdate) UpdateCompletion();
-        };
+        Editor.SelectionChanged += Editor_SelectionChanged;
 
         EditorBox.PreviewKeyDown += EditorBox_PreviewKeyDown;
         EditorBox.LostFocus      += EditorBox_LostFocus;
@@ -58,6 +55,38 @@ public partial class NoteEditorHost : UserControl
         UpdateLineNumbers();
         UpdateCurrentLineHighlight();
         EditorReady?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void NoteEditorHost_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible) UpdateCurrentLineHighlight();
+        else           CloseCompletion();
+    }
+
+    private void Editor_SelectionChanged(object? sender, EventArgs e)
+    {
+        UpdateCurrentLineHighlight();
+        if (!_suppressCompletionUpdate) UpdateCompletion();
+    }
+
+    private void NoteEditorHost_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (!_editorEventsAttached) return;
+        _editorEventsAttached = false;
+
+        if (_editorScrollViewer != null)
+            _editorScrollViewer.ScrollChanged -= EditorScrollViewer_ScrollChanged;
+        if (Editor != null)
+        {
+            Editor.SelectionChanged -= Editor_SelectionChanged;
+            if (Editor is IDisposable disposableEditor)
+                disposableEditor.Dispose();
+        }
+        EditorBox.PreviewKeyDown -= EditorBox_PreviewKeyDown;
+        EditorBox.LostFocus      -= EditorBox_LostFocus;
+        CloseCompletion();
+        _editorScrollViewer = null;
+        _lineNumberScrollViewer = null;
     }
 
     private void EditorBox_TextChanged(object sender, TextChangedEventArgs e)

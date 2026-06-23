@@ -18,13 +18,14 @@ public partial class MainViewModel : BaseViewModel, IDisposable
     private readonly DispatcherTimer _unsavedTimer;
     private readonly DispatcherTimer _autoSaveTimer;
     private bool _isAutoSaveEnabled;
+    private bool _disposed;
 
     public MainViewModel()
     {
         _unsavedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-        _unsavedTimer.Tick += (_, _) => _session.RefreshUnsavedStatus();
+        _unsavedTimer.Tick += UnsavedTimer_Tick;
         _autoSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
-        _autoSaveTimer.Tick += (_, _) => AutoSave();
+        _autoSaveTimer.Tick += AutoSaveTimer_Tick;
         _autoSaveTimer.Start();
 
         _changeCoordinator = new WorkspaceChangeCoordinator(_notes, _tasks, _markers, _editor);
@@ -76,6 +77,10 @@ public partial class MainViewModel : BaseViewModel, IDisposable
             OnPropertyChanged(e.PropertyName);
     }
 
+    private void UnsavedTimer_Tick(object? sender, EventArgs e) => _session.RefreshUnsavedStatus();
+
+    private void AutoSaveTimer_Tick(object? sender, EventArgs e) => AutoSave();
+
     private void WorkspaceChanged(object? sender, WorkspaceChangeEventArgs e)
     {
         if (e.IsDataChanged) IsModified = true;
@@ -93,8 +98,12 @@ public partial class MainViewModel : BaseViewModel, IDisposable
     /// </summary>
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
         _autoSaveTimer.Stop();
+        _autoSaveTimer.Tick -= AutoSaveTimer_Tick;
         _unsavedTimer.Stop();
+        _unsavedTimer.Tick -= UnsavedTimer_Tick;
         _changeCoordinator.Changed -= WorkspaceChanged;
         _session.PropertyChanged -= SessionPropertyChanged;
     }
