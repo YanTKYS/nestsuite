@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace NestSuite.NoteNest.Editor;
 
-public sealed class TextBoxEditorAdapter : ITextEditorAdapter
+public sealed class TextBoxEditorAdapter : ITextEditorAdapter, IDisposable
 {
     private readonly TextBox _textBox;
 
@@ -68,6 +68,12 @@ public sealed class TextBoxEditorAdapter : ITextEditorAdapter
 
     private void OnTextBoxSelectionChanged(object sender, RoutedEventArgs e) =>
         SelectionChanged?.Invoke(this, EventArgs.Empty);
+
+    public void Dispose()
+    {
+        _textBox.TextChanged      -= OnTextBoxTextChanged;
+        _textBox.SelectionChanged -= OnTextBoxSelectionChanged;
+    }
 
     private static int Clamp(int value, int min, int max) =>
         value < min ? min : value > max ? max : value;

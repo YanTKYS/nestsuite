@@ -16,18 +16,27 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void ShowStatusNotification(string message, int durationMs = 2000)
     {
-        _notificationTimer?.Stop();
+        StopNotificationTimer();
         WorkspaceStatusText.Text = message;
         _isShowingNotification = true;
         _notificationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(durationMs) };
-        _notificationTimer.Tick += (_, _) =>
-        {
-            _notificationTimer?.Stop();
-            _notificationTimer = null;
-            _isShowingNotification = false;
-            RefreshWorkspaceStatus();
-        };
+        _notificationTimer.Tick += NotificationTimer_Tick;
         _notificationTimer.Start();
+    }
+
+    private void NotificationTimer_Tick(object? sender, EventArgs e)
+    {
+        StopNotificationTimer();
+        _isShowingNotification = false;
+        RefreshWorkspaceStatus();
+    }
+
+    private void StopNotificationTimer()
+    {
+        if (_notificationTimer == null) return;
+        _notificationTimer.Stop();
+        _notificationTimer.Tick -= NotificationTimer_Tick;
+        _notificationTimer = null;
     }
 
     /// <summary>

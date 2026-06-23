@@ -195,6 +195,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosed(EventArgs e)
     {
+        StopNotificationTimer();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
         foreach (var s in _sessionManager.Sessions)

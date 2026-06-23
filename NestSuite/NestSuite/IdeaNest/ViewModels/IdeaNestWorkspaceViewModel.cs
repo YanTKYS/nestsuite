@@ -243,7 +243,12 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        _statusClearTimer?.Stop();
+        if (_statusClearTimer != null)
+        {
+            _statusClearTimer.Stop();
+            _statusClearTimer.Tick -= StatusClearTimer_Tick;
+            _statusClearTimer = null;
+        }
         CardDisplay.PropertyChanged -= OnSubVmPropertyChanged;
         Filter.PropertyChanged     -= OnSubVmPropertyChanged;
         TagPanel.PropertyChanged   -= OnSubVmPropertyChanged;
@@ -421,17 +426,23 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     private void ShowStatus(string message)
     {
         StatusMessage = message;
-        _statusClearTimer?.Stop();
+        if (_statusClearTimer != null)
+        {
+            _statusClearTimer.Stop();
+            _statusClearTimer.Tick -= StatusClearTimer_Tick;
+        }
         _statusClearTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(3),
         };
-        _statusClearTimer.Tick += (_, _) =>
-        {
-            StatusMessage = string.Empty;
-            _statusClearTimer?.Stop();
-        };
+        _statusClearTimer.Tick += StatusClearTimer_Tick;
         _statusClearTimer.Start();
+    }
+
+    private void StatusClearTimer_Tick(object? sender, EventArgs e)
+    {
+        StatusMessage = string.Empty;
+        _statusClearTimer?.Stop();
     }
 
     public void RenameTag(string oldName, string newName) => _tagMgmt.RenameTag(oldName, newName);

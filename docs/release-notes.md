@@ -1,3 +1,12 @@
+## v2.7.16 — イベント購読の解除漏れ点検・修正（TD-13）
+
+- **イベント購読の解除漏れを点検・修正した。** Workspace / EditorHost / ViewModel / Timer 周辺の明示的な `+=` を確認し、寿命終了時に解除される経路を補強した。
+- **Workspace / EditorHost / Timer 周辺の寿命管理を改善した。** TempNest、ChatNest、IdeaNest の `DispatcherTimer` は停止に加えて Tick 購読を解除する。`NoteEditorHost` は Unloaded 時にスクロール同期・エディタ選択・キーハンドラを解除し、`TextBoxEditorAdapter` も `IDisposable` で TextBox イベントを解除する。
+- **Dispose の冪等性を確認した。** TempNest / ChatNest / IdeaNest の Dispose を複数回呼んでも例外にならないことを単体テストで確認した。
+- **動作変更なし。** 起動、終了、タブ操作、保存、検索、補完、スクロール同期、未保存確認のユーザー向け挙動は維持する。
+- **保存形式・セッション形式に変更はない。** NoteNest schema = `1.4.1`、TempNest JSON version、`.chatnest` / `.ideanest` 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.7.15 — 保存成功後のタブ・セッション更新統一（TD-3-4）
 
 - **保存成功後のタブ・セッション反映経路を整理した。** `SavedWorkspaceStateUpdater` と `ApplySavedWorkspaceState` を追加し、保存成功後の file path / dirty state / tab title / recent files / Session 反映を共通経路へ寄せた。

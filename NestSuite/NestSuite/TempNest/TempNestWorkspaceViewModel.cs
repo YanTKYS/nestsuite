@@ -16,7 +16,7 @@ public class TempNestWorkspaceViewModel : BaseViewModel, IDisposable
     public TempNestWorkspaceViewModel()
     {
         _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); SaveNow(); };
+        _saveTimer.Tick += SaveTimer_Tick;
 
         foreach (var slot in Slots)
             slot.Changed += OnSlotChanged;
@@ -31,6 +31,12 @@ public class TempNestWorkspaceViewModel : BaseViewModel, IDisposable
     {
         _saveTimer.Stop();
         _saveTimer.Start();
+    }
+
+    private void SaveTimer_Tick(object? sender, EventArgs e)
+    {
+        _saveTimer.Stop();
+        SaveNow();
     }
 
     private void Load()
@@ -56,10 +62,11 @@ public class TempNestWorkspaceViewModel : BaseViewModel, IDisposable
         if (_disposed) return;
         _disposed = true;
         _saveTimer.Stop();
+        _saveTimer.Tick -= SaveTimer_Tick;
         foreach (var slot in Slots)
         {
             slot.Changed -= OnSlotChanged;
-            slot.StopFeedback();
+            slot.Dispose();
         }
     }
 }

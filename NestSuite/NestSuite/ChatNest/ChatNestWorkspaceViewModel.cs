@@ -433,14 +433,20 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private void ShowCopyStatus(string message)
     {
         CopyStatusText = message;
-        _copyStatusTimer?.Stop();
-        _copyStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _copyStatusTimer.Tick += (_, _) =>
+        if (_copyStatusTimer != null)
         {
-            CopyStatusText = string.Empty;
-            _copyStatusTimer?.Stop();
-        };
+            _copyStatusTimer.Stop();
+            _copyStatusTimer.Tick -= CopyStatusTimer_Tick;
+        }
+        _copyStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _copyStatusTimer.Tick += CopyStatusTimer_Tick;
         _copyStatusTimer.Start();
+    }
+
+    private void CopyStatusTimer_Tick(object? sender, EventArgs e)
+    {
+        CopyStatusText = string.Empty;
+        _copyStatusTimer?.Stop();
     }
 
     private void Post()
@@ -457,7 +463,12 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        _copyStatusTimer?.Stop();
+        if (_copyStatusTimer != null)
+        {
+            _copyStatusTimer.Stop();
+            _copyStatusTimer.Tick -= CopyStatusTimer_Tick;
+            _copyStatusTimer = null;
+        }
         foreach (var m in Messages)
             m.PropertyChanged -= OnMessageViewModelPropertyChanged;
         Messages.CollectionChanged -= OnMessagesCollectionChanged;
