@@ -552,6 +552,8 @@
                                  Padding="10,8"
                                  BorderThickness="0"
                                  Background="Transparent"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 CaretBrush="{DynamicResource PrimaryTextBrush}"
                                  VerticalContentAlignment="Top"
                                  PreviewKeyDown="InputBox_PreviewKeyDown">
                             <TextBox.Style>
