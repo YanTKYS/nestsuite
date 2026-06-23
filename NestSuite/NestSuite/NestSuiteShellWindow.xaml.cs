@@ -227,20 +227,26 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             case WindowState.Maximized:
             {
                 var rb = RestoreBounds;
-                if (rb.Width  > 0)  s.NestSuiteWindowWidth  = rb.Width;
-                if (rb.Height > 0)  s.NestSuiteWindowHeight = rb.Height;
-                if (rb.Left   > -1) s.NestSuiteWindowLeft   = rb.Left;
-                if (rb.Top    > -1) s.NestSuiteWindowTop    = rb.Top;
+                if (!rb.IsEmpty)
+                {
+                    if (rb.Width  > 0) s.NestSuiteWindowWidth  = rb.Width;
+                    if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                    s.NestSuiteWindowLeft = rb.Left;
+                    s.NestSuiteWindowTop  = rb.Top;
+                }
                 s.NestSuiteIsWindowMaximized = true;
                 break;
             }
             case WindowState.Minimized:
             {
                 var rb = RestoreBounds;
-                if (rb.Width  > 0)  s.NestSuiteWindowWidth  = rb.Width;
-                if (rb.Height > 0)  s.NestSuiteWindowHeight = rb.Height;
-                if (rb.Left   > -1) s.NestSuiteWindowLeft   = rb.Left;
-                if (rb.Top    > -1) s.NestSuiteWindowTop    = rb.Top;
+                if (!rb.IsEmpty)
+                {
+                    if (rb.Width  > 0) s.NestSuiteWindowWidth  = rb.Width;
+                    if (rb.Height > 0) s.NestSuiteWindowHeight = rb.Height;
+                    s.NestSuiteWindowLeft = rb.Left;
+                    s.NestSuiteWindowTop  = rb.Top;
+                }
                 s.NestSuiteIsWindowMaximized = false;
                 break;
             }
