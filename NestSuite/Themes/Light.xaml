@@ -108,6 +108,9 @@
     <SolidColorBrush x:Key="IdeaChipBackgroundBrush" Color="#EEF2F7"/>
     <SolidColorBrush x:Key="IdeaChipForegroundBrush" Color="#475569"/>
     <SolidColorBrush x:Key="IdeaHoverOverlayBrush" Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="IdeaCardTextPrimaryBrush" Color="#1F2937"/>
+    <SolidColorBrush x:Key="IdeaCardTextSecondaryBrush" Color="#6B7280"/>
+    <SolidColorBrush x:Key="ChatBubbleTextBrush" Color="#212121"/>
     <SolidColorBrush x:Key="IdeaCardHoverBorderBrush" Color="#9CA3AF"/>
 
 </ResourceDictionary>

@@ -6,10 +6,10 @@
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource IdeaAppBackgroundBrush}"
+        Background="{DynamicResource IdeaAppBackgroundBrush}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True">
-    <Border Margin="20" Background="{StaticResource IdeaSurfaceBrush}" CornerRadius="12" Padding="24">
+    <Border Margin="20" Background="{DynamicResource IdeaSurfaceBrush}" CornerRadius="12" Padding="24">
         <Border.Effect>
             <DropShadowEffect Color="#1F2937" Opacity="0.10" BlurRadius="14" ShadowDepth="2" Direction="270" />
         </Border.Effect>
@@ -22,12 +22,12 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" x:Name="HeaderText"
-                       Foreground="{StaticResource IdeaTextPrimaryBrush}"
+                       Foreground="{DynamicResource IdeaTextPrimaryBrush}"
                        FontSize="15" FontWeight="SemiBold"
                        Margin="0,0,0,6" />
 
             <TextBlock Grid.Row="1" x:Name="MessageText"
-                       Foreground="{StaticResource IdeaTextSecondaryBrush}"
+                       Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                        FontSize="12" TextWrapping="Wrap"
                        Margin="0,0,0,14"
                        Visibility="Collapsed" />

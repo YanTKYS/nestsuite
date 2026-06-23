@@ -13,7 +13,6 @@
     <!-- IdeaNest uses SH-10 brushes supplied by the active app theme. -->
 
     <!-- ID-9: Card hover / focus visual feedback -->
-    <SolidColorBrush x:Key="IdeaCardHoverBorderBrush" Color="#9CA3AF" />
     <DropShadowEffect x:Key="IdeaCardHoverShadow"
                       Color="#1F2937" Opacity="0.16" BlurRadius="20" ShadowDepth="4" Direction="270" />
 

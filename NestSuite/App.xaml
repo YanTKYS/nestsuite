@@ -16,17 +16,6 @@
             <!-- SH-10: common controls resolve colors through theme resources. -->
             <Style TargetType="Window">
                 <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-            </Style>
-
-            <Style TargetType="Menu">
-                <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-            </Style>
-
-            <Style TargetType="MenuItem">
-                <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             </Style>
 
             <Style TargetType="TextBox">

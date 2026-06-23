@@ -7,10 +7,10 @@
         ResizeMode="CanResizeWithGrip"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource IdeaAppBackgroundBrush}"
+        Background="{DynamicResource IdeaAppBackgroundBrush}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True">
-    <Border Margin="20" Background="{StaticResource IdeaSurfaceBrush}" CornerRadius="12" Padding="20">
+    <Border Margin="20" Background="{DynamicResource IdeaSurfaceBrush}" CornerRadius="12" Padding="20">
         <Border.Effect>
             <DropShadowEffect Color="#1F2937" Opacity="0.08" BlurRadius="14" ShadowDepth="2" Direction="270" />
         </Border.Effect>
@@ -19,10 +19,10 @@
             <!-- Header -->
             <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
                 <TextBlock Text="タグ管理"
-                           Foreground="{StaticResource IdeaTextPrimaryBrush}"
+                           Foreground="{DynamicResource IdeaTextPrimaryBrush}"
                            FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4" />
                 <TextBlock Text="タグのリネーム（既存タグ名を指定すると統合）・削除ができます"
-                           Foreground="{StaticResource IdeaTextSecondaryBrush}"
+                           Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                            FontSize="12" TextWrapping="Wrap" />
             </StackPanel>
 
@@ -30,7 +30,7 @@
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                         HorizontalAlignment="Right" Margin="0,16,0,0">
                 <TextBlock Text="※ タグを削除してもカード自体は削除されません"
-                           Foreground="{StaticResource IdeaTextSecondaryBrush}"
+                           Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                            FontSize="11" VerticalAlignment="Center" Margin="0,0,16,0" />
                 <Button Content="閉じる" Style="{StaticResource IdeaSecondaryButtonStyle}"
                         IsCancel="True" Click="OnClose" />
@@ -38,14 +38,14 @@
 
             <!-- Tag list -->
             <Border DockPanel.Dock="Top"
-                    BorderBrush="{StaticResource IdeaBorderBrush}" BorderThickness="1"
+                    BorderBrush="{DynamicResource IdeaBorderBrush}" BorderThickness="1"
                     CornerRadius="8" ClipToBounds="True">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="TagList" ItemsSource="{Binding TagItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border x:Name="RowBd"
-                                        BorderBrush="{StaticResource IdeaBorderBrush}"
+                                        BorderBrush="{DynamicResource IdeaBorderBrush}"
                                         BorderThickness="0,0,0,1"
                                         Padding="12,10">
                                     <Grid>
@@ -60,13 +60,13 @@
                                                     VerticalAlignment="Center">
                                             <TextBlock Text="{Binding DisplayName}"
                                                        FontSize="14"
-                                                       Foreground="{StaticResource IdeaTextPrimaryBrush}"
+                                                       Foreground="{DynamicResource IdeaTextPrimaryBrush}"
                                                        VerticalAlignment="Center" />
-                                            <Border Background="{StaticResource IdeaChipBackgroundBrush}"
+                                            <Border Background="{DynamicResource IdeaChipBackgroundBrush}"
                                                     CornerRadius="9" Padding="8,2" Margin="8,0,0,0">
                                                 <TextBlock Text="{Binding CountText}"
                                                            FontSize="11"
-                                                           Foreground="{StaticResource IdeaChipForegroundBrush}" />
+                                                           Foreground="{DynamicResource IdeaChipForegroundBrush}" />
                                             </Border>
                                         </StackPanel>
 
@@ -86,7 +86,7 @@
                                         <Style TargetType="Border">
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource IdeaHoverOverlayBrush}" />
+                                                    <Setter Property="Background" Value="{DynamicResource IdeaHoverOverlayBrush}" />
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>

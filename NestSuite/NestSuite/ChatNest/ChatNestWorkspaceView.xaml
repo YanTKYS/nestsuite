@@ -270,7 +270,7 @@
                                    TextWrapping="Wrap"
                                    FontSize="13"
                                    LineHeight="20"
-                                   Foreground="{DynamicResource ChatMessageTextBrush}">
+                                   Foreground="{DynamicResource ChatBubbleTextBrush}">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Visible"/>
@@ -296,7 +296,7 @@
                                      BorderThickness="1"
                                      BorderBrush="{DynamicResource FocusBorderBrush}"
                                      Background="{DynamicResource InputBackgroundBrush}"
-                                     Foreground="{DynamicResource ChatMessageTextBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
                                      PreviewKeyDown="EditBox_PreviewKeyDown"
                                      IsVisibleChanged="EditBox_IsVisibleChanged"/>
                             <StackPanel Orientation="Horizontal"
@@ -598,7 +598,7 @@
                     <TextBlock Text="この発言を削除しますか？"
                                FontSize="14"
                                FontWeight="SemiBold"
-                               Foreground="{DynamicResource ChatMessageTextBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                Margin="0,0,0,16"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="キャンセル(_C)"
