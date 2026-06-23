@@ -128,6 +128,7 @@ public partial class NoteEditorHost : UserControl
     private void UpdateLayoutDependentUI()
     {
         UpdateLineNumbersFromLayout();
+        UpdateCurrentLineHighlight();
         UpdateMarkerHighlights();
     }
 
