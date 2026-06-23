@@ -424,7 +424,7 @@
                        FontSize="14"
                        Foreground="{DynamicResource MutedTextBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Ctrl / Shift + Enter で投稿"
+            <TextBlock Text="Ctrl + Enter で投稿"
                        FontSize="11"
                        Foreground="{DynamicResource MutedTextBrush}"
                        HorizontalAlignment="Center"
@@ -492,7 +492,7 @@
                     </StackPanel>
 
                     <TextBlock Grid.Column="1"
-                               Text="Ctrl / Shift + ← / → で切り替え"
+                               Text="Ctrl + ← / → で切り替え"
                                FontSize="10"
                                Foreground="{DynamicResource MutedTextBrush}"
                                VerticalAlignment="Center"
