@@ -18,7 +18,8 @@ public class ThemeSettingsTests
         "MutedTextBrush", "BorderBrush", "AccentBrush", "HoverBackgroundBrush",
         "FocusBorderBrush", "SelectionBackgroundBrush", "SearchHighlightBrush",
         "WarningBrush", "ErrorBrush", "UnsavedIndicatorBrush",
-        "IdeaCardTextPrimaryBrush", "IdeaCardTextSecondaryBrush", "ChatBubbleTextBrush"
+        "IdeaCardTextPrimaryBrush", "IdeaCardTextSecondaryBrush", "ChatBubbleTextBrush",
+        "MarkerLineHighlightBrush"
     ];
 
     [Fact]

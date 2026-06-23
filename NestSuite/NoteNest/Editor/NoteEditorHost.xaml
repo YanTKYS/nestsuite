@@ -78,6 +78,12 @@
             </TextBox.Style>
         </TextBox>
 
+        <!-- Marker line highlight overlay (H3b): TODO/FIXME/HACK lines, behind the autocomplete popup -->
+        <Canvas Grid.Column="1"
+                x:Name="MarkerHighlightCanvas"
+                Panel.ZIndex="1"
+                IsHitTestVisible="False"/>
+
         <!-- Note-link autocomplete popup (H1a) -->
         <Popup x:Name="CompletionPopup"
                Grid.Column="1"

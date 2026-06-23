@@ -1,3 +1,15 @@
+## v2.8.1 — TODO / FIXME / HACK 行ハイライト（H3b）
+
+- **NoteNest エディタで TODO / FIXME / HACK を含む行の薄い背景強調に対応した。** `NoteEditorHost` に `MarkerHighlightCanvas`（`IsHitTestVisible="False"`、`Panel.ZIndex="1"`）を追加し、該当行を薄く強調表示する。
+- **マーカー行を本文上で見つけやすく改善した。** 右ペインのマーカー一覧と併用することで、編集中の本文上でも TODO / FIXME / HACK の位置を視認しやすくなる。
+- **行レベルの視覚補助として実装した。** 文字単位の装飾ではなく、論理行の背景を薄く塗る方式。大文字小文字を区別しない（`todo` / `fixme` / `hack` も検出）。
+- **`MarkerLineDetector` を新設した。** `TODO` / `FIXME` / `HACK` を含む論理行の 0 ベースインデックスを返す静的クラス。スパンベースの走査でアロケーション低減。
+- **本文変更・スクロール・フォントサイズ変更・リサイズ・テーマ変更時に再描画する。** `TextChanged` / `ScrollChanged` / `DataContext.PropertyChanged(EditorFontSize)` / `Canvas.SizeChanged` を起点として `DispatcherPriority.Render` で再描画する。
+- **Light / Dark 両テーマで視認できる色を設定した。** `MarkerLineHighlightBrush`：Light `#FFF2CC`（淡い黄色）/ Dark `#2D2510`（暗い琥珀）。
+- **入力操作・選択・コピー・IME・検索ハイライト・現在行強調を妨げない。** `IsHitTestVisible="False"` でクリックや選択を奪わない。TextBox の文字単位装飾なし・RichTextBox 置き換えなし。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。ハイライト状態は `.notenest` に保存しない。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.8.0 — ドキュメント整理・README 再作成・backlog 最新化
 
 - **README.md を NestSuite の正式 README として再作成した。** NoteNest Classic 由来の記述を整理し、NestSuite が NoteNest / IdeaNest / ChatNest / TempNest を備えた統合ツールであることを明確にした。起動方法・各 Workspace 説明・保存形式・基本操作・注意事項・ドキュメント参照先を再構成した。
