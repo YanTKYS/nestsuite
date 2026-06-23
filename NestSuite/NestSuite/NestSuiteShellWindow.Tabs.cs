@@ -230,6 +230,25 @@ public partial class NestSuiteShellWindow
             }
         }
 
+        if (e.PropertyName == nameof(MainViewModel.EditorFontSize) &&
+            sender is MainViewModel fontVm &&
+            !_suppressFontSizePropagation &&
+            Math.Abs(fontVm.EditorFontSize - _noteNestEditorFontSize) > 0.01)
+        {
+            _noteNestEditorFontSize = fontVm.EditorFontSize;
+            foreach (var s in _sessionManager.Sessions
+                .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+                            !ReferenceEquals(s.WorkspaceViewModel, fontVm)))
+            {
+                if (s.WorkspaceViewModel is MainViewModel otherVm)
+                    otherVm.EditorFontSize = _noteNestEditorFontSize;
+            }
+            var uiSvc = new UiSettingsService();
+            var ui = uiSvc.Load();
+            ui.NoteNestEditorFontSize = _noteNestEditorFontSize;
+            uiSvc.Save(ui);
+        }
+
         if (e.PropertyName is nameof(MainViewModel.MarkerCount) or nameof(MainViewModel.TotalIncompleteTaskCountText) &&
             sender is MainViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();

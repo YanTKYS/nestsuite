@@ -338,6 +338,12 @@
                         <TextBlock Text="コメント編集中"
                                    FontSize="10.5" Foreground="{DynamicResource CommentBadgeFg}"/>
                     </Border>
+                    <ComboBox DockPanel.Dock="Right"
+                              FontSize="11" Width="52" Margin="0,0,4,0"
+                              VerticalAlignment="Center"
+                              ItemsSource="{x:Static vm:MainViewModel.EditorFontSizeChoices}"
+                              SelectedItem="{Binding EditorFontSize, Mode=TwoWay}"
+                              ToolTip="フォントサイズ"/>
                     <TextBlock Text="{Binding EditorTitle}"
                                ToolTip="{Binding CurrentNoteTimestampSummary}"
                                FontSize="14" FontWeight="SemiBold"
@@ -405,7 +411,7 @@
                       Grid.Column="3" HorizontalAlignment="Stretch"
                       Background="{DynamicResource PaneBorder}" ShowsPreview="True"/>
 
-        <!-- v1.16.3: 右ペイン展開ボタン。折り畳み時に Column 3 に表示し、スクロールバーと重ならない位置に固定 -->
+        <!-- 右ペイン展開ボタン。折り畳み時に Column 3（20px）に表示。Panel.ZIndex なし、左ボーダーで区切り -->
         <Button Grid.Column="3"
                 x:Name="RightPaneExpandButton"
                 Content="»" Width="20"
@@ -414,7 +420,8 @@
                 Click="ToggleRightPane_Click"
                 ToolTip="右ペインを表示"
                 Visibility="Collapsed"
-                Panel.ZIndex="2"/>
+                BorderBrush="{DynamicResource PaneBorder}"
+                BorderThickness="1,0,0,0"/>
 
         <!-- ═══ RIGHT PANE ═══ -->
         <Grid Grid.Column="4" Background="{DynamicResource RightPaneBg}">

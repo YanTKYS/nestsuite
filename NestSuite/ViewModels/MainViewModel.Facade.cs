@@ -82,6 +82,8 @@ public partial class MainViewModel
     public EditorStateViewModel Editor => _editor;
     public ProjectSessionViewModel Session => _session;
 
+    public static readonly IReadOnlyList<double> EditorFontSizeChoices = [12, 14, 16, 18, 20];
+
     // 複数責務を組み合わせるため MainViewModel に残す派生表示。
     public static string ApplicationVersion
     {

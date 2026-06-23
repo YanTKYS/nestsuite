@@ -52,6 +52,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // テーマを InitializeComponent 前に適用（DynamicResource が正しい値に解決されるよう）
         var uiSettings = new UiSettingsService().Load();
         new ThemeService().Apply(uiSettings.Theme);
+        _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
 
         InitializeComponent();
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
@@ -265,6 +266,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly NestSuiteSessionStateService _sessionState = new();
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
+    private double _noteNestEditorFontSize = 14;
+    private bool _suppressFontSizePropagation;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
     private int? _tabDropTargetIndex;
@@ -326,6 +329,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 vm.NavigateToLine?.Invoke(line);
         };
         vm.SyncTreeSelectionCallback = note => WorkspaceView.SyncTreeSelection(note);
+        vm.EditorFontSize = _noteNestEditorFontSize;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }

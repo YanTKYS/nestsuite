@@ -25,6 +25,7 @@ public class UiSettings
     public bool NestSuiteIsWindowMaximized { get; set; } = false;
     public double? NestSuiteWindowLeft { get; set; }
     public double? NestSuiteWindowTop { get; set; }
+    public double NoteNestEditorFontSize { get; set; } = 14;
     public double? PreviewIdeaWindowWidth { get; set; }
     public double? PreviewIdeaWindowHeight { get; set; }
     public double? PreviewIdeaWindowLeft { get; set; }
@@ -33,6 +34,9 @@ public class UiSettings
 
 public class UiSettingsService
 {
+    public static double ValidateNoteNestEditorFontSize(double size) =>
+        size is 12 or 14 or 16 or 18 or 20 ? size : 14;
+
     private static readonly string DataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "ui-settings.json");

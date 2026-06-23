@@ -413,7 +413,12 @@ public partial class NestSuiteShellWindow
         try
         {
             var vm = CreateNoteNestViewModel();
-            if (!vm.OpenFileAtStartup(path)) return;
+            _suppressFontSizePropagation = true;
+            bool opened;
+            try { opened = vm.OpenFileAtStartup(path); }
+            finally { _suppressFontSizePropagation = false; }
+            if (!opened) return;
+            vm.EditorFontSize = _noteNestEditorFontSize;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -466,7 +471,12 @@ public partial class NestSuiteShellWindow
         try
         {
             var vm = CreateNoteNestViewModel();
-            if (!vm.OpenFileAtStartup(path)) { EnsureDefaultTab(); return; }
+            _suppressFontSizePropagation = true;
+            bool opened;
+            try { opened = vm.OpenFileAtStartup(path); }
+            finally { _suppressFontSizePropagation = false; }
+            if (!opened) { EnsureDefaultTab(); return; }
+            vm.EditorFontSize = _noteNestEditorFontSize;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
