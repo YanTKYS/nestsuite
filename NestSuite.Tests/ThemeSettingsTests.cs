@@ -65,7 +65,7 @@ public class ThemeSettingsTests
         var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".notenest");
         try
         {
-            new ProjectFileService().Save(path, new Project { ProjectName = "Theme Guard" });
+            new ProjectFileService().Save(path, new Project { ProjectName = "Schema Guard" });
             var json = File.ReadAllText(path);
             Assert.DoesNotContain("theme", json, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
@@ -92,7 +92,7 @@ public class ThemeSettingsTests
         var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".ideanest");
         try
         {
-            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Theme Guard" });
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Schema Guard" });
             var json = File.ReadAllText(path);
             Assert.DoesNotContain("theme", json, StringComparison.OrdinalIgnoreCase);
         }

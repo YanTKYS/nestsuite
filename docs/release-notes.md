@@ -1,3 +1,10 @@
+## v2.8.0 — ドキュメント整理・README 再作成・backlog 最新化
+
+- **README.md を NestSuite の正式 README として再作成した。** NoteNest Classic 由来の記述を整理し、NestSuite が NoteNest / IdeaNest / ChatNest / TempNest を備えた統合ツールであることを明確にした。起動方法・各 Workspace 説明・保存形式・基本操作・注意事項・ドキュメント参照先を再構成した。
+- **backlog を最新化した。** v2.7.16〜v2.7.18 で完了した TD-13 / TD-15 / TD-16 を完了済み欄に移した。完了済みのまま active table に残っていた TD-3 / TD-5 を整理した。改善提案セクションをコードベース分析結果に合わせて更新した。
+- **機能変更なし。** アプリの動作・UI・保存形式・セッション形式・テーマ切替に変更はない。
+- **保存形式変更なし。** NoteNest schema `1.4.1`、`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。
+
 ## v2.7.20 — ChatNest ショートカット競合整理
 
 - **ChatNest と Shell のショートカット競合を整理した。** NestSuite Shell 共通操作を優先し、ChatNest タブ上でも `Shift + ← / →` によるタブ切り替えが動作するようにした。
