@@ -1,0 +1,124 @@
+using NestSuite.Models;
+using NestSuite.ViewModels;
+using Xunit;
+
+namespace NestSuite.Tests;
+
+/// <summary>
+/// v2.9.1 SH-21: NoteNest 別ウィンドウ表示 — タブ状態・フラグ・スキーマ整合のテスト。
+/// Shell UI（WPF）を必要とするウィンドウ操作は対象外。
+/// </summary>
+public class DetachedWorkspaceTests
+{
+    // ── IsDetachable ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void NoteNestTab_IsDetachable_WhenNotDetached()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+        Assert.True(tab.IsDetachable);
+    }
+
+    [Theory]
+    [InlineData(NestSuiteWorkspaceKind.ChatNest)]
+    [InlineData(NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData(NestSuiteWorkspaceKind.Temp)]
+    public void NonNoteNestTab_IsNotDetachable(NestSuiteWorkspaceKind kind)
+    {
+        var tab = kind == NestSuiteWorkspaceKind.Temp
+            ? new NestSuiteDocumentTab { Id = "t", WorkspaceKind = kind, DisplayName = "Temp", CanClose = false }
+            : NestSuiteTabFactory.CreateUntitled(kind);
+        Assert.False(tab.IsDetachable);
+    }
+
+    [Fact]
+    public void NoteNestTab_IsNotDetachable_WhenAlreadyDetached()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsDetached = true };
+        Assert.False(tab.IsDetachable);
+    }
+
+    // ── IsDetached フラグ ────────────────────────────────────────────────
+
+    [Fact]
+    public void NewNoteNestTab_IsNotDetached_ByDefault()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+        Assert.False(tab.IsDetached);
+    }
+
+    [Fact]
+    public void Tab_WithIsDetachedTrue_ReflectsDetachedState()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsDetached = true };
+        Assert.True(tab.IsDetached);
+        Assert.True(tab.IsNoteNest);
+        Assert.False(tab.IsDetachable);
+    }
+
+    [Fact]
+    public void Tab_WithIsDetachedTrue_CanBeResetToFalse()
+    {
+        var detached = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsDetached = true };
+        var reattached = detached with { IsDetached = false };
+
+        Assert.False(reattached.IsDetached);
+        Assert.True(reattached.IsDetachable);
+    }
+
+    [Fact]
+    public void IsDetached_DoesNotAffectIsModified_OrFilePath()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\notes.notenest") with
+        {
+            IsDetached = true,
+            IsModified = true
+        };
+
+        Assert.True(tab.IsDetached);
+        Assert.True(tab.IsModified);
+        Assert.Equal(@"C:\work\notes.notenest", tab.FilePath);
+    }
+
+    // ── SavedWorkspaceStateUpdater — IsDetached を引き継ぐ ───────────────
+
+    [Fact]
+    public void SavedWorkspaceStateUpdater_PreservesIsDetached_WhenTabIsDetached()
+    {
+        var currentTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsDetached = true };
+        var path = @"C:\work\notes.notenest";
+
+        var ok = NestSuite.Services.SavedWorkspaceStateUpdater.TryCreate(currentTab, path, false, out var state);
+
+        Assert.True(ok);
+        Assert.True(state.UpdatedTab.IsDetached);
+    }
+
+    [Fact]
+    public void SavedWorkspaceStateUpdater_PreservesIsDetachedFalse_WhenTabIsNotDetached()
+    {
+        var currentTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+        var path = @"C:\work\notes.notenest";
+
+        var ok = NestSuite.Services.SavedWorkspaceStateUpdater.TryCreate(currentTab, path, false, out var state);
+
+        Assert.True(ok);
+        Assert.False(state.UpdatedTab.IsDetached);
+    }
+
+    // ── スキーマバージョン ───────────────────────────────────────────────
+
+    [Fact]
+    public void NoteNestSchemaVersion_Remains_1_4_1()
+    {
+        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+    }
+
+    // ── アプリバージョン ─────────────────────────────────────────────────
+
+    [Fact]
+    public void ApplicationVersion_Is_2_9_1()
+    {
+        Assert.Equal("2.9.1", MainViewModel.ApplicationVersion);
+    }
+}

@@ -221,10 +221,14 @@
                                             <MenuItem Header="このタブを閉じる(_C)"
                                                       IsEnabled="{Binding CanClose}"
                                                       Click="TabContextClose_Click"/>
-                                            <!-- v2.9.0 SH-21: NoteNest タブのみ別ウィンドウ表示を提供する -->
+                                            <!-- v2.9.0 SH-21: NoteNest 未分離タブのみ別ウィンドウ表示を提供する -->
                                             <MenuItem Header="別ウィンドウで表示(_D)"
-                                                      Visibility="{Binding IsNoteNest, Converter={StaticResource BoolToVis}}"
+                                                      Visibility="{Binding IsDetachable, Converter={StaticResource BoolToVis}}"
                                                       Click="TabContextDetach_Click"/>
+                                            <!-- v2.9.1 SH-21: 分離中タブはシェルへ戻す操作を提供する -->
+                                            <MenuItem Header="このタブへ戻す(_R)"
+                                                      Visibility="{Binding IsDetached, Converter={StaticResource BoolToVis}}"
+                                                      Click="TabContextReturnDetached_Click"/>
                                             <Separator/>
                                             <MenuItem Header="他のタブを閉じる(_O)"   Click="TabContextCloseOthers_Click"/>
                                             <MenuItem Header="右側のタブを閉じる(_R)" Click="TabContextCloseRight_Click"/>
@@ -289,12 +293,28 @@
                                                 AutomationProperties.Name="Shell.TempNestWorkspace"
                                                 Visibility="Collapsed"/>
                 <!-- v2.9.0 SH-21: 別ウィンドウ表示中の NoteNest タブ向けプレースホルダー -->
+                <!-- v2.9.1 SH-21: 説明文と「このタブへ戻す」ボタンを追加 -->
                 <Grid x:Name="DetachedNoteNestPlaceholder" Visibility="Collapsed"
+                      AutomationProperties.AutomationId="Shell.DetachedWorkspacePlaceholder"
+                      AutomationProperties.Name="Shell.DetachedWorkspacePlaceholder"
                       Background="{DynamicResource SidebarBg}">
-                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Text="このWorkspaceは別ウィンドウで表示中です"
-                               FontSize="14"
-                               Foreground="{DynamicResource MutedFg}"/>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource MutedFg}"
+                                   Margin="0,0,0,16">
+                            このWorkspaceは別ウィンドウで表示中です。<LineBreak/>
+                            別ウィンドウを閉じるか、「このタブへ戻す」を押すと、このタブ内に戻ります。
+                        </TextBlock>
+                        <Button HorizontalAlignment="Center"
+                                AutomationProperties.AutomationId="Shell.ReturnDetachedWorkspaceButton"
+                                AutomationProperties.Name="Shell.ReturnDetachedWorkspaceButton"
+                                Content="このタブへ戻す"
+                                FontSize="13"
+                                Padding="16,6"
+                                Click="ReturnDetachedButton_Click"/>
+                    </StackPanel>
                 </Grid>
                 <!-- 未統合ツールタブ選択時のプレースホルダー -->
                 <Border x:Name="UnintegratedPlaceholder" Visibility="Collapsed"

@@ -14,10 +14,20 @@ public partial class NestSuiteShellWindow
 
     private void TabContextDetach_Click(object sender, RoutedEventArgs e)
     {
-        if (GetTabFromContextMenuItem(sender) is { } tab &&
-            tab.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
-            !_detachedWindows.ContainsKey(tab.Id))
+        if (GetTabFromContextMenuItem(sender) is { } tab && tab.IsDetachable)
             DetachNoteNestTab(tab);
+    }
+
+    private void TabContextReturnDetached_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetTabFromContextMenuItem(sender) is { } tab && tab.IsDetached)
+            ReturnNoteNestTab(tab.Id);
+    }
+
+    private void ReturnDetachedButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTab?.IsDetached == true)
+            ReturnNoteNestTab(_selectedTab.Id);
     }
 
     private void DetachNoteNestTab(NestSuiteDocumentTab tab)
@@ -37,9 +47,23 @@ public partial class NestSuiteShellWindow
 
         _detachedWindows[tab.Id] = detachedWindow;
 
-        ActivateTab(tab);
+        // v2.9.1 SH-21: タブの IsDetached フラグを立てる（コンテキストメニューとプレースホルダー制御に使う）
+        ReplaceTab(tab, tab with { IsDetached = true });
+        ActivateTab(_tabs.First(t => t.Id == tab.Id));
 
         detachedWindow.Show();
+    }
+
+    /// <summary>
+    /// ユーザー操作（「このタブへ戻す」ボタン・コンテキストメニュー）で呼ぶ再統合エントリポイント。
+    /// 別ウィンドウを閉じてから ReAttachNoteNestTab を呼ぶ。
+    /// </summary>
+    private void ReturnNoteNestTab(string tabId)
+    {
+        if (!_detachedWindows.TryGetValue(tabId, out var dw)) return;
+        dw.OnDetachedClosed = null;
+        dw.Close();
+        ReAttachNoteNestTab(tabId);
     }
 
     internal void ReAttachNoteNestTab(string tabId)
@@ -53,9 +77,16 @@ public partial class NestSuiteShellWindow
         // 閉じた別ウィンドウへの参照を外す。選択中タブか否かに関係なく常に実施する。
         WireNoteNestViewCallbacks(vm, WorkspaceView);
 
+        // v2.9.1 SH-21: IsDetached フラグを落とす
+        var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
+        if (tab != null)
+        {
+            ReplaceTab(tab, tab with { IsDetached = false });
+            tab = _tabs.First(t => t.Id == tabId);
+        }
+
         // DataContext 更新と表示切替は ActivateTab に委ねる。
         // 別タブが選択中の場合は WorkspaceView.DataContext を上書きしない。
-        var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null && _selectedTab?.Id == tabId)
             ActivateTab(tab);
     }

@@ -9,10 +9,12 @@ public static class AutomationIds
         public const string TabListButton        = "Shell.TabListButton";
         public const string TempTab              = "Shell.TempTab";
         public const string StatusBar            = "Shell.StatusBar";
-        public const string NoteNestWorkspace    = "Shell.NoteNestWorkspace";
-        public const string ChatNestWorkspace    = "Shell.ChatNestWorkspace";
-        public const string IdeaNestWorkspace    = "Shell.IdeaNestWorkspace";
-        public const string TempNestWorkspace    = "Shell.TempNestWorkspace";
+        public const string NoteNestWorkspace              = "Shell.NoteNestWorkspace";
+        public const string ChatNestWorkspace              = "Shell.ChatNestWorkspace";
+        public const string IdeaNestWorkspace              = "Shell.IdeaNestWorkspace";
+        public const string TempNestWorkspace              = "Shell.TempNestWorkspace";
+        public const string DetachedWorkspacePlaceholder   = "Shell.DetachedWorkspacePlaceholder";
+        public const string ReturnDetachedWorkspaceButton  = "Shell.ReturnDetachedWorkspaceButton";
     }
 
     public static class NoteNest

@@ -30,7 +30,8 @@ public static class SavedWorkspaceStateUpdater
         var updatedTab = NestSuiteTabFactory.FromFilePath(savedPath) with
         {
             Id = currentTab.Id,
-            IsModified = isModifiedAfterSave
+            IsModified = isModifiedAfterSave,
+            IsDetached = currentTab.IsDetached
         };
 
         state = new SavedWorkspaceState(updatedTab, savedPath, isModifiedAfterSave, savedPath);

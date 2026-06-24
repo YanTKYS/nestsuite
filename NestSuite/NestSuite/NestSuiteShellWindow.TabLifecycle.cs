@@ -102,9 +102,9 @@ public partial class NestSuiteShellWindow
         if (vm.CurrentFilePath is string path &&
             NestSuiteTabFactory.TryGetKind(path, out var kind) &&
             kind == NestSuiteWorkspaceKind.NoteNest)
-            updatedTab = NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = vm.IsModified };
+            updatedTab = NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached };
         else
-            updatedTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified };
+            updatedTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached };
         ReplaceTab(tab, updatedTab);
     }
 

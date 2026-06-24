@@ -92,6 +92,12 @@ public sealed record NestSuiteDocumentTab
     /// <summary>v2.9.0 SH-21: NoteNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsNoteNest => WorkspaceKind == NestSuiteWorkspaceKind.NoteNest;
 
+    /// <summary>v2.9.1 SH-21: 現在別ウィンドウで表示中かどうか。DetachNoteNestTab/ReAttachNoteNestTab で更新する。</summary>
+    public bool IsDetached { get; init; }
+
+    /// <summary>v2.9.1 SH-21: 別ウィンドウに分離できるかどうか（NoteNest かつ未分離）。</summary>
+    public bool IsDetachable => IsNoteNest && !IsDetached;
+
     /// <summary>
     /// v2.8.9: UI Automation 用 AutomationId。TempNest 固定タブのみ設定し、他は空文字。
     /// </summary>

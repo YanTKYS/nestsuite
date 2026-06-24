@@ -1,3 +1,12 @@
+## v2.9.1 — SH-21 別ウィンドウ表示のタブ表示・戻す動作・閉じる動作の安定化
+
+- **Shell プレースホルダーに「このタブへ戻す」ボタンを追加した。** 分離中タブを選択したとき表示されるプレースホルダー（「このWorkspaceは別ウィンドウで表示中です。別ウィンドウを閉じるか…」）にボタンを追加し、クリックすると別ウィンドウを閉じて Shell 内表示に戻れるようにした。`AutomationId` は `Shell.DetachedWorkspacePlaceholder` / `Shell.ReturnDetachedWorkspaceButton`。
+- **コンテキストメニューが分離状態に応じて切り替わるようになった。** 未分離 NoteNest タブでは「別ウィンドウで表示(_D)」が表示され、分離中タブでは代わりに「このタブへ戻す(_R)」が表示される。この切り替えは `NestSuiteDocumentTab.IsDetachable` / `IsDetached` プロパティで制御する。
+- **`NestSuiteDocumentTab` に `IsDetached` / `IsDetachable` プロパティを追加した。** `IsDetached` は分離操作で `true`、再統合で `false` に遷移する。`IsDetachable` は `IsNoteNest && !IsDetached` の派生プロパティ。保存・VM 状態同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）でも `IsDetached` を引き継ぐようにした。
+- **`AutomationIds.Shell` に `DetachedWorkspacePlaceholder` / `ReturnDetachedWorkspaceButton` を追加した。**
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。セッション保存に分離状態は含まない。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.9.0 — SH-21 NoteNest Workspace 別ウィンドウ表示（最小試作）
 
 - **NoteNest タブを右クリックで「別ウィンドウで表示」できるようになった。** タブのコンテキストメニューに「別ウィンドウで表示(_D)」を追加した。NoteNest タブにのみ表示され、選択すると `DetachedWorkspaceWindow`（別 Window）が開く。
