@@ -132,6 +132,15 @@ public partial class NestSuiteShellWindow
         if (!_detachedWindows.ContainsKey(tabId)) return;
         _detachedWindows.Remove(tabId);
 
+        // v2.9.3 SH-21: detached window が閉じた後、owner resolver を Shell 側へ明示的に戻す。
+        // Shell の IdeaNestWorkspaceView は detach 前から同じ VM を DataContext に持つため、
+        // ActivateTab での DataContext 再代入だけでは DataContextChanged が発火せず
+        // ConfigureWorkspace() が実行されない。SetOwnerResolver を直接呼ぶことで解決する。
+        // 未選択タブの再統合時（ActivateTab を呼ばないケース）にも確実に戻るようここで実施する。
+        if (_sessionManager.TryGet(tabId, out var session) &&
+            session?.WorkspaceViewModel is IdeaNestWorkspaceViewModel ideaNestVm)
+            ideaNestVm.SetOwnerResolver(() => Window.GetWindow(this.IdeaNestWorkspaceView));
+
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {
