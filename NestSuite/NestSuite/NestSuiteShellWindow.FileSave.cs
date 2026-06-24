@@ -83,6 +83,32 @@ public partial class NestSuiteShellWindow
 
     private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e) => SaveActiveTab();
 
+    /// <summary>
+    /// v2.9.0 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。
+    /// </summary>
+    internal void SaveNoteNestForTabId(string tabId)
+    {
+        var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
+        if (tab == null || tab.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;
+        if (!_sessionManager.TryGet(tabId, out var session) || session == null) return;
+        var vm = (MainViewModel)session.WorkspaceViewModel;
+        if (tab.FilePath != null)
+        {
+            var path = NormalizeFilePath(tab.FilePath);
+            if (vm.SaveToPath(path))
+                UpdateNoteNestTabPath(session, path);
+        }
+        else
+        {
+            var rawPath = _dialogs.SelectProjectSavePath(vm.ProjectName);
+            if (rawPath == null) return;
+            var normalizedPath = NormalizeFilePath(rawPath);
+            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath)) return;
+            if (vm.SaveToPath(normalizedPath))
+                UpdateNoteNestTabPath(session, normalizedPath);
+        }
+    }
+
     private void SaveActiveTab()
     {
         switch (_selectedTab?.WorkspaceKind)

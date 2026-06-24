@@ -1,3 +1,14 @@
+## v2.9.0 — SH-21 NoteNest Workspace 別ウィンドウ表示（最小試作）
+
+- **NoteNest タブを右クリックで「別ウィンドウで表示」できるようになった。** タブのコンテキストメニューに「別ウィンドウで表示(_D)」を追加した。NoteNest タブにのみ表示され、選択すると `DetachedWorkspaceWindow`（別 Window）が開く。
+- **別ウィンドウは Shell と同じ `MainViewModel` を共有する。** 同一プロセス内の追加 Window として生成するため、ノート・タスク・マーカー状態が即時同期される。Ctrl+S による上書き保存にも対応する。
+- **Shell 側のタブは閉じずにプレースホルダーを表示する。** 分離中のタブには「このWorkspaceは別ウィンドウで表示中です」というテキストが Shell 内に表示される。
+- **別ウィンドウを閉じると Shell タブへ自動的に再統合される。** 別ウィンドウを閉じると View コールバック（`NavigateToLine` / `SyncTreeSelection` / `NavigateToMarker`）が Shell の `WorkspaceView` に再バインドされ、Shell 内表示に戻る。
+- **`DetachedWorkspaceWindow` は独立した `IWorkspaceDialogHost` を実装する。** ダイアログ（入力・確認・検索置換など）が別ウィンドウ内に正しく表示される。Owner は Shell Window に設定する。
+- **TempNest / IdeaNest / ChatNest は対象外。** NoteNest のみ対象とする最小試作。
+- **単一インスタンス制約の維持。** 同一タブを複数の別ウィンドウに分離することはできない。
+- **セッション・保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。外部依存追加なし。ErrorLogService の方針（Error のみ）に変更はない。
+
 ## v2.8.10 — UI スモークテストの通常 CI 統合
 
 - **UI スモークテストを `ci.yml` の `ui-smoke` job として通常 CI に統合した。** push / workflow_dispatch 時に `build` job 完了後、`windows-latest` ランナー上で NestSuite を起動して主要 AutomationId 要素を検出する。起動・初期 UI 崩壊を通常 CI で自動検知できるようになった。

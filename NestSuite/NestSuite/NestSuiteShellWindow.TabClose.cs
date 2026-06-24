@@ -67,6 +67,13 @@ public partial class NestSuiteShellWindow
         switch (tab.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
+                // v2.9.0 SH-21: 別ウィンドウ表示中のタブを閉じる場合は先にウィンドウを閉じる
+                if (_detachedWindows.TryGetValue(tab.Id, out var dw))
+                {
+                    dw.OnDetachedClosed = null;
+                    dw.Close();
+                    _detachedWindows.Remove(tab.Id);
+                }
                 if (!ConfirmAndResetNoteNest(tab)) return false;
                 break;
 

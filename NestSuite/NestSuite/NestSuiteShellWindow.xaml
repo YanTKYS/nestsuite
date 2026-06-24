@@ -221,6 +221,10 @@
                                             <MenuItem Header="このタブを閉じる(_C)"
                                                       IsEnabled="{Binding CanClose}"
                                                       Click="TabContextClose_Click"/>
+                                            <!-- v2.9.0 SH-21: NoteNest タブのみ別ウィンドウ表示を提供する -->
+                                            <MenuItem Header="別ウィンドウで表示(_D)"
+                                                      Visibility="{Binding IsNoteNest, Converter={StaticResource BoolToVis}}"
+                                                      Click="TabContextDetach_Click"/>
                                             <Separator/>
                                             <MenuItem Header="他のタブを閉じる(_O)"   Click="TabContextCloseOthers_Click"/>
                                             <MenuItem Header="右側のタブを閉じる(_R)" Click="TabContextCloseRight_Click"/>
@@ -284,6 +288,14 @@
                                                 AutomationProperties.AutomationId="Shell.TempNestWorkspace"
                                                 AutomationProperties.Name="Shell.TempNestWorkspace"
                                                 Visibility="Collapsed"/>
+                <!-- v2.9.0 SH-21: 別ウィンドウ表示中の NoteNest タブ向けプレースホルダー -->
+                <Grid x:Name="DetachedNoteNestPlaceholder" Visibility="Collapsed"
+                      Background="{DynamicResource SidebarBg}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Text="このWorkspaceは別ウィンドウで表示中です"
+                               FontSize="14"
+                               Foreground="{DynamicResource MutedFg}"/>
+                </Grid>
                 <!-- 未統合ツールタブ選択時のプレースホルダー -->
                 <Border x:Name="UnintegratedPlaceholder" Visibility="Collapsed"
                         Background="{DynamicResource SidebarBg}">

@@ -191,6 +191,14 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 tempVm.SaveNow();
         }
 
+        // v2.9.0 SH-21: 別ウィンドウが残っていれば先に閉じる（再統合コールバックは不要）
+        foreach (var dw in _detachedWindows.Values.ToList())
+        {
+            dw.OnDetachedClosed = null;
+            dw.Close();
+        }
+        _detachedWindows.Clear();
+
         // v1.15.0: ウィンドウが実際に閉じることが確定した時点でセッション状態を保存する
         SaveSession();
         // v1.19.1: NestSuite ウィンドウサイズを保存する
@@ -349,24 +357,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.SelectOpenProjectPath = _dialogs.SelectProjectOpenPath;
         vm.SelectSaveProjectPath = _dialogs.SelectProjectSavePath;
         vm.RequestClose = Close;
-        vm.NavigateToLine = WorkspaceView.NavigateToLine;
-        vm.NavigateToMarker = m =>
-        {
-            bool shouldSwitch = m.SourceNote != null &&
-                                (m.SourceNote != vm.SelectedNote || vm.IsTaskCommentMode);
-            if (shouldSwitch)
-            {
-                vm.SelectNote(m.SourceNote!);
-                WorkspaceView.SyncTreeSelection(m.SourceNote!);
-            }
-            var line = m.LineNumber;
-            if (shouldSwitch)
-                Dispatcher.BeginInvoke(() => vm.NavigateToLine?.Invoke(line),
-                    System.Windows.Threading.DispatcherPriority.Loaded);
-            else
-                vm.NavigateToLine?.Invoke(line);
-        };
-        vm.SyncTreeSelectionCallback = note => WorkspaceView.SyncTreeSelection(note);
+        WireNoteNestViewCallbacks(vm, WorkspaceView);
         vm.EditorFontSize = _noteNestEditorFontSize;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
