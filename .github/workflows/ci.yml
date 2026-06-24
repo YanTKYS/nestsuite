@@ -35,3 +35,39 @@ jobs:
           name: build-${{ github.run_number }}
           path: NestSuite/bin/Release/
           retention-days: 1
+
+  ui-smoke:
+    runs-on: windows-latest
+    needs: build
+    timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore NestSuite.sln
+
+      - name: Build
+        run: dotnet build NestSuite.sln -c Release --no-restore
+
+      - name: Run UI smoke test
+        id: smoke
+        run: |
+          $exePath = "NestSuite/bin/Release/net8.0-windows/NestSuite.exe"
+          $smokeRunner = "NestSuite.UiSmoke/bin/Release/net8.0-windows/NestSuite.UiSmoke.exe"
+          Write-Host "Running smoke test against: $exePath"
+          & $smokeRunner $exePath 2>&1 | Tee-Object -FilePath smoke-log.txt
+          exit $LASTEXITCODE
+
+      - name: Upload smoke log on failure
+        if: failure() && steps.smoke.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-log-${{ github.run_number }}
+          path: smoke-log.txt
+          retention-days: 7

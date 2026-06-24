@@ -1,3 +1,13 @@
+## v2.8.10 — UI スモークテストの通常 CI 統合
+
+- **UI スモークテストを `ci.yml` の `ui-smoke` job として通常 CI に統合した。** push / workflow_dispatch 時に `build` job 完了後、`windows-latest` ランナー上で NestSuite を起動して主要 AutomationId 要素を検出する。起動・初期 UI 崩壊を通常 CI で自動検知できるようになった。
+- **スモークテストの確認内容を最小範囲で拡張した。** `Shell.TabStrip` / `Shell.TempTab` / `Shell.StatusBar` に加え、起動時に表示される `TempNest.Slot1.BodyBox`（メイン編集エリア相当）の検出を追加した。いずれも WPF AutomationPeer を持つ要素のみ対象とする。
+- **`ui-smoke.yml` を手動切り分け用ワークフローとして整理した。** ワークフロー名を「UI Smoke Test (Manual)」に変更し、`ci.yml` 失敗時の切り分け用として位置づけを明確にした。`workflow_dispatch` のみの手動実行を維持する。
+- **`ci.yml` の `build` job に変更なし。** build / test ステップ・アーティファクト出力・既存発火条件はすべて維持する。
+- **機能変更なし。** UI 挙動・見た目・保存形式に変更はない。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.8.9 — GitHub Actions UI スモークテスト試験導入
 
 - **GitHub Actions の `workflow_dispatch` トリガーで起動する UI スモークテストワークフローを追加した。** `.github/workflows/ui-smoke.yml` を新設した。`windows-latest` ランナー上でアプリをビルドし、UI Automation を使って主要要素の存在を 60 秒以内に確認する。

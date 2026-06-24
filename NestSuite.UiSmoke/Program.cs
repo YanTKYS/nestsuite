@@ -101,7 +101,15 @@ class Program
         Console.WriteLine("PASS: Main window found");
 
         // 2. Check required AutomationId elements
-        string[] requiredIds = ["Shell.TabStrip", "Shell.TempTab", "Shell.StatusBar"];
+        // Shell.TabStrip / Shell.TempTab / Shell.StatusBar: always present in the shell
+        // TempNest.Slot1.BodyBox: main editing area visible on startup (TempNest is default active workspace)
+        string[] requiredIds =
+        [
+            "Shell.TabStrip",
+            "Shell.TempTab",
+            "Shell.StatusBar",
+            "TempNest.Slot1.BodyBox",
+        ];
         foreach (var id in requiredIds)
         {
             Console.WriteLine($"Checking element '{id}'...");

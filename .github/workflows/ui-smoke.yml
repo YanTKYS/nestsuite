@@ -1,4 +1,4 @@
-name: UI Smoke Test
+name: UI Smoke Test (Manual)
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
 jobs:
   ui-smoke:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
