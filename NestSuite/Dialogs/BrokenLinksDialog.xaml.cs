@@ -20,15 +20,14 @@ public partial class BrokenLinksDialog : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        HeaderText.Text = BrokenLinksDialogLogic.GetHeaderText(_results.Count);
         if (_results.Count == 0)
         {
-            HeaderText.Text = "リンク切れは見つかりませんでした。";
             EmptyMessage.Visibility = Visibility.Visible;
             NavigateButton.IsEnabled = false;
         }
         else
         {
-            HeaderText.Text = $"リンク切れが {_results.Count} 件見つかりました:";
             ResultList.Visibility = Visibility.Visible;
             ResultList.ItemsSource = _results;
             ResultList.SelectedIndex = 0;

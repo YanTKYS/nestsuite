@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using NestSuite.Services;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Dialogs;
@@ -33,7 +34,7 @@ public partial class NotePickerDialog : Window
         var filterText = NoteFilterBox.Text;
         NoteList.ItemsSource = string.IsNullOrEmpty(filterText)
             ? _allItems
-            : _allItems.Where(i => i.Note.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            : _allItems.Where(i => NotePickerFilterService.TitleMatchesFilter(i.Note.Title, filterText)).ToList();
         if (NoteList.Items.Count > 0)
             NoteList.SelectedIndex = 0;
     }
@@ -45,8 +46,7 @@ public partial class NotePickerDialog : Window
         // Warn when an existing project file contains duplicate note titles.
         // New projects can't have duplicates (ViewModel enforces uniqueness on add/rename),
         // but old .notenest files may. The inserted link [[title]] resolves to the first match.
-        bool hasDuplicate = _allItems.Count(i =>
-            string.Equals(i.Note.Title, item.Note.Title, StringComparison.OrdinalIgnoreCase)) > 1;
+        bool hasDuplicate = NotePickerFilterService.HasDuplicateTitle(_allItems.Select(i => i.Note), item.Note.Title);
         if (hasDuplicate)
         {
             var result = MessageBox.Show(

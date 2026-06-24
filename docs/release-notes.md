@@ -1,3 +1,16 @@
+## v2.8.7 — TD-17 ダイアログコンポーネントのロジックテスト追加
+
+- **主要ダイアログのロジック部分に単体テストを追加した。** `FindReplaceDialog` / `NotePickerDialog` / `BrokenLinksDialog` / `InputDialog` / `FontSettingsDialog` のロジックを pure helper / service として切り出し、WPF UI 表示なしにテストできるようにした。
+- **`FindReplaceLogicService` を新設した。** マッチ位置計算（`ComputeMatchPositions`）・前後ナビゲーションラップアラウンド（`AdvanceForward` / `AdvanceBackward`）・一括置換（`ReplaceAll`）・コンテキスト表示文字列生成（`BuildMatchContext`）を純粋な静的メソッドとして抽出し、`FindReplaceDialog` が委譲するようにした。
+- **`NotePickerFilterService` を新設した。** ノート候補絞り込み（`FilterByTitle`）・タイトル部分一致判定（`TitleMatchesFilter`）・同名ノート重複検出（`HasDuplicateTitle`）を純粋な静的メソッドとして抽出し、`NotePickerDialog` が委譲するようにした。
+- **`FontSettingsValidationService` を新設した。** フォントサイズの許容範囲検証（`ValidateFontSize`・`IsFontSizeInRange`）を抽出し、`FontSettingsDialog` が委譲するようにした。許容範囲は既存仕様の 6〜72 を踏襲した。
+- **`BrokenLinksDialogLogic` を新設した。** ヘッダーテキスト生成（`GetHeaderText`）を抽出し、`BrokenLinksDialog` が委譲するようにした。
+- **`InputDialogLogic` を新設した。** InputDialog の振る舞い仕様（入力値をそのまま返す・トリムなし・空文字も受け付ける）を純粋なメソッドとして定義し、テストで固定した。
+- **テストを追加した。** `FindReplaceLogicServiceTests`（20 件）・`NotePickerFilterServiceTests`（12 件）・`FontSettingsValidationServiceTests`（11 件）・`BrokenLinksDialogLogicTests`（8 件）・`InputDialogLogicTests`（6 件）を新設した。
+- **機能変更なし。** ダイアログの見た目・動作・UI 仕様に変更はない。helper 抽出は純粋なリファクタリングであり、既存の挙動をそのまま維持する。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.8.6 — TD-14 MainViewModel partial 単体テスト追加
 
 - **MainViewModel partial クラス群に単体テストを追加した。** `Notes.cs` / `Tasks.cs` / `Editor.cs` / `Markers.cs` / `Links.cs` の各 partial に対して `MainViewModelPartialTests` を新設し、WPF ダイアログ非依存の範囲でロジックを固定した。

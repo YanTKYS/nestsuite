@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using NestSuite.Services;
 
 namespace NestSuite.Dialogs;
 
@@ -35,7 +36,7 @@ public partial class FontSettingsDialog : Window
         if (PreviewText == null) return;
 
         var family = (FontFamilyBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Yu Gothic UI";
-        if (double.TryParse(FontSizeBox.Text, out var size) && size >= 6 && size <= 72)
+        if (FontSettingsValidationService.ValidateFontSize(FontSizeBox.Text, out var size))
         {
             PreviewText.FontFamily = new FontFamily(family);
             PreviewText.FontSize   = size;
@@ -51,7 +52,7 @@ public partial class FontSettingsDialog : Window
         var family = (FontFamilyBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
         if (string.IsNullOrEmpty(family)) { DialogResult = false; return; }
 
-        if (!double.TryParse(FontSizeBox.Text, out var size) || size < 6 || size > 72)
+        if (!FontSettingsValidationService.ValidateFontSize(FontSizeBox.Text, out var size))
         {
             MessageBox.Show("フォントサイズは 6〜72 の範囲で入力してください。", "入力エラー",
                             MessageBoxButton.OK, MessageBoxImage.Warning);

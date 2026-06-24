@@ -1,8 +1,8 @@
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using NestSuite.NoteNest.Editor;
+using NestSuite.Services;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Dialogs;
@@ -127,17 +127,7 @@ public partial class FindReplaceDialog : Window
     private void ComputeMatchPositions(string keyword, string text)
     {
         _matchPositions.Clear();
-        if (string.IsNullOrEmpty(keyword)) return;
-
-        int pos = 0;
-        while (pos < text.Length)
-        {
-            var idx = text.IndexOf(keyword, pos, Comparison);
-            if (idx < 0) break;
-            _matchPositions.Add(idx);
-            pos = idx + 1;
-        }
-
+        _matchPositions.AddRange(FindReplaceLogicService.ComputeMatchPositions(keyword, text, Comparison));
         // 前回の位置を現在の一致リストと照合して再同期する
         _currentMatchIndex = _lastFoundIndex >= 0
             ? _matchPositions.IndexOf(_lastFoundIndex)
@@ -270,13 +260,7 @@ public partial class FindReplaceDialog : Window
         var keyword = FindBox.Text;
         if (string.IsNullOrEmpty(keyword)) return;
 
-        var flags = CaseCheck.IsChecked == true
-            ? RegexOptions.None
-            : RegexOptions.IgnoreCase;
-
-        var replacement = ReplaceBox.Text;
-        var newText = Regex.Replace(_editor.Text, Regex.Escape(keyword), _ => replacement, flags);
-        _editor.Text = newText;
+        _editor.Text = FindReplaceLogicService.ReplaceAll(_editor.Text, keyword, ReplaceBox.Text, Comparison);
         _lastFoundIndex = -1;
         _currentMatchIndex = -1;
         StatusText.Text = "すべて置換しました。";
@@ -305,8 +289,7 @@ public partial class FindReplaceDialog : Window
             {
                 var idx = content.IndexOf(keyword, pos, Comparison);
                 if (idx < 0) break;
-                var display = $"{note.Title}: {BuildMatchContext(content, idx, keyword)}";
-                results.Add(new AllNoteMatchItem(note, idx, display));
+                results.Add(new AllNoteMatchItem(note, idx, $"{note.Title}: {FindReplaceLogicService.BuildMatchContext(content, idx, keyword)}"));
                 pos = idx + 1;
             }
         }
@@ -330,17 +313,6 @@ public partial class FindReplaceDialog : Window
             MatchCountText.Foreground = _normalBrush;
         }
         StatusText.Text = "";
-    }
-
-    private static string BuildMatchContext(string content, int matchStart, string keyword)
-    {
-        const int contextLen = 35;
-        var excerptStart = Math.Max(0, matchStart - contextLen);
-        var excerptEnd   = Math.Min(content.Length, matchStart + keyword.Length + contextLen);
-        var excerpt      = content.Substring(excerptStart, excerptEnd - excerptStart).Replace('\n', ' ').Replace('\r', ' ');
-        var prefix = excerptStart > 0 ? "…" : "";
-        var suffix = excerptEnd < content.Length ? "…" : "";
-        return $"{prefix}{excerpt}{suffix}";
     }
 
     private void AllNotesResult_DoubleClick(object sender, MouseButtonEventArgs e)
