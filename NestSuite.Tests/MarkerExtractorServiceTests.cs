@@ -65,4 +65,42 @@ public class MarkerExtractorServiceTests
         var results = _svc.Extract("[TODO]   spaces  ", "Note");
         Assert.Equal("spaces", results[0].Excerpt);
     }
+
+    // ── HasMarkers ────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void HasMarkers_ReturnsTrueForTodo()
+    {
+        Assert.True(MarkerExtractorService.HasMarkers("[TODO] task"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsTrueForFixme()
+    {
+        Assert.True(MarkerExtractorService.HasMarkers("[FIXME] bug"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsTrueForNote()
+    {
+        Assert.True(MarkerExtractorService.HasMarkers("[NOTE] info"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsFalseForEmptyContent()
+    {
+        Assert.False(MarkerExtractorService.HasMarkers(""));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsFalseForPlainText()
+    {
+        Assert.False(MarkerExtractorService.HasMarkers("Just some plain text"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsFalseForHack()
+    {
+        Assert.False(MarkerExtractorService.HasMarkers("[HACK] not a recognized marker"));
+    }
 }

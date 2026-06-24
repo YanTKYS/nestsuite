@@ -1,3 +1,17 @@
+## v2.8.6 — TD-14 MainViewModel partial 単体テスト追加
+
+- **MainViewModel partial クラス群に単体テストを追加した。** `Notes.cs` / `Tasks.cs` / `Editor.cs` / `Markers.cs` / `Links.cs` の各 partial に対して `MainViewModelPartialTests` を新設し、WPF ダイアログ非依存の範囲でロジックを固定した。
+- **Notes partial: ノート追加・リネーム・削除・複製・移動・検索のテストを追加した。** `AddNotebookWithTitle` / `AddNoteToNotebook`（重複拒否含む）/ `RenameNote`（重複拒否含む）/ `DeleteNote`（エディタクリア・タスクリンク解除）/ `DeleteNotebook`（全ノート削除・タスクリンク解除・エディタクリア）/ `DuplicateNote` / `FindNoteById` / `FindNoteByTitle` / `NoteNameExists`（自己除外含む）/ `NavigateToNote`（ツリー同期コールバック）/ `MoveNoteToNotebook` をカバーした。
+- **Tasks partial: タスクリネームとノートリンク操作のテストを追加した。** `RenameTask` / `SetTaskRelatedNote`（編集中・非編集中）/ `ClearTaskRelatedNote`（編集中・非編集中）をカバーした。
+- **Editor partial: フォント設定委譲のテストを追加した。** `ApplyFontSettings` が `Editor.FontFamily` / `Editor.FontSize` を更新し、ファサードプロパティ `EditorFontSize` に反映されることをカバーした。
+- **Markers: 複数ノート跨ぎマーカー集計・空コンテンツ・ノート削除でのマーカー消去をテストした。** `note.Content` 設定が `WorkspaceChangeCoordinator` 経由で `MarkerCount` に反映されることを確認した。
+- **Links: ノート選択時の `LinkPanel` 更新・アウトバウンドリンク表示・未解決リンクのブロークン判定をテストした。**
+- **`MarkerExtractorService.HasMarkers` の単体テストを追加した。** `[TODO]` / `[FIXME]` / `[NOTE]` で true、空文字・プレーンテキスト・`[HACK]` で false を確認した（`HasMarkers` テスト 6 件）。
+- **`NoteLinkService` のエッジケーステストを追加した。** 同一リンク重複（両方返す）/ 空本文で例外なし / カーソル位置が空本文でも例外なし を確認した（テスト 3 件）。
+- **機能変更なし。** アプリの動作・UI・保存形式・ハイライト挙動に変更はない。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.8.5 — NoteEditorHost 行表示・ハイライト回帰テスト追加
 
 - **NoteEditorHost の行表示・ハイライト周辺の回帰テストを追加した。** v2.8.1〜v2.8.4 で高度化した行表示・ハイライトロジックについて、`NoteEditorHostHighlightRegressionTests` を新設しテストで固定した。

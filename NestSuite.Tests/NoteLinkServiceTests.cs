@@ -70,4 +70,26 @@ public class NoteLinkServiceTests
         var links = NoteLinkService.ExtractAllLinks("[[foo[bar]]]").ToList();
         Assert.Empty(links);
     }
+
+    // ── Edge cases (v2.8.6) ───────────────────────────────────────────────────
+
+    [Fact]
+    public void ExtractAllLinks_DuplicateLink_ReturnsBothOccurrences()
+    {
+        var links = NoteLinkService.ExtractAllLinks("[[A]] and [[A]]").ToList();
+        Assert.Equal(2, links.Count);
+        Assert.All(links, l => Assert.Equal("A", l));
+    }
+
+    [Fact]
+    public void ExtractAllLinks_EmptyContent_ReturnsEmpty()
+    {
+        Assert.Empty(NoteLinkService.ExtractAllLinks(""));
+    }
+
+    [Fact]
+    public void ExtractLinkAtCursor_EmptyContent_ReturnsNull()
+    {
+        Assert.Null(NoteLinkService.ExtractLinkAtCursor("", 0));
+    }
 }
