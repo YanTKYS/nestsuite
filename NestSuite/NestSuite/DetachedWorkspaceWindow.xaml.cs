@@ -50,6 +50,11 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
     protected override void OnClosed(EventArgs e)
     {
         _dialogs.CloseFindReplace();
+
+        foreach (var child in WorkspaceHost.Children.OfType<FrameworkElement>())
+            child.DataContext = null;
+        WorkspaceHost.Children.Clear();
+
         base.OnClosed(e);
     }
 
