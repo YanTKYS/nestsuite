@@ -35,8 +35,12 @@
     <SolidColorBrush x:Key="LineNumberFg"            Color="#AAAAAA"/>
     <SolidColorBrush x:Key="LineNumberCurrentLineBg" Color="#DDE8F5"/>
 
-    <!-- H3b: marker line highlight (TODO / FIXME / NOTE) — opaque; canvas sits behind TextBox text -->
-    <SolidColorBrush x:Key="MarkerLineHighlightBrush" Color="#FFF2CC"/>
+    <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
+    <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#FFF2CC"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightTodoBrush"  Color="#FFF0D6"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightFixmeBrush" Color="#FFE5E5"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightNoteBrush"  Color="#E5F5EC"/>
+    <SolidColorBrush x:Key="NoteLinkLineHighlightBrush"    Color="#E8F0FF"/>
 
     <!-- task states -->
     <SolidColorBrush x:Key="TaskCompletedFg" Color="#AAAAAA"/>

@@ -5,6 +5,8 @@ namespace NestSuite.Services;
 
 public class ThemeService
 {
+    public static event EventHandler? ThemeChanged;
+
     public void Apply(AppTheme theme)
     {
         var name = theme == AppTheme.Dark ? "Dark" : "Light";
@@ -16,5 +18,6 @@ public class ThemeService
             d.Source?.OriginalString.Contains("Themes/") == true).ToList())
             merged.Remove(old);
         merged.Add(dict);
+        ThemeChanged?.Invoke(null, EventArgs.Empty);
     }
 }

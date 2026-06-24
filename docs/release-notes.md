@@ -1,3 +1,13 @@
+## v2.8.4 — H3b マーカー行ハイライト拡張・テーマ反映修正
+
+- **テーマ切替時にハイライト色が即時反映されるようにした。** `ThemeService.Apply()` が ResourceDictionary を差し替えた後に `static event ThemeChanged` を発火し、`NoteEditorHost` がこれを購読して `DispatcherPriority.Render` で `UpdateMarkerHighlights()` を再実行する。キャンバス上の `Rectangle.Fill` が古いブラシ参照を保持したままになる問題を解消した。
+- **マーカー種別ごとに異なるハイライト色を適用するようにした。** FIXME 行は `MarkerLineHighlightFixmeBrush`、TODO 行は `MarkerLineHighlightTodoBrush`、NOTE 行は `MarkerLineHighlightNoteBrush`、`[[ノート名]]` を含む行は `NoteLinkLineHighlightBrush` でハイライトする。1 行に複数のマーカーがある場合は優先度（FIXME > TODO > NOTE > NoteLink）で決定する。
+- **`[[ノート名]]` を含む行をノートリンク行としてハイライトするようにした。** NoteLink 行は FIXME / TODO / NOTE のいずれも含まない行のみ NoteLink 色が適用される（最低優先）。
+- **`LineHighlightKind` enum と `LineHighlightInfo` record を導入した。** `MarkerLineDetector.Detect()` の戻り値を `IReadOnlyList<int>` から `IReadOnlyList<LineHighlightInfo>` に変更し、論理行インデックスとマーカー種別を同時に返す。`BrushForKind()` ヘルパーが種別に対応するリソースキーを switch 式で決定する。
+- **Light / Dark 両テーマに 4 種のハイライトブラシを追加した。** Light: TODO `#FFF0D6`（淡いオレンジ）/ FIXME `#FFE5E5`（淡い赤）/ NOTE `#E5F5EC`（淡い緑）/ NoteLink `#E8F0FF`（淡い青）。Dark: TODO `#3A2F10` / FIXME `#3D1818` / NOTE `#183218` / NoteLink `#1A2440`。いずれも完全不透明色（v2.8.3 の合成アーティファクト修正方針を踏襲）。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。ハイライト状態は `.notenest` に保存しない。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.8.3 — H3b ハイライト描画安定化
 
 - **レイアウト変更後にハイライトが薄くなる問題を修正した。** 原因は `MarkerHighlightCanvas`（`Panel.ZIndex="1"`）が `EditorBox` の上に重なり、半透明ブラシを WPF のハードウェア合成レイヤーと二重合成していたこと。ウィンドウ幅・右ペイン幅・フォントサイズ変更時に中間レンダリングターゲットが再生成され、実効 Alpha が一定にならなかった。

@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using NestSuite.Services;
 
 namespace NestSuite.NoteNest.Editor;
 
@@ -15,7 +16,7 @@ public partial class NoteEditorHost : UserControl
     private int  _completionLinkStart     = -1;
     private bool _suppressCompletionUpdate;
     private bool _editorEventsAttached;
-    private IReadOnlyList<int> _markerLineIndices = Array.Empty<int>();
+    private IReadOnlyList<LineHighlightInfo> _markerHighlights = Array.Empty<LineHighlightInfo>();
     private TextBoxLineLayoutAdapter? _lineLayout;
 
     public ITextEditorAdapter Editor { get; private set; } = null!;
@@ -60,7 +61,8 @@ public partial class NoteEditorHost : UserControl
         EditorBox.LostFocus      += EditorBox_LostFocus;
 
         _lineLayout = new TextBoxLineLayoutAdapter(EditorBox);
-        _markerLineIndices = MarkerLineDetector.Detect(EditorBox.Text);
+        _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
+        ThemeService.ThemeChanged += OnThemeServiceThemeChanged;
         UpdateCurrentLineHighlight();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
@@ -102,6 +104,7 @@ public partial class NoteEditorHost : UserControl
         EditorBox.LostFocus      -= EditorBox_LostFocus;
         if (DataContext is INotifyPropertyChanged vm)
             vm.PropertyChanged -= OnViewModelPropertyChanged;
+        ThemeService.ThemeChanged -= OnThemeServiceThemeChanged;
         CloseCompletion();
         MarkerHighlightCanvas.Children.Clear();
         _editorScrollViewer = null;
@@ -110,7 +113,7 @@ public partial class NoteEditorHost : UserControl
 
     private void EditorBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        _markerLineIndices = MarkerLineDetector.Detect(EditorBox.Text);
+        _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         UpdateCurrentLineHighlight();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         if (!_suppressCompletionUpdate) UpdateCompletion();
@@ -197,25 +200,40 @@ public partial class NoteEditorHost : UserControl
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
     }
 
+    private void OnThemeServiceThemeChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.InvokeAsync(UpdateMarkerHighlights, DispatcherPriority.Render);
+    }
+
+    private Brush? BrushForKind(LineHighlightKind kind) =>
+        TryFindResource(kind switch
+        {
+            LineHighlightKind.Fixme    => "MarkerLineHighlightFixmeBrush",
+            LineHighlightKind.Todo     => "MarkerLineHighlightTodoBrush",
+            LineHighlightKind.Note     => "MarkerLineHighlightNoteBrush",
+            LineHighlightKind.NoteLink => "NoteLinkLineHighlightBrush",
+            _                          => "MarkerLineHighlightBrush",
+        }) as Brush;
+
     private void UpdateMarkerHighlights()
     {
         MarkerHighlightCanvas.Children.Clear();
         if (Editor == null || _lineLayout == null) return;
 
-        var indices = _markerLineIndices;
-        if (indices.Count == 0) return;
-
-        var brush = TryFindResource("MarkerLineHighlightBrush") as Brush;
-        if (brush == null) return;
+        var highlights = _markerHighlights;
+        if (highlights.Count == 0) return;
 
         var canvasHeight = MarkerHighlightCanvas.ActualHeight;
         var canvasWidth  = MarkerHighlightCanvas.ActualWidth;
         if (canvasWidth <= 0 || canvasHeight <= 0) return;
 
         var text = EditorBox.Text;
-        foreach (var logicalLine in indices)
+        foreach (var hi in highlights)
         {
-            var (top, height) = _lineLayout.HighlightBounds(text, logicalLine);
+            var brush = BrushForKind(hi.Kind);
+            if (brush == null) continue;
+
+            var (top, height) = _lineLayout.HighlightBounds(text, hi.LogicalIndex);
             if (height <= 0) continue;
             if (top + height <= 0 || top >= canvasHeight) continue;
 
