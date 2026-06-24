@@ -113,6 +113,11 @@ public partial class NoteEditorHost : UserControl
 
     private void EditorBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        // v2.9.5 SH-21 hotfix: Unloaded 後（DataContext 解除中含む）は補完更新をスキップする。
+        // DetachedWorkspaceWindow.OnClosed で Children.Clear() → DataContext=null の順に処理するが、
+        // WPF が TextChanged を同期的に発火する場合に UpdateCompletion 内で NullReferenceException が
+        // 起こりうる。_editorEventsAttached = false は NoteEditorHost_Unloaded で設定される。
+        if (!_editorEventsAttached) return;
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         UpdateCurrentLineHighlight();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
@@ -261,7 +266,17 @@ public partial class NoteEditorHost : UserControl
             return;
         }
 
-        var titles     = NoteTitleProvider?.Invoke() ?? Enumerable.Empty<string>();
+        // v2.9.5 SH-21 hotfix: provider 呼び出しが例外を投げても補完を閉じるだけにとどめる。
+        IEnumerable<string> titles;
+        try
+        {
+            titles = NoteTitleProvider?.Invoke() ?? Enumerable.Empty<string>();
+        }
+        catch
+        {
+            CloseCompletion();
+            return;
+        }
         var candidates = FilterCandidates(titles, ctx.Query);
         if (candidates.Count == 0)
         {

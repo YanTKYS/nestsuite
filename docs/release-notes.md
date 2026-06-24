@@ -1,3 +1,16 @@
+## v2.9.5 — SH-21 hotfix: DetachedWorkspaceWindow 閉鎖時の NoteNest 補完クラッシュ修正
+
+- **NoteNest 別ウィンドウを閉じる・「このタブへ戻す」を実行したときにアプリが落ちる問題を修正した。** v2.9.4 実機確認中に `DetachedWorkspaceWindow.OnClosed` で `DataContext = null` を行った際、WPF Binding 更新 → `EditorBox_TextChanged` → `UpdateCompletion` → `NoteTitleProvider` が `(MainViewModel)DataContext` を NullReferenceException で参照する経路でアプリが終了していた（.NET Runtime 1026 / APPCRASH）。
+- **`NoteTitleProvider` / `IsNoteEditModeProvider` を DataContext null-safe に変更した。** `DataContext is not MainViewModel vm` チェックを追加し、DataContext が null または非 `MainViewModel` の間は空候補・`false` を返すようにした（根本修正）。
+- **`NoteEditorHost.EditorBox_TextChanged` に `_editorEventsAttached` ガードを追加した。** Unloaded 後（`_editorEventsAttached = false`）は TextChanged が発火しても補完更新処理をスキップする（第二層）。
+- **`DetachedWorkspaceWindow.OnClosed` の後始末順序を変更した。** `WorkspaceHost.Children.Clear()` を先に実行して `Unloaded` イベントを発火させ `_editorEventsAttached` を確実に false にしてから `DataContext = null` を設定するよう変更した。子 View 後始末中の例外は ErrorLog に記録しアプリを落とさない（第三層）。
+- **`UpdateCompletion` 内の provider 呼び出しに try/catch を追加した。** provider が例外を投げた場合は補完ポップアップを閉じて処理を継続する（第四層）。
+- **`Application.DispatcherUnhandledException` / `AppDomain.CurrentDomain.UnhandledException` を ErrorLog に記録するようにした。** UIイベント起因の未処理例外が従来の ErrorLog に残らない問題に対応。ユーザーデータ（ノート本文等）はスタックトレースに含まれない。
+- **NoteNest / IdeaNest / ChatNest detached 機能は維持される。** 別ウィンドウ表示・「このタブへ戻す」・別ウィンドウの×での再統合は変更なし。
+- **補完機能は維持される。** `[[` によるノートリンク補完、候補フィルタ、Tab/Escape キー操作は変更なし。
+- **保存形式変更なし。** NoteNest schema `1.4.1` / `.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。セッション形式変更なし。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.9.4 — SH-21 ChatNest Workspace 別ウィンドウ表示（最小試作）
 
 - **ChatNest タブを右クリックで「別ウィンドウで表示」できるようになった。** タブのコンテキストメニューに「別ウィンドウで表示(_D)」が ChatNest タブでも表示されるようになった。選択すると `DetachedWorkspaceWindow` に `ChatNestWorkspaceView` を表示する別ウィンドウが開く。

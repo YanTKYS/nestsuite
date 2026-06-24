@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Threading;
 using NestSuite.Services;
 
 namespace NestSuite;
@@ -9,6 +10,11 @@ public partial class App : Application
 
     private void App_Startup(object sender, StartupEventArgs e)
     {
+        // v2.9.5 SH-21 hotfix: UIイベント起因の未処理例外を ErrorLog に記録する。
+        // ユーザーデータ（ノート本文等）はスタックトレースに含まれないよう provider 側で除外済み。
+        DispatcherUnhandledException += App_DispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += App_CurrentDomainUnhandledException;
+
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         // v1.11.0: 既定起動は NestSuite。--nestsuite フラグも互換として維持（同じ動作）。
@@ -44,5 +50,16 @@ public partial class App : Application
     {
         _singleInstance?.Dispose();
         base.OnExit(e);
+    }
+
+    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        ErrorLogService.Log("DispatcherUnhandledException", e.Exception);
+    }
+
+    private static void App_CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            ErrorLogService.Log("UnhandledException", ex);
     }
 }
