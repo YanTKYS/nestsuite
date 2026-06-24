@@ -184,8 +184,8 @@ public class DetachedWorkspaceTests
     // ── アプリバージョン ─────────────────────────────────────────────────
 
     [Fact]
-    public void ApplicationVersion_Is_2_9_4()
+    public void ApplicationVersion_Is_2_9_5()
     {
-        Assert.Equal("2.9.4", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.9.5", MainViewModel.ApplicationVersion);
     }
 }

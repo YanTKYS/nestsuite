@@ -51,9 +51,21 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
     {
         _dialogs.CloseFindReplace();
 
-        foreach (var child in WorkspaceHost.Children.OfType<FrameworkElement>())
-            child.DataContext = null;
-        WorkspaceHost.Children.Clear();
+        // v2.9.5 SH-21 hotfix: Children.Clear() を先に行い Unloaded を発火させてから DataContext を
+        // 解除する。これにより NoteEditorHost の _editorEventsAttached が先に false になり、
+        // DataContext=null 起因の WPF Binding 更新で EditorBox_TextChanged が呼ばれても
+        // 補完更新処理がスキップされる。子 View の後始末で例外が出てもアプリを落とさない。
+        try
+        {
+            var children = WorkspaceHost.Children.OfType<FrameworkElement>().ToList();
+            WorkspaceHost.Children.Clear();
+            foreach (var child in children)
+                child.DataContext = null;
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("DetachedWorkspaceWindowClosed", ex);
+        }
 
         base.OnClosed(e);
     }

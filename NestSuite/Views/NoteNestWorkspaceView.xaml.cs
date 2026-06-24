@@ -27,12 +27,21 @@ public partial class NoteNestWorkspaceView : UserControl
         EditorHost.EditorReady += (_, _) =>
         {
             EditorHost.Editor.SelectionChanged += EditorAdapter_SelectionChanged;
-            EditorHost.NoteTitleProvider      = () =>
-                ViewModel.Notebooks
+            // v2.9.5 SH-21 hotfix: DataContext が null の間は空を返す。
+            // DetachedWorkspaceWindow.OnClosed で DataContext を解除する際、WPF Binding 更新により
+            // EditorBox_TextChanged → UpdateCompletion → provider が呼ばれる経路で NullReferenceException
+            // が発生していた。DataContext が MainViewModel でない間は安全に空候補を返す。
+            EditorHost.NoteTitleProvider = () =>
+            {
+                if (DataContext is not MainViewModel vm)
+                    return Enumerable.Empty<string>();
+                return vm.Notebooks
                     .SelectMany(nb => nb.Notes)
                     .Where(n => !string.IsNullOrWhiteSpace(n.Title))
                     .Select(n => n.Title);
-            EditorHost.IsNoteEditModeProvider = () => ViewModel.IsNoteEditMode;
+            };
+            EditorHost.IsNoteEditModeProvider = () =>
+                DataContext is MainViewModel vm && vm.IsNoteEditMode;
         };
     }
 
