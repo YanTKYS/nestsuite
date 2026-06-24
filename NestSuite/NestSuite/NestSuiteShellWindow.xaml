@@ -111,13 +111,13 @@
 
         <!-- NestSuite ステータスバー（プロジェクト名・未保存・選択ツール動的表示） -->
         <Border DockPanel.Dock="Bottom" Height="22"
-                AutomationProperties.AutomationId="Shell.StatusBar"
-                AutomationProperties.Name="Shell.StatusBar"
                 Background="{DynamicResource StatusBarBg}"
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
                 <TextBlock Text="{Binding ProjectDisplayName}"
+                           AutomationProperties.AutomationId="Shell.StatusBar"
+                           AutomationProperties.Name="Shell.StatusBar"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
                 <TextBlock Text="{Binding UnsavedIndicatorText}"
                            FontSize="11" Foreground="{DynamicResource UnsavedBrush}"
