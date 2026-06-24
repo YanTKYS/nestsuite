@@ -42,7 +42,10 @@ public partial class NestSuiteShellWindow
         WireNoteNestViewCallbacks(vm, detachedWindow.WorkspaceView);
 
         var capturedTabId = tab.Id;
-        detachedWindow.SaveAction = () => SaveNoteNestForTabId(capturedTabId);
+        var capturedWindow = detachedWindow;
+        // v2.9.2 SH-21: SaveAs ダイアログが別ウィンドウ上に出るよう SelectProjectSavePath を差し替える
+        detachedWindow.SaveAction = () => SaveNoteNestForTabId(capturedTabId,
+            defaultName => capturedWindow.SelectProjectSavePath(defaultName));
         detachedWindow.OnDetachedClosed = ReAttachNoteNestTab;
 
         _detachedWindows[tab.Id] = detachedWindow;

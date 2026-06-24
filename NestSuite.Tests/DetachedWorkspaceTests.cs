@@ -106,6 +106,50 @@ public class DetachedWorkspaceTests
         Assert.False(state.UpdatedTab.IsDetached);
     }
 
+    // ── セッション保存への非漏洩 ─────────────────────────────────────────
+
+    [Fact]
+    public void SessionTabMapper_DetachedTab_ExcludesIsDetachedFromSession()
+    {
+        // IsDetached = true のタブでも FilePath のみがセッションに記録され、分離状態は含まれない
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\notes.notenest") with { IsDetached = true };
+
+        var ok = NestSuite.Services.SessionTabMapper.TryCreateSessionEntry(tab, out var filePath);
+
+        Assert.True(ok);
+        Assert.Equal(@"C:\work\notes.notenest", filePath);
+    }
+
+    [Fact]
+    public void SessionTabMapper_CreateSessionState_DetachedTabPreservesFilePath()
+    {
+        // CreateSessionState は IsDetached に関係なく FilePath だけを記録する
+        var tabs = new[]
+        {
+            NestSuiteTabFactory.FromFilePath(@"C:\work\A.notenest") with { IsDetached = true },
+            NestSuiteTabFactory.FromFilePath(@"C:\work\B.notenest"),
+        };
+        var selected = tabs[1];
+
+        var state = NestSuite.Services.SessionTabMapper.CreateSessionState(tabs, selected);
+
+        Assert.Equal(2, state.FilePaths.Count);
+        Assert.Contains(@"C:\work\A.notenest", state.FilePaths);
+        Assert.Contains(@"C:\work\B.notenest", state.FilePaths);
+    }
+
+    [Fact]
+    public void SessionRestoreTarget_FromDetachedTabPath_RestoredAsNormal()
+    {
+        // セッション復元はファイルパスのみ参照するので、次回起動時は通常タブとして復元される
+        var ok = NestSuite.Services.SessionTabMapper.TryCreateRestoreTarget(
+            @"C:\work\notes.notenest", out var target);
+
+        Assert.True(ok);
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, target.WorkspaceKind);
+        Assert.Equal(@"C:\work\notes.notenest", target.FilePath);
+    }
+
     // ── スキーマバージョン ───────────────────────────────────────────────
 
     [Fact]
@@ -117,8 +161,8 @@ public class DetachedWorkspaceTests
     // ── アプリバージョン ─────────────────────────────────────────────────
 
     [Fact]
-    public void ApplicationVersion_Is_2_9_1()
+    public void ApplicationVersion_Is_2_9_2()
     {
-        Assert.Equal("2.9.1", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.9.2", MainViewModel.ApplicationVersion);
     }
 }

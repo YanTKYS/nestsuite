@@ -1,3 +1,14 @@
+## v2.9.2 — SH-21 別ウィンドウ表示時の保存・未保存・終了確認の整合確認
+
+- **別ウィンドウ側 Ctrl+S の SaveAs ダイアログが別ウィンドウ上に表示されるようになった。** 未保存（無題）ファイルを別ウィンドウ側で Ctrl+S した場合、従来は Shell を Owner とするダイアログが表示されていたが、別ウィンドウを Owner とするダイアログが表示されるよう修正した。
+- **別ウィンドウからの SaveAs 重複チェックが正しいタブを除外するようになった。** `SaveNoteNestForTabId(tabId)` の重複チェックが `_selectedTab.Id` を除外基準にしていたため、保存対象タブが Shell の選択タブでない場合に誤った除外が行われる可能性があった。保存対象の `tabId` を除外基準に修正した。
+- **別ウィンドウ表示中の編集状態とShell側タブ未保存マークの整合を確認した。** `OnNoteNestSessionPropertyChanged` による `IsModified` 伝播は分離状態でも正常に動作することを確認した。
+- **アプリ終了時に分離中 NoteNest の未保存確認が行われることを確認した。** `OnClosing` は全 NoteNest Session を対象に `ConfirmCloseIfModified()` を呼ぶため、分離中のタブも確認対象に含まれる。
+- **セッション保存に分離状態が含まれないことを確認した。** `SessionTabMapper` はファイルパスのみ保存するため、`IsDetached` はセッションファイルに影響しない。次回起動時は通常のシェルタブ内表示として復元される。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+- **制限事項（残存）**: アプリ終了時の未保存確認ダイアログは Shell 上に表示される（別ウィンドウ上ではない）。SaveAs 以外の確認ダイアログ（タブを閉じる確認など）も Shell 上に表示される。これらは Shell が確認フローの管理単位であるため、現バージョンでは許容する。
+
 ## v2.9.1 — SH-21 別ウィンドウ表示のタブ表示・戻す動作・閉じる動作の安定化
 
 - **Shell プレースホルダーに「このタブへ戻す」ボタンを追加した。** 分離中タブを選択したとき表示されるプレースホルダー（「このWorkspaceは別ウィンドウで表示中です。別ウィンドウを閉じるか…」）にボタンを追加し、クリックすると別ウィンドウを閉じて Shell 内表示に戻れるようにした。`AutomationId` は `Shell.DetachedWorkspacePlaceholder` / `Shell.ReturnDetachedWorkspaceButton`。

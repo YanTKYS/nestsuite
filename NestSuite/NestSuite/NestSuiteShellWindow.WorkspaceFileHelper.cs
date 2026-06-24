@@ -84,12 +84,15 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// 名前を付けて保存の際に、別タブで同じパスが開かれている場合はエラーを表示して
     /// 既存タブをアクティブ化し true を返す。重複なければ false を返す。
+    /// v2.9.2 SH-21: excludeTabId を指定することで、別ウィンドウ保存時も正しいタブを除外できる。
     /// </summary>
-    private bool CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind kind, string path)
+    private bool CheckAndActivateDuplicateTabForSave(
+        NestSuiteWorkspaceKind kind, string path, string? excludeTabId = null)
     {
-        if (_selectedTab == null) return false;
+        var effectiveExcludeId = excludeTabId ?? _selectedTab?.Id;
+        if (effectiveExcludeId == null) return false;
         var duplicate = _tabs.FirstOrDefault(t =>
-            t.Id != _selectedTab.Id &&
+            t.Id != effectiveExcludeId &&
             t.WorkspaceKind == kind &&
             NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
         if (duplicate == null) return false;

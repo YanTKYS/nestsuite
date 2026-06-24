@@ -51,6 +51,13 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
     private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e)
         => SaveAction?.Invoke();
 
+    /// <summary>
+    /// v2.9.2 SH-21: Shell の SaveNoteNestForTabId に渡すファイル選択ダイアログ。
+    /// このウィンドウを Owner として SaveFileDialog を表示するため、Shell の _dialogs とは別インスタンスを使う。
+    /// </summary>
+    internal string? SelectProjectSavePath(string defaultFileName)
+        => _dialogs.SelectProjectSavePath(defaultFileName);
+
     // ── IWorkspaceDialogHost ──────────────────────────────────────────────────
 
     string? IWorkspaceDialogHost.ShowInput(string title, string prompt, string initialText)

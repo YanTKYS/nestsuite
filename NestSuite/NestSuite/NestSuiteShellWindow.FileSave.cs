@@ -85,8 +85,10 @@ public partial class NestSuiteShellWindow
 
     /// <summary>
     /// v2.9.0 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。
+    /// v2.9.2 SH-21: selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
+    ///               null の場合は Shell の _dialogs を使う。重複チェックも tabId を基準に行う。
     /// </summary>
-    internal void SaveNoteNestForTabId(string tabId)
+    internal void SaveNoteNestForTabId(string tabId, Func<string, string?>? selectSavePath = null)
     {
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab == null || tab.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;
@@ -100,10 +102,12 @@ public partial class NestSuiteShellWindow
         }
         else
         {
-            var rawPath = _dialogs.SelectProjectSavePath(vm.ProjectName);
+            var selector = selectSavePath ?? _dialogs.SelectProjectSavePath;
+            var rawPath = selector(vm.ProjectName);
             if (rawPath == null) return;
             var normalizedPath = NormalizeFilePath(rawPath);
-            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath)) return;
+            // v2.9.2: 重複チェックは保存対象の tabId を除外基準にする（_selectedTab でなく）
+            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath, tabId)) return;
             if (vm.SaveToPath(normalizedPath))
                 UpdateNoteNestTabPath(session, normalizedPath);
         }
