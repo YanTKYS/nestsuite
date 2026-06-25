@@ -23,12 +23,6 @@ public partial class MainViewModel
 
     public bool OpenFileAtStartup(string path) => TryOpenProject(path);
 
-    public bool ConfirmCloseIfModified()
-    {
-        if (!_session.IsModified) return true;
-        return ShowConfirmDialog?.Invoke("未保存の変更", "保存されていない変更があります。終了しますか？") ?? true;
-    }
-
     /// <summary>
     /// 確認なしで新規プロジェクトを作成する。
     /// NestSuite がタブ閉じ操作でユーザー確認を完了済みの場合に呼ぶ。
@@ -93,7 +87,8 @@ public partial class MainViewModel
 
     private void Exit()
     {
-        if (ConfirmCloseIfModified()) RequestClose?.Invoke();
+        // v2.9.7: 未保存確認は Shell の OnClosing で Save / Discard / Cancel として行う。
+        RequestClose?.Invoke();
     }
 
     private void OpenRecentFile(string path)

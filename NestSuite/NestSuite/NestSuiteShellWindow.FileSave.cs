@@ -165,6 +165,34 @@ public partial class NestSuiteShellWindow
         }
     }
 
+    /// <summary>
+    /// v2.9.7: タブ閉鎖・アプリ終了時の NoteNest 保存ヘルパー。
+    /// 保存パスがある場合は上書き保存、ない場合は名前を付けて保存ダイアログを表示する。
+    /// 保存成功時のみ true を返す。キャンセル・保存失敗時は false を返す。
+    /// dirty state は保存成功時のみ解除する（<see cref="UpdateNoteNestTabPath"/> 経由）。
+    /// </summary>
+    private bool TrySaveNoteNestForClose(NestSuiteWorkspaceSession session)
+    {
+        var vm = (MainViewModel)session.WorkspaceViewModel;
+        if (session.FilePath != null)
+        {
+            var path = NormalizeFilePath(session.FilePath);
+            if (!vm.SaveToPath(path)) return false;
+            UpdateNoteNestTabPath(session, path);
+            return true;
+        }
+        else
+        {
+            var rawPath = _dialogs.SelectProjectSavePath(vm.ProjectName);
+            if (rawPath == null) return false;
+            var normalizedPath = NormalizeFilePath(rawPath);
+            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath, session.TabId)) return false;
+            if (!vm.SaveToPath(normalizedPath)) return false;
+            UpdateNoteNestTabPath(session, normalizedPath);
+            return true;
+        }
+    }
+
     private void SaveActiveTab()
     {
         switch (_selectedTab?.WorkspaceKind)

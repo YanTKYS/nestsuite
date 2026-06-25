@@ -113,20 +113,39 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// NoteNest タブを閉じる前の確認とリセット。
-    /// 未保存の場合は確認ダイアログを表示。確認後は PropertyChanged 購読を解除する。
-    /// v1.9.5: ViewModel はタブごとの独立インスタンスのため CreateNewProjectDirect() は不要。
+    /// v2.9.7: NoteNest タブを閉じる前の確認とリセット。
+    /// 未保存の場合は Save / Discard / Cancel の3択を表示する。
+    /// 保存を選んだ場合は保存を試み、成功時のみ閉じる。
+    /// 確認後は PropertyChanged 購読を解除し Dispose する。
     /// </summary>
-    private bool ConfirmAndResetNoteNest(NestSuiteDocumentTab tab) =>
-        ConfirmTabClose(tab, () =>
-        {
-            if (_sessionManager.TryGet(tab.Id, out var session) &&
-                session?.WorkspaceViewModel is MainViewModel vm)
+    private bool ConfirmAndResetNoteNest(NestSuiteDocumentTab tab)
+    {
+        if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) return false;
+
+        var decision = CloseConfirmationService.EvaluateSingle(
+            tab.IsModified,
+            () => MessageBox.Show(
+                this,
+                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？",
+                "未保存の NoteNest",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning) switch
             {
-                vm.PropertyChanged -= OnNoteNestSessionPropertyChanged;
-                vm.Dispose();
-            }
-        });
+                MessageBoxResult.Yes => UnsavedChangeDecision.Save,
+                MessageBoxResult.No  => UnsavedChangeDecision.Discard,
+                _                   => UnsavedChangeDecision.Cancel
+            },
+            () => TrySaveNoteNestForClose(session));
+
+        if (decision == UnsavedChangeDecision.Cancel) return false;
+
+        if (session.WorkspaceViewModel is MainViewModel vm)
+        {
+            vm.PropertyChanged -= OnNoteNestSessionPropertyChanged;
+            vm.Dispose();
+        }
+        return true;
+    }
 
     /// <summary>
     /// ChatNest タブを閉じる前の確認とリセット。

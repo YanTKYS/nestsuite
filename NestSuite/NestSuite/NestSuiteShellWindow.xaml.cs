@@ -107,16 +107,26 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosing(CancelEventArgs e)
     {
-        // v1.9.5: すべての NoteNest Session を順に確認する
+        // v2.9.7: NoteNest 未保存確認を Save / Discard / Cancel へ変更する
         foreach (var noteSession in _sessionManager.Sessions
             .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest).ToList())
         {
-            var noteVm = (MainViewModel)noteSession.WorkspaceViewModel;
-            if (!noteVm.ConfirmCloseIfModified())
-            {
-                e.Cancel = true;
-                return;
-            }
+            var noteTab = _tabs.FirstOrDefault(t => t.Id == noteSession.TabId);
+            var closeDecision = CloseConfirmationService.EvaluateSingle(
+                noteTab?.IsModified == true,
+                () => MessageBox.Show(
+                    this,
+                    $"NoteNest「{noteTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                    "未保存の NoteNest",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning) switch
+                {
+                    MessageBoxResult.Yes => UnsavedChangeDecision.Save,
+                    MessageBoxResult.No  => UnsavedChangeDecision.Discard,
+                    _                   => UnsavedChangeDecision.Cancel
+                },
+                () => TrySaveNoteNestForClose(noteSession));
+            if (closeDecision == UnsavedChangeDecision.Cancel) { e.Cancel = true; return; }
         }
 
         // v1.9.7: すべての IdeaNest Session を順に確認する
