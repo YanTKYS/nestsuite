@@ -1,3 +1,12 @@
+## v2.9.6 — 分離ウィンドウ最小幅・Dark テーマ視認性の小修正
+
+- **`DetachedWorkspaceWindow` の最小幅を 870 に変更した。** 従来の `MinWidth="500"` では横幅を絞りすぎると NoteNest ツールバーや ChatNest 入力欄が崩れることがあった。Shell 本体と同じ `MinWidth="870"` に揃えることで、別ウィンドウでも最小レイアウトが保たれるようにした。
+- **Dark テーマのマーカー行ハイライト色を種別ごとに識別しやすくした。** 従来の 5 色は色相が近く暗所では判別しにくかった。v2.9.6 では FIXME(赤系 `#3C1010`) / TODO(アンバー系 `#372E00`) / NOTE(緑系 `#0E2C0E`) / NoteLink(青系 `#0D1F3E`) / 汎用(`#2D2714`) と明確に色相を分離した。Light テーマの配色に変更はない。
+- **Dark テーマの ChatNest 話者切替ボタンの文字色を明示した。** `SpeakerToggle` スタイルのカスタム Template は ContentPresenter にシステム既定の Foreground を継承していたため、NestSuite Dark + Windows Light テーマ構成で暗い文字色が暗い背景に重なる場合があった。`{DynamicResource PrimaryTextBrush}` を明示的に設定することで常に視認性を確保する。選択状態(`IsChecked=True`)では引き続き White で上書きされる。
+- **制限事項（既知）: 分離ウィンドウは常に Shell ウィンドウより手前に表示される。** Windows の Owner ウィンドウ機構（`Window.Owner`）により、Owned ウィンドウは Owner より下の Z 順に移動できない。Shell の最小化・復元連動・タスクバーグループ統合のためにこの設定を維持している。別ウィンドウを Shell の後ろに送ることはできない。
+- **保存形式変更なし。** NoteNest schema `1.4.1`・`.chatnest` / `.ideanest` / TempNest JSON 形式を維持する。セッション形式変更なし。
+- **外部依存追加なし。** ErrorLogService の方針（Error のみ / Info・Warning なし）に変更はない。
+
 ## v2.9.5 — SH-21 hotfix: DetachedWorkspaceWindow 閉鎖時の NoteNest 補完クラッシュ修正
 
 - **NoteNest 別ウィンドウを閉じる・「このタブへ戻す」を実行したときにアプリが落ちる問題を修正した。** v2.9.4 実機確認中に `DetachedWorkspaceWindow.OnClosed` で `DataContext = null` を行った際、WPF Binding 更新 → `EditorBox_TextChanged` → `UpdateCompletion` → `NoteTitleProvider` が `(MainViewModel)DataContext` を NullReferenceException で参照する経路でアプリが終了していた（.NET Runtime 1026 / APPCRASH）。

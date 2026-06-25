@@ -36,11 +36,13 @@
     <SolidColorBrush x:Key="LineNumberCurrentLineBg" Color="#252D3E"/>
 
     <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
-    <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#3A2F12"/>
-    <SolidColorBrush x:Key="MarkerLineHighlightTodoBrush"  Color="#3A2F10"/>
-    <SolidColorBrush x:Key="MarkerLineHighlightFixmeBrush" Color="#3D1818"/>
-    <SolidColorBrush x:Key="MarkerLineHighlightNoteBrush"  Color="#183218"/>
-    <SolidColorBrush x:Key="NoteLinkLineHighlightBrush"    Color="#1A2440"/>
+    <!-- v2.9.6: Dark テーマで各マーカー種別が識別しやすいよう色を見直した。
+         FIXME(赤) > TODO(アンバー) > NOTE(緑) > NoteLink(青) の優先順位に対応した色相を付与する。 -->
+    <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#2D2714"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightTodoBrush"  Color="#372E00"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightFixmeBrush" Color="#3C1010"/>
+    <SolidColorBrush x:Key="MarkerLineHighlightNoteBrush"  Color="#0E2C0E"/>
+    <SolidColorBrush x:Key="NoteLinkLineHighlightBrush"    Color="#0D1F3E"/>
 
     <!-- task states -->
     <SolidColorBrush x:Key="TaskCompletedFg" Color="#555555"/>
