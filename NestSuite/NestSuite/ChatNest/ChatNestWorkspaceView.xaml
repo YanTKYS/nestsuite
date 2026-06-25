@@ -160,12 +160,15 @@
             </Style.Triggers>
         </Style>
 
+        <!-- v2.9.6: Foreground を明示し Dark テーマ非選択状態の視認性を確保する。
+             IsChecked=True 時は Foreground=White で上書きされる。 -->
         <Style x:Key="SpeakerToggle" TargetType="RadioButton">
             <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
