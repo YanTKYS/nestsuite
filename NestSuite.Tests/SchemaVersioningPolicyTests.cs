@@ -114,7 +114,7 @@ public class SchemaVersioningPolicyTests
     [Fact]
     public void ApplicationVersion_Is_2_10_2()
     {
-        Assert.Equal("2.10.2", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.3", MainViewModel.ApplicationVersion);
     }
 
     [Fact]

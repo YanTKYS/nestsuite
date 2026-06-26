@@ -1,3 +1,11 @@
+## v2.10.3 — backlog 棚卸し + 軽量改善まとめ
+
+- **TN-2: TempNest スロットのクリア確認ダイアログを実装した。** 本文またはタイトルが空でないスロットで「クリア」ボタンを押すと「スロットの内容をクリアしますか？」確認ダイアログを表示し、キャンセル時は内容を保持する。空スロットは既存どおり無効状態。`TempNestSlotViewModel.ConfirmClear` コールバックを追加し、View の DataContextChanged で MessageBox を接続した。TempNest JSON version・保存形式は変更しない。
+- **L14 / L15: NoteNest エディタ下部にステータスバーを追加した。** `NoteEditorHost` の下端に「行 X, 列 Y  |  文字数 Z  |  行数 W」形式のステータスバーを常時表示する。`SelectionChanged` で `GetLineIndexFromCharacterIndex` / `GetCharacterIndexFromLineIndex` からキャレット行・列を算出（1 始まり）し、`TextChanged` で `Text.Length`（文字数）と改行数+1（行数）を更新する。`NoteEditorHost.xaml` を 2 行構成（エディタ領域 + ステータスバー行）に変更した。保存形式変更なし。
+- **`docs/backlog.md` を棚卸しした。** ID-1 / ID-2 / CH-1 / CH-2 を「統合初期の受け皿として完了」として完了済みに移動した。CH-13（発言のドラッグ並び替え）を ChatNest Workspace 改善テーブルに追加した。SH-15 の説明に `session.json` 変更可能性と FM-1 方針参照を明記した。TN-2 / L14 / L15 を完了済みとしてマークした。
+- **新規テスト `LightImprovementsV2103Tests` を追加した。** TN-2 の `ConfirmClear` コールバック動作（null / true / false）・CanExecute 条件・backlog の TN-2 / L14 / L15 完了マーク・CH-13 追加・release-notes v2.10.3 エントリを自動テストで固定した。
+- **保存形式変更なし。** NoteNest schema `1.4.1` を維持。TempNest JSON version 変更なし。セッション形式変更なし。外部依存追加なし。ErrorLogService 方針変更なし。
+
 ## v2.10.2 — FM-1 スキーマバージョンアップ方針の整備
 
 - **FM-1 として、保存形式・スキーマ変更を安全に扱うための方針を整備した。** `docs/architecture/schema-versioning-policy.md` を新規作成し、`.notenest` / `.ideanest` / `.chatnest` / `tempnest.json` / `session.json` の扱いを形式ごとに整理した。

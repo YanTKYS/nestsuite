@@ -36,6 +36,10 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     public ICommand CopyBodyCommand { get; }
     public ICommand ClearCommand    { get; }
 
+    // Set by the View to show a confirmation dialog before clearing a non-empty slot.
+    // Return true to proceed, false to cancel. When null, clears without confirmation.
+    public Func<bool>? ConfirmClear { get; set; }
+
     public TempNestSlotViewModel()
     {
         _feedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
@@ -52,7 +56,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
             },
             _ => !string.IsNullOrEmpty(Body));
         ClearCommand = new RelayCommand(
-            _ => Clear(),
+            _ => { if (ConfirmClear?.Invoke() != false) Clear(); },
             _ => !string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Body));
     }
 
