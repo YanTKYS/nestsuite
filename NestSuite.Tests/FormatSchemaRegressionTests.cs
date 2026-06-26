@@ -315,7 +315,7 @@ public class FormatSchemaRegressionTests : IDisposable
     [Fact]
     public void ApplicationVersion_Is_2_10_0()
     {
-        Assert.Equal("2.10.1", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.2", MainViewModel.ApplicationVersion);
     }
 
     [Fact]

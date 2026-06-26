@@ -1,3 +1,12 @@
+## v2.10.2 — FM-1 スキーマバージョンアップ方針の整備
+
+- **FM-1 として、保存形式・スキーマ変更を安全に扱うための方針を整備した。** `docs/architecture/schema-versioning-policy.md` を新規作成し、`.notenest` / `.ideanest` / `.chatnest` / `tempnest.json` / `session.json` の扱いを形式ごとに整理した。
+- **schema bump 採番基準・互換読み込み・マイグレーション・バックアップ・テスト方針を文書化した。** patch bump（optional field 追加）/ minor bump（構造追加・マイグレーション必要）/ major bump（原則回避）の採番基準、読み込み時・保存時の変換手順、バックアップ要否の判断、テストデータ方針を整理した。
+- **スキーマ変更を伴う backlog 候補（ID-8 / M12 / M13 / セッション復元強化系 / 長期構想）に FM-1 方針の注記を追加した。** 実装前に方針文書を確認することを明示した。
+- **`docs/backlog.md` の FM-1 を完了済みとしてマークした。** 方針整備が v2.10.2 で完了したことを明記した。
+- **`docs/development/nestsuite-development-guidelines.md` §4 に schema-versioning-policy.md への参照を追記した。** 保存形式・スキーマ変更作業前の確認先を明示した。
+- **新機能追加なし。** 実際の保存形式変更なし。セッション形式変更なし。NoteNest schema `1.4.1` を維持。外部依存追加なし。
+
 ## v2.10.1 — 有識者提案整理・backlog 反映
 
 - **有識者提案を NestSuite 方針に沿って整理した。** 短期採用候補・段階的採用候補・長期構想・当面対象外の 4 段階に分類した。`docs/planning/expert-proposals-2026-06.md` として提案整理メモを新規作成した。
