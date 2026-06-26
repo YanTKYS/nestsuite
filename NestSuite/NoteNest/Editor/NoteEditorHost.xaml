@@ -2,153 +2,175 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- Line number gutter with current-line highlight (always visible in NoteNest Workspace) -->
-        <Grid Grid.Column="0">
-            <!-- Gutter background -->
-            <Rectangle Fill="{DynamicResource LineNumberBg}"/>
-            <!-- Current line highlight layer (behind the text) -->
-            <Canvas x:Name="LineHighlightCanvas" IsHitTestVisible="False">
-                <Rectangle x:Name="CurrentLineHighlight"
-                           Fill="{DynamicResource LineNumberCurrentLineBg}"
-                           Visibility="Collapsed"/>
-            </Canvas>
-            <!-- Line number text: Background=Transparent so the canvas layers show through -->
-            <TextBox x:Name="LineNumberBox"
-                     AutomationProperties.AutomationId="Editor.LineNumberBox"
-                     AutomationProperties.Name="Editor.LineNumberBox"
-                     IsReadOnly="True" IsTabStop="False"
+        <!-- Row 0: editor area with line number gutter -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Line number gutter with current-line highlight (always visible in NoteNest Workspace) -->
+            <Grid Grid.Column="0">
+                <!-- Gutter background -->
+                <Rectangle Fill="{DynamicResource LineNumberBg}"/>
+                <!-- Current line highlight layer (behind the text) -->
+                <Canvas x:Name="LineHighlightCanvas" IsHitTestVisible="False">
+                    <Rectangle x:Name="CurrentLineHighlight"
+                               Fill="{DynamicResource LineNumberCurrentLineBg}"
+                               Visibility="Collapsed"/>
+                </Canvas>
+                <!-- Line number text: Background=Transparent so the canvas layers show through -->
+                <TextBox x:Name="LineNumberBox"
+                         AutomationProperties.AutomationId="Editor.LineNumberBox"
+                         AutomationProperties.Name="Editor.LineNumberBox"
+                         IsReadOnly="True" IsTabStop="False"
+                         FontFamily="{Binding EditorFontFamily}"
+                         FontSize="{Binding EditorFontSize}"
+                         TextWrapping="NoWrap"
+                         VerticalScrollBarVisibility="Hidden"
+                         HorizontalScrollBarVisibility="Hidden"
+                         BorderThickness="0,0,1,0"
+                         BorderBrush="{DynamicResource PaneBorder}"
+                         Padding="8,12,6,12"
+                         Background="Transparent"
+                         Foreground="{DynamicResource LineNumberFg}"
+                         TextAlignment="Right"
+                         Text="1"
+                         MinWidth="36"/>
+            </Grid>
+
+            <!-- Editor area: background layer (ZIndex 0), marker highlight layer (ZIndex 1),
+                 TextBox text layer (ZIndex 2) — explicit ZIndex stabilises compositing. -->
+
+            <!-- ZIndex 0: background provides EditorBg / TaskCommentEditorBg.
+                 TextBox (ZIndex 2) is Transparent so this layer is always visible. -->
+            <Border Grid.Column="1"
+                    Panel.ZIndex="0">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsTaskCommentMode}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource TaskCommentEditorBg}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
+
+            <!-- ZIndex 1: marker line highlight canvas (H3b) — TODO/FIXME/NOTE lines.
+                 Above background, below TextBox text. IsHitTestVisible=False preserves input. -->
+            <Canvas Grid.Column="1"
+                    x:Name="MarkerHighlightCanvas"
+                    Panel.ZIndex="1"
+                    IsHitTestVisible="False"/>
+
+            <!-- ZIndex 2: editor TextBox — Background=Transparent so canvas layers below show through -->
+            <TextBox Grid.Column="1"
+                     Panel.ZIndex="2"
+                     x:Name="EditorBox"
+                     AutomationProperties.AutomationId="Editor.EditorBox"
+                     AutomationProperties.Name="Editor.EditorBox"
+                     Background="Transparent"
+                     Text="{Binding EditorContent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      FontFamily="{Binding EditorFontFamily}"
                      FontSize="{Binding EditorFontSize}"
-                     TextWrapping="NoWrap"
-                     VerticalScrollBarVisibility="Hidden"
-                     HorizontalScrollBarVisibility="Hidden"
-                     BorderThickness="0,0,1,0"
-                     BorderBrush="{DynamicResource PaneBorder}"
-                     Padding="8,12,6,12"
-                     Background="Transparent"
-                     Foreground="{DynamicResource LineNumberFg}"
-                     TextAlignment="Right"
-                     Text="1"
-                     MinWidth="36"/>
+                     Foreground="{DynamicResource AppFg}"
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled"
+                     BorderThickness="0"
+                     Padding="16,12"
+                     VerticalContentAlignment="Top"
+                     SpellCheck.IsEnabled="False"
+                     Loaded="EditorBox_Loaded"
+                     TextChanged="EditorBox_TextChanged">
+                <TextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="切り取り(_T)"  Command="ApplicationCommands.Cut"/>
+                        <MenuItem Header="コピー(_C)"    Command="ApplicationCommands.Copy"/>
+                        <MenuItem Header="貼り付け(_P)"  Command="ApplicationCommands.Paste"/>
+                        <Separator/>
+                        <MenuItem Header="ノートリンクを開く(_L)" Click="OpenNoteLink_ItemClick"
+                                  InputGestureText="Ctrl+Enter"/>
+                        <MenuItem Header="ノートリンクを挿入(_I)..." Click="InsertNoteLink_ItemClick"
+                                  IsEnabled="{Binding PlacementTarget.DataContext.IsNoteEditMode,
+                                              RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                    </ContextMenu>
+                </TextBox.ContextMenu>
+            </TextBox>
+
+            <!-- Note-link autocomplete popup (H1a) -->
+            <Popup x:Name="CompletionPopup"
+                   Grid.Column="1"
+                   Placement="Relative"
+                   IsOpen="False"
+                   StaysOpen="True"
+                   Focusable="False"
+                   AllowsTransparency="False">
+                <Border BorderBrush="{DynamicResource PaneBorder}"
+                        BorderThickness="1"
+                        Background="{DynamicResource AppBg}"
+                        SnapsToDevicePixels="True">
+                    <ListBox x:Name="CompletionList"
+                             AutomationProperties.AutomationId="Editor.CompletionList"
+                             AutomationProperties.Name="Editor.CompletionList"
+                             Focusable="False"
+                             IsTabStop="False"
+                             MaxHeight="200"
+                             MinWidth="180"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             PreviewMouseLeftButtonDown="CompletionList_PreviewMouseLeftButtonDown">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding"  Value="8,3"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppFg}"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Focusable"  Value="False"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SelectedNoteBg}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MarkerHoverBg}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxWidth="320"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Popup>
         </Grid>
 
-        <!-- Editor area: background layer (ZIndex 0), marker highlight layer (ZIndex 1),
-             TextBox text layer (ZIndex 2) — explicit ZIndex stabilises compositing. -->
-
-        <!-- ZIndex 0: background provides EditorBg / TaskCommentEditorBg.
-             TextBox (ZIndex 2) is Transparent so this layer is always visible. -->
-        <Border Grid.Column="1"
-                Panel.ZIndex="0">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsTaskCommentMode}" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource TaskCommentEditorBg}"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
+        <!-- Row 1: status bar — L14 caret position / L15 char count and line count -->
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource PaneBorder}"
+                BorderThickness="0,1,0,0"
+                Background="{DynamicResource AppBg}"
+                Padding="8,2">
+            <TextBlock x:Name="EditorStatusBar"
+                       AutomationProperties.AutomationId="Editor.StatusBar"
+                       AutomationProperties.Name="Editor.StatusBar"
+                       Foreground="{DynamicResource MutedFg}"
+                       FontSize="11"
+                       Text="行 1, 列 1  |  文字数 0  |  行数 1"/>
         </Border>
-
-        <!-- ZIndex 1: marker line highlight canvas (H3b) — TODO/FIXME/NOTE lines.
-             Above background, below TextBox text. IsHitTestVisible=False preserves input. -->
-        <Canvas Grid.Column="1"
-                x:Name="MarkerHighlightCanvas"
-                Panel.ZIndex="1"
-                IsHitTestVisible="False"/>
-
-        <!-- ZIndex 2: editor TextBox — Background=Transparent so canvas layers below show through -->
-        <TextBox Grid.Column="1"
-                 Panel.ZIndex="2"
-                 x:Name="EditorBox"
-                 AutomationProperties.AutomationId="Editor.EditorBox"
-                 AutomationProperties.Name="Editor.EditorBox"
-                 Background="Transparent"
-                 Text="{Binding EditorContent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 FontFamily="{Binding EditorFontFamily}"
-                 FontSize="{Binding EditorFontSize}"
-                 Foreground="{DynamicResource AppFg}"
-                 AcceptsReturn="True"
-                 AcceptsTab="True"
-                 TextWrapping="Wrap"
-                 VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Disabled"
-                 BorderThickness="0"
-                 Padding="16,12"
-                 VerticalContentAlignment="Top"
-                 SpellCheck.IsEnabled="False"
-                 Loaded="EditorBox_Loaded"
-                 TextChanged="EditorBox_TextChanged">
-            <TextBox.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="切り取り(_T)"  Command="ApplicationCommands.Cut"/>
-                    <MenuItem Header="コピー(_C)"    Command="ApplicationCommands.Copy"/>
-                    <MenuItem Header="貼り付け(_P)"  Command="ApplicationCommands.Paste"/>
-                    <Separator/>
-                    <MenuItem Header="ノートリンクを開く(_L)" Click="OpenNoteLink_ItemClick"
-                              InputGestureText="Ctrl+Enter"/>
-                    <MenuItem Header="ノートリンクを挿入(_I)..." Click="InsertNoteLink_ItemClick"
-                              IsEnabled="{Binding PlacementTarget.DataContext.IsNoteEditMode,
-                                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                </ContextMenu>
-            </TextBox.ContextMenu>
-        </TextBox>
-
-        <!-- Note-link autocomplete popup (H1a) -->
-        <Popup x:Name="CompletionPopup"
-               Grid.Column="1"
-               Placement="Relative"
-               IsOpen="False"
-               StaysOpen="True"
-               Focusable="False"
-               AllowsTransparency="False">
-            <Border BorderBrush="{DynamicResource PaneBorder}"
-                    BorderThickness="1"
-                    Background="{DynamicResource AppBg}"
-                    SnapsToDevicePixels="True">
-                <ListBox x:Name="CompletionList"
-                         AutomationProperties.AutomationId="Editor.CompletionList"
-                         AutomationProperties.Name="Editor.CompletionList"
-                         Focusable="False"
-                         IsTabStop="False"
-                         MaxHeight="200"
-                         MinWidth="180"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         PreviewMouseLeftButtonDown="CompletionList_PreviewMouseLeftButtonDown">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding"  Value="8,3"/>
-                            <Setter Property="Foreground" Value="{DynamicResource AppFg}"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Focusable"  Value="False"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource SelectedNoteBg}"/>
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource MarkerHoverBg}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"
-                                       TextTrimming="CharacterEllipsis"
-                                       MaxWidth="320"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Border>
-        </Popup>
     </Grid>
 </UserControl>

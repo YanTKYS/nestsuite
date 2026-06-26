@@ -64,6 +64,7 @@ public partial class NoteEditorHost : UserControl
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         ThemeService.ThemeChanged += OnThemeServiceThemeChanged;
         UpdateCurrentLineHighlight();
+        UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
     }
@@ -84,6 +85,7 @@ public partial class NoteEditorHost : UserControl
     private void Editor_SelectionChanged(object? sender, EventArgs e)
     {
         UpdateCurrentLineHighlight();
+        UpdateStatusBar();
         if (!_suppressCompletionUpdate) UpdateCompletion();
     }
 
@@ -120,6 +122,7 @@ public partial class NoteEditorHost : UserControl
         if (!_editorEventsAttached) return;
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         UpdateCurrentLineHighlight();
+        UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         if (!_suppressCompletionUpdate) UpdateCompletion();
     }
@@ -187,6 +190,25 @@ public partial class NoteEditorHost : UserControl
             ? LineHighlightCanvas.ActualWidth
             : LineNumberBox.ActualWidth;
         CurrentLineHighlight.Visibility = Visibility.Visible;
+    }
+
+    // ── L14 / L15: Status bar — caret position, char count, line count ───
+
+    private void UpdateStatusBar()
+    {
+        if (Editor == null) return;
+        var caretIndex = Editor.CaretIndex;
+        var text = EditorBox.Text;
+
+        var lineIndex = Editor.GetLineIndexFromCharacterIndex(caretIndex);
+        if (lineIndex < 0) lineIndex = 0;
+        var lineStart = Editor.GetCharacterIndexFromLineIndex(lineIndex);
+        var col = lineStart >= 0 ? caretIndex - lineStart : 0;
+
+        var charCount = text.Length;
+        var lineCount = string.IsNullOrEmpty(text) ? 1 : text.Count(c => c == '\n') + 1;
+
+        EditorStatusBar.Text = $"行 {lineIndex + 1}, 列 {col + 1}  |  文字数 {charCount}  |  行数 {lineCount}";
     }
 
     // ── H3b: Marker line highlights (TODO / FIXME / NOTE) ────────────────
