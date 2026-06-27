@@ -327,3 +327,67 @@ NestSuite vX.Y.Z として、以下を実装してください。
 - 「docs/backlog.md・release-notes を更新してください」→ §13-3 で標準ルール化済み
 - 「GitHub Actions が通ることを受入条件とします」→ §13-5 で標準ルール化済み
 - 「実装後に変更ファイル・影響範囲・未確認事項を報告してください」→ §13-6 で標準ルール化済み
+
+---
+
+## 14. プロンプト標準契約（凝縮版）
+
+> 追加: v2.10.8
+> 目的: 今後の実装プロンプトをさらに短くするため、毎回繰り返す共通ルールを箇条書き形式でまとめる。
+
+通常の実装プロンプトでは、以下を共通前提とする。
+
+- 本指示 > guideline
+- 指示された対象ID以外を実装しない
+- 保存形式変更は明示指示がある場合のみ行う
+- schema bumpは明示指示がある場合のみ行う
+- session.json変更は明示指示がある場合のみ行う
+- `.notenest` schemaは原則 `1.4.1` 維持
+- `.chatnest` / `.ideanest` / TempNest JSON の形式変更は明示指示がある場合のみ行う
+- 外部依存を追加しない
+- release workflowを変更しない
+- net48_testを再開しない
+- ErrorLog方針はErrorのみ
+- local dotnet build/test は optional
+- GitHub Actions CI green / UI Smoke green を完了条件とする
+
+保存形式・スキーマ変更が必要な場合は
+`docs/architecture/schema-versioning-policy.md`
+を参照し、互換読み込み・migration・backup・test方針を先に整理する。
+
+---
+
+## 15. 今後の通常プロンプト形式
+
+> 追加: v2.10.8
+> 目的: 各プロンプトで「今回やること」に集中できるよう、最小構成の短縮テンプレートを提供する。
+
+```text
+NestSuite vX.Y.Z / 「対象ID タイトル」を実施する。
+
+共通規約:
+- `docs/development/nestsuite-development-guidelines.md` 遵守
+- 本指示 > guideline
+
+Goal:
+- 何を実現するか
+
+Scope:
+- 対象ファイル・対象Workspace
+- 実装すること
+
+Out of scope:
+- 今回やらないこと
+
+Requirements:
+- 必須動作
+
+Version:
+- app version X.Y.Z
+- NoteNest schema 1.4.1 維持
+
+Done:
+- 完了条件
+- GitHub Actions CI green
+- UI Smoke green
+```
