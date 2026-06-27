@@ -1,3 +1,12 @@
+## v2.10.11 — TD-24 SessionNest / GuardNest 導入方針整理
+
+- **TD-24: SessionNest / GuardNest の導入方針を文書化した。** `docs/architecture/sessionnest-guardnest-policy.md` を新規追加。
+- **SessionNest をタブ・セッション・復元状態の裏方責務として定義した。** ユーザーに見える Workspace ではなく内部責務名。既存対応候補: `NestSuiteWorkspaceSessionManager` / `SessionTabMapper` / `WorkspaceFileHelper` / `SavedWorkspaceStateUpdater` / `NestSuiteDocumentTab`。
+- **GuardNest を保存・終了確認・復旧性の裏方責務として定義した。** 既存対応候補: `AtomicFileWriter` / `WorkspaceSaveService` / `CloseConfirmationService` / `FileErrorMessages` / `ErrorLogService` / `ProjectFileService` / `ChatNestFileService` / `IdeaNestFileService`。
+- **SH-15（タブのピン留め）を実装希望扱いから外し、通常 backlog 扱いに戻した。** `session.json` 変更を伴うため急がない。SessionNest 方針の整理後に別途判断する。
+- **TD-25 / TD-26 を将来候補として backlog に追加した。** 実装はしない。
+- **新機能追加なし。UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。**
+
 ## v2.10.10 — TD-23 UIスモークテスト Workspace カバレッジ拡大
 
 - **TD-23: UIスモークテストの検出範囲を Shell / TempNest / NoteNest / IdeaNest / ChatNest の主要 UI に拡大した。** 各 Workspace の必須 AutomationId を段階的に検出する。
