@@ -44,17 +44,25 @@
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
             </MenuItem>
-            <MenuItem Header="ツール(_T)">
+            <MenuItem Header="ツール(_T)"
+                      AutomationProperties.AutomationId="Shell.ToolMenu"
+                      AutomationProperties.Name="Shell.ToolMenu">
                 <!-- v1.7.3: ツール選択はタブランチャーとして機能する。既存タブがあれば移動、なければ新規作成 -->
                 <MenuItem x:Name="ToolMenuNoteNest" Header="NoteNest"
+                          AutomationProperties.AutomationId="Shell.MenuToolNoteNest"
+                          AutomationProperties.Name="Shell.MenuToolNoteNest"
                           Tag="NoteNest"
                           IsCheckable="True" IsChecked="True"
                           Click="MenuTool_Click"/>
                 <MenuItem x:Name="ToolMenuIdeaNest" Header="IdeaNest"
+                          AutomationProperties.AutomationId="Shell.MenuToolIdeaNest"
+                          AutomationProperties.Name="Shell.MenuToolIdeaNest"
                           Tag="IdeaNest"
                           IsCheckable="True"
                           Click="MenuTool_Click"/>
                 <MenuItem x:Name="ToolMenuChatNest" Header="ChatNest"
+                          AutomationProperties.AutomationId="Shell.MenuToolChatNest"
+                          AutomationProperties.Name="Shell.MenuToolChatNest"
                           Tag="ChatNest"
                           IsCheckable="True"
                           Click="MenuTool_Click"/>
@@ -89,6 +97,8 @@
                 <StackPanel DockPanel.Dock="Right"
                             Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
                     <Border x:Name="NoteNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.NoteNestLaunchButton"
+                            AutomationProperties.Name="Shell.NoteNestLaunchButton"
                             Tag="NoteNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"
@@ -98,6 +108,8 @@
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                     <Border x:Name="IdeaNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.IdeaNestLaunchButton"
+                            AutomationProperties.Name="Shell.IdeaNestLaunchButton"
                             Tag="IdeaNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"
@@ -106,6 +118,8 @@
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                     <Border x:Name="ChatNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.ChatNestLaunchButton"
+                            AutomationProperties.Name="Shell.ChatNestLaunchButton"
                             Tag="ChatNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"

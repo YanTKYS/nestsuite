@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Automation;
 
@@ -7,6 +8,54 @@ namespace NestSuite.UiSmoke;
 
 class Program
 {
+    // ── Win32 helpers for click simulation ───────────────────────────────────
+    [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")] static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] static extern void mouse_event(uint dwFlags, int dx, int dy, uint dwData, UIntPtr dwExtraInfo);
+    const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+    const uint MOUSEEVENTF_LEFTUP   = 0x0004;
+
+    // ── Required element groups ───────────────────────────────────────────────
+    static readonly string[] ShellElements =
+    [
+        "Shell.TabStrip",
+        "Shell.TempTab",
+        "Shell.StatusBar",
+    ];
+
+    static readonly string[] TempNestElements =
+    [
+        "TempNest.Slot1.BodyBox",
+        "TempNest.Slot1.TitleBox",
+        "TempNest.Slot1.CopyButton",
+        "TempNest.Slot1.ClearButton",
+    ];
+
+    // NoteNest: TreeView, Button, UserControl subclass — all have AutomationPeer
+    static readonly string[] NoteNestElements =
+    [
+        "NoteNest.NotebookTree",   // TreeView
+        "NoteNest.AddNoteButton",  // Button (left pane, always visible)
+        "NoteNest.EditorHost",     // NoteEditorHost : UserControl
+    ];
+
+    // IdeaNest: TextBox and Button — have AutomationPeer
+    static readonly string[] IdeaNestElements =
+    [
+        "IdeaNest.SearchBox",      // TextBox
+        "IdeaNest.AddIdeaButton",  // Button
+    ];
+
+    // ChatNest: TextBox, Button, CheckBox — have AutomationPeer
+    static readonly string[] ChatNestElements =
+    [
+        "ChatNest.InputBox",                // TextBox
+        "ChatNest.PostButton",              // Button
+        "ChatNest.ShowTimestampsCheckBox",  // CheckBox
+    ];
+
+    // ── Entry point ───────────────────────────────────────────────────────────
+
     [STAThread]
     static int Main(string[] args)
     {
@@ -65,34 +114,13 @@ class Program
         }
     }
 
+    // ── Test orchestration ────────────────────────────────────────────────────
+
     static int RunChecks(Process proc)
     {
-        var timeout = TimeSpan.FromSeconds(60);
-        var deadline = DateTime.Now + timeout;
-
-        // 1. Find main window
+        // 1. Wait for main window (60 s)
         Console.WriteLine("Waiting for main window...");
-        AutomationElement? mainWindow = null;
-        while (DateTime.Now < deadline)
-        {
-            if (proc.HasExited)
-            {
-                Console.Error.WriteLine($"FAIL: Process exited unexpectedly (code {proc.ExitCode})");
-                return 1;
-            }
-
-            try
-            {
-                mainWindow = AutomationElement.RootElement.FindFirst(
-                    TreeScope.Children,
-                    new PropertyCondition(AutomationElement.ProcessIdProperty, proc.Id));
-                if (mainWindow != null) break;
-            }
-            catch { }
-
-            Thread.Sleep(500);
-        }
-
+        var mainWindow = WaitForMainWindow(proc, TimeSpan.FromSeconds(60));
         if (mainWindow == null)
         {
             Console.Error.WriteLine("FAIL: Main window not found within 60 seconds");
@@ -100,49 +128,198 @@ class Program
         }
         Console.WriteLine("PASS: Main window found");
 
-        // 2. Check required AutomationId elements
-        // Shell.TabStrip / Shell.TempTab / Shell.StatusBar: always present in the shell
-        // TempNest.Slot1.BodyBox: main editing area visible on startup (TempNest is default active workspace)
-        string[] requiredIds =
-        [
-            "Shell.TabStrip",
-            "Shell.TempTab",
-            "Shell.StatusBar",
-            "TempNest.Slot1.BodyBox",
-        ];
-        foreach (var id in requiredIds)
+        // 2. Shell chrome (30 s — allows slow first-launch)
+        if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(30), "Shell", ShellElements))
+            return 1;
+
+        // 3. TempNest (default active workspace)
+        if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(15), "TempNest", TempNestElements))
+            return 1;
+
+        // 4. NoteNest — invoke menu item, then check workspace elements
+        Console.WriteLine("Navigating to NoteNest...");
+        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolNoteNest"))
         {
-            Console.WriteLine($"Checking element '{id}'...");
-            AutomationElement? el = null;
-            while (DateTime.Now < deadline)
-            {
-                if (proc.HasExited)
-                {
-                    Console.Error.WriteLine($"FAIL: Process exited while waiting for '{id}'");
-                    return 1;
-                }
-
-                try
-                {
-                    el = mainWindow.FindFirst(
-                        TreeScope.Descendants,
-                        new PropertyCondition(AutomationElement.AutomationIdProperty, id));
-                    if (el != null) break;
-                }
-                catch { }
-
-                Thread.Sleep(200);
-            }
-
-            if (el == null)
-            {
-                Console.Error.WriteLine($"FAIL: Element '{id}' not found within timeout");
-                return 1;
-            }
-            Console.WriteLine($"PASS: Element '{id}' found");
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolNoteNest");
+            return 1;
         }
+        Thread.Sleep(800);
+        if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(15), "NoteNest", NoteNestElements))
+            return 1;
+
+        // 5. IdeaNest
+        Console.WriteLine("Navigating to IdeaNest...");
+        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolIdeaNest"))
+        {
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolIdeaNest");
+            return 1;
+        }
+        Thread.Sleep(800);
+        if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(15), "IdeaNest", IdeaNestElements))
+            return 1;
+
+        // 6. ChatNest
+        Console.WriteLine("Navigating to ChatNest...");
+        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolChatNest"))
+        {
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolChatNest");
+            return 1;
+        }
+        Thread.Sleep(800);
+        if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(15), "ChatNest", ChatNestElements))
+            return 1;
 
         Console.WriteLine("PASS: All smoke test checks passed");
         return 0;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    static AutomationElement? WaitForMainWindow(Process proc, TimeSpan timeout)
+    {
+        var deadline = DateTime.Now + timeout;
+        while (DateTime.Now < deadline)
+        {
+            if (proc.HasExited)
+            {
+                Console.Error.WriteLine($"FAIL: Process exited unexpectedly (code {proc.ExitCode})");
+                return null;
+            }
+            try
+            {
+                var win = AutomationElement.RootElement.FindFirst(
+                    TreeScope.Children,
+                    new PropertyCondition(AutomationElement.ProcessIdProperty, proc.Id));
+                if (win != null) return win;
+            }
+            catch { }
+            Thread.Sleep(500);
+        }
+        return null;
+    }
+
+    static AutomationElement? WaitForElementByAutomationId(
+        AutomationElement root, Process proc, string id, DateTime deadline)
+    {
+        while (DateTime.Now < deadline)
+        {
+            if (proc.HasExited)
+            {
+                Console.Error.WriteLine($"FAIL: Process exited while waiting for '{id}'");
+                return null;
+            }
+            try
+            {
+                var el = root.FindFirst(
+                    TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, id));
+                if (el != null) return el;
+            }
+            catch { }
+            Thread.Sleep(200);
+        }
+        return null;
+    }
+
+    static bool CheckRequiredElements(
+        AutomationElement root, Process proc, TimeSpan timeout, string group, string[] ids)
+    {
+        Console.WriteLine($"Checking {group} elements...");
+        var deadline = DateTime.Now + timeout;
+        foreach (var id in ids)
+        {
+            var el = WaitForElementByAutomationId(root, proc, id, deadline);
+            if (el == null)
+            {
+                Console.Error.WriteLine($"FAIL [{group}]: Element '{id}' not found within timeout");
+                return false;
+            }
+            Console.WriteLine($"PASS [{group}]: '{id}' found");
+        }
+        return true;
+    }
+
+    static bool InvokeToolMenuItem(AutomationElement root, string menuItemId)
+    {
+        try
+        {
+            // Expand the parent ツール menu so children become accessible
+            var toolMenu = root.FindFirst(
+                TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.AutomationIdProperty, "Shell.ToolMenu"));
+            if (toolMenu != null &&
+                toolMenu.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var ecObj) &&
+                ecObj is ExpandCollapsePattern ec)
+            {
+                ec.Expand();
+                Thread.Sleep(150);
+            }
+
+            var el = root.FindFirst(
+                TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.AutomationIdProperty, menuItemId));
+            if (el == null)
+            {
+                Console.Error.WriteLine($"  [invoke] MenuItem '{menuItemId}' not found");
+                return false;
+            }
+
+            if (el.TryGetCurrentPattern(InvokePattern.Pattern, out var invokeObj) &&
+                invokeObj is InvokePattern invoke)
+            {
+                invoke.Invoke();
+                Console.WriteLine($"  [invoke] Invoked '{menuItemId}'");
+                Thread.Sleep(50);
+                return true;
+            }
+
+            // Fallback: click by point if InvokePattern not supported
+            Console.WriteLine($"  [invoke] InvokePattern not available for '{menuItemId}', falling back to click");
+            return ClickElementByPoint(root, menuItemId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  [invoke] Exception invoking '{menuItemId}': {ex.Message}");
+            return false;
+        }
+    }
+
+    static bool ClickElementByPoint(AutomationElement root, string automationId)
+    {
+        try
+        {
+            var el = root.FindFirst(
+                TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.AutomationIdProperty, automationId));
+            if (el == null)
+            {
+                Console.Error.WriteLine($"  [click] Element '{automationId}' not found");
+                return false;
+            }
+
+            var hwnd = new IntPtr(root.Current.NativeWindowHandle);
+            SetForegroundWindow(hwnd);
+            Thread.Sleep(100);
+
+            System.Windows.Point pt;
+            if (!el.TryGetClickablePoint(out pt))
+            {
+                var rect = el.Current.BoundingRectangle;
+                pt = new System.Windows.Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+            }
+
+            SetCursorPos((int)pt.X, (int)pt.Y);
+            Thread.Sleep(50);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            Thread.Sleep(50);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+            Console.WriteLine($"  [click] Clicked '{automationId}' at ({pt.X:F0},{pt.Y:F0})");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  [click] Exception clicking '{automationId}': {ex.Message}");
+            return false;
+        }
     }
 }
