@@ -562,6 +562,14 @@
                                 Command="{Binding CopyConversationCommand}"
                                 ToolTip="発言者: 本文 形式で会話全体をコピー"
                                 Margin="4,0,0,0"/>
+                        <!-- CH-9: 会話ファイルエクスポート -->
+                        <Button Style="{StaticResource CopyButton}"
+                                AutomationProperties.AutomationId="ChatNest.ExportConversationButton"
+                                AutomationProperties.Name="ChatNest.ExportConversationButton"
+                                Content="会話を保存..."
+                                Command="{Binding ExportConversationCommand}"
+                                ToolTip="テキスト / Markdown 形式で会話全体をファイルに保存"
+                                Margin="4,0,0,0"/>
                     </StackPanel>
                 </Grid>
 

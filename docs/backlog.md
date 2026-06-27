@@ -269,7 +269,7 @@ NestSuite 上の ChatNest Workspace（`.chatnest` タブ）に対する改善候
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | ~~CH-8~~ | ~~タイムスタンプ表示の切替~~ | v2.10.6 で完了 → `docs/release-notes.md` 参照 | — |
-| CH-9 | 会話のエクスポート（テキスト / Markdown） | 表示中の会話を「発言者: 本文」形式のプレーンテキストまたは Markdown として出力する。議事録や要約テキストへの転用を想定。既存の `ChatNestFileService` とは別の出力パスを設ける。CH-14 で実装した `ChatNestExportFormatter` を流用できる | B |
+| ~~CH-9~~ | ~~会話のエクスポート（テキスト / Markdown）~~ | v2.10.7 で完了 → `docs/release-notes.md` 参照 | — |
 | CH-11 | 長い会話の日付区切りヘッダー | タイムスタンプを参照し、日付が変わる境目に薄い区切りラインとタイムスタンプヘッダーを挿入する。長期にわたる会話の時系列把握を助ける。`.chatnest` の既存 `timestamp` フィールドを利用するためスキーマ変更不要 | B |
 | CH-13 | 発言のドラッグ並び替え | 発言順序をドラッグ＆ドロップで変更する。議論の整理・再構成に有用。NestSuite Shell のタブドラッグ（SH-17）で培った Adorner 技術を再利用できる | C |
 | ~~CH-14~~ | ~~ChatNest 会話の整形コピー~~ | v2.10.6 で完了 → `docs/release-notes.md` 参照 | — |

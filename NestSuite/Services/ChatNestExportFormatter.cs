@@ -29,6 +29,30 @@ public static class ChatNestExportFormatter
     }
 
     /// <summary>
+    /// CH-9: 会話全体を Markdown 形式に変換する。見出し「# ChatNest 会話」の後に
+    /// 各発言を「**発言者**: 本文」形式で空行区切りで出力する。
+    /// 会話が空の場合は空文字を返す。空本文の発言があっても破綻しない。
+    /// </summary>
+    public static string BuildMarkdownConversation(IEnumerable<Message> messages)
+    {
+        var sb = new StringBuilder();
+        var hasMessages = false;
+        foreach (var m in messages)
+        {
+            if (!hasMessages)
+            {
+                sb.Append("# ChatNest 会話");
+                hasMessages = true;
+            }
+            sb.Append("\n\n**");
+            sb.Append(m.Speaker.ToString());
+            sb.Append("**: ");
+            sb.Append(m.Text);
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
     /// 会話全体を「[yyyy-MM-dd HH:mm] 発言者: 本文」形式に変換する。（タイムスタンプ付きオプション）
     /// </summary>
     public static string BuildPlainTextConversationWithTimestamp(IEnumerable<Message> messages)

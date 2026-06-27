@@ -19,7 +19,7 @@ public class MarkdownExportTests
     [Fact]
     public void ApplicationVersion_Is_2_10_5()
     {
-        Assert.Equal("2.10.6", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.7", MainViewModel.ApplicationVersion);
     }
 
     [Fact]

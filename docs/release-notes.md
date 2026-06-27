@@ -1,3 +1,13 @@
+## v2.10.7 — CH-9 ChatNest 会話エクスポート
+
+- **CH-9: ChatNest 会話のファイルエクスポートを追加した。** 入力エリアに「会話を保存...」ボタンを追加し、SaveFileDialog で保存先を選択してファイルに出力できるようにした。空会話ではボタンが無効化される。
+- **テキスト形式（.txt）と Markdown 形式（.md）を選べる。** SaveFileDialog のフィルタ選択で形式を指定する。テキスト形式は「発言者: 本文」形式（v2.10.6 の `BuildPlainTextConversation` を流用）。Markdown 形式は `# ChatNest 会話` を見出しに、各発言を「`**発言者**: 本文`」形式で出力する。
+- **`ChatNestExportFormatter.BuildMarkdownConversation()` を新規追加した。** v2.10.6 の `ChatNestExportFormatter` を拡張して Markdown 形式生成を追加した。
+- **保存成功時は「会話を保存しました」と通知する。** キャンセル時は何もしない。保存失敗時は ErrorLog に記録しエラーダイアログを表示する。本文は ErrorLog に出さない。
+- **ファイル保存は `AtomicFileWriter` を使用する。** 既存保存処理と同じ tmp 経由 atomic write 方針に従う。
+- **新規テスト `ChatNestCH9ExportTests` を追加した。** `BuildMarkdownConversation` の形式・空会話・空本文・発言順序、`ExportConversationCommand` の CanExecute、backlog の CH-9 完了マーク・release-notes v2.10.7 エントリを回帰テストで固定した。
+- **発言データ・保存形式変更なし。** `.chatnest` 保存形式変更なし。NoteNest schema `1.4.1` を維持。TempNest JSON version 変更なし。セッション形式変更なし。外部依存追加なし。
+
 ## v2.10.6 — CH-8 / CH-14 ChatNest 表示・コピー改善
 
 - **CH-8: ChatNest のタイムスタンプ表示切替を追加した。** 入力エリア上部に「発言時刻を表示」チェックボックスを追加し、各発言のタイムスタンプ表示 / 非表示を切り替えられるようにした。OFF 時も発言者名・本文は表示される。発言データ・timestamp 値は変更されない。

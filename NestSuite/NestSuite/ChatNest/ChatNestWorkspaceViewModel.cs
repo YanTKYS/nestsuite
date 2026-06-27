@@ -51,6 +51,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private readonly ChatNestRelayCommand _copyNestSuiteCommand;
     private readonly ChatNestRelayCommand _copyMarkdownCommand;
     private readonly ChatNestRelayCommand _copyConversationCommand;
+    private readonly ChatNestRelayCommand _exportConversationCommand;
     private readonly ChatNestRelayCommand _searchNextCommand;
     private readonly ChatNestRelayCommand _searchPreviousCommand;
 
@@ -170,6 +171,12 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>CH-14: 会話全体を「発言者: 本文」形式でコピーするコマンド。</summary>
     public ICommand CopyConversationCommand => _copyConversationCommand;
 
+    /// <summary>CH-9: 会話全体をテキスト / Markdown ファイルとして保存するコマンド。</summary>
+    public ICommand ExportConversationCommand => _exportConversationCommand;
+
+    /// <summary>CH-9: View がファイル保存ダイアログを開いてエクスポートを処理するためのイベント。</summary>
+    public event EventHandler? ConversationExportRequested;
+
     /// <summary>CH-8: タイムスタンプ表示状態。起動中のみ保持（保存ファイルには反映しない）。既定は true。</summary>
     public bool ShowTimestamps
     {
@@ -187,7 +194,8 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
         _copyNestSuiteCommand    = new ChatNestRelayCommand(ExecuteCopyNestSuite,    () => Messages.Count > 0);
         _copyMarkdownCommand     = new ChatNestRelayCommand(ExecuteCopyMarkdown,     () => Messages.Count > 0);
-        _copyConversationCommand = new ChatNestRelayCommand(ExecuteCopyConversation, () => Messages.Count > 0);
+        _copyConversationCommand    = new ChatNestRelayCommand(ExecuteCopyConversation,    () => Messages.Count > 0);
+        _exportConversationCommand  = new ChatNestRelayCommand(ExecuteExportConversation,  () => Messages.Count > 0);
 
         OpenSearchCommand  = new ChatNestRelayCommand(() => IsSearchBarVisible = true);
         CloseSearchCommand = new ChatNestRelayCommand(ExecuteCloseSearch);
@@ -391,6 +399,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         _copyNestSuiteCommand.RaiseCanExecuteChanged();
         _copyMarkdownCommand.RaiseCanExecuteChanged();
         _copyConversationCommand.RaiseCanExecuteChanged();
+        _exportConversationCommand.RaiseCanExecuteChanged();
         if (!string.IsNullOrEmpty(_searchText))
             UpdateSearch();
     }
@@ -439,6 +448,15 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         if (Messages.Count == 0) return;
         CopyToClipboard(ChatNestExportFormatter.BuildPlainTextConversation(MessageModels), "会話をコピーしました");
     }
+
+    private void ExecuteExportConversation()
+    {
+        if (Messages.Count == 0) return;
+        ConversationExportRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>CH-9: View がエクスポート保存完了後に呼び出す通知メソッド。</summary>
+    internal void ShowExportStatus(string message) => ShowCopyStatus(message);
 
     private void CopyToClipboard(string text) => CopyToClipboard(text, "コピーしました");
 

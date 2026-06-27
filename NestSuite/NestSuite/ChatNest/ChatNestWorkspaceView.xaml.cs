@@ -1,8 +1,10 @@
 using System.Collections.Specialized;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using NestSuite.Services;
 
 namespace NestSuite.ChatNest;
 
@@ -35,13 +37,15 @@ public partial class ChatNestWorkspaceView : UserControl
     {
         if (e.OldValue is ChatNestWorkspaceViewModel oldVm)
         {
-            oldVm.Messages.CollectionChanged -= OnMessagesChanged;
-            oldVm.ScrollToMessageRequested  -= OnScrollToMessageRequested;
+            oldVm.Messages.CollectionChanged    -= OnMessagesChanged;
+            oldVm.ScrollToMessageRequested      -= OnScrollToMessageRequested;
+            oldVm.ConversationExportRequested   -= OnConversationExportRequested;
         }
         if (e.NewValue is ChatNestWorkspaceViewModel newVm)
         {
-            newVm.Messages.CollectionChanged += OnMessagesChanged;
-            newVm.ScrollToMessageRequested  += OnScrollToMessageRequested;
+            newVm.Messages.CollectionChanged    += OnMessagesChanged;
+            newVm.ScrollToMessageRequested      += OnScrollToMessageRequested;
+            newVm.ConversationExportRequested   += OnConversationExportRequested;
         }
     }
 
@@ -165,6 +169,38 @@ public partial class ChatNestWorkspaceView : UserControl
         {
             tb.Focus();
             tb.SelectAll();
+        }
+    }
+
+    // ── CH-9: 会話エクスポート ───────────────────────────────────────────────
+
+    private void OnConversationExportRequested(object? sender, EventArgs e)
+    {
+        if (sender is not ChatNestWorkspaceViewModel vm) return;
+        var dlg = new Microsoft.Win32.SaveFileDialog
+        {
+            Title    = "会話をエクスポート",
+            Filter   = "テキスト (*.txt)|*.txt|Markdown (*.md)|*.md|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".txt",
+            FileName = "conversation",
+        };
+        if (dlg.ShowDialog(Window.GetWindow(this)) != true) return;
+
+        var isMarkdown = dlg.FilterIndex == 2;
+        var content = isMarkdown
+            ? ChatNestExportFormatter.BuildMarkdownConversation(vm.MessageModels)
+            : ChatNestExportFormatter.BuildPlainTextConversation(vm.MessageModels);
+
+        try
+        {
+            AtomicFileWriter.WriteAllText(dlg.FileName, content, Encoding.UTF8);
+            vm.ShowExportStatus("会話を保存しました");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("ChatNestExport", ex, "ChatNest", dlg.FileName);
+            MessageBox.Show("会話のエクスポートに失敗しました。", "エクスポートエラー",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
