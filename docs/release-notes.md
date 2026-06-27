@@ -1,3 +1,12 @@
+## v2.10.12 — TD-25 SessionNest 第一段階整理
+
+- **TD-25: `session.json` 読込 / 保存 / 復元まわりの責務境界を整理した。** `SessionTabMapper` / `NestSuiteWorkspaceSessionManager` / `NestSuiteSessionStateService` / `SavedWorkspaceStateUpdater` が SessionNest 責務をそれぞれ担うことを確認・文書化した。
+- **TempNest が session 対象外であることをテストで固定した。** `SessionTabMapper.IsSessionPersistable()` が `WorkspaceKind == Temp` を明示的に除外することを `SessionNestTD25Tests` で回帰テストとして固定した。
+- **detached 状態が session に保存されないことをテストで固定した。** detached タブのファイルパスはセッションに記録されるが、`IsDetached` フラグは `session.json` に含まれない。次回起動時は通常タブとして復元される。
+- **`session.json` 形式変更なし。** `{ "FilePaths": [...], "ActiveFilePath": "..." }` のままで、`WorkspaceKind` / `IsModified` / `IsDetached` / `IsPinned` は引き続き非保存。
+- **`docs/architecture/sessionnest-guardnest-policy.md` に TD-25 整理内容を追記した。**
+- **UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
 ## v2.10.11 — TD-24 SessionNest / GuardNest 導入方針整理
 
 - **TD-24: SessionNest / GuardNest の導入方針を文書化した。** `docs/architecture/sessionnest-guardnest-policy.md` を新規追加。

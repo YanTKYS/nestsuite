@@ -20,7 +20,7 @@ public class ChatNestCH13DragReorderTests
     [Fact]
     public void ApplicationVersion_Is_2_10_9()
     {
-        Assert.Equal("2.10.11", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.12", MainViewModel.ApplicationVersion);
     }
 
     [Fact]

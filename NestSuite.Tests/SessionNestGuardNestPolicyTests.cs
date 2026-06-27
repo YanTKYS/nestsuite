@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.10.11 TD-24: SessionNest / GuardNest 導入方針整理の回帰テスト。
+/// v2.10.12 TD-24: SessionNest / GuardNest 導入方針整理の回帰テスト。
 /// </summary>
 public class SessionNestGuardNestPolicyTests
 {
@@ -18,7 +18,7 @@ public class SessionNestGuardNestPolicyTests
     [Fact]
     public void ApplicationVersion_Is_2_10_11()
     {
-        Assert.Equal("2.10.11", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.12", MainViewModel.ApplicationVersion);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class SessionNestGuardNestPolicyTests
     {
         var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
         Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.11", File.ReadAllText(path));
+        Assert.Contains("v2.10.12", File.ReadAllText(path));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

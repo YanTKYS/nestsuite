@@ -18,7 +18,7 @@ public class UiSmokeTD23Tests
     [Fact]
     public void ApplicationVersion_Is_2_10_10()
     {
-        Assert.Equal("2.10.11", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.10.12", MainViewModel.ApplicationVersion);
     }
 
     [Fact]

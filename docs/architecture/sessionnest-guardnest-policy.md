@@ -87,6 +87,39 @@ SessionNest / GuardNest はユーザーに見える Workspace ではなく、Nes
 
 ---
 
+## TD-25 第一段階整理結果（v2.10.12）
+
+TD-25 では大規模リファクタリングを行わず、既存コードの責務境界を確認・文書化した。
+
+### 確認内容
+
+| 確認項目 | 結果 |
+|----------|------|
+| session.json 形式 | 変更なし。`{ "FilePaths": [...], "ActiveFilePath": "..." }` のまま |
+| TempNest session 対象外 | `SessionTabMapper.IsSessionPersistable()` が `WorkspaceKind == Temp` を除外 |
+| detached 状態の非保存 | `IsDetached` フラグは `session.json` に含まれない。ファイルパスのみ保存 |
+| detached タブの復元 | 次回起動時は通常タブ（非 detached）として復元される |
+| SH-15 タブのピン留め | 未実装のまま維持 |
+| 起動時復元・active tab 復元 | 変更なし |
+
+### テスト固定（SessionNestTD25Tests）
+
+以下をテストで固定した：
+- `SessionJson_HasOnlyFilePathsAndActiveFilePath` — JSON に余分なフィールドが混入しないこと
+- `TempNest_IsExcludedFromSession_ByKind` — Temp 種別が除外されること
+- `TempNest_IsExcludedFromSession_WhenMixedWithSavedTabs` — 混在時も除外されること
+- `TempNest_WhenActiveTab_ActiveFilePathIsNull` — Temp がアクティブ時は `ActiveFilePath` が null
+- `TempNest_IsNotRestorable_ByRestoreTarget` — 復元対象からも除外されること
+- `DetachedState_IsNotPresent_InSessionJson` — `IsDetached` が JSON に漏洩しないこと
+- `DetachedTab_FilePathIsSaved_ToSession` — ファイルパスは保存されること
+- `DetachedTab_RestoresAsNormal_OnNextLaunch` — 次回起動時は通常タブとして復元されること
+
+### 整理コード変更
+
+コードの挙動変更は行っていない。既存の実装が既に正しく設計されていることを確認した。
+
+---
+
 ## 参照
 
 - [`docs/architecture/schema-versioning-policy.md`](schema-versioning-policy.md) — 保存形式変更方針
