@@ -1,3 +1,16 @@
+## v2.10.14 — TD-28 テストクラス分類・整理方針の一次分析
+
+- **TD-28: テストクラス分類・整理方針の一次分析を追加した。**
+- **`docs/development/test-classification-analysis.md` を新規作成した。**
+- **NestSuite.Tests 配下の全テストクラス・全テストメソッドを分類した。**
+- **テストクラス命名方針を `docs/development/nestsuite-development-guidelines.md` に追記した。**
+- **テストクラスのリネーム・削除・統合は未実施。**
+- **アプリ本体の挙動変更なし。**
+- **UI変更なし。**
+- **保存形式変更なし。**
+- **session形式変更なし。**
+- **NoteNest schema `1.4.1` 維持。**
+
 ## v2.10.13 — TD-26 GuardNest 第一段階整理 / TD-27 ApplicationVersion テスト集約
 
 - **TD-26: 保存安全性・終了確認・エラー案内まわりの責務境界を整理した。** `AtomicFileWriter` / `CloseConfirmationService` / `FileErrorMessages` / `ErrorLogService` の役割を確認・文書化した。
