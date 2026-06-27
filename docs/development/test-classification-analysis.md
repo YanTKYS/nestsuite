@@ -1428,3 +1428,38 @@ v2.10.16 TD-30 にて、テストクラス乱立抑制・集約方針を develop
 | `GuardNestTD26Tests` | `AtomicFileWriterTests`・`CloseConfirmationServiceTests` 等 |
 
 ただし上記は方向性の記録であり、このバージョンでは実施しない。
+
+---
+
+## 9. v2.10.17 対応記録（TD-31 ChatNest 系テストクラス集約 第一段階）
+
+### 実施内容
+
+v2.10.17 TD-31 にて、課題番号ベースのテストクラス 3 件を削除し、クラス単位名称を持つテストクラスへ集約した。
+
+#### 削除したテストクラス
+
+| 削除クラス | テストメソッド数 | 移動先 |
+|-----------|----------------|--------|
+| `ChatNestCH8CH14Tests` | 15 | `ChatNestWorkspaceViewModelTests`（CH-8）、`ChatNestExportFormatterTests`（CH-14）|
+| `ChatNestCH9ExportTests` | 10 | `ChatNestExportFormatterTests`（Markdown）、`ChatNestWorkspaceViewModelTests`（Command）|
+| `ChatNestCH13DragReorderTests` | 16 | `ChatNestWorkspaceViewModelTests` |
+
+#### 追加・更新したテストクラス
+
+| テストクラス | 変更内容 |
+|-------------|---------|
+| `ChatNestExportFormatterTests` | 新規作成。CH-14 PlainText 6 件、CH-9 Markdown 6 件、backlog/release-notes 確認 4 件 |
+| `ChatNestWorkspaceViewModelTests` | 既存クラスへ追加。CH-8 ShowTimestamps 5 件、CH-9 ExportConversationCommand 2 件、CH-13 MoveMessage 14 件、backlog/release-notes 確認 3 件 |
+
+#### テストクラス数の変化
+
+- 削除: 3 クラス（CH8CH14、CH9Export、CH13DragReorder）
+- 追加: 1 クラス（ChatNestExportFormatterTests）
+- 純減: 2 クラス（96 → 94）
+
+### このバージョンで行わなかったこと
+
+- `LightImprovementsV2103Tests` / `SessionNestTD25Tests` / `GuardNestTD26Tests` の集約（次段階）
+- テストロジックの変更（全テストをそのまま移動）
+- アプリ本体の変更

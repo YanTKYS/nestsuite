@@ -1,3 +1,12 @@
+## v2.10.17 — TD-31 ChatNest 系テストクラス集約 第一段階
+
+- **TD-31: `ChatNestCH8CH14Tests`・`ChatNestCH9ExportTests`・`ChatNestCH13DragReorderTests` の 3 クラスを削除し、クラス単位の名称を持つテストクラスへ集約した。**
+- **CH-8 (ShowTimestamps) / CH-9 (ExportConversationCommand) / CH-13 (MoveMessage) テストを `ChatNestWorkspaceViewModelTests` へ移動した。**
+- **CH-9 (BuildMarkdownConversation) / CH-14 (BuildPlainTextConversation) テストを新規 `ChatNestExportFormatterTests` へ移動した。**
+- **テストクラス数 96 → 94 に削減。テストメソッド数は変化なし（全メソッドを移動）。**
+- **`docs/development/test-classification-analysis.md` §9 に v2.10.17 対応記録を追記した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
 ## v2.10.16 — TD-30 テストクラス乱立抑制・集約方針の明文化
 
 - **TD-30: テストクラスを課題番号・バージョン単位で乱立させない方針を `docs/development/nestsuite-development-guidelines.md` §7 に追記した。**

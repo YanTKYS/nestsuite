@@ -1,22 +1,87 @@
 using System.IO;
-using System.Linq;
 using NestSuite.ChatNest;
 using NestSuite.Models;
 using NestSuite.Services;
-using NestSuite.ViewModels;
 using Xunit;
 
 namespace NestSuite.Tests;
 
-/// <summary>
-/// v2.10.7 CH-9: ChatNest 会話エクスポート（テキスト / Markdown）の単体テスト + 回帰テスト。
-/// </summary>
-public class ChatNestCH9ExportTests
+public class ChatNestExportFormatterTests
 {
     private static readonly string RepoRoot =
         Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 
-    // ── バージョン ────────────────────────────────────────────────────────
+    // ── CH-14: BuildPlainTextConversation ────────────────────────────────
+
+    [Fact]
+    public void BuildPlainTextConversation_EmptyConversation_ReturnsEmpty()
+    {
+        var result = ChatNestExportFormatter.BuildPlainTextConversation(System.Array.Empty<Message>());
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void BuildPlainTextConversation_SingleMessage_Format()
+    {
+        var messages = new[] { new Message { Speaker = Speaker.自分, Text = "テスト" } };
+        var result = ChatNestExportFormatter.BuildPlainTextConversation(messages);
+        Assert.Equal("自分: テスト", result);
+    }
+
+    [Fact]
+    public void BuildPlainTextConversation_MultipleMessages_SeparatedByBlankLine()
+    {
+        var messages = new[]
+        {
+            new Message { Speaker = Speaker.自分,  Text = "まず要件を整理します。" },
+            new Message { Speaker = Speaker.反論,  Text = "保存形式は変更しない方針でよいです。" },
+        };
+        var result = ChatNestExportFormatter.BuildPlainTextConversation(messages);
+        Assert.Contains("自分: まず要件を整理します。", result);
+        Assert.Contains("反論: 保存形式は変更しない方針でよいです。", result);
+        var idx1 = result.IndexOf("自分:", System.StringComparison.Ordinal);
+        var idx2 = result.IndexOf("反論:", System.StringComparison.Ordinal);
+        Assert.True(idx1 < idx2);
+        Assert.Contains("\n\n", result);
+    }
+
+    [Fact]
+    public void BuildPlainTextConversation_MessagesInOrder()
+    {
+        var messages = new[]
+        {
+            new Message { Speaker = Speaker.自分,  Text = "A" },
+            new Message { Speaker = Speaker.補足,  Text = "B" },
+            new Message { Speaker = Speaker.結論,  Text = "C" },
+        };
+        var result = ChatNestExportFormatter.BuildPlainTextConversation(messages);
+        var idxA = result.IndexOf("自分: A",  System.StringComparison.Ordinal);
+        var idxB = result.IndexOf("補足: B",  System.StringComparison.Ordinal);
+        var idxC = result.IndexOf("結論: C",  System.StringComparison.Ordinal);
+        Assert.True(idxA < idxB && idxB < idxC);
+    }
+
+    [Fact]
+    public void BuildPlainTextConversation_EmptyTextMessage_DoesNotCrash()
+    {
+        var messages = new[]
+        {
+            new Message { Speaker = Speaker.自分,  Text = "" },
+            new Message { Speaker = Speaker.補足,  Text = "補足テキスト" },
+        };
+        var result = ChatNestExportFormatter.BuildPlainTextConversation(messages);
+        Assert.Contains("自分: ", result);
+        Assert.Contains("補足: 補足テキスト", result);
+    }
+
+    [Fact]
+    public void BuildPlainTextConversationWithTimestamp_SingleMessage_ContainsTimestamp()
+    {
+        var msg = new Message { Speaker = Speaker.自分, Text = "タイムスタンプ付き" };
+        var result = ChatNestExportFormatter.BuildPlainTextConversationWithTimestamp(new[] { msg });
+        Assert.Contains("[", result);
+        Assert.Contains("] 自分: タイムスタンプ付き", result);
+    }
 
     // ── CH-9: BuildMarkdownConversation ──────────────────────────────────
 
@@ -94,29 +159,28 @@ public class ChatNestCH9ExportTests
         Assert.Contains("**補足**: 補足テキスト", result);
     }
 
-    // ── CH-9: ExportConversationCommand ──────────────────────────────────
-
-    [Fact]
-    public void ExportConversationCommand_CanExecuteIsFalseWhenEmpty()
-    {
-        var vm = new ChatNestWorkspaceViewModel();
-        Assert.False(vm.ExportConversationCommand.CanExecute(null));
-    }
-
-    [Fact]
-    public void ExportConversationCommand_CanExecuteIsTrueWhenHasMessages()
-    {
-        var vm = new ChatNestWorkspaceViewModel();
-        vm.LoadMessages(new[] { new Message { Speaker = Speaker.自分, Text = "テスト" } });
-        Assert.True(vm.ExportConversationCommand.CanExecute(null));
-    }
-
     // ── backlog / release-notes ───────────────────────────────────────────
 
+    // CH-14: 会話全体の整形コピー（プレーンテキスト）
+    [Fact]
+    public void Backlog_CH14_IsMarkedComplete()
+    {
+        Assert.Contains("~~CH-14~~", ReadBacklog());
+    }
+
+    // CH-9: 会話エクスポート（Markdown）
     [Fact]
     public void Backlog_CH9_IsMarkedComplete()
     {
         Assert.Contains("~~CH-9~~", ReadBacklog());
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2106()
+    {
+        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
+        Assert.True(File.Exists(path));
+        Assert.Contains("v2.10.6", File.ReadAllText(path));
     }
 
     [Fact]
