@@ -1,7 +1,9 @@
 <UserControl x:Class="NestSuite.ChatNest.ChatNestWorkspaceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:cn="clr-namespace:NestSuite.ChatNest">
+             xmlns:cn="clr-namespace:NestSuite.ChatNest"
+             AutomationProperties.AutomationId="ChatNest.WorkspaceRoot"
+             AutomationProperties.Name="ChatNest.WorkspaceRoot">
 
     <UserControl.Resources>
         <!-- Converters（参照ソース ChatNest v0.4.1。Workspace で実際に使う 4 種のみ取り込み） -->
@@ -421,6 +423,8 @@
                       Background="Transparent"
                       ScrollChanged="ChatScrollViewer_ScrollChanged">
             <ItemsControl x:Name="ChatItemsControl"
+                          AutomationProperties.AutomationId="ChatNest.MessageList"
+                          AutomationProperties.Name="ChatNest.MessageList"
                           ItemsSource="{Binding Messages}"
                           ItemTemplate="{StaticResource MessageTemplate}"
                           VirtualizingPanel.IsVirtualizing="False"

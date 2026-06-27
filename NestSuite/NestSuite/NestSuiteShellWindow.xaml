@@ -89,6 +89,8 @@
                 <StackPanel DockPanel.Dock="Right"
                             Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
                     <Border x:Name="NoteNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.NoteNestLaunchButton"
+                            AutomationProperties.Name="Shell.NoteNestLaunchButton"
                             Tag="NoteNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"
@@ -98,6 +100,8 @@
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                     <Border x:Name="IdeaNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.IdeaNestLaunchButton"
+                            AutomationProperties.Name="Shell.IdeaNestLaunchButton"
                             Tag="IdeaNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"
@@ -106,6 +110,8 @@
                                    Foreground="{DynamicResource PrimaryFg}"/>
                     </Border>
                     <Border x:Name="ChatNestToolBorder"
+                            AutomationProperties.AutomationId="Shell.ChatNestLaunchButton"
+                            AutomationProperties.Name="Shell.ChatNestLaunchButton"
                             Tag="ChatNest"
                             CornerRadius="4" Margin="2,2" Padding="8,4"
                             Cursor="Hand"

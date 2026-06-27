@@ -90,7 +90,8 @@
     </UserControl.Resources>
 
     <!-- ═══ Main 3-pane layout ═══ -->
-    <Grid>
+    <Grid AutomationProperties.AutomationId="NoteNest.WorkspaceRoot"
+          AutomationProperties.Name="NoteNest.WorkspaceRoot">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="LeftPaneColumn"      Width="220" MinWidth="140" MaxWidth="400"/>
             <ColumnDefinition Width="4"/>

@@ -1,3 +1,13 @@
+## v2.10.10 — TD-23 UIスモークテスト Workspace カバレッジ拡大
+
+- **TD-23: UIスモークテストの検出範囲を Shell / TempNest / NoteNest / IdeaNest / ChatNest の主要 UI に拡大した。** 各 Workspace の必須 AutomationId を段階的に検出する。
+- **NoteNest / IdeaNest / ChatNest の WorkspaceRoot AutomationId を追加した。** ワークスペース切替後の表示確認に使用する。
+- **ChatNest.MessageList AutomationId を追加した（ChatItemsControl）。**
+- **Shell.NoteNestLaunchButton / Shell.IdeaNestLaunchButton / Shell.ChatNestLaunchButton AutomationId をヘッダーランチャーに追加した。** スモークテストがクリックでワークスペースを切り替えて検出する。
+- **UiSmoke/Program.cs を WaitForMainWindow / WaitForElementByAutomationId / CheckRequiredElements / ClickElementByPoint の小ヘルパーに分割した。** 要素グループをまとめて宣言し、失敗時にグループ名と AutomationId を出力する。
+- **detached window は安定性を優先して v2.10.10 では対象外とした。** AutomationId 補完は済み（Shell.DetachedWorkspacePlaceholder / Shell.ReturnDetachedWorkspaceButton）。
+- **新機能追加なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。**
+
 ## v2.10.9 — CH-13 ChatNest 発言のドラッグ並び替え
 
 - **CH-13: ChatNest 発言をドラッグ操作で上下に並び替えられるようにした。** 各発言カードの左端に小さなドラッグハンドル（⠿）を追加した。ハンドルをドラッグして発言順序を変更できる。ドラッグ中は対象カードが半透明になり、挿入位置インジケーターが表示される。
