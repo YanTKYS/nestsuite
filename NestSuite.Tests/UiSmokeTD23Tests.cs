@@ -15,12 +15,6 @@ public class UiSmokeTD23Tests
 
     // ── バージョン ────────────────────────────────────────────────────────
 
-    [Fact]
-    public void NoteNestSchemaVersion_Remains_1_4_1()
-    {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
-    }
-
     // ── backlog / release-notes ───────────────────────────────────────────
 
     [Fact]

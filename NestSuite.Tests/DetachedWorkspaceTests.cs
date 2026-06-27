@@ -175,11 +175,5 @@ public class DetachedWorkspaceTests
 
     // ── スキーマバージョン ───────────────────────────────────────────────
 
-    [Fact]
-    public void NoteNestSchemaVersion_Remains_1_4_1()
-    {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
-    }
-
     // ── アプリバージョン ─────────────────────────────────────────────────
 }

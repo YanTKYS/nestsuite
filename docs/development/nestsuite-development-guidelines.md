@@ -100,8 +100,14 @@
 > **ApplicationVersion テスト集約ルール（v2.10.13 TD-27 追加）**
 > `ApplicationVersion_Is_*` メソッドを各機能テストクラスに追加しない。
 > アプリバージョンの確認は `ApplicationVersionTests.cs` に集約する。
-> `ApplicationVersionTests.IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
+> `ApplicationVersionTests.ApplicationVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
 
+> **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加）**
+> `NoteNestSchemaVersion_Remains_1_4_1` メソッドを各機能テストクラスに追加しない。
+> NoteNest schema version 確認は `ApplicationVersionTests.cs` に集約する。
+> 機能テストクラスはその機能の仕様・回帰確認に集中する。
+> `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
+> schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` を参照する。
 
 ### テストクラス命名・分類方針
 

@@ -109,15 +109,6 @@ public class SchemaVersioningPolicyTests
         Assert.Contains("v2.10.2", File.ReadAllText(releaseNotes));
     }
 
-    // ── バージョン / スキーマ ────────────────────────────────────────────
-
-    [Fact]
-    public void NoteNestSchemaVersion_Remains_1_4_1()
-    {
-        // スキーマ方針整備はschema bumpを行わない
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
-    }
-
     // ── helpers ─────────────────────────────────────────────────────────
 
     private string ReadPolicy()

@@ -1,3 +1,12 @@
+## v2.10.15 — TD-29 NoteNest schema テスト集約・重複 schema テスト抑制
+
+- **TD-29: 各機能テストクラスに散在していた `NoteNestSchemaVersion_Remains_1_4_1` メソッド（20 ファイル）を削除し、`ApplicationVersionTests.cs` に集約した。**
+- **`NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` テストを追加し、再散在を自動検出できるようにした。**
+- **`docs/development/nestsuite-development-guidelines.md` §7 に SchemaVersion テスト集約ルールを追記した。**
+- **`docs/development/test-classification-analysis.md` §7 に v2.10.15 対応記録（追補）を追記した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。**
+- **保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
 ## v2.10.14 — TD-28 テストクラス分類・整理方針の一次分析
 
 - **TD-28: テストクラス分類・整理方針の一次分析を追加した。**

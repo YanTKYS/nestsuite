@@ -1340,3 +1340,53 @@
 
 ### Step 4
 - 不要テスト候補を個別に削除判断する。
+
+---
+
+## 7. v2.10.15 対応記録（TD-29 追補）
+
+### 実施内容
+
+v2.10.15 TD-29 にて「不要テスト候補」として分析されていた重複 schema 確認を整理した。
+
+#### NoteNest schema 確認の集約
+
+| 対応 | 内容 |
+|------|------|
+| 削除 | 各機能テストクラスに散在していた `NoteNestSchemaVersion_Remains_1_4_1` メソッド（20 ファイル） |
+| 集約先 | `ApplicationVersionTests.cs` — `NoteNestSchemaVersion_Remains_1_4_1` を正式な集約テストとして追加 |
+| 抑制テスト | `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` を追加し、再散在を自動検出 |
+
+削除対象ファイル（20 件）:
+`AppExitAndTabCloseRegressionTests`, `AtomicFileWriterTests`, `ChatNestCH13DragReorderTests`,
+`ChatNestCH8CH14Tests`, `ChatNestCH9ExportTests`, `DetachedWindowUxAndThemeTests`,
+`DetachedWorkspaceCrashGuardTests`, `DetachedWorkspaceTests`, `ExpertProposalPlanningTests`,
+`FormatSchemaRegressionTests`, `GuardNestTD26Tests`, `LightImprovementsV2103Tests`,
+`MarkdownExportTests`, `NoteNestCloseConfirmationTests`, `PromptStandardContractTests`,
+`SaveAllCommandTests`, `SchemaVersioningPolicyTests`, `SessionNestGuardNestPolicyTests`,
+`SessionNestTD25Tests`, `UiSmokeTD23Tests`
+
+#### 残存する schema 参照（正当な用途）
+
+以下のファイルは `Project.CurrentSchemaVersion` を機能テストロジックとして使用しており、削除対象外:
+
+| ファイル | 用途 |
+|----------|------|
+| `FormatSchemaRegressionTests` | 保存形式回帰（schema version が実ファイルに書き込まれること） |
+| `V140RegressionTests` | v1.4.0 形式ファイルの読み込み回帰 |
+| `V146RegressionTests` | v1.4.6 形式ファイルの読み込み回帰 |
+| `NoteNestMultiFileDesignTests` | 設計仕様（新規 Project のデフォルト schema） |
+| `ThemeSettingsTests` | 設定ファイルに schema が混入しない確認 |
+| `EditorLayoutTests` | エディタ構成と schema が独立している確認 |
+| `MarkerLineDetectorTests` | マーカー検出と schema が独立している確認 |
+| `ProjectDocumentServiceTests` | ProjectDocumentService の schema 付与確認 |
+| `IdeaNestFileServiceTests` | IdeaNest の schema 管理確認 |
+
+#### 規約追記
+
+`docs/development/nestsuite-development-guidelines.md` §7 に SchemaVersion テスト集約ルールを追記した。
+
+### 未実施
+
+- テストクラスの大規模リネームは本バージョンでは未実施（Step 2〜4 は今後の段階的整理）
+- 「不要テスト候補」全体の一括削除は未実施

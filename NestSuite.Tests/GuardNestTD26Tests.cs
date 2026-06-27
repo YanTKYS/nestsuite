@@ -34,12 +34,6 @@ public class GuardNestTD26Tests : IDisposable
 
     // ── バージョン ────────────────────────────────────────────────────────
 
-    [Fact]
-    public void NoteNestSchemaVersion_Remains_1_4_1()
-    {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
-    }
-
     // ── AtomicFileWriter: tmp cleanup ─────────────────────────────────────
 
     [Fact]
