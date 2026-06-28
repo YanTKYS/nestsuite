@@ -378,11 +378,12 @@ public class ChatNestWorkspaceViewModelTests
 
     // ── CH-8: ShowTimestamps ──────────────────────────────────────────────
 
+    // CH-15: 既定値を false に変更
     [Fact]
-    public void ShowTimestamps_DefaultIsTrue()
+    public void ShowTimestamps_DefaultIsFalse()
     {
         var vm = new ChatNestWorkspaceViewModel();
-        Assert.True(vm.ShowTimestamps);
+        Assert.False(vm.ShowTimestamps);
     }
 
     [Fact]
@@ -635,6 +636,23 @@ public class ChatNestWorkspaceViewModelTests
         var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
         Assert.True(File.Exists(path));
         Assert.Contains("v2.10.9", File.ReadAllText(path));
+    }
+
+    // ── CH-15: release-notes 確認 ─────────────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_CH15()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("CH-15", text);
+        Assert.Contains("文脈メニュー", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21020()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.10.20", text);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

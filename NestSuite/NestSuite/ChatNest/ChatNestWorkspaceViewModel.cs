@@ -38,8 +38,8 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private DispatcherTimer? _copyStatusTimer;
     private bool _disposed;
 
-    // CH-8: タイムスタンプ表示切替（起動中のみ保持。既定 true）
-    private bool _showTimestamps = true;
+    // CH-8: タイムスタンプ表示切替（起動中のみ保持。既定 false）
+    private bool _showTimestamps = false;
 
     // CH-5 search state
     private string _searchText = string.Empty;

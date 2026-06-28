@@ -1497,7 +1497,8 @@ public class NestSuiteShellTests
         var src = ReadSmokeProgram();
         Assert.Contains("ChatNest.InputBox", src);
         Assert.Contains("ChatNest.PostButton", src);
-        Assert.Contains("ChatNest.ShowTimestampsCheckBox", src);
+        // CH-15: ShowTimestampsCheckBox は右クリックメニューへ移行したため削除
+        Assert.DoesNotContain("ChatNest.ShowTimestampsCheckBox", src);
     }
 
     [Fact]

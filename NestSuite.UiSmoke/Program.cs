@@ -46,12 +46,11 @@ class Program
         "IdeaNest.AddIdeaButton",  // Button
     ];
 
-    // ChatNest: TextBox, Button, CheckBox — have AutomationPeer
+    // ChatNest: TextBox, Button — have AutomationPeer
     static readonly string[] ChatNestElements =
     [
         "ChatNest.InputBox",                // TextBox
         "ChatNest.PostButton",              // Button
-        "ChatNest.ShowTimestampsCheckBox",  // CheckBox
     ];
 
     // ── Entry point ───────────────────────────────────────────────────────────

@@ -194,13 +194,14 @@
             </Setter>
         </Style>
 
-        <!-- v2.3.0: DataType を MessageViewModel に変更。v2.7.11: CH-7 speaker chip / CH-10 copy / CH-5 search highlight。v2.10.9: CH-13 drag handle -->
+        <!-- v2.3.0: DataType を MessageViewModel に変更。v2.7.11: CH-7 speaker chip / CH-10 copy / CH-5 search highlight。v2.10.9: CH-13 drag handle。v2.10.20: CH-15 context menu -->
         <DataTemplate x:Key="MessageTemplate" DataType="{x:Type cn:MessageViewModel}">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="{Binding Speaker, Converter={StaticResource SpeakerAlign}}"
                         VerticalAlignment="Top"
                         Margin="16,3"
-                        MaxWidth="580">
+                        MaxWidth="580"
+                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
 
                 <!-- CH-5: 現在の検索結果に背景ハイライト。CH-13: ドラッグ中は半透明 -->
                 <StackPanel.Style>
@@ -217,11 +218,25 @@
                     </Style>
                 </StackPanel.Style>
 
-                <!-- CH-4/CH-6: 右クリックで編集・削除を選択する（プロパティ要素はコンテンツより前） -->
+                <!-- CH-4/CH-6: 右クリックで編集・削除。CH-15: 会話操作・時刻表示を追加 -->
                 <StackPanel.ContextMenu>
                     <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="本文をコピー(_C)" Command="{Binding CopyMessageCommand}"/>
                         <MenuItem Header="編集(_E)" Command="{Binding BeginEditCommand}"/>
                         <MenuItem Header="削除(_D)" Command="{Binding RequestDeleteCommand}"/>
+                        <Separator/>
+                        <MenuItem Header="会話をコピー(_K)"
+                                  Command="{Binding PlacementTarget.Tag.CopyConversationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        <MenuItem Header="会話をMarkdownでコピー(_M)"
+                                  Command="{Binding PlacementTarget.Tag.CopyMarkdownCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        <MenuItem Header="NestSuite形式でコピー(_N)"
+                                  Command="{Binding PlacementTarget.Tag.CopyNestSuiteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        <MenuItem Header="会話を保存...(_S)"
+                                  Command="{Binding PlacementTarget.Tag.ExportConversationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        <Separator/>
+                        <MenuItem Header="時刻を表示(_T)"
+                                  IsCheckable="True"
+                                  IsChecked="{Binding PlacementTarget.Tag.ShowTimestamps, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     </ContextMenu>
                 </StackPanel.ContextMenu>
 
@@ -270,13 +285,6 @@
                                Margin="5,0,3,0"
                                VerticalAlignment="Center"
                                Visibility="{Binding DataContext.ShowTimestamps, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
-                    <!-- CH-10: 発言本文のみコピーするボタン（常時表示、ホバーで鮮明） -->
-                    <Button Content="📋"
-                            Style="{StaticResource MessageCopyButton}"
-                            Command="{Binding CopyMessageCommand}"
-                            ToolTip="本文をコピー"
-                            Margin="2,0,0,0"
-                            VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- 吹き出し。CH-5: IsSearchCurrent で全辺ボーダー表示 -->
@@ -422,6 +430,18 @@
                       Padding="0,8,0,8"
                       Background="Transparent"
                       ScrollChanged="ChatScrollViewer_ScrollChanged">
+            <!-- CH-15: 空エリア右クリックメニュー -->
+            <ScrollViewer.ContextMenu>
+                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="会話をコピー(_K)" Command="{Binding CopyConversationCommand}"/>
+                    <MenuItem Header="会話をMarkdownでコピー(_M)" Command="{Binding CopyMarkdownCommand}"/>
+                    <MenuItem Header="NestSuite形式でコピー(_N)" Command="{Binding CopyNestSuiteCommand}"/>
+                    <MenuItem Header="会話を保存...(_S)" Command="{Binding ExportConversationCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="時刻を表示(_T)" IsCheckable="True" IsChecked="{Binding ShowTimestamps}"/>
+                    <MenuItem Header="最下部へ移動(_B)" Click="ScrollToBottomMenuItem_Click"/>
+                </ContextMenu>
+            </ScrollViewer.ContextMenu>
             <ItemsControl x:Name="ChatItemsControl"
                           AutomationProperties.AutomationId="ChatNest.MessageList"
                           AutomationProperties.Name="ChatNest.MessageList"
@@ -510,12 +530,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Speaker selector + shortcut hint + copy buttons (v1.16.5) -->
+                <!-- Speaker selector + shortcut hint (v1.16.5; CH-15: copy buttons moved to context menu) -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -550,32 +569,18 @@
                                      GroupName="Speaker"/>
                     </StackPanel>
 
-                    <!-- CH-8: ショートカットヒント + タイムスタンプ表示切替チェックボックス -->
+                    <!-- CH-8: ショートカットヒント + コピー状態テキスト（CH-15: CheckBox/ボタン群を右クリックメニューへ移動） -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 VerticalAlignment="Center" Margin="12,0,6,0">
                         <TextBlock Text="Ctrl + ← / → で切り替え"
                                    FontSize="10"
                                    Foreground="{DynamicResource MutedTextBrush}"
                                    VerticalAlignment="Center"/>
-                        <CheckBox x:Name="ShowTimestampsCheckBox"
-                                  AutomationProperties.AutomationId="ChatNest.ShowTimestampsCheckBox"
-                                  AutomationProperties.Name="ChatNest.ShowTimestampsCheckBox"
-                                  Content="発言時刻を表示"
-                                  IsChecked="{Binding ShowTimestamps, Mode=TwoWay}"
-                                  FontSize="10"
-                                  Foreground="{DynamicResource SecondaryTextBrush}"
-                                  VerticalAlignment="Center"
-                                  Margin="16,0,0,0"/>
-                    </StackPanel>
-
-                    <!-- v1.16.5: コピーボタン群 + 状態テキスト -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal"
-                                VerticalAlignment="Center" Margin="8,0,0,0">
                         <TextBlock Text="{Binding CopyStatusText}"
                                    FontSize="10"
                                    Foreground="{DynamicResource MutedTextBrush}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,8,0">
+                                   Margin="12,0,0,0">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Visible"/>
@@ -587,31 +592,6 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <Button Style="{StaticResource CopyButton}"
-                                Content="Copy NestSuite"
-                                Command="{Binding CopyNestSuiteCommand}"
-                                ToolTip="NoteNest / IdeaNest に貼り付けやすい形式でコピー"/>
-                        <Button Style="{StaticResource CopyButton}"
-                                Content="Copy Markdown"
-                                Command="{Binding CopyMarkdownCommand}"
-                                ToolTip="Markdown 形式でコピー"
-                                Margin="4,0,0,0"/>
-                        <!-- CH-14: 会話整形コピー -->
-                        <Button Style="{StaticResource CopyButton}"
-                                AutomationProperties.AutomationId="ChatNest.CopyConversationButton"
-                                AutomationProperties.Name="ChatNest.CopyConversationButton"
-                                Content="会話をコピー"
-                                Command="{Binding CopyConversationCommand}"
-                                ToolTip="発言者: 本文 形式で会話全体をコピー"
-                                Margin="4,0,0,0"/>
-                        <!-- CH-9: 会話ファイルエクスポート -->
-                        <Button Style="{StaticResource CopyButton}"
-                                AutomationProperties.AutomationId="ChatNest.ExportConversationButton"
-                                AutomationProperties.Name="ChatNest.ExportConversationButton"
-                                Content="会話を保存..."
-                                Command="{Binding ExportConversationCommand}"
-                                ToolTip="テキスト / Markdown 形式で会話全体をファイルに保存"
-                                Margin="4,0,0,0"/>
                     </StackPanel>
                 </Grid>
 

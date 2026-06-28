@@ -152,6 +152,12 @@ public partial class ChatNestWorkspaceView : UserControl
         ChatScrollViewer.ScrollToBottom();
     }
 
+    // CH-15: 空エリア右クリックメニューの「最下部へ移動」
+    private void ScrollToBottomMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        ChatScrollViewer.ScrollToBottom();
+    }
+
     // ── インライン編集 ───────────────────────────────────────────────────────
 
     private void EditBox_PreviewKeyDown(object sender, KeyEventArgs e)
