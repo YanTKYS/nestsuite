@@ -1554,7 +1554,7 @@ public class NestSuiteShellTests
     public void NoteNestWorkspaceViewXaml_Contains_ExportContextMenu()
     {
         // SH-25: NoteNestWorkspaceView に Markdown エクスポートの右クリックメニューが追加された
-        var path = Path.Combine(RepoRoot, "NestSuite", "Views", "NoteNestWorkspaceView.xaml");
+        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.xaml");
         var src = File.ReadAllText(path);
         Assert.Contains("ExportNoteMarkdownCopy_Click", src);
         Assert.Contains("ExportNoteMarkdownSave_Click", src);
