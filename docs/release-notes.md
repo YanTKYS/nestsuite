@@ -7,6 +7,18 @@
 
 ---
 
+## v2.11.8 — TD-44: docs/integration・docs/migration の棚卸し
+
+- **TD-44: `docs/integration/` および `docs/migration/` 配下の文書を棚卸しし、すべての文書を「履歴文書」として分類した。**
+- **各文書の冒頭に `[履歴文書]` 注記を追加し、記載された実装が完了済みであることを明示した（5 ファイル）。**
+- **`docs/integration/README.md` を新規作成し、4 文書の分類・状態・保持理由を一覧化した。**
+- **`docs/migration/README.md` を新規作成し、1 文書の分類・状態・保持理由を記録した。**
+- **現行開発で参照すべき文書はいずれのディレクトリにも含まれないことを明示した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.11.7 — TD-43: Workspace ディレクトリ構成の非対称性の整理
 
 - **TD-43: NoteNest 関連ファイルを `NestSuite/NestSuite/NoteNest/` 配下へ移動し、IdeaNest / ChatNest / TempNest と同じ階層に揃えた。**
