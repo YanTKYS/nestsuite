@@ -7,6 +7,20 @@
 
 ---
 
+## v2.11.9 — TD-49: 現行 docs と完了済み計画 docs の判別性向上
+
+- **TD-49: docs 全体の入口および各文書について、現行開発で参照する文書と履歴・完了済み計画文書の判別性を高めた。**
+- **`docs/README.md` を全面更新。「現行開発でまず見る文書」セクションを追加し、ディレクトリ別に現行/履歴の分類を一覧化した。**
+- **`docs/design/README.md` を新規作成。現行参照文書（design-decisions.md / nestsuite-known-limitations.md）と履歴文書（notenest-editor-*.md 4件 / review-gemini.md）を分類した。**
+- **`docs/design/` の履歴文書 5 件（notenest-editor-textbox-dependencies.md / notenest-editor-adapter-design.md / notenest-editor-host-design.md / notenest-editor-h0-reassessment.md / review-gemini.md）に `[履歴文書]` 冒頭注記を追加した。**
+- **`docs/operations/repository-rename.md` に `[完了済み]` 注記を追加した（v2.0.1 で完了済みのリポジトリ名変更手順）。**
+- **`docs/operations/operation-note.md` に `[履歴文書]` 注記を追加した（NoteNest v1.5.4 時代の運用メモ）。**
+- **`docs/planning/expert-proposals-2026-06.md` に `[参照メモ]` 注記を追加した（採用済み提案は backlog に移転済み）。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.11.8 — TD-44: docs/integration・docs/migration の棚卸し
 
 - **TD-44: `docs/integration/` および `docs/migration/` 配下の文書を棚卸しし、すべての文書を「履歴文書」として分類した。**
