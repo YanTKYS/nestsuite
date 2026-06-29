@@ -7,6 +7,14 @@
 
 ---
 
+## v2.11.2 — TD-34: IdeaNest / ChatNest 保存フロー重複の設計整理
+
+- **TD-34: IdeaNest / ChatNest の保存フロー重複について設計メモ `docs/development/save-flow-duplication.md` を追加した。**
+- **実装変更なし。現状の保存フロー・重複処理・すぐ共通化しない理由・将来共通化する場合の安全な方向性を文書化した。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.11.1 — 既定保存ファイル名の定数集約
 
 - **「名前を付けて保存」ダイアログの既定ファイル名（IdeaNest: `ideas.ideanest` / ChatNest: `chat.chatnest`）が FileSave / FileSaveAs / SaveAll の 3 partial に計 6 箇所ハードコードされていたのを、`NestSuiteShellWindow` の private 定数 2 つへ集約した。**
