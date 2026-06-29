@@ -7,6 +7,20 @@
 
 ---
 
+## v2.12.0 — TD-47: NestSuiteShellTests の責務別再編
+
+- **TD-47: `NestSuite.Tests/NestSuiteShellTests.cs`（1618 行）を責務別ファイルに分割し、開発者の認知負荷を低減した。**
+- **`NestSuiteShellTests.cs` は Shell 型境界・NestSuiteToolRegistry・NestSuiteWindowPositionGuard・UiSettings に特化した 37 テストに整理した。**
+- **`NestSuiteShellTabTests.cs` を新規作成。タブ管理・WorkspaceSession・SessionManager・最近使ったファイル・セッション復元に関する 29 テストを移動した。**
+- **`NestSuiteShellWorkspaceLaunchTests.cs` を新規作成。ファイル操作・StartupTabPolicy・StartupArgParser・NestSuiteTabFactory・DialogService・Ctrl+S 保存に関する 52 テストを移動した。**
+- **`NestSuiteDocsContractTests.cs` を新規作成。docs/release-notes.md の内容確認テスト 6 件を移動した。**
+- **`NestSuiteSmokeSupportTests.cs` を新規作成。NestSuite.UiSmoke/Program.cs の構造確認テスト 10 件を移動した。**
+- **`NestSuiteShellXamlTests.cs` を新規作成。Shell・NoteNestWorkspaceView・PreviewIdeaWindow の XAML 構造確認テスト 5 件を移動した。**
+- **テストの意味・仕様・アサーション内容は一切変更していない。アプリ本体コードの変更なし。テストの削除・スキップ化なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.11.9 — TD-49: 現行 docs と完了済み計画 docs の判別性向上
 
 - **TD-49: docs 全体の入口および各文書について、現行開発で参照する文書と履歴・完了済み計画文書の判別性を高めた。**
