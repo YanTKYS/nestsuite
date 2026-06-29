@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.11.4）
+# NestSuite リリース前確認チェックリスト（v2.11.5）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -145,15 +145,12 @@
 
 ---
 
-## 4.5. ツールランチャー表示確認
+## 4.5. ツールメニュー確認
 
-- [ ] ヘッダーバー左に「NestSuite」ラベルが表示される
-- [ ] ヘッダーバー右側に NoteNest / IdeaNest / ChatNest のボタンが横並びで表示される
-- [ ] 左側のツール選択パネルが表示されない（Workspace が全幅）
-- [ ] NoteNest ボタンをクリックすると NoteNest タブへ移動または新規作成される
-- [ ] IdeaNest ボタンをクリックすると IdeaNest タブへ移動または新規作成される
-- [ ] ChatNest ボタンをクリックすると ChatNest タブへ移動または新規作成される
-- [ ] アクティブなタブのツールに対応するボタンがハイライト表示される
+- [ ] ツールメニューから NoteNest タブへ移動または新規作成できる
+- [ ] ツールメニューから IdeaNest タブへ移動または新規作成できる
+- [ ] ツールメニューから ChatNest タブへ移動または新規作成できる
+- [ ] アクティブなタブに対応するツールメニュー項目にチェックマークが付く
 
 ---
 
@@ -298,7 +295,7 @@
 - [ ] 「Temp」タブを選択すると 2×2 の 4 スロットが表示される
 - [ ] 各スロットにタイトル欄（1 行）・本文欄（複数行）・「コピー」ボタン・「クリア」ボタンがある
 - [ ] ステータスバーの右端に「/ TempNest」が表示される
-- [ ] TempNest 選択中はツールランチャーボタン（NoteNest/IdeaNest/ChatNest）のハイライトがなくなる
+- [ ] TempNest 選択中はツールメニューの NoteNest / IdeaNest / ChatNest のチェックマークがすべて外れる
 
 ### メモ操作
 
