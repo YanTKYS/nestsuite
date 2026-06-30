@@ -483,8 +483,8 @@
                 <RowDefinition Height="2*" MinHeight="100"/>
             </Grid.RowDefinitions>
 
-            <!-- ── Tasks ── -->
-            <Grid Grid.Row="0">
+            <!-- ── Tasks（補助：縮退方針 TD-52 第2段階）── -->
+            <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -606,8 +606,8 @@
             <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
                           Background="{DynamicResource PaneBorder}" ShowsPreview="True"/>
 
-            <!-- ── Markers / Links TabControl ── -->
-            <TabControl Grid.Row="2"
+            <!-- ── Markers / Links TabControl（主役：縮退方針 TD-52 第2段階）── -->
+            <TabControl Grid.Row="0"
                         AutomationProperties.AutomationId="NoteNest.RightPaneTabControl"
                         AutomationProperties.Name="NoteNest.RightPaneTabControl"
                         Background="{DynamicResource RightPaneBg}"
