@@ -16,7 +16,7 @@ public partial class TempNestWorkspaceView : UserControl
         if (e.NewValue is not TempNestWorkspaceViewModel vm) return;
         foreach (var slot in new[] { vm.Slot1, vm.Slot2, vm.Slot3, vm.Slot4 })
             slot.ConfirmClear = () =>
-                MessageBox.Show("スロットの内容をクリアしますか？", "確認",
+                MessageBox.Show("スロットの内容をクリアしますか？", "スロットのクリア",
                     MessageBoxButton.OKCancel, MessageBoxImage.Question)
                 == MessageBoxResult.OK;
     }

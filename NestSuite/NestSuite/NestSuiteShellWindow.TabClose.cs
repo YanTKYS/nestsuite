@@ -116,7 +116,7 @@ public partial class NestSuiteShellWindow
             tab.IsModified,
             () => MessageBox.Show(
                 this,
-                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？",
+                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？\n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）",
                 "未保存の NoteNest",
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Warning) switch

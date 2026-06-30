@@ -110,7 +110,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 noteTab?.IsModified == true,
                 () => MessageBox.Show(
                     this,
-                    $"NoteNest「{noteTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                    $"NoteNest「{noteTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？\n（「いいえ」で保存せずに終了します。「キャンセル」で終了しません。）",
                     "未保存の NoteNest",
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Warning) switch
@@ -153,7 +153,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                     chatVm.HasUnsavedChanges,
                     () => MessageBox.Show(
                             this,
-                            $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                            $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？\n（「いいえ」で保存せずに終了します。「キャンセル」で終了しません。）",
                             "未保存の ChatNest",
                             MessageBoxButton.YesNoCancel,
                             MessageBoxImage.Warning) switch

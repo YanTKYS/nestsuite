@@ -7,6 +7,20 @@
 
 ---
 
+## v2.12.8 — TD-50・SH-26・SH-27: 確認ダイアログ文言統一・ツールチップ/コンテキストメニューショートカット規約化
+
+- **TD-50: 確認ダイアログの文言パターンを統一した。**
+- `TempNestWorkspaceView.xaml.cs`: スロットクリア確認ダイアログのタイトルを汎用 `"確認"` から `"スロットのクリア"` に変更した。
+- `NestSuiteShellWindow.TabClose.cs` (NoteNest タブクローズ) / `NestSuiteShellWindow.xaml.cs` (NoteNest 終了・ChatNest 終了): YesNoCancel 型の 3 択確認ダイアログに `「いいえ」と「キャンセル」` の意味を示す補足行を追加した。
+  - `\n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）` / `...で終了します。...で終了しません。`
+- 他の確認ダイアログ（削除確認・IdeaNest 終了・ChatNest 未保存テキスト・IdeaConfirmWindow）は変更なし（既存文言が明確なため）。
+- **SH-26: ツールチップへのショートカットキー表記の形式を文書化した。** 既存実装はすでに `"操作説明 (Ctrl+X)"` 形式に準拠していたため、コード変更は不要。
+- **SH-27: コンテキストメニューへの `InputGestureText` 追記を確認した。** `IdeaNestWorkspaceView.xaml` / `NoteEditorHost.xaml` はすでに必要な `InputGestureText` を持っていたため、追加なし。ショートカットが存在しないメニュー項目への追記もなし。
+- **`docs/development/nestsuite-development-guidelines.md` に §16「UI テキスト規約」を追加した。** ツールチップ形式・`InputGestureText` 付与基準・確認ダイアログ文言方針を明記した。旧 §16（プロンプト標準契約）→ §17、旧 §17（今後の通常プロンプト形式）→ §18 に繰り上げた。
+- **UI 挙動変更なし。ダイアログ表示条件変更なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.12.7 — L11: NoteNest 右ペイン開閉ボタンの位置統一・初期状態変更・背景色追加
 
 - **L11: NoteNest 右ペインの開閉ボタンを常時同一位置に表示するよう変更した。**
