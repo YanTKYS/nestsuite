@@ -97,7 +97,7 @@
             <ColumnDefinition x:Name="LeftPaneColumn"      Width="220" MinWidth="140" MaxWidth="400"/>
             <ColumnDefinition Width="4"/>
             <ColumnDefinition Width="*"    MinWidth="280"/>
-            <ColumnDefinition x:Name="RightSplitterColumn" Width="4"/>
+            <ColumnDefinition x:Name="RightSplitterColumn" Width="24"/>
             <ColumnDefinition x:Name="RightPaneColumn"     Width="280" MinWidth="200" MaxWidth="420"/>
         </Grid.ColumnDefinitions>
 
@@ -460,17 +460,18 @@
                       Grid.Column="3" HorizontalAlignment="Stretch"
                       Background="{DynamicResource PaneBorder}" ShowsPreview="True"/>
 
-        <!-- 右ペイン展開ボタン。折り畳み時に Column 3（20px）に表示。Panel.ZIndex なし、左ボーダーで区切り -->
+        <!-- 右ペイン開閉ボタン。Column 3（常時 24px）に固定表示。GridSplitter より前面（ZIndex=1） -->
         <Button Grid.Column="3"
                 x:Name="RightPaneExpandButton"
                 AutomationProperties.AutomationId="NoteNest.RightPaneExpandButton"
                 AutomationProperties.Name="NoteNest.RightPaneExpandButton"
+                Panel.ZIndex="1"
                 Content="»" Width="20"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 Style="{StaticResource IconButton}"
                 Click="ToggleRightPane_Click"
                 ToolTip="右ペインを表示"
-                Visibility="Collapsed"
+                Background="{DynamicResource GroupHeaderBg}"
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="1,0,0,0"/>
 
@@ -497,9 +498,6 @@
                         <Button DockPanel.Dock="Right" Content="+" Width="22" Height="22"
                                 Style="{StaticResource IconButton}"
                                 Click="AddTaskMenu_Click" ToolTip="タスクを追加"/>
-                        <Button DockPanel.Dock="Right" Content="«" Width="22" Height="22"
-                                Style="{StaticResource IconButton}"
-                                Click="ToggleRightPane_Click" ToolTip="右ペインを折り畳む"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="タスク" FontWeight="Bold" FontSize="13"/>
                             <TextBlock Text="{Binding TotalIncompleteTaskCountText}"

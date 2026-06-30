@@ -7,6 +7,20 @@
 
 ---
 
+## v2.12.7 — L11: NoteNest 右ペイン開閉ボタンの位置統一・初期状態変更・背景色追加
+
+- **L11: NoteNest 右ペインの開閉ボタンを常時同一位置に表示するよう変更した。**
+- **変更前**: 閉じた状態では Column 3（RightSplitterColumn 20px 幅）に「»」ボタンを表示し、開いた状態では右ペインヘッダー内 DockPanel に別ボタン「«」を配置していた。操作対象が異なる位置にあり導線が一貫しなかった。
+- **変更後**: Column 3 を常時 24px に固定し、単一の `RightPaneExpandButton` が常にその位置に表示される。内容（`»` / `«`）は開閉状態に応じて切り替わる。右ペインヘッダーの「«」ボタンは削除した。
+- **初期表示を閉じた状態に変更した。** コンストラクタで `CollapseRightPane()` を呼ぶようにした。従来は開いた状態で起動していた。
+- **開閉ボタンに `GroupHeaderBg` を背景色として設定した。** テーマ対応済みの既存リソースを使用し、ボタンの視認性を向上させた。過度に目立ちすぎない色選択とした。
+- **`Panel.ZIndex="1"` を設定し、GridSplitter より前面に配置した。** 開いた状態でも GridSplitter と重ならず確実にクリックできる。
+- **public API（`CollapseRightPane` / `ExpandRightPane` / `ToggleRightPane` / `InitRightPane` / `IsRightPaneCollapsed` / `ActualRightPaneWidth`）は変更なし。**
+- **XAML binding 名変更なし。AutomationId 変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.12.6 — TD-42: RelayCommand 実装の統一検討
 
 - **TD-42: `RelayCommand`・`IdeaNestRelayCommand`・`ChatNestRelayCommand` の 3 実装を棚卸しし、統一可否を判断した。**
