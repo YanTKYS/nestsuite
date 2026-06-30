@@ -84,6 +84,9 @@
 | IdeaNest の軸：カード中心の軽い編集体験 | 管理機能を増やしすぎない |
 | ChatNest の軸：軽い会話記録体験 | 管理機能を増やしすぎない |
 | 利用者向け UI に「暫定」「試験配置」等の文字を残さない | 内部管理用のラベルを本番 UI に入れない |
+| XAML binding 名を不用意に変更しない | DataContext 側の変更も必要になり影響範囲が広い |
+| public property / command 名を不用意に変更しない | 外部からの参照・テストへの影響を避ける |
+| 新しいショートカットキーを追加・変更する場合は個別プロンプトで明示する | 既存操作との衝突・ユーザー習慣への影響があるため |
 
 ---
 
@@ -110,6 +113,13 @@
 > 機能テストクラスはその機能の仕様・回帰確認に集中する。
 > `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
 > schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` を参照する。
+
+### テスト整合性の原則
+
+- 既存テストを削除しない
+- 既存テストをスキップ（`[Fact(Skip=...)]` 等）化しない
+- テストの期待値を、仕様変更でなく「通りやすくするため」だけの理由で変更しない
+- `ApplicationVersion_Is_*` や `NoteNestSchemaVersion_Remains_*` など version / schema 確認は `ApplicationVersionTests.cs` に集約する
 
 ### テストクラス命名・分類方針
 
@@ -280,6 +290,8 @@ NestSuite vX.Y.Z として、○○に対応してください。
 | 外部依存・外部ライブラリを追加しない | 事前整理なしの追加は禁止（§5 参照） |
 | 外部通信を追加しない | アプリはローカル完結が原則（§5 参照） |
 | 保存形式を明示指示なしに変えない | §4 および §14-2 参照 |
+| Workspace の独立性を壊さない | NoteNest / IdeaNest / ChatNest 間の直接依存は作らない（§12 参照） |
+| 「統一しない判断」も理由を明記すれば有効な設計判断として扱う | 重複削減だけで統一を判断しない（§15 RelayCommand 参照） |
 
 ---
 
@@ -472,24 +484,43 @@ ToolTip="すべて保存 (Ctrl+Shift+S)"
 
 ## 17. プロンプト標準契約（凝縮版）
 
-> 追加: v2.10.8
+> 追加: v2.10.8 / 更新: v2.12.9 TD-51
 > 目的: 今後の実装プロンプトをさらに短くするため、毎回繰り返す共通ルールを箇条書き形式でまとめる。
 
-通常の実装プロンプトでは、以下を共通前提とする。
+通常の実装プロンプトでは、以下を共通前提とする。個別プロンプトが明示的に上書きした場合はその指示を優先する。
 
+**通常制約**
 - 本指示 > guideline
 - 指示された対象ID以外を実装しない
-- 保存形式変更は明示指示がある場合のみ行う
-- schema bumpは明示指示がある場合のみ行う
-- session.json変更は明示指示がある場合のみ行う
+- 保存形式変更なし・schema bumpなし・session.json変更なし（明示指示がある場合のみ行う）→ §4 / §14-2
 - `.notenest` schemaは原則 `1.4.1` 維持
-- `.chatnest` / `.ideanest` / TempNest JSON の形式変更は明示指示がある場合のみ行う
-- 外部依存を追加しない
+- 外部依存を追加しない → §5
 - release workflowを変更しない
 - net48_testを再開しない
-- ErrorLog方針はErrorのみ
+- ErrorLog方針はErrorのみ（Info/Warning 不可）
 - local dotnet build/test は optional
 - GitHub Actions CI green / UI Smoke green を完了条件とする
+
+**バージョン・スキーマ更新**
+- バージョン更新時は `NestSuite.csproj` と `ApplicationVersionTests.cs` を同時に更新する → §7 / §14-4
+- NoteNest schema は明示がない限り `1.4.1` 維持
+
+**release notes / backlog 運用** → §14-7 参照
+
+**テスト方針**
+- 既存テストを削除しない・スキップ化しない
+- 期待値を目的外の理由で変更しない
+- 新規テストクラスは課題番号ベース命名を避ける → §7
+
+**UI 変更方針**
+- XAML binding 名・public property / command 名を不用意に変更しない → §6
+- ショートカットキーを追加・変更する場合は個別プロンプトで明示する → §6
+
+**共通基盤化・抽象化の抑制**
+- 新しい共通基盤・汎用 Registry / Factory / Coordinator は明示指示なしに追加しない → §14-1
+- Workspace の独立性を壊さない → §12 / §14-1
+
+**docs 長文化抑制** → §19 参照
 
 保存形式・スキーマ変更が必要な場合は
 `docs/architecture/schema-versioning-policy.md`
@@ -531,3 +562,16 @@ Done:
 - GitHub Actions CI green
 - UI Smoke green
 ```
+
+---
+
+## 19. docs 長文化抑制
+
+> 追加: v2.12.9 TD-51
+> 目的: docs が肥大化して参照コストが上がることを防ぐ。
+
+- docs は後続開発者の判断負荷を減らすために書く（経緯の羅列ではなく、判断軸を書く）
+- 現行方針と変更履歴を同じ文書の前面に並べない（履歴は `release-notes.md` に記録する）
+- 同じ内容を複数 docs に重複して書かない（参照リンクを使う）
+- docs 追加時は「今後何を判断しやすくするか」を一言で言えることを確認する
+- 詳細履歴・移行経緯が必要な場合は `history` / `migration` などの別ファイルへ分離する
