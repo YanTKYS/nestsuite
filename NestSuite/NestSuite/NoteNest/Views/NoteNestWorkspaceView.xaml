@@ -496,7 +496,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*" MinHeight="150"/>
                 <RowDefinition Height="4"/>
-                <RowDefinition Height="2*" MinHeight="100"/>
+                <!-- v2.13.5 M16 フォローアップ: 既存タスクがない場合はヒント文のみの高さに縮め、
+                     マーカー / リンク（Row 0）へ余った領域を譲る -->
+                <RowDefinition Height="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowHeight}}"
+                               MinHeight="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowMinHeight}}"/>
             </Grid.RowDefinitions>
 
             <!-- ── Tasks（互換表示：縮退方針 TD-52/M16 第3段階。既存タスクがある場合のみ表示し、
@@ -507,8 +510,9 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- タスクが1件もない場合: 空欄を大きく見せず、マーカー利用への一言のみ表示 -->
-                <TextBlock Grid.Row="0" Grid.RowSpan="2"
+                <!-- タスクが1件もない場合: 空欄を大きく見せず、マーカー利用への一言のみ表示。
+                     外側 RowDefinition が Auto へ縮むため、この行のみで完結させる -->
+                <TextBlock Grid.Row="0"
                            Text="作業ポイントは本文の TODO / FIXME で管理できます。"
                            Foreground="{DynamicResource FaintFg}" FontSize="11"
                            TextWrapping="Wrap"
