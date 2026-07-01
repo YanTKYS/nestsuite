@@ -388,4 +388,43 @@ public class NestSuiteShellTabTests
         Assert.NotNull(path);
         Assert.Contains("nestsuite-session.json", path, StringComparison.OrdinalIgnoreCase);
     }
+
+    // ── v2.13.3 SH-30: ステータスバーのアクティブタブ基準化 ────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasRefreshShellStatusBarMethod()
+    {
+        // v2.13.3: RefreshShellStatusBar が _selectedTab 基準でファイル名・未保存表示を
+        // 再計算するメソッドとして宣言されていることを確認。
+        // Window.DataContext（NoteNest 固有）への直接 Binding を廃止した代替経路。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("RefreshShellStatusBar",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasShellStatusFileTextField()
+    {
+        // v2.13.3: XAML x:Name="ShellStatusFileText" によるファイル名表示 TextBlock フィールドの存在・型確認
+        // AutomationId="Shell.StatusBar" はこの要素に付与されており UI Smoke の検出対象と一致する
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "ShellStatusFileText");
+        Assert.NotNull(field);
+        Assert.Equal(typeof(TextBlock), field!.FieldType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasShellStatusUnsavedTextField()
+    {
+        // v2.13.3: XAML x:Name="ShellStatusUnsavedText" による未保存表示 TextBlock フィールドの存在・型確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "ShellStatusUnsavedText");
+        Assert.NotNull(field);
+        Assert.Equal(typeof(TextBlock), field!.FieldType);
+    }
 }

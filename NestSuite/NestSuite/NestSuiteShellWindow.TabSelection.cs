@@ -38,7 +38,8 @@ public partial class NestSuiteShellWindow
                 foreach (var kvp in _toolMenuItems)
                     kvp.Value.IsChecked = false;
 
-                NestSuiteModeSuffix.Text = "  /  TempNest";
+                // v2.13.3 SH-30: TempNest にはファイル名表示がないため「/」を前置しない
+                NestSuiteModeSuffix.Text = "TempNest";
                 RefreshWorkspaceStatus();
                 return;
             }
@@ -180,6 +181,8 @@ public partial class NestSuiteShellWindow
 
     private void RefreshWorkspaceStatus()
     {
+        RefreshShellStatusBar();
+
         if (_isShowingNotification) return;
         if (!TryGetActiveSession(out var session) || session == null)
         {
@@ -194,6 +197,39 @@ public partial class NestSuiteShellWindow
             TempNestWorkspaceViewModel        => "",
             _                                 => ""
         };
+    }
+
+    /// <summary>
+    /// v2.13.3 SH-30: ステータスバー左側（ファイル名・未保存表示）を、
+    /// 現在アクティブな <see cref="_selectedTab"/> を基準に再計算する。
+    /// Window.DataContext（NoteNest 固有の MainViewModel）には依存しない。
+    /// 閉じたタブや非アクティブな Workspace の状態が残らないよう、タブ切替・タブクローズ・
+    /// 未保存状態変化のたびに <see cref="RefreshWorkspaceStatus"/> 経由で呼び出す。
+    /// </summary>
+    private void RefreshShellStatusBar()
+    {
+        var tab = _selectedTab;
+        if (tab == null)
+        {
+            ShellStatusFileText.Text = "";
+            ShellStatusUnsavedText.Text = "";
+            ShellStatusUnsavedText.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        // TempNest はファイルに紐づかないため、ファイル名欄は空のままにする（L20/SH-29 とは別軸）
+        ShellStatusFileText.Text = tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp ? "" : tab.DisplayName;
+
+        // NoteNest はアクティブ Session の MainViewModel から経過時間つき表示を引き継ぐ。
+        // それ以外は tab.IsModified に基づく既定表示にする。
+        var unsavedText = "● 未保存";
+        if (tab.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+            TryGetActiveSession(out var noteSession) &&
+            noteSession?.WorkspaceViewModel is MainViewModel noteVm)
+            unsavedText = noteVm.UnsavedIndicatorText;
+
+        ShellStatusUnsavedText.Text = unsavedText;
+        ShellStatusUnsavedText.Visibility = tab.IsModified ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private static string BuildNoteNestStatusText(MainViewModel vm)

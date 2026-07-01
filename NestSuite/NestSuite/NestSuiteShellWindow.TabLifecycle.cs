@@ -112,7 +112,13 @@ public partial class NestSuiteShellWindow
 
         if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified) &&
             sender is MainViewModel vm)
+        {
             SyncNoteNestTabForViewModel(vm);
+            // v2.13.3 SH-30: タブ同期後にステータスバー（ファイル名・未保存表示）を再計算する。
+            // 従来は Window.DataContext への直接 Binding が自動更新していたが、
+            // アクティブタブ基準の表示に変更したため明示的な再計算が必要になった。
+            if (IsActiveVm(vm)) RefreshWorkspaceStatus();
+        }
 
         // v1.14.0: CurrentFilePath 変化時にセッションがすでに存在する場合は保存先として最近ファイルに追加する
         // （セッション登録前の OpenFileAtStartup による変化は session == null で除外される）

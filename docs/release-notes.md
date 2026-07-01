@@ -7,6 +7,24 @@
 
 ---
 
+## v2.13.3 — SH-30: Shell ステータスバーの未保存表示・ファイル表示同期修正
+
+- **SH-30: NestSuite Shell のステータスバーが、アクティブでないタブの状態を表示し続ける不具合を修正した。**
+- **不具合内容**: ステータスバーの `ProjectDisplayName` / `UnsavedIndicatorText` / `IsModified` は Window の `DataContext`（NoteNest タブ選択時のみ NoteNest の `MainViewModel` に差し替え）へ直接 Binding していた。ChatNest / IdeaNest / TempNest タブへ切り替えても Window の `DataContext` は更新されないため、以下の事象が発生していた。
+  1. 未保存の新規 NoteNest プロジェクトを閉じたあとも、ステータスバーに未保存アラートが残る
+  2. NoteNest タブがない状態でも、ステータスバーに閉じたタブのファイル名が残り続ける
+  3. NoteNest タブが一度もアクティブ化されていない場合、`DataContext` が `null` のままとなりファイル名欄が空になり、モード表示の `/` のみが目立つ不自然な表示になる
+- **修正方針**: ステータスバーの表示元を Window の `DataContext` から、常に正しく同期される **現在アクティブな `NestSuiteDocumentTab`（`_selectedTab`）** へ変更した。`NestSuiteDocumentTab.DisplayName` / `IsModified` は Workspace 種別を問わず既に正しく同期されているフィールドであり、この基準に統一することで DataContext の不整合クラスの不具合を構造的に解消した。
+- **`RefreshShellStatusBar()`（新規）を `RefreshWorkspaceStatus()` から呼び出す形で追加した。** タブ切替（`ActivateTab`）・タブクローズ後の再アクティブ化・NoteNest/ChatNest/IdeaNest の未保存状態変化のたびに、既存の `RefreshWorkspaceStatus()` 呼び出し経路を通じて自動的に再計算されるようにした（新しい呼び出し箇所は最小限、NoteNest の `IsModified`/`CurrentFilePath` 変化時に1箇所追加）。
+- **ファイル名表示**: `_selectedTab.DisplayName`（NoteNest/IdeaNest/ChatNest はファイル名または「無題.拡張子」、TempNest は空）を使用する。未保存表示は NoteNest の場合のみ既存の経過時間つき表示（`⚠ 未保存（N分）`）を引き継ぎ、それ以外は `● 未保存` の既定表示にした。
+- **「`/` だけの不自然な表示」を修正した。** TempNest 選択時はファイル名欄が空になるため、モード表示 `NestSuiteModeSuffix` から `/` 区切りを外し `"TempNest"` のみを表示するようにした（NoteNest/ChatNest/IdeaNest はファイル名が必ず存在するため `"  /  {ツール名}"` の形式を維持）。
+- **保存処理・読込処理・session 復元処理・未保存確認ダイアログの表示条件は変更していない。**
+- **回帰テストを `NestSuiteShellTabTests.cs` に追加した。** `RefreshShellStatusBar` メソッドおよび新しい `ShellStatusFileText` / `ShellStatusUnsavedText` フィールドの存在を確認する。
+- **UI 変更あり（ステータスバーの表示元・表示内容）。AutomationId `Shell.StatusBar` は維持（付与先要素名を `ShellStatusFileText` に変更のみ）。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.13.2 — L17・L19: NoteNest 右ペイン開閉ツールチップ連動・編集エリアへのノートブック名表示
 
 - **L17: 右ペイン開閉ボタンのツールチップを開閉状態に連動させた。** `CollapseRightPane` で `"右ペインを表示"`、`ExpandRightPane` で `"右ペインを閉じる"` に切り替える。従来は常に `"右ペインを表示"` のままだった。

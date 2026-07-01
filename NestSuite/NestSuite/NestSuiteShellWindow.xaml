@@ -85,13 +85,14 @@
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-                <TextBlock Text="{Binding ProjectDisplayName}"
+                <!-- v2.13.3 SH-30: アクティブタブ（_selectedTab）を基準に RefreshWorkspaceStatus で更新する。
+                     Window.DataContext（NoteNest 固有）への直接 Binding は行わない -->
+                <TextBlock x:Name="ShellStatusFileText"
                            AutomationProperties.AutomationId="Shell.StatusBar"
                            AutomationProperties.Name="Shell.StatusBar"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
-                <TextBlock Text="{Binding UnsavedIndicatorText}"
-                           FontSize="11" Foreground="{DynamicResource UnsavedBrush}"
-                           Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock x:Name="ShellStatusUnsavedText"
+                           FontSize="11" Foreground="{DynamicResource UnsavedBrush}"/>
                 <TextBlock x:Name="NestSuiteModeSuffix"
                            Text="  /  NoteNest"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
