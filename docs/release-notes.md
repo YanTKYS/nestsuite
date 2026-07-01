@@ -13,6 +13,7 @@
 - **L19: NoteNest 編集エリアに現在のノートブック名を表示した。** `MainViewModel` に `CurrentNotebookName`（選択中ノートの所属ノートブック名）を追加し、編集ヘッダーのノートタイトル左側に控えめなフォントサイズで表示する。ノート未選択時は非表示。長いノートブック名は `MaxWidth="140"` と `TextTrimming` で省略表示し、Tooltip でフル名称を確認できる。
 - **編集ヘッダーのタイトル表示部を Grid（Auto / \*）に変更した。** ノートブック名列を Auto、ノートタイトル列を `*` とし、DockPanel の Fill 領域内でノートタイトルの `TextTrimming` が正しく機能するようにした。
 - **どちらも v2.13.0 / TD-52・v2.13.1 / L18 の流れで、NoteNest をマーカー / リンク中心の Workspace に寄せつつ、利用者が「今どういう状態か」「どこを見ているか」を見失いにくくする補助 UI として位置づけた。**
+- **レビュー指摘対応: `CurrentNotebookName` がノートブックリネーム・ノート移動に追従しない不具合を修正した。** `EditorChangeCoordinator` は `SelectedNote` 自体の変更時のみ通知するため、選択中ノートのノートブック名変更（`RenameNotebook`）やノートの別ノートブックへの移動（`MoveNoteToNotebook`）では `SelectedNote` が変わらず表示が古いまま残っていた。`NoteChangeCoordinator` の通知プロパティ一覧（`_notes.Changed` 経由、ノートブック Title 変更・ノート移動・コレクション変更で発火）に `nameof(MainViewModel.CurrentNotebookName)` を追加し、両ケースで表示が追従するようにした。回帰テストを `NoteChangeCoordinatorTests` と `MainViewModelFacadeTests` に追加した。
 - **右ペイン開閉ロジック・ノートブック選択ロジック・マーカー抽出ロジック・リンク解析ロジックは変更なし。**
 - **UI 変更あり。XAML binding 名変更なし（新規プロパティ `CurrentNotebookName` を追加のみ）。AutomationId 変更なし。**
 - **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
