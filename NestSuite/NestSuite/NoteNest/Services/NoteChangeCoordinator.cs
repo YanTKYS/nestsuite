@@ -24,6 +24,7 @@ public sealed class NoteChangeCoordinator
         [
             nameof(MainViewModel.RelatedNoteChoices),
             nameof(MainViewModel.CurrentNoteTitle),
+            nameof(MainViewModel.CurrentNotebookName),
             nameof(MainViewModel.EditorTitle),
             nameof(MainViewModel.CurrentNoteTimestampSummary),
             nameof(MainViewModel.IsNoteListEmpty),
