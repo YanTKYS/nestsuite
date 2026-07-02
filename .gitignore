@@ -14,3 +14,6 @@ packages/
 
 # Claude Code agent state
 .claude/worktrees/
+
+# Performance measurement results (TD-56: developer-only, never committed)
+artifacts/performance-results/
