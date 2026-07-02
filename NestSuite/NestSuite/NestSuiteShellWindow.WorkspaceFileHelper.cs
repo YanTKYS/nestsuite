@@ -96,8 +96,7 @@ public partial class NestSuiteShellWindow
         if (effectiveExcludeId == null) return false;
         var duplicate = _tabs.FirstOrDefault(t =>
             t.Id != effectiveExcludeId &&
-            t.WorkspaceKind == kind &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+            NestSuiteOpenFilePolicy.IsDuplicateForSave(t.FilePath, t.WorkspaceKind, path, kind));
         if (duplicate == null) return false;
         _dialogs.ShowError(
             $"「{Path.GetFileName(path)}」は既に別のタブで開かれています。\n既存のタブを表示します。",
