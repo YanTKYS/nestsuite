@@ -130,4 +130,57 @@ public class WorkspaceFileOperationHelperTests
             @"C:\Projects\notes.notenest",
             @"C:\Projects\notes.notenest"));
     }
+
+    // ── v2.14.2: IsDuplicateForSave（.nestsuite の WorkspaceKind 横断重複検出）回帰 ─
+
+    [Fact]
+    public void IsDuplicateForSave_LegacyExtension_DifferentKind_ReturnsFalse()
+    {
+        // legacy 拡張子は拡張子自体が WorkspaceKind を確定するため、異なる kind は重複扱いしない
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_LegacyExtension_SameKind_ReturnsTrue()
+    {
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_ChatNestTabOpen_NoteNestSaveAs_ReturnsTrue()
+    {
+        // .nestsuite で ChatNest タブが開いている状態で NoteNest として同じパスへ Save As した場合、
+        // 拡張子だけでは WorkspaceKind が定まらないため kind に関係なく重複検出する
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\meeting.nestsuite", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\meeting.nestsuite", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_IdeaNestTabOpen_ChatNestSaveAs_ReturnsTrue()
+    {
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\plan.nestsuite", NestSuiteWorkspaceKind.IdeaNest,
+            @"C:\Projects\plan.nestsuite", NestSuiteWorkspaceKind.ChatNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_DifferentPaths_ReturnsFalse()
+    {
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.nestsuite", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\b.nestsuite", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NullExistingTabPath_ReturnsFalse()
+    {
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            null, NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.nestsuite", NestSuiteWorkspaceKind.NoteNest));
+    }
 }

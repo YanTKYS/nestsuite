@@ -7,6 +7,15 @@
 
 ---
 
+## v2.14.2 — FM-1 fix: `.nestsuite` 保存時の WorkspaceKind 横断重複タブ検出
+
+- **v2.14.1 FM-1 のレビュー指摘（コードレビュー: PR #441）を修正した。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらない（ファイル内容の `workspaceKind` で判定する）形式だが、名前を付けて保存時の重複タブ検出 `CheckAndActivateDuplicateTabForSave` が `WorkspaceKind` 一致を条件にしていたため、**同じ `.nestsuite` パスを別 WorkspaceKind のタブが既に開いている場合に検出できず、上書き保存でそのタブの内容と実ファイルが食い違う**バグがあった（例: `.nestsuite` を ChatNest として開いた状態で、別タブの NoteNest が同じパスへ Save As すると検出されずに上書きされる）。
+- **修正**: 重複判定ロジックを `NestSuiteOpenFilePolicy.IsDuplicateForSave`（新規、UI 非依存の純粋関数）へ抽出した。legacy 拡張子（`.notenest` / `.ideanest` / `.chatnest`）は従来どおり `WorkspaceKind` が一致する場合のみ重複とみなし、`.nestsuite` は `WorkspaceKind` に関係なく同一パスであれば重複とみなす。`CheckAndActivateDuplicateTabForSave` はこの純粋関数に委譲するのみとした（`SaveNoteNestFileAs` / `SaveIdeaNestFileAs` / `SaveChatNestFileAs` / `ResolveSaveTargetPath` 経由の `SaveForTabId` / `SaveAll` すべてに適用される）。
+- **テストを追加した**: `WorkspaceFileOperationHelperTests` に `IsDuplicateForSave` の legacy 拡張子（同一 kind / 別 kind）・`.nestsuite`（別 kind 同士でも検出・別パスは非検出・既存タブパス `null`）の回帰を追加した。既存テストの削除・期待値変更なし。
+- **wrapper 形式・種別判定集約・FileService 分岐・legacy 互換方針は v2.14.1 のまま変更なし。** session 形式変更なし。schema bump なし（NoteNest `1.4.1` 維持）。外部依存追加なし。
+
+---
+
 ## v2.14.1 — FM-1: Workspace ファイル拡張子 `.nestsuite` 統一
 
 - **FM-1: 1タブ1ファイル構成を維持したまま、新しい標準 Workspace 拡張子を `.nestsuite` に統一した。** 複数 Workspace を 1 ファイルにまとめる統合コンテナ（LT-1）ではない。
