@@ -236,4 +236,29 @@ public class ChatNestFileServiceTests : IDisposable
         var path = TempPath("notexist.chatnest");
         Assert.Throws<FileNotFoundException>(() => ChatNestFileService.Load(path));
     }
+
+    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+
+    [Fact]
+    public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
+    {
+        var path = TempPath("roundtrip.nestsuite");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "こんにちは" }]);
+
+        var json = File.ReadAllText(path);
+        Assert.Contains("NestSuiteWorkspace", json);
+
+        var loaded = ChatNestFileService.Load(path);
+        Assert.Single(loaded);
+        Assert.Equal("こんにちは", loaded[0].Text);
+    }
+
+    [Fact]
+    public void Load_NestSuiteWithWrongKind_Throws()
+    {
+        var path = TempPath("wrongkind.nestsuite");
+        File.WriteAllText(path, NestSuite.Services.NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
+
+        Assert.Throws<InvalidDataException>(() => ChatNestFileService.Load(path));
+    }
 }

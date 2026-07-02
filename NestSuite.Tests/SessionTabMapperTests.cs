@@ -352,4 +352,22 @@ public class SessionTabMapperTests
         Assert.Contains("v2.10.13", File.ReadAllText(path));
     }
 
+    // ── v2.14.1 FM-1: .nestsuite セッション復元の種別判定 ──────────────
+
+    [Fact]
+    public void TryCreateRestoreTarget_NestSuitePath_ResolvesKindFromEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "1.1.4", "{}"));
+
+            var ok = SessionTabMapper.TryCreateRestoreTarget(path, out var target, File.Exists);
+
+            Assert.True(ok);
+            Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, target.WorkspaceKind);
+        }
+        finally { File.Delete(path); }
+    }
+
 }

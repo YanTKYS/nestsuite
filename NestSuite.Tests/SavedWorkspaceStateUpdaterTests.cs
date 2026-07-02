@@ -113,4 +113,40 @@ public class SavedWorkspaceStateUpdaterTests
         Assert.DoesNotContain("WorkspaceKind", json);
         Assert.DoesNotContain("IsModified", json);
     }
+
+    // ── v2.14.1 FM-1: .nestsuite 保存先の種別一致確認 ──────────────────
+
+    [Fact]
+    public void TryCreate_NestSuiteSavedPath_MatchingKind_Succeeds()
+    {
+        var savedPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(savedPath, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
+            var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsModified = true };
+
+            var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, isModifiedAfterSave: false, out var state);
+
+            Assert.True(ok);
+            Assert.Equal(NestSuiteWorkspaceKind.NoteNest, state.UpdatedTab.WorkspaceKind);
+            Assert.Equal(savedPath, state.UpdatedTab.FilePath);
+        }
+        finally { File.Delete(savedPath); }
+    }
+
+    [Fact]
+    public void TryCreate_NestSuiteSavedPath_KindMismatch_Fails()
+    {
+        var savedPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(savedPath, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+            var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsModified = true };
+
+            var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, isModifiedAfterSave: false, out _);
+
+            Assert.False(ok);
+        }
+        finally { File.Delete(savedPath); }
+    }
 }

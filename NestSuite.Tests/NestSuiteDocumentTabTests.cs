@@ -1,4 +1,5 @@
 using NestSuite;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -403,5 +404,64 @@ public class NestSuiteDocumentTabTests
         // v1.9.9: ツールチップにツール種別が正しく含まれることを3ツール横断で確認
         var tab = NestSuiteTabFactory.CreateUntitled(kind);
         Assert.Contains(expectedKindLabel, tab.TooltipText);
+    }
+
+    // ── v2.14.1 FM-1: .nestsuite 種別判定 ──────────────────────────────
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_ResolvesKindFromEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "1.0", "{}"));
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out var kind);
+
+            Assert.True(result);
+            Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_Missing_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteTabFactory.TryGetKind(path, out _);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_BrokenEnvelope_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, "not json");
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out _);
+
+            Assert.False(result);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void FromFilePath_NestSuiteFile_ResolvesKindAndKeepsDisplayName()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+
+            Assert.Equal(NestSuiteWorkspaceKind.ChatNest, tab.WorkspaceKind);
+            Assert.Equal(Path.GetFileName(path), tab.DisplayName);
+        }
+        finally { File.Delete(path); }
     }
 }

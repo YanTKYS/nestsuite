@@ -165,7 +165,7 @@ public partial class NestSuiteShellWindow
         if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
         {
             _dialogs.ShowError(
-                $"NestSuite では開けないファイル形式です。\n対応形式: .notenest / .chatnest / .ideanest\n\n{path}",
+                $"NestSuite では開けないファイル形式です。\n対応形式: .nestsuite / .notenest / .chatnest / .ideanest\n\n{path}",
                 "未対応のファイル形式");
             EnsureDefaultTab();
             return;

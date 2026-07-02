@@ -51,7 +51,7 @@ public partial class NestSuiteShellWindow
         if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
         {
             _dialogs.ShowError(
-                $"このファイル形式は NestSuite では開けません。\n対応形式: .notenest / .chatnest / .ideanest\n\n最近使ったファイルの一覧から削除しました。\n\n{path}",
+                $"このファイル形式は NestSuite では開けません。\n対応形式: .nestsuite / .notenest / .chatnest / .ideanest\n\n最近使ったファイルの一覧から削除しました。\n\n{path}",
                 "未対応のファイル形式");
             _recentFiles.Remove(path);
             UpdateRecentFilesMenu();

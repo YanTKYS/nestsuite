@@ -37,6 +37,10 @@ public static class ChatNestFileService
         };
 
         var json = JsonSerializer.Serialize(data, JsonOptions);
+        // v2.14.1 FM-1: .nestsuite の場合は wrapper で包む。payload（既存 ChatNest JSON）の中身は変更しない
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
+            json = NestSuiteWorkspaceEnvelope.Wrap(
+                NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, json);
         AtomicFileWriter.WriteAllText(path, json, System.Text.Encoding.UTF8);
     }
 
@@ -46,6 +50,13 @@ public static class ChatNestFileService
     public static List<Message> Load(string path)
     {
         var json = File.ReadAllText(path, System.Text.Encoding.UTF8);
+        // v2.14.1 FM-1: .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
+        {
+            var envelope = NestSuiteWorkspaceEnvelope.Read(json);
+            NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindChatNest);
+            json = envelope.PayloadJson;
+        }
         var data = JsonSerializer.Deserialize<ChatSessionData>(json, JsonOptions)
             ?? throw new InvalidDataException(".chatnest ファイルの形式が無効です。");
 
