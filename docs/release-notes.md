@@ -7,6 +7,20 @@
 
 ---
 
+## v2.13.9 — TD-56: LT-11 大量データ性能計測の開発者向け基盤
+
+- **TD-56: LT-11「パフォーマンス自己診断」の第一段階として、開発者向けの大量データ性能計測基盤を整備した。** 利用者向けの診断 UI は追加していない。
+- **`NestSuite.Tests/Performance/` に計測ハーネスを追加した。** `PerfDataGenerator`（決定的な大量データ生成）・`PerfReport`（`Stopwatch` + `GC.GetTotalMemory` 計測と Markdown / CSV 出力）・`PerformanceScenarioTests`（Workspace 別シナリオ）の 3 ファイル構成。外部依存なし（BenchmarkDotNet 不使用）。
+- **環境変数 `NESTSUITE_PERF=1` が設定されているときだけ実測する。** 未設定時は即 return するため、通常の `dotnet test` / CI では 0ms 相当で通過し、**CI workflow の変更なしで通常 CI を重くしない**。テストプロジェクト内に置くことで、本体 API 変更による計測コードの破損を CI の通常ビルドで検出できる。
+- **計測対象**: NoteNest（生成 / `.notenest` 保存・読込 / ViewModel 構築 / マーカー抽出 / リンク解析 / 全ノート検索）、IdeaNest（生成 / `.ideanest` 保存・読込 / ViewModel 構築 / 検索・タグフィルタ）、ChatNest（生成 / `.chatnest` 保存・読込 / ViewModel 構築 / エクスポート文字列生成 / 全発言検索）。いずれも実際の FileService・サービス・ViewModel を使用する。
+- **データ規模**: Small（100 ノート / 100 カード / 500 発言）・Medium（約 1,000 / 1,000 / 5,000）・Large（5,000 / 5,000 / 20,000）。生成は乱数を使わない添字ベースの固定規則（マーカー・ノート間リンク・タグ・4 話者を規則的に混入）で、同一規模なら毎回同一データになるため前後比較ができる。
+- **生成データは `%TEMP%\nestsuite-perf\` に作成し、計測結果は `artifacts/performance-results/`（`.gitignore` 追加済み）へ出力する。** いずれもリポジトリにコミットされない。
+- **`docs/development/performance-measurement.md` を新規作成した。** 実行手順・結果の読み方（絶対値でなく規模間の伸び方を見る、環境間比較をしない）・通常 CI に入れない理由・利用者向け自己診断へ進める場合の条件を記載した。
+- **LT-11 の backlog 記載を更新した。** 実利用で性能課題が観測され本基盤の数値で裏づけられた場合に UI 化を再検討する。
+- **本番アプリへの変更なし。UI 変更なし。通常起動・保存・読込への影響なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.13.8 — TD-55: LT-3 設定キー / ProgId / AppData パスの互換性棚卸し
 
 - **TD-55: LT-3「設定キー / ProgId / AppData パス整理」の互換性棚卸しを行い、`docs/development/compatibility-identifiers-audit.md` を新規作成した。** 実装変更は行っていない。
