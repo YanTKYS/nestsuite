@@ -1,4 +1,5 @@
 using System.IO;
+using NestSuite.Services;
 
 namespace NestSuite;
 
@@ -66,15 +67,16 @@ public static class NestSuiteTabFactory
 
     /// <summary>
     /// ファイルパスからタブを生成する（骨格）。
-    /// 拡張子から <see cref="NestSuiteWorkspaceKind"/> を決定する。
+    /// 拡張子（.nestsuite の場合はファイル内容の workspaceKind）から
+    /// <see cref="NestSuiteWorkspaceKind"/> を決定する。
     /// <b>v1.7.2 では実ファイルの読込・ViewModel 生成は行わない。</b>
     /// </summary>
-    /// <exception cref="ArgumentException">対応していない拡張子の場合。</exception>
+    /// <exception cref="ArgumentException">対応していない拡張子・種別判定不能の場合。</exception>
     public static NestSuiteDocumentTab FromFilePath(string filePath)
     {
-        var ext = Path.GetExtension(filePath);
-        if (!KindByExtension.TryGetValue(ext, out var kind))
-            throw new ArgumentException($"対応していないファイル形式です: {ext}", nameof(filePath));
+        if (!TryGetKind(filePath, out var kind))
+            throw new ArgumentException(
+                $"対応していないファイル形式です: {Path.GetExtension(filePath)}", nameof(filePath));
 
         return new NestSuiteDocumentTab
         {
@@ -87,13 +89,37 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// ファイルパスの拡張子から <see cref="NestSuiteWorkspaceKind"/> を解決できるかどうかを確認する。
+    /// ファイルパスから <see cref="NestSuiteWorkspaceKind"/> を解決できるかどうかを確認する。
+    /// v2.14.1 FM-1: `.nestsuite` の場合は wrapper の workspaceKind を内容から判定する
+    /// （ファイル未存在・wrapper 不正時は false）。全経路の種別判定はこのメソッドに集約されている。
     /// </summary>
     public static bool TryGetKind(string filePath, out NestSuiteWorkspaceKind kind)
     {
         var ext = Path.GetExtension(filePath);
-        return KindByExtension.TryGetValue(ext, out kind);
+        if (KindByExtension.TryGetValue(ext, out kind)) return true;
+
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(filePath))
+        {
+            var mapped = MapEnvelopeKind(NestSuiteWorkspaceEnvelope.TryDetectKindFromFile(filePath));
+            if (mapped != null)
+            {
+                kind = mapped.Value;
+                return true;
+            }
+        }
+
+        kind = default;
+        return false;
     }
+
+    /// <summary>wrapper の workspaceKind 文字列を enum へ対応付ける。未知の種別は null。</summary>
+    private static NestSuiteWorkspaceKind? MapEnvelopeKind(string? kindName) => kindName switch
+    {
+        NestSuiteWorkspaceEnvelope.KindNoteNest => NestSuiteWorkspaceKind.NoteNest,
+        NestSuiteWorkspaceEnvelope.KindIdeaNest => NestSuiteWorkspaceKind.IdeaNest,
+        NestSuiteWorkspaceEnvelope.KindChatNest => NestSuiteWorkspaceKind.ChatNest,
+        _ => null,
+    };
 
     /// <summary>
     /// v2.6.0: TempNest 固定タブを生成する。CanClose=false の固定タブ。

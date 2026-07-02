@@ -63,38 +63,54 @@ public sealed class DialogService
     public string? SelectNotebookExportFolder() =>
         SelectFolderPath("出力先フォルダを選択してください");
 
+    // v2.14.1 FM-1: 新規保存 / 名前を付けて保存の既定拡張子は .nestsuite（filter 先頭 + DefaultExt）。
+    // legacy 拡張子は Workspace 種別に応じた filter として残し、読み取り・上書き互換を維持する。
+
     public string? SelectProjectOpenPath()
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "NoteNest プロジェクト (*.notenest)|*.notenest|すべてのファイル (*.*)|*.*",
-            DefaultExt = ".notenest"
+            Filter = "NoteNest プロジェクト (*.nestsuite;*.notenest)|*.nestsuite;*.notenest" +
+                     "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
+                     "|Legacy NoteNest (*.notenest)|*.notenest" +
+                     "|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".nestsuite"
         };
         return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
     }
 
     public string? SelectProjectSavePath(string defaultFileName) =>
-        SelectSaveFilePath("NoteNest プロジェクト (*.notenest)|*.notenest", ".notenest", defaultFileName);
+        SelectSaveFilePath(
+            "NestSuite Workspace (*.nestsuite)|*.nestsuite|Legacy NoteNest (*.notenest)|*.notenest",
+            ".nestsuite", defaultFileName);
 
     public string? SelectChatNestOpenPath()
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "ChatNest ファイル (*.chatnest)|*.chatnest|すべてのファイル (*.*)|*.*",
-            DefaultExt = ".chatnest"
+            Filter = "ChatNest ファイル (*.nestsuite;*.chatnest)|*.nestsuite;*.chatnest" +
+                     "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
+                     "|Legacy ChatNest (*.chatnest)|*.chatnest" +
+                     "|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".nestsuite"
         };
         return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
     }
 
     public string? SelectChatNestSavePath(string defaultFileName) =>
-        SelectSaveFilePath("ChatNest ファイル (*.chatnest)|*.chatnest", ".chatnest", defaultFileName);
+        SelectSaveFilePath(
+            "NestSuite Workspace (*.nestsuite)|*.nestsuite|Legacy ChatNest (*.chatnest)|*.chatnest",
+            ".nestsuite", defaultFileName);
 
     public string? SelectIdeaNestOpenPath()
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "IdeaNest ファイル (*.ideanest)|*.ideanest|すべてのファイル (*.*)|*.*",
-            DefaultExt = ".ideanest"
+            Filter = "IdeaNest ファイル (*.nestsuite;*.ideanest)|*.nestsuite;*.ideanest" +
+                     "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
+                     "|Legacy IdeaNest (*.ideanest)|*.ideanest" +
+                     "|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".nestsuite"
         };
         return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
     }
@@ -103,7 +119,8 @@ public sealed class DialogService
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "NestSuite対応ファイル (*.notenest;*.chatnest;*.ideanest)|*.notenest;*.chatnest;*.ideanest" +
+            Filter = "NestSuite対応ファイル (*.nestsuite;*.notenest;*.chatnest;*.ideanest)|*.nestsuite;*.notenest;*.chatnest;*.ideanest" +
+                     "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
                      "|NoteNestファイル (*.notenest)|*.notenest" +
                      "|ChatNestファイル (*.chatnest)|*.chatnest" +
                      "|IdeaNestファイル (*.ideanest)|*.ideanest" +
@@ -114,7 +131,9 @@ public sealed class DialogService
     }
 
     public string? SelectIdeaNestSavePath(string defaultFileName) =>
-        SelectSaveFilePath("IdeaNest ファイル (*.ideanest)|*.ideanest", ".ideanest", defaultFileName);
+        SelectSaveFilePath(
+            "NestSuite Workspace (*.nestsuite)|*.nestsuite|Legacy IdeaNest (*.ideanest)|*.ideanest",
+            ".nestsuite", defaultFileName);
 
     public string? SelectMarkdownExportPath(string defaultFileName) =>
         SelectSaveFilePath("Markdown (*.md)|*.md|テキスト (*.txt)|*.txt|すべてのファイル (*.*)|*.*", ".md", defaultFileName);

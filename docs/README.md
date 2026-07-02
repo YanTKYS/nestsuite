@@ -31,6 +31,7 @@
 | `save-flow-duplication.md` | IdeaNest / ChatNest 保存フロー重複 設計メモ（TD-34 / TD-45） | 現行 |
 | `sqlite-index-feasibility.md` | LT-2 SQLite 補助インデックス feasibility spike（TD-54） | 現行 |
 | `test-classification-analysis.md` | テストクラス分類・整理方針の一次分析 | 現行 |
+| `workspace-file-extension-unification.md` | Workspace ファイル拡張子 `.nestsuite` 統一（FM-1） | **現行** |
 
 ### testing/（テスト・リリース確認）
 

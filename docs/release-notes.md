@@ -7,6 +7,24 @@
 
 ---
 
+## v2.14.1 — FM-1: Workspace ファイル拡張子 `.nestsuite` 統一
+
+- **FM-1: 1タブ1ファイル構成を維持したまま、新しい標準 Workspace 拡張子を `.nestsuite` に統一した。** 複数 Workspace を 1 ファイルにまとめる統合コンテナ（LT-1）ではない。
+- **`.nestsuite` は wrapper 形式**（`NestSuiteWorkspaceEnvelope`、新規 `NestSuite/Services/`）: `format` / `formatVersion`（wrapper 自体の版 = `1.0`）/ `workspaceKind`（NoteNest / IdeaNest / ChatNest）/ `payloadSchemaVersion` / `payload`（既存 Workspace の保存 JSON をそのまま格納）。**wrapper schema と payload schema を分離**し、既存 Workspace schema の bump は行っていない（NoteNest `1.4.1` 維持）。
+- **将来の schema 拡張に備えた**: 読み込みは JsonNode ベースで未知の追加プロパティを無視する（将来 `createdAt` / `metadata` 等を足しても壊れない）。必須項目（`format` / `workspaceKind` / `payload`）欠落は分かりやすい `InvalidDataException` で失敗する。`formatVersion` / `payloadSchemaVersion` により将来の migration 判断ができる。大規模 migration framework は作っていない。
+- **種別判定は `NestSuiteTabFactory.TryGetKind` に集約した**: legacy 拡張子は従来どおり拡張子から、`.nestsuite` はファイル内容の `workspaceKind` から判定する。これにより保存後タブ更新（`SavedWorkspaceStateUpdater`）・NoteNest タブ同期・セッション復元（`SessionTabMapper`）・最近ファイル・pipe 経由オープンの**既存呼び出し箇所は変更なしで `.nestsuite` に対応**した。
+- **各 FileService（Project / IdeaNest / ChatNest）の入口に envelope 分岐を追加した。** `.nestsuite` なら wrapper を剥がして（保存時は包んで）既存のシリアライズ・検証・正規化・`.bak` バックアップ経路をそのまま通す。`workspaceKind` が期待と食い違う場合は明快なエラーで失敗する。
+- **新規保存 / 名前を付けて保存の既定拡張子を `.nestsuite` に寄せた。** 保存ダイアログの filter 先頭 + `DefaultExt` を `.nestsuite` にし、Workspace 種別に応じた Legacy filter も選べる。既定ファイル名（`ideas` / `chat`）も `.nestsuite` に変更した。
+- **legacy 互換を維持した**: 既存 `.notenest` / `.ideanest` / `.chatnest` は従来どおり開ける。legacy ファイルの**上書き保存は従来形式のまま**（保存形式は保存先パスの拡張子で決まる）。**旧ファイルの自動リネーム・自動削除・強制変換は行わない。**
+- **最近ファイル / session は `.nestsuite` を自然に扱える**（パス保存 + `TryGetKind` 集約のため追加変更なし）。開けない形式のエラーメッセージ 2 箇所に `.nestsuite` を追記した。
+- **ファイル関連付け（ProgId）は変更していない**（LT-3 / TD-55 方針）。`.nestsuite` のダブルクリック起動は未登録であり、将来 3 箇所同期（app + PowerShell スクリプト 2 本）で追加する。制限として docs に明記した。
+- **テストを追加した**: `NestSuiteWorkspaceEnvelopeTests`（新規: wrapper round-trip・必須項目欠落・未知プロパティ許容・種別不一致・破損 JSON）、各 FileServiceTests の `.nestsuite` round-trip と種別不一致、`NestSuiteDocumentTabTests` の内容ベース種別判定、`SavedWorkspaceStateUpdaterTests` / `SessionTabMapperTests` の `.nestsuite` パス対応。既存テストの削除・期待値変更なし。
+- **`docs/development/workspace-file-extension-unification.md` を新規作成した。**
+- **backlog: FM-1 を実装済み（欠番）とし、LT-1 を「統合コンテナ形式」として本件との違いを明記する形に整理した。**
+- **session 形式変更なし。既存 schema bumpなし。NoteNest schema `1.4.1` 維持。`.ideanest` / `.chatnest` の保存内容変更なし。外部依存追加なし。**
+
+---
+
 ## v2.14.0 — TD-57: LT-12 ErrorLogService ローテーションの安全設計・最小実装
 
 - **TD-57: LT-12「ErrorLogService ローテーション」として、エラーログにサイズベースの最小ローテーションを追加した。**

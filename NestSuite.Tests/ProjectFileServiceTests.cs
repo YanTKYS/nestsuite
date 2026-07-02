@@ -182,4 +182,46 @@ public class ProjectFileServiceTests : IDisposable
 
         Assert.False(File.Exists(_path + ".tmp"));
     }
+
+    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+
+    [Fact]
+    public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
+    {
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            var project = new Project { ProjectName = "MyProject", ProjectId = "abc-123" };
+            _svc.Save(nestSuitePath, project);
+
+            var json = File.ReadAllText(nestSuitePath);
+            Assert.Contains("\"format\"", json);
+            Assert.Contains("NestSuiteWorkspace", json);
+
+            var loaded = _svc.Load(nestSuitePath);
+            Assert.Equal("MyProject", loaded.ProjectName);
+            Assert.Equal("abc-123", loaded.ProjectId);
+        }
+        finally
+        {
+            foreach (var f in new[] { nestSuitePath, nestSuitePath + ".tmp", nestSuitePath + ".bak" })
+                if (File.Exists(f)) File.Delete(f);
+        }
+    }
+
+    [Fact]
+    public void Load_NestSuiteWithWrongKind_Throws()
+    {
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(nestSuitePath, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+
+            Assert.Throws<InvalidDataException>(() => _svc.Load(nestSuitePath));
+        }
+        finally
+        {
+            if (File.Exists(nestSuitePath)) File.Delete(nestSuitePath);
+        }
+    }
 }

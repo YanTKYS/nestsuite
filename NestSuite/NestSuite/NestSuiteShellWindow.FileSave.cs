@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
+using NestSuite.Services;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.ViewModels;
 
@@ -8,9 +9,10 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // v2.11.1: 名前を付けて保存ダイアログの既定ファイル名。拡張子は各 FileService.FileExtension を単一の出所とする。
-    private const string DefaultIdeaNestFileName = "ideas" + IdeaNestFileService.FileExtension;
-    private const string DefaultChatNestFileName = "chat"  + ChatNestFileService.FileExtension;
+    // v2.11.1: 名前を付けて保存ダイアログの既定ファイル名。
+    // v2.14.1 FM-1: 新規保存の標準拡張子は .nestsuite（NestSuiteWorkspaceEnvelope.FileExtension）。
+    private const string DefaultIdeaNestFileName = "ideas" + NestSuiteWorkspaceEnvelope.FileExtension;
+    private const string DefaultChatNestFileName = "chat"  + NestSuiteWorkspaceEnvelope.FileExtension;
 
     /// <summary>
     /// v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体。

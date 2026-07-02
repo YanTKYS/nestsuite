@@ -172,4 +172,44 @@ public class IdeaNestFileServiceTests
         Assert.NotNull(attr);
         Assert.Equal(expectedJsonName, attr!.Name);
     }
+
+    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+
+    [Fact]
+    public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            var workspace = new Workspace
+            {
+                Ideas = new()
+                {
+                    new Idea { Id = "first", Title = "A", Body = "本文", Tags = new() { "tag-a" } },
+                    new Idea { Id = "second", Body = "B", Tags = new() { "tag-b" } },
+                }
+            };
+            IdeaNestFileService.Save(path, workspace);
+
+            var loaded = IdeaNestFileService.Load(path);
+            Assert.Equal(2, loaded.Ideas.Count);
+            Assert.Equal("first", loaded.Ideas[0].Id);
+            Assert.Equal("A", loaded.Ideas[0].Title);
+            Assert.Equal(IdeaNestFileService.SchemaVersion, loaded.Version);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Load_NestSuiteWithWrongKind_Throws()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuite.Services.NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
+
+            Assert.Throws<InvalidDataException>(() => IdeaNestFileService.Load(path));
+        }
+        finally { File.Delete(path); }
+    }
 }
