@@ -107,6 +107,26 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.13.6 TD-45: 保存先パスを解決する（SaveForTabId / SaveAll 共通）。
+    /// タブに FilePath があれば正規化して返す（重複チェックなし＝上書き保存）。
+    /// なければ selectSavePath で選択させ、キャンセル時・重複タブ検出時は null を返す。
+    /// 呼び出し側は null を「保存中止（キャンセル扱い）」として処理する。
+    /// </summary>
+    private string? ResolveSaveTargetPath(
+        NestSuiteDocumentTab tab,
+        NestSuiteWorkspaceKind kind,
+        Func<string, string?> selectSavePath,
+        string defaultFileName)
+    {
+        if (tab.FilePath != null) return NormalizeFilePath(tab.FilePath);
+        var rawPath = selectSavePath(defaultFileName);
+        if (rawPath == null) return null;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        if (CheckAndActivateDuplicateTabForSave(kind, normalizedPath, tab.Id)) return null;
+        return normalizedPath;
+    }
+
+    /// <summary>
     /// 指定 kind と path に一致する既存タブを検索し、見つかればアクティブ化・最近ファイル更新して true を返す。
     /// 見つからなければ false を返す。
     /// セッション復元・最近ファイルクリック・パイプ経由オープン時の重複タブ検出に使用する。

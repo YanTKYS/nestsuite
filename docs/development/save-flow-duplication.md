@@ -1,17 +1,61 @@
 # IdeaNest / ChatNest 保存フロー重複 — 設計メモ
 
-> **TD-34** | v2.11.2 追加 | 実装変更なし・設計文書のみ
+> **TD-34** | v2.11.2 追加 | 設計整理  
+> **TD-45** | v2.13.6 実装 | 本文書 §4-1 の最小共通化を実施済み
 
 ## 目的
 
-IdeaNest と ChatNest の保存処理は構造が酷似しており、現状では多くの処理が二重に実装されている。  
-本文書は **現状の構造を整理し、すぐ共通化しない理由と将来実施する場合の安全な方向性を明示する**ためのものである。
-
-保存処理はクリティカルパスであり、今回は実装変更を行わない。
+IdeaNest と ChatNest の保存処理は構造が酷似しており、多くの処理が二重に実装されていた。  
+本文書は現状の構造・共通化した境界・共通化しない境界とその理由を記録する。
 
 ---
 
-## 1. 現状の保存フロー
+## 0. 現行構造（v2.13.6 TD-45 実装後）
+
+### 0-1. 共通化した境界
+
+§4-1 の「private helper による最小共通化（低リスク）」を採用した。descriptor / registry / 保存フレームワークは作っていない。
+
+| 共通化した処理 | 実装 | 場所 |
+|---------------|------|------|
+| 保存実体（正規化 → シリアライズ+MarkSaved → 状態更新 → 例外時エラー表示） | `TrySaveWorkspaceToPath`（クロージャ2つと文字列を受ける private helper） | `FileSave.cs` |
+| 保存先パス解決（FilePath あり→正規化 / なし→ダイアログ→重複チェック、キャンセル・重複時 null） | `ResolveSaveTargetPath` | `WorkspaceFileHelper.cs` |
+| SaveAll の保存実体 | `TrySaveXxxForSaveAll` → `TrySaveXxxToPath(showNotification: false)` へ委譲。**従来は FileService.Save + MarkSaved の手書き複製が SaveAll.cs に存在し、FileSave.cs との最大のドリフトリスクだった** | `SaveAll.cs` |
+
+これにより保存の不変条件が構造的に保証される。
+
+- **シリアライズ + MarkSaved は各 Workspace につき 1 箇所**（`TrySaveIdeaNestToPath` / `TrySaveChatNestToPath` のクロージャ内）
+- **isModifiedAfterSave の決定は各 Workspace につき 1 箇所**（`FileSaveStateSync.cs` の `UpdateXxxTabPath`）
+- **シリアライズが例外を投げた場合、MarkSaved と状態更新は実行されない**（未保存状態が維持される）
+- FileService.Save の失敗が例外として通知される契約は `IdeaNestFileServiceTests` / `ChatNestFileServiceTests` の `Save_ThrowsWhenParentPathIsAFile` で固定
+
+### 0-2. isModifiedAfterSave の差異（最重要・ここ以外に持たせない）
+
+- IdeaNest: 常に `false`（`MarkSaved()` で完全クリア）→ `UpdateIdeaNestTabPath`
+- ChatNest: `vm.HasUnsavedChanges` を **MarkSaved 後に評価**（`InputText` が残っていれば true のまま）→ `UpdateChatNestTabPath`
+
+この差異は `FileSaveStateSync.cs` に集約した。VM レベルの意味は `ChatNestWorkspaceViewModelTests.MarkSaved_WhenInputTextRemains_HasUnsavedChangesIsTrue` が固定している。
+
+### 0-3. 共通化しなかった境界と理由
+
+| 対象 | 理由 |
+|------|------|
+| NoteNest 全保存経路 | `vm.SaveToPath` という別インターフェース（エラー処理も VM 側）。Shell 層に try/catch が存在せず、構造が異なる。巻き込むと影響範囲が拡大する |
+| SaveAs（`SaveXxxFileAs`） | 「パスがあってもダイアログを必ず表示し、既存ファイル名を既定名にする」という別セマンティクス。`ResolveSaveTargetPath` に押し込むにはフラグが必要になり複雑化する。末端は共通の `TrySaveXxxToPath` を呼ぶため、シリアライズの一意性は保たれている |
+| `.ideanest` / `.chatnest` シリアライズ詳細 | 各 FileService の責務。Shell はクロージャで注入するのみ |
+| `ConfirmTabClose` 系（タブ閉鎖確認） | IdeaNest / ChatNest は Discard/Cancel の2択で保存オプションなし（NoteNest のみ3択）。保存フローではなく確認フローの差異であり、今回のスコープ外 |
+| エラーメッセージ文言 | Workspace 名を含む文字列引数として渡す。共通化の必要なし |
+
+### 0-4. 今後保存フローを変更するときの注意
+
+1. シリアライズ処理を `TrySaveXxxToPath` の外（SaveAll 等）へ複製しない。保存経路を増やす場合も `TrySaveXxxToPath` へ委譲する
+2. `isModifiedAfterSave` のロジックを `FileSaveStateSync.cs` 以外に書かない
+3. `TrySaveXxxToPath(session, string)` / `UpdateChatNestTabPath(session, string)` の 2 引数シグネチャはリフレクションテストで固定されている。変更時は 3 引数オーバーロード側を触ること
+4. 構造は `NestSuiteShellWorkspaceLaunchTests` の TD-45 セクションのリフレクションテストで固定されている
+
+---
+
+## 1. v2.13.6 以前の保存フロー（TD-34 棚卸し時点・履歴）
 
 ### 1-1. 上書き保存（Ctrl+S）
 

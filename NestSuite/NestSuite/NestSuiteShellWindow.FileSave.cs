@@ -12,23 +12,51 @@ public partial class NestSuiteShellWindow
     private const string DefaultIdeaNestFileName = "ideas" + IdeaNestFileService.FileExtension;
     private const string DefaultChatNestFileName = "chat"  + ChatNestFileService.FileExtension;
 
-    /// <summary>v1.9.7: 指定 Session の IdeaNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
-    private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path)
+    /// <summary>
+    /// v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体。
+    /// パス正規化 → Workspace 固有シリアライズ + MarkSaved（serializeAndMark）→ 保存後状態更新（updateTabPath）。
+    /// serializeAndMark が例外を投げた場合、MarkSaved と状態更新は実行されず未保存状態が維持される。
+    /// isModifiedAfterSave の差異（ChatNest の InputText 残留）は updateTabPath 側
+    /// （FileSaveStateSync.cs の UpdateXxxTabPath）に集約されており、ここでは扱わない。
+    /// NoteNest は vm.SaveToPath という別インターフェース（エラー処理も VM 側）のため対象外。
+    /// </summary>
+    private bool TrySaveWorkspaceToPath(
+        NestSuiteWorkspaceSession session,
+        string path,
+        Action<string> serializeAndMark,
+        Action<NestSuiteWorkspaceSession, string, bool> updateTabPath,
+        string errorOperation,
+        string errorWorkspaceKind,
+        string errorLabel,
+        bool showNotification)
     {
         path = NormalizeFilePath(path);
-        var vm = (IdeaNestWorkspaceViewModel)session.WorkspaceViewModel;
         try
         {
-            IdeaNestFileService.Save(path, vm.BuildWorkspaceForSave());
-            vm.MarkSaved();
-            UpdateIdeaNestTabPath(session, path);
+            serializeAndMark(path);
+            updateTabPath(session, path, showNotification);
             return true;
         }
         catch (Exception ex)
         {
-            LogAndShowSaveError("IdeaNestSave", "IdeaNest", "IdeaNest ファイルの保存に失敗しました。", ex, path);
+            LogAndShowSaveError(errorOperation, errorWorkspaceKind, errorLabel, ex, path);
             return false;
         }
+    }
+
+    /// <summary>v1.9.7: 指定 Session の IdeaNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path) =>
+        TrySaveIdeaNestToPath(session, path, showNotification: true);
+
+    private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path, bool showNotification)
+    {
+        var vm = (IdeaNestWorkspaceViewModel)session.WorkspaceViewModel;
+        return TrySaveWorkspaceToPath(
+            session, path,
+            p => { IdeaNestFileService.Save(p, vm.BuildWorkspaceForSave()); vm.MarkSaved(); },
+            UpdateIdeaNestTabPath,
+            "IdeaNestSave", "IdeaNest", "IdeaNest ファイルの保存に失敗しました。",
+            showNotification);
     }
 
     /// <summary>v1.9.7: 選択中 IdeaNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
@@ -43,23 +71,18 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>v1.9.2: 指定 Session の ChatNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
-    private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path)
+    private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path) =>
+        TrySaveChatNestToPath(session, path, showNotification: true);
+
+    private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path, bool showNotification)
     {
-        // v1.9.2 fix: 保存先パスも正規化し、タブ・Session に保存されるパスを常にフルパスに統一する
-        path = NormalizeFilePath(path);
         var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
-        try
-        {
-            ChatNestFileService.Save(path, vm.MessageModels);
-            vm.MarkSaved();
-            UpdateChatNestTabPath(session, path);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            LogAndShowSaveError("ChatNestSave", "ChatNest", "ChatNest ファイルの保存に失敗しました。", ex, path);
-            return false;
-        }
+        return TrySaveWorkspaceToPath(
+            session, path,
+            p => { ChatNestFileService.Save(p, vm.MessageModels); vm.MarkSaved(); },
+            UpdateChatNestTabPath,
+            "ChatNestSave", "ChatNest", "ChatNest ファイルの保存に失敗しました。",
+            showNotification);
     }
 
     /// <summary>v1.9.2: 選択中 ChatNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
@@ -115,20 +138,10 @@ public partial class NestSuiteShellWindow
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab == null || tab.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest) return;
         if (!_sessionManager.TryGet(tabId, out var session) || session == null) return;
-        if (tab.FilePath != null)
-        {
-            TrySaveIdeaNestToPath(session, tab.FilePath);
-        }
-        else
-        {
-            var selector = selectSavePath ?? _dialogs.SelectIdeaNestSavePath;
-            var defaultName = DefaultIdeaNestFileName;
-            var rawPath = selector(defaultName);
-            if (rawPath == null) return;
-            var normalizedPath = NormalizeFilePath(rawPath);
-            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.IdeaNest, normalizedPath, tabId)) return;
-            TrySaveIdeaNestToPath(session, normalizedPath);
-        }
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.IdeaNest,
+            selectSavePath ?? _dialogs.SelectIdeaNestSavePath, DefaultIdeaNestFileName);
+        if (targetPath == null) return;
+        TrySaveIdeaNestToPath(session, targetPath);
     }
 
     /// <summary>
@@ -141,20 +154,10 @@ public partial class NestSuiteShellWindow
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab == null || tab.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest) return;
         if (!_sessionManager.TryGet(tabId, out var session) || session == null) return;
-        if (tab.FilePath != null)
-        {
-            TrySaveChatNestToPath(session, tab.FilePath);
-        }
-        else
-        {
-            var selector = selectSavePath ?? _dialogs.SelectChatNestSavePath;
-            var defaultName = DefaultChatNestFileName;
-            var rawPath = selector(defaultName);
-            if (rawPath == null) return;
-            var normalizedPath = NormalizeFilePath(rawPath);
-            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.ChatNest, normalizedPath, tabId)) return;
-            TrySaveChatNestToPath(session, normalizedPath);
-        }
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.ChatNest,
+            selectSavePath ?? _dialogs.SelectChatNestSavePath, DefaultChatNestFileName);
+        if (targetPath == null) return;
+        TrySaveChatNestToPath(session, targetPath);
     }
 
     /// <summary>

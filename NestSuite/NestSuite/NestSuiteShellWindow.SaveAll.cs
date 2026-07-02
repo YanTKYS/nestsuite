@@ -1,7 +1,4 @@
 using System.Windows.Input;
-using NestSuite.ChatNest;
-using NestSuite.IdeaNest.Services;
-using NestSuite.IdeaNest.ViewModels;
 using NestSuite.ViewModels;
 
 namespace NestSuite;
@@ -87,55 +84,33 @@ public partial class NestSuiteShellWindow
         }
     }
 
+    /// <summary>
+    /// v2.13.6 TD-45: 保存実体を TrySaveIdeaNestToPath へ委譲する。
+    /// 従来はここに FileService.Save + MarkSaved の複製があり、FileSave.cs 側との
+    /// ドリフトリスクがあったため、シリアライズは各 Workspace につき 1 箇所に統一した。
+    /// </summary>
     private SaveAllTabResult TrySaveIdeaNestForSaveAll(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
-        var targetPath = tab.FilePath != null ? NormalizeFilePath(tab.FilePath) : null;
-        if (targetPath == null)
-        {
-            var rawPath = _dialogs.SelectIdeaNestSavePath(DefaultIdeaNestFileName);
-            if (rawPath == null) return SaveAllTabResult.Cancelled;
-            targetPath = NormalizeFilePath(rawPath);
-            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.IdeaNest, targetPath, tab.Id))
-                return SaveAllTabResult.Cancelled;
-        }
-        var vm = (IdeaNestWorkspaceViewModel)session.WorkspaceViewModel;
-        try
-        {
-            IdeaNestFileService.Save(targetPath, vm.BuildWorkspaceForSave());
-            vm.MarkSaved();
-            ApplySavedWorkspaceState(session, targetPath, isModifiedAfterSave: false, showNotification: false);
-            return SaveAllTabResult.Saved;
-        }
-        catch (Exception ex)
-        {
-            LogAndShowSaveError("IdeaNestSave", "IdeaNest", "IdeaNest ファイルの保存に失敗しました。", ex, targetPath);
-            return SaveAllTabResult.Failed;
-        }
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.IdeaNest,
+            _dialogs.SelectIdeaNestSavePath, DefaultIdeaNestFileName);
+        if (targetPath == null) return SaveAllTabResult.Cancelled;
+        return TrySaveIdeaNestToPath(session, targetPath, showNotification: false)
+            ? SaveAllTabResult.Saved
+            : SaveAllTabResult.Failed;
     }
 
+    /// <summary>
+    /// v2.13.6 TD-45: 保存実体を TrySaveChatNestToPath へ委譲する。
+    /// isModifiedAfterSave（InputText 残留時の HasUnsavedChanges 引き継ぎ）は
+    /// UpdateChatNestTabPath（FileSaveStateSync.cs）に集約されている。
+    /// </summary>
     private SaveAllTabResult TrySaveChatNestForSaveAll(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
-        var targetPath = tab.FilePath != null ? NormalizeFilePath(tab.FilePath) : null;
-        if (targetPath == null)
-        {
-            var rawPath = _dialogs.SelectChatNestSavePath(DefaultChatNestFileName);
-            if (rawPath == null) return SaveAllTabResult.Cancelled;
-            targetPath = NormalizeFilePath(rawPath);
-            if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.ChatNest, targetPath, tab.Id))
-                return SaveAllTabResult.Cancelled;
-        }
-        var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
-        try
-        {
-            ChatNestFileService.Save(targetPath, vm.MessageModels);
-            vm.MarkSaved();
-            ApplySavedWorkspaceState(session, targetPath, vm.HasUnsavedChanges, showNotification: false);
-            return SaveAllTabResult.Saved;
-        }
-        catch (Exception ex)
-        {
-            LogAndShowSaveError("ChatNestSave", "ChatNest", "ChatNest ファイルの保存に失敗しました。", ex, targetPath);
-            return SaveAllTabResult.Failed;
-        }
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.ChatNest,
+            _dialogs.SelectChatNestSavePath, DefaultChatNestFileName);
+        if (targetPath == null) return SaveAllTabResult.Cancelled;
+        return TrySaveChatNestToPath(session, targetPath, showNotification: false)
+            ? SaveAllTabResult.Saved
+            : SaveAllTabResult.Failed;
     }
 }

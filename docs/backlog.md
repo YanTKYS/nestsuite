@@ -172,11 +172,10 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-44、TD-46〜TD-52 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-52 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-45 | IdeaNest / ChatNest 保存フローの共通化 | Shell 側の `TrySaveXxxToPath` / `SaveXxxForTabId` が Workspace ごとに同構造で重複している（TD-34 設計文書で整理済み）。ジェネリックまたはヘルパーメソッドへの段階的統合を検討する。TD-34 の設計文書を前提とする。**保留（v2.12.6）**: 保存クリティカルパスのため現時点では実施しない。実装するなら per-kind descriptor / TrySave delegate などの抽象設計が必要で、保存形式・未保存状態・session・最近ファイルへの波及リスクを先に整理すること。 | C |
 | TD-53 | Coordinator の Publish/notify パターンのドキュメント化 | `MainViewModel.Facade.cs` の派生プロパティ（`CurrentNoteTitle` 等）は、値を計算するだけでは画面に反映されず、`NoteChangeCoordinator` / `EditorChangeCoordinator` の Publish/notify 呼び出しに対象プロパティ名を追加しないと `PropertyChanged` が発火しない。現在この方式で 14 個の facade プロパティが手動同期されているが、このパターン自体を説明する docs が存在しない（v2.13.2 で `CurrentNotebookName` がこのパターンの見落としにより表示が古いまま残る不具合が発生し、レビューで指摘・修正した実例あり）。`docs/development/` に「新しい facade プロパティを追加する際は、どの Coordinator のどの通知経路に追加が必要か」を判断するための短いチェックリストを追加し、同種の見落としを防ぐ。ロジック変更は伴わない、docs 整備のみ | A |
 
 ---

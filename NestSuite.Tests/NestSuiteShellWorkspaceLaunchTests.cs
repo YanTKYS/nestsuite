@@ -662,4 +662,105 @@ public class NestSuiteShellWorkspaceLaunchTests
         Assert.Equal(typeof(void), method!.ReturnType);
         Assert.Empty(method.GetParameters());
     }
+
+    // ── v2.13.6 TD-45: IdeaNest / ChatNest 保存フロー最小共通化 ────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasTrySaveWorkspaceToPathMethod()
+    {
+        // v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体が宣言されていることを確認。
+        // シリアライズは各 Workspace につき 1 箇所（TrySaveXxxToPath）に集約される。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TrySaveWorkspaceToPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [
+                    typeof(NestSuiteWorkspaceSession),
+                    typeof(string),
+                    typeof(Action<string>),
+                    typeof(Action<NestSuiteWorkspaceSession, string, bool>),
+                    typeof(string),
+                    typeof(string),
+                    typeof(string),
+                    typeof(bool)
+                ],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasResolveSaveTargetPathMethod()
+    {
+        // v2.13.6 TD-45: SaveForTabId / SaveAll 共通のパス解決（キャンセル・重複タブ検出時は null）が宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("ResolveSaveTargetPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [
+                    typeof(NestSuiteDocumentTab),
+                    typeof(NestSuiteWorkspaceKind),
+                    typeof(Func<string, string?>),
+                    typeof(string)
+                ],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(string), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_TrySaveIdeaNestToPath_HasShowNotificationOverload()
+    {
+        // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TrySaveIdeaNestToPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_TrySaveChatNestToPath_HasShowNotificationOverload()
+    {
+        // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("TrySaveChatNestToPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(bool), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_UpdateIdeaNestTabPath_HasShowNotificationOverload()
+    {
+        // v2.13.6 TD-45: 保存後状態更新（isModifiedAfterSave: false 固定）の唯一の定義点。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("UpdateIdeaNestTabPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_UpdateChatNestTabPath_HasShowNotificationOverload()
+    {
+        // v2.13.6 TD-45: ChatNest は InputText 残留時に vm.HasUnsavedChanges を引き継ぐ。この差異の唯一の定義点。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("UpdateChatNestTabPath",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+    }
 }
