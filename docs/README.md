@@ -24,6 +24,7 @@
 | ファイル | 内容 | 分類 |
 |----------|------|------|
 | `nestsuite-development-guidelines.md` | 開発ルール・実装ガイドライン | **現行** |
+| `compatibility-identifiers-audit.md` | NoteNest 系互換性識別子の棚卸し・維持/変更判断（TD-55 / LT-3） | **現行** |
 | `notenest-task-reduction-policy.md` | NoteNest タスク管理縮退方針（TD-52） | **現行** |
 | `save-flow-duplication.md` | IdeaNest / ChatNest 保存フロー重複 設計メモ（TD-34 / TD-45） | 現行 |
 | `sqlite-index-feasibility.md` | LT-2 SQLite 補助インデックス feasibility spike（TD-54） | 現行 |

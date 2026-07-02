@@ -172,7 +172,7 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-52、TD-54 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-52、TD-54、TD-55 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
@@ -190,7 +190,7 @@ TD-1〜TD-52、TD-54 は完了済み（欠番）。詳細は `docs/release-notes
 |----|------|------|----------------------|
 | LT-1 | `.nestsuite` 統合形式 | 全 Workspace を 1 ファイルに収める統合形式。現在は Workspace ごとに個別ファイルで管理している | 大規模スキーマ変更を伴う。FM-1 方針参照。現行の個別ファイル方式で支障がないうちは対応しない |
 | LT-2 | SQLite 補助インデックス方式 | JSON 正本を維持しつつ横断検索・リンク解析・統計表示のために再生成可能な SQLite インデックスを補助的に持つ方式を検討する（旧 FM-2 より移管）。既存の `.notenest` / `.ideanest` / `.chatnest` を SQLite に置き換えることは対象外 | **保留継続・採用候補（v2.13.7 TD-54 feasibility 実施済み）**: `SQLitePCLRaw.bundle_winsqlite3`（OS 同梱 SQLite）方式なら追加ネイティブDLL・自己展開なしで単一EXE方針を維持できる見込み。Windows 実機での publish 成果物検証と winsqlite3 の FTS5 可否確認が未実施のため保留。横断検索の実要件（LT-6）が動く時点で `docs/development/sqlite-index-feasibility.md` §7 の検証とセットで着手する |
-| LT-3 | 設定キー / ProgId / AppData パス整理 | `NoteNest_*` 系の Mutex 名・Pipe 名・AppData パスなどの互換性識別子整理。現在は互換維持のため変更していない | 必要性が出た場合のみ検討する |
+| LT-3 | 設定キー / ProgId / AppData パス整理 | `NoteNest_*` 系の Mutex 名・Pipe 名・AppData パスなどの互換性識別子整理。現在は互換維持のため変更していない | **保留継続（v2.13.8 TD-55 棚卸し完了）**: 全識別子を A（維持）/ B（移行設計つきで変更可）/ C（変更可）/ D（保留）に分類済み（`docs/development/compatibility-identifiers-audit.md`）。AppData・永続ファイル名・ProgId・設定キー `NoteNestEditorFontSize` は既存互換のため当面維持。単純置換はしない。変更の必要性が実際に発生した時点で同文書 §3 の移行段階案に従う |
 | LT-4 | 複数 Window レイアウト保存 | detached window のレイアウト（位置・サイズ・タブ構成）を session として保存・復元する | `session.json` 形式変更を伴う可能性がある。SH-21 の延長として将来検討 |
 | LT-5 | 大規模な共通データモデル化 | NoteNest / IdeaNest / ChatNest のデータモデルを共通化し統合管理する全面移行 | 大規模スキーマ変更・移行処理・テスト範囲が広い。LT-1 実現の前提になる可能性がある |
 | LT-6 | クロス Workspace 双方向リンク / 全文検索 | Workspace をまたいだリンクと全文検索インデックス | インデックス設計・スキーマ変更を伴う。LT-2 の実現後に再評価する |

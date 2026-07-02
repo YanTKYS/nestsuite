@@ -7,6 +7,20 @@
 
 ---
 
+## v2.13.8 — TD-55: LT-3 設定キー / ProgId / AppData パスの互換性棚卸し
+
+- **TD-55: LT-3「設定キー / ProgId / AppData パス整理」の互換性棚卸しを行い、`docs/development/compatibility-identifiers-audit.md` を新規作成した。** 実装変更は行っていない。
+- **`NoteNest` 系識別子を全数棚卸しし、A（維持すべき）/ B（移行設計つきで将来変更可能）/ C（変更してよい）/ D（判断保留）に分類した。** 分類理由を各識別子に明記した。
+- **互換性クリティカル（A）と確認したもの**: AppData ディレクトリ `%APPDATA%\NoteNest\`（設定・最近ファイル×2系統・session・TempNest・ログの全6永続ファイルの親）、各永続ファイル名、ProgId `NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest`（HKCU 永続・app + PowerShell スクリプト2本の3箇所同期必須）、`ui-settings.json` の JSON キー `NoteNestEditorFontSize`（プロパティ名がそのまま on-disk キー）、ファイル拡張子。
+- **単純置換しない方針を明記した。** 機械的な `NoteNest`→`NestSuite` 置換は、既存ユーザーの永続データ孤立・ファイル関連付け破壊（`Unregister` は現 ProgId 一致時のみ削除するため旧登録の掃除手段も失う）・アップグレード境界での多重起動制御破綻を同時に引き起こす。
+- **Mutex / Pipe 名（`NoteNest_NestSuite_*`）は非永続・プロセス寿命スコープであることを確認し、B（最も移行が軽い。同一リリースでの同時切替のみで足りる）と分類した。**
+- **namespace・ウィンドウタイトル・UI 文言の NestSuite 化は既に完了済みであることを確認した。** `namespace NoteNest` は 0 件。残る `NoteNest` は「互換性のため意図的に残すもの」と「ソースディレクトリ名の名残（実害なし・C）」のみ。
+- **将来 NestSuite 系へ寄せる場合の移行段階案（旧パス読み取りフォールバック → コピー移行 → Mutex/Pipe 同時切替 → 旧 ProgId 掃除つき Unregister 先行）を整理した。**
+- **LT-3 は保留継続とし、backlog の記載を棚卸し結果に基づいて更新した。** 変更の必要性が実際に発生した時点で移行段階案に従う。
+- **実装変更なし。UI 変更なし。AppData / 設定キー / Mutex / Pipe / ProgId / ファイル関連付けの変更なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.13.7 — TD-54: LT-2 SQLite 補助インデックス方式の feasibility spike
 
 - **TD-54: LT-2「SQLite 補助インデックス方式」の採用可否判断を行い、`docs/development/sqlite-index-feasibility.md` を新規作成した。** 本番機能としての SQLite 導入は行っていない。
