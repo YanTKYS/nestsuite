@@ -93,6 +93,13 @@ public static class NestSuiteWorkspaceEnvelope
             payload.ToJsonString(WriteOptions));
     }
 
+    private static string? GetStringOrNull(JsonObject obj, string propertyName)
+    {
+        if (!obj.TryGetPropertyValue(propertyName, out var node) || node is null) return null;
+        if (node is JsonValue value && value.TryGetValue<string>(out var s)) return s;
+        return null;
+    }
+
     /// <summary>
     /// wrapper の workspaceKind が期待する Workspace と一致することを確認する。
     /// 不一致は分かりやすい <see cref="InvalidDataException"/> で失敗する。
