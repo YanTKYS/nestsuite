@@ -124,6 +124,41 @@ public class ErrorLogServiceTests : IDisposable
         Assert.Contains("inner json error", content);
     }
 
+    // ── v2.14.0 TD-57 (LT-12): ローテーション連携 ─────────────────────────
+
+    [Fact]
+    public void Log_RotatesOversizedLog_AndWritesToFreshCurrentFile()
+    {
+        ErrorLogServiceTestHelper.Log(_logPath, "OldOperation", new IOException("old"));
+        var oldContent = File.ReadAllText(_logPath);
+
+        // 閾値 1 バイトで再度ログ → 旧内容は第1世代へ退避され、現行ログは新エントリのみ
+        ErrorLogServiceTestHelper.Log(_logPath, "NewOperation", new IOException("new"),
+            maxSizeBytes: 1, maxGenerations: 3);
+
+        var archived = File.ReadAllText(ErrorLogRotation.ArchivePath(_logPath, 1));
+        var current = File.ReadAllText(_logPath);
+        Assert.Equal(oldContent, archived);
+        Assert.Contains("NewOperation", current);
+        Assert.DoesNotContain("OldOperation", current);
+    }
+
+    [Fact]
+    public void ErrorLogService_LogPath_KeepsCompatibleLocationAndFileName()
+    {
+        // LT-3 方針: ログ保存先（%APPDATA%\NoteNest\logs\nestsuite-error.log）は互換性のため変更しない。
+        // ErrorLogService は internal のためアセンブリ経由で private 定数を検査する。
+        var serviceType = typeof(ErrorLogRotation).Assembly.GetType("NestSuite.Services.ErrorLogService");
+        Assert.NotNull(serviceType);
+        var field = serviceType!.GetField("LogPath",
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        var logPath = (string?)field!.GetValue(null);
+        Assert.NotNull(logPath);
+        Assert.Contains("NoteNest", logPath);
+        Assert.EndsWith("nestsuite-error.log", logPath);
+    }
+
     // ── FileErrorMessages (ユーザー向けメッセージ分岐テスト) ──────────────
 
     [Fact]
@@ -219,12 +254,16 @@ internal static class ErrorLogServiceTestHelper
         string operation,
         Exception ex,
         string? workspaceKind = null,
-        string? filePath = null)
+        string? filePath = null,
+        long maxSizeBytes = 1024 * 1024,
+        int maxGenerations = 3)
     {
         try
         {
             var dir = Path.GetDirectoryName(logPath)!;
             Directory.CreateDirectory(dir);
+            // v2.14.0 TD-57: 本番と同じ ErrorLogRotation を経由する（ローテーションは本物を検証する）
+            ErrorLogRotation.RotateIfNeeded(logPath, maxSizeBytes, maxGenerations);
 
             var sb = new System.Text.StringBuilder();
             sb.AppendLine("========================================");

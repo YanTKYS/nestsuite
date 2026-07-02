@@ -25,6 +25,7 @@
 |----------|------|------|
 | `nestsuite-development-guidelines.md` | 開発ルール・実装ガイドライン | **現行** |
 | `compatibility-identifiers-audit.md` | NoteNest 系互換性識別子の棚卸し・維持/変更判断（TD-55 / LT-3） | **現行** |
+| `error-log-policy.md` | ErrorLogService 方針（Error 専用・ローテーション）（TD-57 / LT-12） | **現行** |
 | `notenest-task-reduction-policy.md` | NoteNest タスク管理縮退方針（TD-52） | **現行** |
 | `performance-measurement.md` | 大量データ性能計測の開発者向け基盤（TD-56 / LT-11） | **現行** |
 | `save-flow-duplication.md` | IdeaNest / ChatNest 保存フロー重複 設計メモ（TD-34 / TD-45） | 現行 |
