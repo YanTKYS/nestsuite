@@ -15,6 +15,12 @@ internal static class ErrorLogService
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "logs", "nestsuite-error.log");
 
+    // v2.14.0 TD-57 (LT-12): サイズベース最小ローテーション。
+    // 現行ログが 1MB 以上なら追記前に世代退避し、3 世代を超える最古世代を削除する。
+    // 値の根拠と方針は docs/development/error-log-policy.md 参照。
+    private const long MaxLogSizeBytes = 1024 * 1024;
+    private const int MaxArchivedGenerations = 3;
+
     /// <summary>
     /// エラーをログファイルへ追記する。
     /// </summary>
@@ -33,6 +39,7 @@ internal static class ErrorLogService
         {
             var dir = Path.GetDirectoryName(LogPath)!;
             Directory.CreateDirectory(dir);
+            ErrorLogRotation.RotateIfNeeded(LogPath, MaxLogSizeBytes, MaxArchivedGenerations);
 
             var sb = new StringBuilder();
             sb.AppendLine("========================================");
