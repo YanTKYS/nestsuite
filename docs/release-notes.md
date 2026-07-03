@@ -7,6 +7,21 @@
 
 ---
 
+## v2.14.6 — FM-3: .nestsuite のファイル関連付け追加
+
+- **FM-3: `.nestsuite` を「NestSuite Workspace」（ProgId `NoteNest.nestsuite`）として HKCU ファイル関連付け対象に追加した。** v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だったが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、既定形式で保存したファイルをダブルクリックで開けなかった。
+- **ProgId の命名は既存の `NoteNest.*` 互換識別子族の規則に合わせた。** `docs/development/compatibility-identifiers-audit.md`（LT-3）の分類 A の方針どおり、既存識別子（`NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest`）は変更していない。
+- **legacy 3 拡張子の関連付け・ProgId は維持。** 登録内容・表示名（NoteNest Document / ChatNest Document / IdeaNest Document）とも変更なし。
+- **`FileAssociationService` の `Targets` を単一情報源化した。** 拡張子・ProgId・表示名の対応表が `Targets` 配列と `GetProgId` の switch 文に二重管理されていた点を解消し、`GetProgId` は `Targets` を走査する実装に変更した。新しい `AssociationTargets` 公開プロパティ（読み取り専用ビュー）により、レジストリに触れずに対応表の内容をテストできるようにした。
+- **PowerShell スクリプト 2 本（`tools/register-nestsuite-file-association.ps1` / `tools/unregister-nestsuite-file-association.ps1`）の `$entries` にも `.nestsuite` エントリを追加し、3 箇所同期を維持した。** `FileAssociationServiceTests` が service の `AssociationTargets` と両スクリプトの内容一致をテストで強制する。
+- **関連付けダイアログ（`FileAssociationDialog`）に `.nestsuite` の状態表示行を追加した。** 確認メッセージ・登録後の動作説明も 4 拡張子分に更新した。
+- **ダブルクリック起動は既存の起動引数 / pipe / `TryGetKind` 経路をそのまま使う。** `.nestsuite` はファイル内容の `workspaceKind` に応じて開く Workspace を決めるため、拡張子だけでは Workspace が確定しない。この経路は v2.14.1 FM-1 で対応済みで、今回の変更なし。
+- **変更なし事項**: 保存形式・保存 JSON の内容は変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。外部依存の追加なし。
+- **backlog: FM-3 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `FileAssociationServiceTests`（レジストリ非接触）。`AssociationTargets` に `.nestsuite` が ProgId `NoteNest.nestsuite` / 表示名「NestSuite Workspace」で含まれることを確認するテスト、legacy 3 拡張子の ProgId・表示名が変わっていないことを固定する回帰テスト、対応表が過不足なく 4 件であることを確認するテスト、PowerShell スクリプト 2 本それぞれが `AssociationTargets` の全拡張子・ProgId を含むことを構造的に検証するテスト（将来 `Targets` に拡張子を追加してスクリプト側を更新し忘れた場合に検出できる）を追加した。既存テストの削除なし。
+
+---
+
 ## v2.14.5 — FM-5: 保存バックアップ方針の 3 Workspace 統一
 
 - **FM-5: NoteNest / IdeaNest / ChatNest の 3 Workspace（および `.nestsuite`）で、通常保存時のバックアップ方式を統一した。** 従来は三様だった: NoteNest は `AtomicFileWriter` の `File.Replace` 統合 `.bak`、IdeaNest は保存前 `File.Copy`（**失敗を catch で握りつぶす** silent catch）、ChatNest は**バックアップなし**。今回、いずれも「既存ファイルへの上書き保存時に保存先パス + `.bak` の単一世代バックアップを作る」`AtomicFileWriter` の `File.Replace` 統合方式へ寄せた。
