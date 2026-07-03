@@ -42,7 +42,7 @@ public static class ChatNestFileService
             json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, json);
         // v2.14.5 FM-5: 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
-        AtomicFileWriter.WriteAllText(path, json, System.Text.Encoding.UTF8, path + ".bak");
+        AtomicFileWriter.WriteAllTextWithBackup(path, json, System.Text.Encoding.UTF8);
     }
 
     /// <summary>.chatnest ファイルを読み込み、Message リストを返す。</summary>
