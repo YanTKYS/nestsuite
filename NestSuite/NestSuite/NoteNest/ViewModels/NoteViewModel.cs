@@ -36,6 +36,22 @@ public class NoteViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// v2.14.3 M12: スター（お気に入り）状態。
+    /// 本文編集ではないため Touch()（UpdatedAt 更新）は行わない。
+    /// 未保存扱いは NoteWorkspaceViewModel.NotePropertyChanged 経由で伝播する。
+    /// </summary>
+    public bool IsStarred
+    {
+        get => _model.IsStarred;
+        set
+        {
+            if (_model.IsStarred == value) return;
+            _model.IsStarred = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool HasMarkers => MarkerExtractorService.HasMarkers(_model.Content);
     public DateTime CreatedAt => _model.CreatedAt;
     public DateTime UpdatedAt => _model.UpdatedAt;
