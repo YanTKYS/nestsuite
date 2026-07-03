@@ -238,8 +238,12 @@ public class ProjectFileServiceTests : IDisposable
 
             var bakPath = nestSuitePath + ".bak";
             Assert.True(File.Exists(bakPath));
-            var backup = _svc.Load(bakPath);
-            Assert.Equal("First", backup.ProjectName);
+            // .bak は拡張子が ".nestsuite" ではないため NestSuiteWorkspaceEnvelope.IsEnvelopePath が false になり、
+            // Load() 経由では wrapper を剥がせない（生の wrapper JSON をそのまま Project として誤デシリアライズしてしまう）。
+            // ChatNest / IdeaNest の同種テストと同じく、raw content の内容確認に留める。
+            var bakContent = File.ReadAllText(bakPath);
+            Assert.Contains("\"First\"", bakContent);
+            Assert.DoesNotContain("\"Second\"", bakContent);
         }
         finally
         {
