@@ -150,9 +150,12 @@ major bump（例: 1.4.1 → 2.0.0）
 ### 通常保存
 
 - `AtomicFileWriter` による tmp 書き込み → `File.Replace` または `File.Move` の方式を維持する（`ProjectFileService`・`ChatNestFileService`・`IdeaNestWorkspaceService` 共通）
-- NoteNest は `.bak` 置換バックアップあり
-- IdeaNest は事前 `File.Copy` バックアップあり
-- ChatNest はバックアップなし
+- **v2.14.5 FM-5 で 3 Workspace（NoteNest / IdeaNest / ChatNest）とも `AtomicFileWriter` の `File.Replace` 統合 `.bak`（保存先パス + `.bak`、単一世代）へ統一した。**
+  - IdeaNest は保存前 `File.Copy`（失敗を silent catch）方式を廃止した。ChatNest は従来バックアップなしだったが、今回新たに `.bak` を持つようになった。NoteNest は従来どおり変更なし
+  - 既存ファイルがあり `.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する。旧ファイルは壊れない（IdeaNest の旧 silent catch のように「バックアップだけ失敗して保存は成功扱い」にはしない）
+  - 新規保存時（既存ファイルなし）は `.bak` を作らない（`File.Move` 経路）
+  - `.nestsuite` パスでも同方針（`foo.nestsuite.bak`）で動作する
+  - `.bak` のローテーション・世代管理・自動復元 UI は未実装（対象外）
 
 ### スキーママイグレーション時の追加バックアップ
 

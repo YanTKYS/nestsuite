@@ -229,4 +229,58 @@ public class IdeaNestFileServiceTests
         }
         finally { File.Delete(path); }
     }
+
+    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+
+    [Fact]
+    public void Save_ExistingFile_CreatesBakWithPreviousContent()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            var first  = new Workspace { WorkspaceName = "FirstName", Ideas = new() };
+            var second = new Workspace { WorkspaceName = "SecondName", Ideas = new() };
+            IdeaNestFileService.Save(path, first);
+            IdeaNestFileService.Save(path, second);
+
+            var bakPath = path + ".bak";
+            Assert.True(File.Exists(bakPath));
+            Assert.Contains("FirstName", File.ReadAllText(bakPath));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_NestSuitePath_ExistingFile_CreatesBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            var first  = new Workspace { WorkspaceName = "FirstName", Ideas = new() };
+            var second = new Workspace { WorkspaceName = "SecondName", Ideas = new() };
+            IdeaNestFileService.Save(path, first);
+            IdeaNestFileService.Save(path, second);
+
+            var bakPath = path + ".bak";
+            Assert.True(File.Exists(bakPath));
+            var bakContent = File.ReadAllText(bakPath);
+            Assert.Contains("FirstName", bakContent);
+            Assert.Contains("NestSuiteWorkspace", bakContent);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_NewFile_DoesNotCreateBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            var workspace = new Workspace { WorkspaceName = "OnlyOne", Ideas = new() };
+            IdeaNestFileService.Save(path, workspace);
+
+            Assert.False(File.Exists(path + ".bak"));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
 }

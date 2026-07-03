@@ -7,6 +7,22 @@
 
 ---
 
+## v2.14.5 — FM-5: 保存バックアップ方針の 3 Workspace 統一
+
+- **FM-5: NoteNest / IdeaNest / ChatNest の 3 Workspace（および `.nestsuite`）で、通常保存時のバックアップ方式を統一した。** 従来は三様だった: NoteNest は `AtomicFileWriter` の `File.Replace` 統合 `.bak`、IdeaNest は保存前 `File.Copy`（**失敗を catch で握りつぶす** silent catch）、ChatNest は**バックアップなし**。今回、いずれも「既存ファイルへの上書き保存時に保存先パス + `.bak` の単一世代バックアップを作る」`AtomicFileWriter` の `File.Replace` 統合方式へ寄せた。
+- **ChatNest に初めて `.bak` バックアップを追加した。** `ChatNestFileService.Save` が `AtomicFileWriter.WriteAllText` へ `path + ".bak"` を渡すようになった。
+- **IdeaNest の保存前 `File.Copy` + silent catch を廃止した。** `IdeaNestWorkspaceService.WriteJson` は `AtomicFileWriter.WriteAllText(path, json, encoding, path + ".bak")` の一行に簡素化した。**`.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する**ようになった（旧実装は `.bak` 作成失敗を握りつぶし、保存は成功したように見えていた）。旧ファイルは失敗時も壊れない。
+- **NoteNest（`ProjectFileService`）は従来方針のまま変更なし。**
+- **新規保存時（既存ファイルなし）は `.bak` を作らない。** これは 3 Workspace とも従来どおり（`File.Move` 経路）。
+- **`.nestsuite` パスでも同方針で動作する。** `foo.nestsuite.bak` として単一世代バックアップが作られる。wrapper 内部の payload 単位で個別バックアップを作ることはしない。
+- **`.bak` のローテーション・世代管理・自動復元 UI は今回のスコープ外。** 未実装のまま（backlog `L8` 等の関連項目は継続）。
+- **v2.14.4 の docs / comment 不整合修正を含む**: `SchemaVersionTooNewException` の継承元説明（`InvalidDataException` は sealed のため `Exception` を直接継承する、という記述）の不整合を修正した。挙動・実装の変更はなし。
+- **変更なし事項**: 保存 JSON の内容・フォーマットは変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。UI 変更なし。外部依存の追加なし。
+- **backlog: FM-5 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `ChatNestFileServiceTests` / `IdeaNestFileServiceTests` に、既存ファイル上書き時の `.bak` 作成と直前内容の保持・新規保存時に `.bak` を作らないこと・`.nestsuite` パスでの `.bak` 作成を確認する回帰を追加した。`ProjectFileServiceTests` に `.nestsuite` パスでの `.bak` 作成テストを追加した（legacy `.notenest` の `.bak` テストは従来から存在）。`AtomicFileWriterTests` に、バックアップパスへの書き込みが失敗した場合に保存自体が例外で失敗し元ファイルが保持されることを確認する回帰を追加し、IdeaNest の事前バックアップに関する陳腐化したコメント・テスト名（旧 `File.Copy` 前提）を現行実装に合わせて更新した。既存テストの削除なし。
+
+---
+
 ## v2.14.4 — TD-58 + FM-4: schema version 期待値の集約と前方互換ガードの最小実装
 
 - **TD-58: schema version リテラルの散在を解消した。** `Project.CurrentSchemaVersion`（`1.4.2`）をリテラルで assert していた機能テスト群（`NoteNestFormatSchemaRegressionTests` / `ThemeSettingsTests` / `MarkerLineDetectorTests` / `EditorLayoutTests` / `NoteNestMultiFileDesignTests` / `NoteEditorHostHighlightRegressionTests`）を、いずれも `Project.CurrentSchemaVersion` 定数参照による挙動 assert（保存→読込 round-trip での `.Version` 一致など）へ置き換え、版番号を含まないテスト名へ改名した。**現行 schema version の文字列リテラルは `ApplicationVersionTests.cs` にのみ残る。**

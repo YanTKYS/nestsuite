@@ -56,6 +56,8 @@
 
 保存形式の決定は**保存先パスの拡張子**による（各 FileService の入口で envelope 分岐）。強制自動移行は行わない。
 
+**バックアップ（v2.14.5 FM-5）**: `.nestsuite` で保存する場合も、既存ファイルへの上書き保存時は保存先パス + `.bak`（例: `foo.nestsuite.bak`）の単一世代バックアップが作られる。3 Workspace（NoteNest / IdeaNest / ChatNest）共通の `AtomicFileWriter` 統合方式であり、wrapper 内部の payload 単位で個別のバックアップを作ることはしない。詳細は `docs/architecture/schema-versioning-policy.md` §バックアップ方針を参照。
+
 ## 読込互換
 
 - 既存 `.notenest` / `.ideanest` / `.chatnest` は従来どおり読める（legacy 経路は不変）

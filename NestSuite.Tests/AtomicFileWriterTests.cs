@@ -94,6 +94,24 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Equal("updated",  File.ReadAllText(path,    Encoding.UTF8));
     }
 
+    // v2.14.5 FM-5: バックアップを作成できない場合は保存自体が失敗し、元ファイルが壊れないことを固定する。
+    // （IdeaNest の旧「保存前 File.Copy + silent catch」を廃止し、NoteNest / ChatNest と同じ
+    // AtomicFileWriter の File.Replace 統合方式へ寄せたため、この契約がすべての Workspace 共通になった）
+    [Fact]
+    public void WriteAllText_BackupPathUnwritable_ThrowsAndKeepsOriginal()
+    {
+        var path = Path.Combine(_tempDir, "unwritable_bak.txt");
+        File.WriteAllText(path, "ORIGINAL", Encoding.UTF8);
+
+        // 通常のファイルを親ディレクトリ扱いすることで、バックアップパスの作成を確実に失敗させる。
+        var blockingFile = Path.Combine(_tempDir, "block");
+        File.WriteAllText(blockingFile, "x", Encoding.UTF8);
+        var badBakPath = Path.Combine(blockingFile, "sub", "f.bak");
+
+        Assert.ThrowsAny<Exception>(() => AtomicFileWriter.WriteAllText(path, "NEW", Encoding.UTF8, badBakPath));
+        Assert.Equal("ORIGINAL", File.ReadAllText(path, Encoding.UTF8));
+    }
+
     [Fact]
     public void WriteAllText_WithoutBackupPath_NoBackupFile()
     {
@@ -141,13 +159,13 @@ public class AtomicFileWriterTests : IDisposable
         Assert.NotEqual(0xEF, bytes[0]);
     }
 
-    // ── IdeaNest 事前バックアップ + AtomicFileWriter の組み合わせ ──────────
+    // ── IdeaNest バックアップ + AtomicFileWriter の組み合わせ ──────────────
 
     [Fact]
-    public void IdeaNestWorkspaceService_Save_CreatesPreWriteBackup()
+    public void IdeaNestWorkspaceService_Save_CreatesBackup()
     {
-        // IdeaNestWorkspaceService は AtomicFileWriter に移行後も
-        // File.Copy による事前バックアップを維持していることを確認する。
+        // v2.14.5 FM-5: IdeaNestWorkspaceService は保存前 File.Copy（silent catch）を廃止し、
+        // AtomicFileWriter の File.Replace 統合 .bak 方式（NoteNest / ChatNest と同方針）へ移行した。
         var path = Path.Combine(_tempDir, "test.ideanest");
         var workspace = new NestSuite.IdeaNest.Models.Workspace
         {

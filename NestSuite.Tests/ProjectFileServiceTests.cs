@@ -224,4 +224,27 @@ public class ProjectFileServiceTests : IDisposable
             if (File.Exists(nestSuitePath)) File.Delete(nestSuitePath);
         }
     }
+
+    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+
+    [Fact]
+    public void Save_NestSuitePath_ExistingFile_CreatesBak()
+    {
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            _svc.Save(nestSuitePath, new Project { ProjectName = "First" });
+            _svc.Save(nestSuitePath, new Project { ProjectName = "Second" });
+
+            var bakPath = nestSuitePath + ".bak";
+            Assert.True(File.Exists(bakPath));
+            var backup = _svc.Load(bakPath);
+            Assert.Equal("First", backup.ProjectName);
+        }
+        finally
+        {
+            foreach (var f in new[] { nestSuitePath, nestSuitePath + ".tmp", nestSuitePath + ".bak" })
+                if (File.Exists(f)) File.Delete(f);
+        }
+    }
 }
