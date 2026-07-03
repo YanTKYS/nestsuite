@@ -20,6 +20,9 @@
     <SolidColorBrush x:Key="CommentBadgeBg"       Color="#7A5500"/>
     <SolidColorBrush x:Key="CommentBadgeFg"       Color="#FFD580"/>
 
+    <!-- v2.14.3 M12: note star (favorite) indicator。WarningBrush の橙・未保存表示と混同しない金色系 -->
+    <SolidColorBrush x:Key="NoteStarIndicator" Color="#E0B84C"/>
+
     <!-- unsaved state -->
     <SolidColorBrush x:Key="UnsavedBrush"        Color="#FF8C42"/>
     <SolidColorBrush x:Key="UnsavedWarningBrush" Color="#FF5555"/>

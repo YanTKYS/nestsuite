@@ -22,12 +22,12 @@
   "format": "NestSuiteWorkspace",
   "formatVersion": "1.0",
   "workspaceKind": "NoteNest",
-  "payloadSchemaVersion": "1.4.1",
+  "payloadSchemaVersion": "1.4.2",
   "payload": { "...": "既存の NoteNest / IdeaNest / ChatNest 保存 JSON をそのまま格納" }
 }
 ```
 
-- **wrapper schema と payload schema は分離する。** `formatVersion` は wrapper 自体の版（v2.14.1 で `"1.0"` 新設）、`payloadSchemaVersion` は中身の Workspace schema の版（NoteNest なら `1.4.1` を維持）。既存 Workspace schema の bump は行っていない
+- **wrapper schema と payload schema は分離する。** `formatVersion` は wrapper 自体の版（v2.14.1 で `"1.0"` 新設、以降維持）、`payloadSchemaVersion` は中身の Workspace schema の版（NoteNest は v2.14.3 M12 で `1.4.1` → `1.4.2` へ bump 済み。`Note.IsStarred` optional field 追加のみで旧ファイルはそのまま読める）
 - `workspaceKind`（`NoteNest` / `IdeaNest` / `ChatNest`）で種別を判定する
 - **将来拡張**: 読み込みは JsonNode ベースで、未知の追加プロパティ（`createdAt` / `metadata` / `migration` 等を将来足しても）を無視して壊れない。必須項目（`format` / `workspaceKind` / `payload`）が欠けている場合は分かりやすい `InvalidDataException` で失敗する
 - 将来 wrapper の破壊的変更が必要になった場合は `formatVersion` を上げ、`NestSuiteWorkspaceEnvelope.Read` に互換読み込みを置く（migration の責務境界はここ。大規模 framework は作らない）

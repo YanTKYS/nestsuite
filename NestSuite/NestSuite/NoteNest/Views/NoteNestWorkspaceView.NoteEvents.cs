@@ -112,6 +112,12 @@ public partial class NoteNestWorkspaceView
         if (note != null) ViewModel.MoveNoteDown(note);
     }
 
+    private void ToggleNoteStar_Click(object sender, RoutedEventArgs e)
+    {
+        var note = GetContextMenuDataContext<NoteViewModel>(sender);
+        if (note != null) ViewModel.ToggleNoteStar(note);
+    }
+
     private void RenameNote_Click(object sender, RoutedEventArgs e)
         => RenameNoteWithDialog(GetContextMenuDataContext<NoteViewModel>(sender));
 

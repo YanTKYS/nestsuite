@@ -44,6 +44,7 @@ public sealed class NoteWorkspaceViewModel
             Content = note.Content,
             CreatedAt = note.CreatedAt,
             UpdatedAt = note.UpdatedAt,
+            IsStarred = note.IsStarred,
         }).ToList(),
     }).ToList();
 
@@ -82,6 +83,9 @@ public sealed class NoteWorkspaceViewModel
 
     public void UpdateContent(NoteViewModel note, string content) => note.Content = content;
 
+    /// <summary>v2.14.3 M12: ノートのスター状態を反転する。</summary>
+    public void ToggleStar(NoteViewModel note) => note.IsStarred = !note.IsStarred;
+
     public bool DeleteNote(NoteViewModel note)
     {
         var notebook = FindNotebookOf(note);
@@ -102,6 +106,7 @@ public sealed class NoteWorkspaceViewModel
             Content = source.Content,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
+            IsStarred = source.IsStarred,
         };
         var copy = new NoteViewModel(model);
         notebook.Notes.Add(copy);
@@ -191,7 +196,9 @@ public sealed class NoteWorkspaceViewModel
 
     private void NotePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(NoteViewModel.Title) or nameof(NoteViewModel.Content))
+        if (e.PropertyName is nameof(NoteViewModel.Title)
+            or nameof(NoteViewModel.Content)
+            or nameof(NoteViewModel.IsStarred))
             NotifyChanged();
     }
 

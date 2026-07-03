@@ -252,9 +252,9 @@ public class MarkerLineDetectorTests
     // ── Schema / format guard ─────────────────────────────────────────────────
 
     [Fact]
-    public void NoteNestSchema_Remains_141()
+    public void NoteNestSchema_Remains_142()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     [Fact]

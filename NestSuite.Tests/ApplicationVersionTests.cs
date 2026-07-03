@@ -11,7 +11,7 @@ public class ApplicationVersionTests
     [Fact]
     public void ApplicationVersion_UsesAssemblyInformationalVersion()
     {
-        Assert.Equal("2.14.2", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.14.3", MainViewModel.ApplicationVersion);
     }
 
     [Fact]
@@ -19,20 +19,20 @@ public class ApplicationVersionTests
     {
         var viewModel = new MainViewModel();
 
-        Assert.EndsWith(" - ver2.14.2", viewModel.WindowTitle);
+        Assert.EndsWith(" - ver2.14.3", viewModel.WindowTitle);
     }
 
     [Fact]
     public void ApplicationAndSchemaVersionsAreManagedBySeparateSources()
     {
-        Assert.Equal("2.14.2", MainViewModel.ApplicationVersion);
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("2.14.3", MainViewModel.ApplicationVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     [Fact]
-    public void NoteNestSchemaVersion_Remains_1_4_1()
+    public void NoteNestSchemaVersion_Remains_1_4_2()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class ApplicationVersionTests
         var offenders = Directory
             .GetFiles(testDir, "*.cs", SearchOption.AllDirectories)
             .Where(f => Path.GetFileName(f) != thisFile)
-            .Where(f => File.ReadAllText(f).Contains("NoteNestSchemaVersion_Remains_1_4_1"))
+            .Where(f => File.ReadAllText(f).Contains("NoteNestSchemaVersion_Remains_1_4_2"))
             .Select(f => Path.GetRelativePath(testDir, f))
             .ToList();
 

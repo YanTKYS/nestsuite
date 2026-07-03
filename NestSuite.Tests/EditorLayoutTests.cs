@@ -82,8 +82,8 @@ public class EditorLayoutTests
     // ── L12: .notenest スキーマ非汚染確認 ────────────────────────────────
 
     [Fact]
-    public void Project_SchemaVersion_IsUnchangedAt141()
+    public void Project_SchemaVersion_IsUnchangedAt142()
     {
-        Assert.Equal("1.4.1", NestSuite.Models.Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", NestSuite.Models.Project.CurrentSchemaVersion);
     }
 }

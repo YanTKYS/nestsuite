@@ -30,9 +30,9 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
     // ── バージョン定数 ────────────────────────────────────────────────────
 
     [Fact]
-    public void NoteNest_SchemaVersionConstant_Is_1_4_1()
+    public void NoteNest_SchemaVersionConstant_Is_1_4_2()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     // ── JSON 構造 ─────────────────────────────────────────────────────────
@@ -91,10 +91,10 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         var svc = new ProjectFileService();
         svc.Save(path, new Project());
         var loaded = svc.Load(path);
-        // Project.Version はデフォルト "0.1.0" だが CurrentSchemaVersion は "1.4.1"
+        // Project.Version はデフォルト "0.1.0" だが CurrentSchemaVersion は "1.4.2"
         // スキーマバージョン定数が変わらないことを確認する
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
-        Assert.NotEqual("1.4.1", loaded.Version); // Version プロパティはスキーマバージョンではない
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        Assert.NotEqual("1.4.2", loaded.Version); // Version プロパティはスキーマバージョンではない
     }
 
     [Fact]
@@ -354,7 +354,7 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.False(session.IsModified);
 
         var saved = new ProjectFileService().Load(path);
-        Assert.Equal("1.4.1", saved.Version);
+        Assert.Equal("1.4.2", saved.Version);
         var regressionNb = saved.Notebooks.First(nb => nb.Title == "RegressionNB");
         Assert.Equal("[TODO] check me", regressionNb.Notes[0].Content);
         Assert.Contains(saved.Tasks.Today, t => t.Title == "RegressionTask" && t.Comment == "commit this");
@@ -503,19 +503,19 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
     // ── 保存スキーマバージョン ────────────────────────────────────────────
 
     [Fact]
-    public void SchemaVersion_Is_1_4_1()
+    public void SchemaVersion_Is_1_4_2()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     [Fact]
-    public void SavedFile_ContainsSchemaVersion_1_4_1()
+    public void SavedFile_ContainsSchemaVersion_1_4_2()
     {
         var (lc, session, _, _, _, _) = CreateV146Context();
         lc.CreateNew();
         var path = Path.Combine(_tempDir, "schema.notenest");
         lc.Save(path);
-        Assert.Contains("\"1.4.1\"", File.ReadAllText(path));
+        Assert.Contains("\"1.4.2\"", File.ReadAllText(path));
     }
 
     // ── 未保存状態 ───────────────────────────────────────────────────────
@@ -582,6 +582,113 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         var text = File.ReadAllText(path);
         Assert.Contains("<html>", text);
         Assert.Contains("HtmlNote", text);
+    }
+
+    // ── スター（お気に入り） (M12 / V142) ────────────────────────────────────
+
+    [Fact]
+    public void Note_IsStarred_DefaultsToFalse()
+    {
+        Assert.False(new Note().IsStarred);
+    }
+
+    [Fact]
+    public void LegacyNoteWithoutStarField_LoadsAsNotStarred()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "legacy-star.notenest");
+        File.WriteAllText(path, """{"version":"1.4.1","projectName":"Legacy","notebooks":[{"title":"NB","notes":[{"title":"N","content":"C"}]}]}""");
+
+        var note = new ProjectFileService().Load(path).Notebooks[0].Notes[0];
+
+        Assert.False(note.IsStarred);
+    }
+
+    [Fact]
+    public void StarredNote_SaveLoad_RoundTrips()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "starred.notenest");
+        var project = new Project
+        {
+            ProjectName = "Starred",
+            Notebooks = [new Notebook { Title = "NB", Notes = [new Note { Title = "N", Content = "C", IsStarred = true }] }],
+        };
+        var svc = new ProjectFileService();
+
+        svc.Save(path, project);
+        var loaded = svc.Load(path);
+
+        Assert.True(loaded.Notebooks[0].Notes[0].IsStarred);
+        Assert.Contains("\"isStarred\": true", File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void StarredNote_NestSuitePath_RoundTripsViaEnvelope()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "starred.nestsuite");
+        var project = new Project
+        {
+            ProjectName = "Starred",
+            Notebooks = [new Notebook { Title = "NB", Notes = [new Note { Title = "N", Content = "C", IsStarred = true }] }],
+        };
+        var svc = new ProjectFileService();
+
+        svc.Save(path, project);
+        var loaded = svc.Load(path);
+
+        Assert.True(loaded.Notebooks[0].Notes[0].IsStarred);
+    }
+
+    [Fact]
+    public void NestSuiteSave_PayloadSchemaVersion_Is_1_4_2()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "schema.nestsuite");
+        new ProjectFileService().Save(path, new Project { ProjectName = "Schema" });
+
+        var envelope = NestSuiteWorkspaceEnvelope.Read(File.ReadAllText(path));
+
+        Assert.Equal("1.4.2", envelope.PayloadSchemaVersion);
+        Assert.Equal(NestSuiteWorkspaceEnvelope.CurrentFormatVersion, envelope.FormatVersion);
+    }
+
+    [Fact]
+    public void ToggleNoteStar_MarksModified_AndSaveClearsIt()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var main = new MainViewModel();
+        var note = main.Notes.AddNote(main.Notes.AddNotebook("NB"), "Note")!;
+        main.IsModified = false;
+
+        main.ToggleNoteStar(note);
+
+        Assert.True(note.IsStarred);
+        Assert.True(main.IsModified);
+
+        var path = Path.Combine(_tempDir, "star-modified.notenest");
+        Assert.True(main.SaveToPath(path));
+        Assert.False(main.IsModified);
+    }
+
+    [Fact]
+    public void LegacySchemaNote_LoadThenSave_PreservesContentAndTasks()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "legacy-schema.notenest");
+        File.WriteAllText(path, """
+            {"version":"1.4.1","projectName":"Legacy","notebooks":[{"title":"NB","notes":[{"title":"N","content":"TODO: x"}]}],"tasks":{"today":[{"title":"タスク"}]}}
+            """);
+        var svc = new ProjectFileService();
+
+        var loaded = svc.Load(path);
+        svc.Save(path, loaded);
+        var reloaded = svc.Load(path);
+
+        Assert.Equal("N", reloaded.Notebooks[0].Notes[0].Title);
+        Assert.Equal("TODO: x", reloaded.Notebooks[0].Notes[0].Content);
+        Assert.Contains(reloaded.Tasks.Today, t => t.Title == "タスク");
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

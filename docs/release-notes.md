@@ -7,6 +7,22 @@
 
 ---
 
+## v2.14.3 — M12: NoteNest ノートのスター（お気に入り）機能
+
+- **M12: ノート単位のスター（お気に入り）フラグを追加した。** `Note.IsStarred`（既定 `false`）を追加し、優先的に見返したいノートを目印できるようにした。
+- **`.notenest` schema を `1.4.1` → `1.4.2` へ patch bump した（`Project.CurrentSchemaVersion`）。** `docs/architecture/schema-versioning-policy.md` の patch bump 基準（optional field 追加のみ）に該当する FM-1 後初の schema 拡張。migration framework は導入せず、既定値補完のみで対応している。
+- **既存ファイルはそのまま読める。** 旧 `1.4.1` の `.notenest`、および `payloadSchemaVersion` が `1.4.1` の `.nestsuite` はいずれも `isStarred` 欠落時 `false` として読み込まれる。
+- **`.nestsuite`（NoteNest wrapper）の `payloadSchemaVersion` は今回から `1.4.2` になる。** wrapper 自体の `formatVersion` は `1.0` のまま変更していない（wrapper schema と payload schema を分離する FM-1 方針どおり）。
+- **UI**: ノート一覧にスターインジケーター（★、テーマ別 `NoteStarIndicator` ブラシを新設）を表示し、ノートの右クリックメニューから「スターを付ける／外す」で切り替えられるようにした。
+- **スター切替はプロジェクトを未保存状態にするが、ノートの更新日時（`UpdatedAt`）は変更しない。** 本文編集とは区別する。
+- **ノート複製（`DuplicateNote`）はスター状態もコピーする。**
+- **backlog M12 に記載していた「左ペイン最上位に自動固定表示」は今回のスコープに含めていない。** スター表示・切替のみを実装しており、並び替え・自動上部固定・フィルタ・検索への連動は対象外（将来の別項目として検討）。
+- **backlog: M12 を実装済みとして backlog.md から削除した。**
+- **session 形式変更なし。`.ideanest` / `.chatnest` の保存内容変更なし。外部依存追加なし。**
+- **テストを追加した**: `NoteNestFormatSchemaRegressionTests` に `Note.IsStarred` 既定値・旧 schema（`isStarred` 欠落・`version: 1.4.1`）読み込み・`.notenest` / `.nestsuite` 双方でのスター round-trip・`.nestsuite` payloadSchemaVersion 固定・旧 schema ファイルの読込→保存でのデータ非欠落を確認する回帰を追加した。`NoteWorkspaceViewModelTests` に `IsStarred` 切替時の `Changed` 発火・`ToggleStar` の反転・`BuildModels` / `DuplicateNote` での保持・`UpdatedAt` 非変更を確認するテストを追加した。既存テストの削除・期待値変更なし（schema・バージョン関連の期待値は `1.4.2` / `2.14.3` へ更新）。
+
+---
+
 ## v2.14.2 — FM-1 fix: `.nestsuite` 保存時の WorkspaceKind 横断重複タブ検出
 
 - **v2.14.1 FM-1 のレビュー指摘（コードレビュー: PR #441）を修正した。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらない（ファイル内容の `workspaceKind` で判定する）形式だが、名前を付けて保存時の重複タブ検出 `CheckAndActivateDuplicateTabForSave` が `WorkspaceKind` 一致を条件にしていたため、**同じ `.nestsuite` パスを別 WorkspaceKind のタブが既に開いている場合に検出できず、上書き保存でそのタブの内容と実ファイルが食い違う**バグがあった（例: `.nestsuite` を ChatNest として開いた状態で、別タブの NoteNest が同じパスへ Save As すると検出されずに上書きされる）。
