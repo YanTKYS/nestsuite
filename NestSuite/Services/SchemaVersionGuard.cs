@@ -4,11 +4,13 @@ namespace NestSuite.Services;
 
 /// <summary>
 /// v2.14.4 FM-4: 現在のアプリより新しい schema のファイルを検出した場合に読み込みを止めるための例外。
-/// <see cref="InvalidDataException"/> 派生のため既存の読込 catch 経路をそのまま通り、
-/// <see cref="FileErrorMessages.ForLoad"/> が専用のユーザー向け文言（「より新しいバージョンの
+/// <see cref="InvalidDataException"/> は sealed のため派生できず、代わりに <see cref="Exception"/> を直接継承する。
+/// 呼び出し元の読込処理は broad <c>catch (Exception ex)</c> でこの例外も含めて捕捉するため、
+/// 既存の読込 catch 経路には影響しない。
+/// <see cref="FileErrorMessages.ForLoad"/> がこの型を専用のユーザー向け文言（「より新しいバージョンの
 /// NestSuite で作成された可能性があります」）へ変換する。「壊れています」とは断定しない。
 /// </summary>
-public sealed class SchemaVersionTooNewException : InvalidDataException
+public sealed class SchemaVersionTooNewException : Exception
 {
     public SchemaVersionTooNewException(string message) : base(message)
     {
