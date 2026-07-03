@@ -199,8 +199,10 @@ major bump（例: 1.4.1 → 2.0.0）
 
 - 数値比較（`System.Version` ベース）で「ファイル側 version が現行より新しいか」を判定する
   （文字列比較ではないため `1.4.10` > `1.4.2` を正しく判定できる）
-- 新しいと判定した場合は `SchemaVersionTooNewException`（`InvalidDataException` 派生）を投げ、
-  読み込みを止める。無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ
+- 新しいと判定した場合は `SchemaVersionTooNewException`（`InvalidDataException` は sealed のため
+  `Exception` を直接継承する専用型）を投げ、読み込みを止める。呼び出し元は broad
+  `catch (Exception ex)` で捕捉するため既存の読込エラー処理経路に影響しない。
+  無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ
 - `FileErrorMessages.ForLoad` が専用の文言（「より新しいバージョンの NestSuite で作成された
   可能性があります」）へ変換する。「破損している」とは断定しない
 - `.nestsuite` wrapper では、wrapper の `payloadSchemaVersion` と payload 内部の
