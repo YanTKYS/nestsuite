@@ -51,12 +51,12 @@
 
 | ルール | 詳細 |
 |--------|------|
-| NoteNest 保存スキーマを変更しない | 明示指示がない限り `1.4.1` を維持する |
+| NoteNest 保存スキーマを変更しない | 明示指示がない限り `1.4.2` を維持する |
 | `.chatnest` 保存形式を変更しない | — |
 | `.ideanest` 保存形式を変更しない | — |
 | 保存形式を変更する場合は別バージョンで整理する | 設計・移行方針・後方互換性を事前に文書化してから実装する |
 | UI 表示設定とユーザーデータを混ぜない | 表示設定は `settings` セクションに留め、本文データに持ち込まない |
-| 保存形式変更がない場合は明記する | release notes に「保存スキーマ `1.4.1` を維持している」と記載する |
+| 保存形式変更がない場合は明記する | release notes に「保存スキーマ `1.4.2` を維持している」と記載する |
 | 保存形式・スキーマ変更を伴う作業は事前に方針を確認する | `docs/architecture/schema-versioning-policy.md` を参照し、schema bump 基準・互換読み込み・マイグレーション・テスト方針に従うこと（FM-1、v2.10.2 整備） |
 
 ---
@@ -108,7 +108,7 @@
 > `ApplicationVersionTests.ApplicationVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
 
 > **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加）**
-> `NoteNestSchemaVersion_Remains_1_4_1` メソッドを各機能テストクラスに追加しない。
+> `NoteNestSchemaVersion_Remains_1_4_2` メソッドを各機能テストクラスに追加しない。
 > NoteNest schema version 確認は `ApplicationVersionTests.cs` に集約する。
 > 機能テストクラスはその機能の仕様・回帰確認に集中する。
 > `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
@@ -199,7 +199,7 @@
 ```text
 - 指示外の機能追加
 - 保存形式変更
-- NoteNest 保存スキーマ変更（現行: 1.4.1）
+- NoteNest 保存スキーマ変更（現行: 1.4.2）
 - .chatnest / .ideanest 保存形式変更
 - 外部通信追加
 - 外部 API 依存
@@ -301,12 +301,12 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 | 対象 | 現状 | 変更が必要な場合 |
 |------|------|-----------------|
-| NoteNest 保存スキーマ | `1.4.1` | 明示指示＋設計・移行方針文書が必要 |
+| NoteNest 保存スキーマ | `1.4.2` | 明示指示＋設計・移行方針文書が必要 |
 | `.chatnest` 保存形式 | 現行形式 | 明示指示が必要 |
 | `.ideanest` 保存形式 | 現行形式 | 明示指示が必要 |
 | TempNest 内部 JSON `version` | `1` | 明示指示が必要 |
 
-保存形式を変更しない場合は、release notes に「保存スキーマ `1.4.1` を維持している」と必ず記載します。
+保存形式を変更しない場合は、release notes に「保存スキーマ `1.4.2` を維持している」と必ず記載します。
 
 ---
 
@@ -493,7 +493,7 @@ ToolTip="すべて保存 (Ctrl+Shift+S)"
 - 本指示 > guideline
 - 指示された対象ID以外を実装しない
 - 保存形式変更なし・schema bumpなし・session.json変更なし（明示指示がある場合のみ行う）→ §4 / §14-2
-- `.notenest` schemaは原則 `1.4.1` 維持
+- `.notenest` schemaは原則 `1.4.2` 維持
 - 外部依存を追加しない → §5
 - release workflowを変更しない
 - net48_testを再開しない
@@ -503,7 +503,7 @@ ToolTip="すべて保存 (Ctrl+Shift+S)"
 
 **バージョン・スキーマ更新**
 - バージョン更新時は `NestSuite.csproj` と `ApplicationVersionTests.cs` を同時に更新する → §7 / §14-4
-- NoteNest schema は明示がない限り `1.4.1` 維持
+- NoteNest schema は明示がない限り `1.4.2` 維持
 
 **release notes / backlog 運用** → §14-7 参照
 
@@ -555,7 +555,7 @@ Requirements:
 
 Version:
 - app version X.Y.Z
-- NoteNest schema 1.4.1 維持
+- NoteNest schema 1.4.2 維持
 
 Done:
 - 完了条件

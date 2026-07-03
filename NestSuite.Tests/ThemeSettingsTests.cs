@@ -71,7 +71,7 @@ public class ThemeSettingsTests
             new ProjectFileService().Save(path, new Project { ProjectName = "Schema Guard" });
             var json = File.ReadAllText(path);
             Assert.DoesNotContain("theme", json, StringComparison.OrdinalIgnoreCase);
-            Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+            Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }

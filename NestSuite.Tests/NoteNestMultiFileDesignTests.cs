@@ -152,9 +152,9 @@ public class NoteNestMultiFileDesignTests
     // ── NoteNest 保存スキーマ設計固定 ───────────────────────────────────────
 
     [Fact]
-    public void NoteNest_SaveSchema_IsVersion_1_4_1()
+    public void NoteNest_SaveSchema_IsVersion_1_4_2()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     // ── NestSuiteTabFactory の .notenest 認識確認 ───────────────────────────

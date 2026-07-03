@@ -148,4 +148,74 @@ public class NoteWorkspaceViewModelTests
         Assert.Equal("ノート のコピー 3", third.Title);
         Assert.Equal(4, notebook.Notes.Count); // original + 3 copies
     }
+
+    // ── M12: ノートのスター（お気に入り） ────────────────────────────────────
+
+    [Fact]
+    public void TogglingIsStarred_RaisesChanged()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var note = workspace.AddNote(notebook, "Note")!;
+        var changed = false;
+        workspace.Changed += (_, _) => changed = true;
+
+        note.IsStarred = true;
+
+        Assert.True(changed);
+    }
+
+    [Fact]
+    public void ToggleStar_FlipsFalseToTrueToFalse()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var note = workspace.AddNote(notebook, "Note")!;
+        Assert.False(note.IsStarred);
+
+        workspace.ToggleStar(note);
+        Assert.True(note.IsStarred);
+
+        workspace.ToggleStar(note);
+        Assert.False(note.IsStarred);
+    }
+
+    [Fact]
+    public void BuildModels_PreservesIsStarred()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var note = workspace.AddNote(notebook, "Note")!;
+        note.IsStarred = true;
+
+        var models = workspace.BuildModels();
+
+        Assert.True(models.Single().Notes.Single().IsStarred);
+    }
+
+    [Fact]
+    public void DuplicateNote_CopiesIsStarred()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var original = workspace.AddNote(notebook, "ノート")!;
+        original.IsStarred = true;
+
+        var copy = workspace.DuplicateNote(original)!;
+
+        Assert.True(copy.IsStarred);
+    }
+
+    [Fact]
+    public void IsStarred_DoesNotChangeUpdatedAt()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var note = workspace.AddNote(notebook, "Note")!;
+        var updatedAt = note.UpdatedAt;
+
+        note.IsStarred = true;
+
+        Assert.Equal(updatedAt, note.UpdatedAt);
+    }
 }

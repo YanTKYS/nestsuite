@@ -42,7 +42,7 @@ NestSuite.exe --nestsuite sample.ideanest
 
 | ツール | ファイル拡張子 | 内容 |
 |--------|--------------|------|
-| NoteNest | `.notenest` | ノート・タスク・マーカーを JSON で管理するプロジェクトファイル（スキーマ 1.4.1） |
+| NoteNest | `.notenest` | ノート・タスク・マーカーを JSON で管理するプロジェクトファイル（スキーマ 1.4.2） |
 | ChatNest | `.chatnest` | チャット形式のメモ（JSON） |
 | IdeaNest | `.ideanest` | アイデアカード集（JSON） |
 

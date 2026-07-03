@@ -351,9 +351,9 @@ public class NoteEditorHostHighlightRegressionTests
     }
 
     [Fact]
-    public void NoteNestSchema_RemainsAt141()
+    public void NoteNestSchema_RemainsAt142()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 
     private static string FindRepoFile(string relativePath)
