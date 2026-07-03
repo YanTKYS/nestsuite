@@ -3,6 +3,7 @@ using System.Windows;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Services;
 using NestSuite.ViewModels;
 
 namespace NestSuite;
@@ -162,11 +163,14 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
+        if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
         {
+            // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
             _dialogs.ShowError(
-                $"NestSuite では開けないファイル形式です。\n対応形式: .nestsuite / .notenest / .chatnest / .ideanest\n\n{path}",
-                "未対応のファイル形式");
+                $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                failure == WorkspaceKindDetectionFailure.UnsupportedExtension
+                    ? "未対応のファイル形式"
+                    : "ファイルを開けません");
             EnsureDefaultTab();
             return;
         }
