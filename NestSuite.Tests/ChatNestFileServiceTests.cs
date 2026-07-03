@@ -288,4 +288,43 @@ public class ChatNestFileServiceTests : IDisposable
 
         Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => ChatNestFileService.Load(path));
     }
+
+    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+
+    [Fact]
+    public void Save_ExistingFile_CreatesBakWithPreviousContent()
+    {
+        var path = TempPath("bak.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "first-message" }]);
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.反論, Text = "second-message" }]);
+
+        var bakPath = path + ".bak";
+        Assert.True(File.Exists(bakPath));
+        var bakContent = File.ReadAllText(bakPath);
+        Assert.Contains("first-message", bakContent);
+        Assert.DoesNotContain("second-message", bakContent);
+    }
+
+    [Fact]
+    public void Save_NewFile_DoesNotCreateBak()
+    {
+        var path = TempPath("newfile.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "only" }]);
+
+        Assert.False(File.Exists(path + ".bak"));
+    }
+
+    [Fact]
+    public void Save_NestSuitePath_ExistingFile_CreatesBak()
+    {
+        var path = TempPath("bak.nestsuite");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "first-message" }]);
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.反論, Text = "second-message" }]);
+
+        var bakPath = path + ".bak";
+        Assert.True(File.Exists(bakPath));
+        var bakContent = File.ReadAllText(bakPath);
+        Assert.Contains("first-message", bakContent);
+        Assert.DoesNotContain("second-message", bakContent);
+    }
 }

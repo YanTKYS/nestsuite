@@ -85,16 +85,12 @@ public static class IdeaNestWorkspaceService
     internal static string SerializeToJson(Workspace workspace) =>
         JsonSerializer.Serialize(workspace, JsonOptions);
 
-    /// <summary>v2.14.1 FM-1: .bak バックアップ + atomic write（wrapper 保存と legacy 保存で共有）。</summary>
-    internal static void WriteJson(string path, string json)
-    {
-        if (File.Exists(path))
-        {
-            var bakPath = path + ".bak";
-            try { File.Copy(path, bakPath, overwrite: true); }
-            catch { }
-        }
-
-        AtomicFileWriter.WriteAllText(path, json, new UTF8Encoding(false));
-    }
+    /// <summary>
+    /// v2.14.1 FM-1: .bak バックアップ + atomic write（wrapper 保存と legacy 保存で共有）。
+    /// v2.14.5 FM-5: 保存前 File.Copy（失敗を silent catch）方式をやめ、NoteNest と同じ
+    /// AtomicFileWriter の File.Replace 統合 .bak 方式へ統一。既存ファイルがあり .bak を
+    /// 作れない場合は File.Replace が例外で失敗し、旧ファイルを壊さず保存失敗として扱われる。
+    /// </summary>
+    internal static void WriteJson(string path, string json) =>
+        AtomicFileWriter.WriteAllText(path, json, new UTF8Encoding(false), path + ".bak");
 }

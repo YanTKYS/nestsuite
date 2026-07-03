@@ -170,7 +170,6 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | FM-3 | `.nestsuite` のファイル関連付け追加 | v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、**利用者が既定形式で保存したファイルをダブルクリックで開けない**。`FileAssociationService` と同梱 PowerShell スクリプト 2 本の 3 箇所同期で `.nestsuite` を追加登録できるようにする（`docs/development/workspace-file-extension-unification.md` §制限に将来対応として明記済み）。起動引数・pipe 経由の `.nestsuite` オープンは `TryGetKind` 集約により対応済みのため、登録側の追加のみで機能する見込み。注意点: ProgId は互換性識別子のため命名は `docs/development/compatibility-identifiers-audit.md`（LT-3）の分類に従って決定する。既存 legacy 3 拡張子の登録内容は変更しない | A |
-| FM-5 | 保存バックアップ方針の 3 Workspace 統一 | 現状のバックアップは三様: NoteNest は `AtomicFileWriter` の `File.Replace` 統合 `.bak`、IdeaNest は保存前 `File.Copy`（**失敗を catch で握りつぶす**）、ChatNest は**バックアップなし**（`docs/architecture/schema-versioning-policy.md` §バックアップ方針にも現状として記載）。ユーザーデータ保護の観点で ChatNest にも `.bak` を追加し、可能なら 3 サービスのバックアップ機構を NoteNest 方式（atomic write 統合）に寄せる。IdeaNest の silent catch はバックアップ失敗時の扱い（続行か中断か）を明文化する。注意点: `.nestsuite` パスでも `foo.nestsuite.bak` として同様に動作すること。保存 JSON の内容・schema は変更しない | B |
 
 ---
 

@@ -41,7 +41,8 @@ public static class ChatNestFileService
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
             json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, json);
-        AtomicFileWriter.WriteAllText(path, json, System.Text.Encoding.UTF8);
+        // v2.14.5 FM-5: 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
+        AtomicFileWriter.WriteAllText(path, json, System.Text.Encoding.UTF8, path + ".bak");
     }
 
     /// <summary>.chatnest ファイルを読み込み、Message リストを返す。</summary>

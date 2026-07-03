@@ -150,9 +150,12 @@ major bump（例: 1.4.1 → 2.0.0）
 ### 通常保存
 
 - `AtomicFileWriter` による tmp 書き込み → `File.Replace` または `File.Move` の方式を維持する（`ProjectFileService`・`ChatNestFileService`・`IdeaNestWorkspaceService` 共通）
-- NoteNest は `.bak` 置換バックアップあり
-- IdeaNest は事前 `File.Copy` バックアップあり
-- ChatNest はバックアップなし
+- **v2.14.5 FM-5 で 3 Workspace（NoteNest / IdeaNest / ChatNest）とも `AtomicFileWriter` の `File.Replace` 統合 `.bak`（保存先パス + `.bak`、単一世代）へ統一した。**
+  - IdeaNest は保存前 `File.Copy`（失敗を silent catch）方式を廃止した。ChatNest は従来バックアップなしだったが、今回新たに `.bak` を持つようになった。NoteNest は従来どおり変更なし
+  - 既存ファイルがあり `.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する。旧ファイルは壊れない（IdeaNest の旧 silent catch のように「バックアップだけ失敗して保存は成功扱い」にはしない）
+  - 新規保存時（既存ファイルなし）は `.bak` を作らない（`File.Move` 経路）
+  - `.nestsuite` パスでも同方針（`foo.nestsuite.bak`）で動作する
+  - `.bak` のローテーション・世代管理・自動復元 UI は未実装（対象外）
 
 ### スキーママイグレーション時の追加バックアップ
 
@@ -199,8 +202,10 @@ major bump（例: 1.4.1 → 2.0.0）
 
 - 数値比較（`System.Version` ベース）で「ファイル側 version が現行より新しいか」を判定する
   （文字列比較ではないため `1.4.10` > `1.4.2` を正しく判定できる）
-- 新しいと判定した場合は `SchemaVersionTooNewException`（`InvalidDataException` 派生）を投げ、
-  読み込みを止める。無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ
+- 新しいと判定した場合は `SchemaVersionTooNewException`（`InvalidDataException` は sealed のため
+  `Exception` を直接継承する専用型）を投げ、読み込みを止める。呼び出し元は broad
+  `catch (Exception ex)` で捕捉するため既存の読込エラー処理経路に影響しない。
+  無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ
 - `FileErrorMessages.ForLoad` が専用の文言（「より新しいバージョンの NestSuite で作成された
   可能性があります」）へ変換する。「破損している」とは断定しない
 - `.nestsuite` wrapper では、wrapper の `payloadSchemaVersion` と payload 内部の

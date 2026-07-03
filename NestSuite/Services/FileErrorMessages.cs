@@ -14,7 +14,8 @@ public static class FileErrorMessages
     public static string ForLoad(Exception ex) => ex switch
     {
         // v2.14.4 FM-4: 新しい schema の検出は「破損」と区別し、理由と対処が分かる文言にする。
-        // InvalidDataException 派生のため、より汎用の分岐より先に置く。
+        // SchemaVersionTooNewException は Exception を直接継承する専用型のため、
+        // より汎用の分岐（JsonException 等）に巻き込まれないよう先に置く。
         SchemaVersionTooNewException
             => "このファイルは、より新しいバージョンの NestSuite で作成された可能性があります。\n現在のバージョンでは安全に開けません。新しいバージョンの NestSuite で開いてください。",
         FileNotFoundException or DirectoryNotFoundException
