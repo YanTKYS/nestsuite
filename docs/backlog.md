@@ -69,6 +69,7 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
 | SH-28 | 直近操作の一時フィードバック統一 | 一部の操作（クリップボードコピー）のみ完了フィードバックが表示される。保存完了・エクスポート完了・削除完了などの主要操作にもステータスバーまたはインライン表示で一時的な成否フィードバック（1〜2 秒）を表示し、操作結果を即座に確認できるようにする | B |
 | SH-29 | 未保存タブ終了確認への件数サマリ追加 | 現状、複数タブに未保存の変更がある状態で NestSuite を終了すると、`NestSuiteShellWindow.OnClosing` が NoteNest → IdeaNest → ChatNest の順に対象タブを 1 件ずつ確認ダイアログで問い合わせる。何件あるか事前に分からないまま連続してダイアログが出るため、利用者は「あと何回確認が続くか」を把握できない。終了処理の先頭で未保存タブの総数を要約表示してから個別確認に入るようにし、見通しを改善する | B |
+| SH-31 | 読めない `.nestsuite` のセッション復元・pipe オープン時の無言スキップ解消 | `.nestsuite` は拡張子だけでは WorkspaceKind が定まらず、`TryGetKind` → `TryDetectKindFromFile` がファイル内容を読んで判定する。このためファイルが一時的に読めない場合（ネットワークドライブ未接続・破損等）、legacy 拡張子ならタブ復元時に「読込エラー」ダイアログが出るのに対し、`.nestsuite` はセッション復元（`SessionTabMapper.TryCreateRestoreTarget` が false → 復元対象から除外）と pipe 経由オープン（`OpenFileFromPipe` が早期 return）で**無言でスキップ**され、利用者はタブが消えたことに気づけない。また最近ファイルクリック時は「このファイル形式は NestSuite では開けません」と表示して一覧から削除するが、実際は「一時的に読めない」だけの可能性があり文言が誤解を招く。復元スキップの通知（まとめて 1 回で可）と文言改善を行う。対象外: 復元リトライ・自動再接続 | B |
 
 ---
 
@@ -166,7 +167,11 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧 FM-2 より移管）。  
 **FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/development/workspace-file-extension-unification.md` 参照）。
 
-現在の未完了項目なし。
+| No | 項目 | 概要 | 優先度 |
+|----|------|------|--------|
+| FM-3 | `.nestsuite` のファイル関連付け追加 | v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、**利用者が既定形式で保存したファイルをダブルクリックで開けない**。`FileAssociationService` と同梱 PowerShell スクリプト 2 本の 3 箇所同期で `.nestsuite` を追加登録できるようにする（`docs/development/workspace-file-extension-unification.md` §制限に将来対応として明記済み）。起動引数・pipe 経由の `.nestsuite` オープンは `TryGetKind` 集約により対応済みのため、登録側の追加のみで機能する見込み。注意点: ProgId は互換性識別子のため命名は `docs/development/compatibility-identifiers-audit.md`（LT-3）の分類に従って決定する。既存 legacy 3 拡張子の登録内容は変更しない | A |
+| FM-4 | 新しい schema のファイルを旧アプリで開いた場合の前方互換ポリシー統一 | 現状、payload の version 検証は 3 Workspace で三様: NoteNest は**無検証**（未知フィールドを黙って無視して読み込むため、旧バージョンのアプリで新 schema ファイルを開いて上書き保存すると新フィールドが**無警告で消える**。例: 1.4.1 時代の実行ファイルで 1.4.2 の `isStarred` 付きファイルを開いて保存すると消える）、IdeaNest は**厳密一致**（新旧問わず不一致は `NotSupportedException`）、ChatNest は**無検証**（さらに未知 speaker は読込時スキップ→保存で喪失）。また `.nestsuite` wrapper の `payloadSchemaVersion` は保存時に書くだけで**読込時に一切参照されない**。schema-versioning-policy の「不明フィールドは保持または無視」「保存時に不要な破壊的変換をしない」に対し、最低限「自分より新しい schema を検出したら警告または読み取り専用扱い」の共通方針を設計し 3 Workspace で揃える。`JsonExtensionData` による未知フィールド round-trip 保持も選択肢として比較する。注意点: 現行ファイルの読込互換を壊さないこと。大規模 migration framework は作らない | B |
+| FM-5 | 保存バックアップ方針の 3 Workspace 統一 | 現状のバックアップは三様: NoteNest は `AtomicFileWriter` の `File.Replace` 統合 `.bak`、IdeaNest は保存前 `File.Copy`（**失敗を catch で握りつぶす**）、ChatNest は**バックアップなし**（`docs/architecture/schema-versioning-policy.md` §バックアップ方針にも現状として記載）。ユーザーデータ保護の観点で ChatNest にも `.bak` を追加し、可能なら 3 サービスのバックアップ機構を NoteNest 方式（atomic write 統合）に寄せる。IdeaNest の silent catch はバックアップ失敗時の扱い（続行か中断か）を明文化する。注意点: `.nestsuite` パスでも `foo.nestsuite.bak` として同様に動作すること。保存 JSON の内容・schema は変更しない | B |
 
 ---
 
@@ -176,7 +181,9 @@ TD-1〜TD-52、TD-54〜TD-57 は完了済み（欠番）。詳細は `docs/relea
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-53 | Coordinator の Publish/notify パターンのドキュメント化 | `MainViewModel.Facade.cs` の派生プロパティ（`CurrentNoteTitle` 等）は、値を計算するだけでは画面に反映されず、`NoteChangeCoordinator` / `EditorChangeCoordinator` の Publish/notify 呼び出しに対象プロパティ名を追加しないと `PropertyChanged` が発火しない。現在この方式で 14 個の facade プロパティが手動同期されているが、このパターン自体を説明する docs が存在しない（v2.13.2 で `CurrentNotebookName` がこのパターンの見落としにより表示が古いまま残る不具合が発生し、レビューで指摘・修正した実例あり）。`docs/development/` に「新しい facade プロパティを追加する際は、どの Coordinator のどの通知経路に追加が必要か」を判断するための短いチェックリストを追加し、同種の見落としを防ぐ。ロジック変更は伴わない、docs 整備のみ | A |
+| TD-53 | Coordinator の Publish/notify パターンのドキュメント化 | `MainViewModel.Facade.cs` の派生プロパティ（`CurrentNoteTitle` 等）は、値を計算するだけでは画面に反映されず、`NoteChangeCoordinator` / `EditorChangeCoordinator` の Publish/notify 呼び出しに対象プロパティ名を追加しないと `PropertyChanged` が発火しない。現在この方式で 14 個の facade プロパティが手動同期されているが、このパターン自体を説明する docs が存在しない（v2.13.2 で `CurrentNotebookName` がこのパターンの見落としにより表示が古いまま残る不具合が発生し、レビューで指摘・修正した実例あり）。`docs/development/` に「新しい facade プロパティを追加する際は、どの Coordinator のどの通知経路に追加が必要か」を判断するための短いチェックリストを追加し、同種の見落としを防ぐ。ロジック変更は伴わない、docs 整備のみ。同種の見落とし箇所として `NoteWorkspaceViewModel.NotePropertyChanged` のプロパティ名 allow-list（v2.14.3 M12 の `IsStarred` 追加時に更新が必要だった箇所）も記載対象に含める | A |
+| TD-58 | NoteNest schema version 期待値の散在解消と schema bump チェックリスト | v2.14.3 の schema bump（1.4.1→1.4.2）時、`Project.CurrentSchemaVersion` をリテラルで assert するテストが **8 ファイル**（`ApplicationVersionTests` / `NoteNestFormatSchemaRegressionTests` / `ThemeSettingsTests` / `MarkerLineDetectorTests` / `EditorLayoutTests` / `NoteNestMultiFileDesignTests` / `NoteEditorHostHighlightRegressionTests` + guideline 本文を pin する `PromptStandardContractTests`）に散在しており、更新漏れが実際に CI 失敗として発覚した。既存メタテスト（TD-29）はメソッド名文字列のみをスキャンするため、他クラスの `Project.CurrentSchemaVersion` 直接 assert を検出できない。対応: (a) schema version のリテラル assert を `ApplicationVersionTests` に集約し、各機能テストの schema ガードは削除または `CurrentSchemaVersion` 定数参照に置換、(b) メタテストのスキャン対象を `Project.CurrentSchemaVersion` の使用に拡張、(c) `docs/architecture/schema-versioning-policy.md` に「schema bump 時の更新箇所チェックリスト」（テスト・guideline 本文 pin テスト・docs 5 箇所）を追記。注意点: 既存テストの意図（各機能が schema 非汚染であること）は集約後も別の形で担保する | A |
+| TD-59 | `.nestsuite` オープン時の二重読込・二重パース解消 | `.nestsuite` を開く全経路（Open ダイアログ・起動引数・最近ファイル・セッション復元・pipe）で、種別判定（`TryGetKind` → `TryDetectKindFromFile` が `File.ReadAllText` + JSON パース）と本読込（各 FileService の `Load` が再度 `File.ReadAllText` + wrapper パース）の 2 回、同じファイルを読み込み解析している。現状は実害が小さい（判定と読込の間に内容が変わっても `EnsureKind` が明確なエラーで失敗する）が、大きいファイル・遅いストレージでは無駄が倍になる。判定結果（envelope 内容）を読込へ引き渡す形を検討する。注意点: `TryGetKind` の単一集約点という FM-1 の設計利点を壊さないこと。急ぎではない | C |
 
 ---
 
