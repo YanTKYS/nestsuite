@@ -237,6 +237,65 @@ public class AtomicFileWriterTests : IDisposable
         Assert.True(File.Exists(path));
     }
 
+    // ── WriteAllTextWithRandomTemp (v2.14.8) ────────────────────────────────
+
+    [Fact]
+    public void WriteAllTextWithRandomTemp_NewFile_CreatesFile()
+    {
+        var path = Path.Combine(_tempDir, "randomtemp_new.txt");
+        AtomicFileWriter.WriteAllTextWithRandomTemp(path, "hello");
+        Assert.True(File.Exists(path));
+        Assert.Equal("hello", File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void WriteAllTextWithRandomTemp_ExistingFile_Overwrites()
+    {
+        var path = Path.Combine(_tempDir, "randomtemp_overwrite.txt");
+        File.WriteAllText(path, "old");
+        AtomicFileWriter.WriteAllTextWithRandomTemp(path, "new");
+        Assert.Equal("new", File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void WriteAllTextWithRandomTemp_NoLeftoverTmpFiles()
+    {
+        var path = Path.Combine(_tempDir, "randomtemp_notmp.txt");
+        File.WriteAllText(path, "old");
+        AtomicFileWriter.WriteAllTextWithRandomTemp(path, "new");
+
+        var leftoverTmp = Directory.GetFiles(_tempDir, "*.tmp");
+        Assert.Empty(leftoverTmp);
+    }
+
+    // ── WriteAllTextWithBackup (v2.14.8) ────────────────────────────────────
+
+    [Fact]
+    public void WriteAllTextWithBackup_ExistingFile_CreatesBakFile()
+    {
+        var path    = Path.Combine(_tempDir, "withbackup.txt");
+        var bakPath = path + ".bak";
+        File.WriteAllText(path, "original", Encoding.UTF8);
+
+        AtomicFileWriter.WriteAllTextWithBackup(path, "updated", Encoding.UTF8);
+
+        Assert.True(File.Exists(bakPath));
+        Assert.Equal("original", File.ReadAllText(bakPath, Encoding.UTF8));
+        Assert.Equal("updated",  File.ReadAllText(path,    Encoding.UTF8));
+    }
+
+    [Fact]
+    public void WriteAllTextWithBackup_NewFile_NoBackupCreated()
+    {
+        var path    = Path.Combine(_tempDir, "withbackup_new.txt");
+        var bakPath = path + ".bak";
+
+        AtomicFileWriter.WriteAllTextWithBackup(path, "content", Encoding.UTF8);
+
+        Assert.True(File.Exists(path));
+        Assert.False(File.Exists(bakPath));
+    }
+
     // ── CloseConfirmationService: Save / Discard / Cancel ─────────────────
 
     [Fact]

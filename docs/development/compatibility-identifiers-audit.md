@@ -61,7 +61,7 @@ NestSuite は NoteNest を前身として統合・正式化したため、内部
 | ProgId `NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest` / `NoteNest.nestsuite` | `FileAssociation/FileAssociationService.cs` + `tools/register-nestsuite-file-association.ps1` + `tools/unregister-nestsuite-file-association.ps1` の **3箇所同期必須** | ProgId | **高**（ユーザーのレジストリに永続。`Unregister` は現 ProgId 一致時のみ削除するため、ProgId 変更＝旧登録の掃除手段の喪失） | A | 当面維持。変更するなら「旧 ProgId も掃除する Unregister」を先に用意する必要がある（§3-5）。`NoteNest.nestsuite` は v2.14.6 FM-3 で追加、分類 A、既存 `NoteNest.*` 命名規則に合わせて採番した |
 | 拡張子 `.notenest` / `.chatnest` / `.ideanest` / `.nestsuite` | `NestSuiteTabFactory` / 各 `FileService.FileExtension` / `DialogService` / `FileAssociationService` | ファイル拡張子 | **最高**（ユーザーのファイルそのもの） | A | 恒久維持。変更対象ですらない。`.nestsuite` は v2.14.1 FM-1 で標準保存拡張子として導入、v2.14.6 で関連付け対象に追加、分類 A |
 
-補足: `.chatnest` / `.ideanest` は `FileService.FileExtension` 定数があるが、**`.notenest` だけ定数がなく 3 ファイルにリテラル分散**している（非対称）。値は全箇所一致しており互換リスクではないが、将来の整理候補（TD 系で採番可）。
+補足: v2.14.8 で `ProjectFileService.FileExtension` を新設し、`NestSuiteTabFactory` / `FileAssociationService` は各 FileService / Envelope の `FileExtension` 定数を参照する形に解消済み（`.notenest` リテラル分散の非対称は解消）。`DialogService` のフィルタ表示文字列は全拡張子一様のリテラル表記のまま（意図的）。
 
 ### 1-5. ランタイム限定・ソース構造（非永続）
 

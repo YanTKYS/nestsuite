@@ -7,6 +7,18 @@
 
 ---
 
+## v2.14.8 — リファクタリング: 保存系ヘルパーの重複解消と陳腐化コメント整理
+
+- **重複していたランダム tmp 名 atomic write を `AtomicFileWriter.WriteAllTextWithRandomTemp` へ集約した。** `RecentFilesService` / `NestSuiteRecentFilesService` / `NestSuiteSessionStateService` の private `WriteAtomically` は同一実装が 3 箇所に重複していたが、いずれも 1 行の委譲呼び出しに置き換えた（挙動同一・約 70 行削減）。
+- **`.bak` 付き保存の `WriteAllTextWithBackup` overload を `AtomicFileWriter` に追加し、3 FileService の保存経路の参照を統一した。** これまで各 FileService が `path + ".bak"` を個別に組み立てていた箇所を共通 API 呼び出しに統一した。
+- **`ProjectFileService.FileExtension`（`.notenest`）を新設し、`.notenest` リテラル分散を解消した。** `NestSuiteTabFactory.ExtensionByKind` と `FileAssociationService.Targets` は各 FileService / Envelope の `FileExtension` 定数を参照する形に変更した。`DialogService` のフィルタ表示文字列は全拡張子一様のリテラル表記のまま（意図的、変更していない）。`docs/development/compatibility-identifiers-audit.md` §1-4 補足を更新した。
+- **v1.7.2 / v1.9.0 時代の「骨格のみ」「未統合」等の陳腐化した設計コメントを現行実装に合わせて更新した（コメントのみ、コード変更なし）。** `NestSuiteTabFactory` / `NestSuiteDocumentTab` / `NestSuiteWorkspaceKind` / `NestSuiteOpenFilePolicy` の doc コメントが対象。
+- **見送り判断を記録した。** `OnClosing` の分割（テスト不在の UI クローズ確認フローで可読性のみの利得のため見送り）、3 FileService の envelope 分岐統合（schema クリティカルな 3 保存経路の同時変更を伴うため方針どおり見送り）。`UiSettingsService.Save` / `TempNestStoreService.Save` の atomic write 化は挙動変更を伴うため実施せず、TD-60 として backlog に採番した。
+- **変更なし事項**: 挙動変更なし・保存形式変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。外部依存の追加なし。UI 変更なし。
+- **backlog: 新規追加なし（今回のスコープの対応 ID なし）。TD-60 を新規追加した。**
+
+---
+
 ## v2.14.7 — SH-31: 読めない .nestsuite の復元・open 失敗通知と文言整理
 
 - **SH-31: `.nestsuite` の種別判定に失敗した理由を保持するようにした。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらずファイル内容の読取りが必要なため、判定失敗をこれまで「不明」で一律に扱っていたが、新しい `WorkspaceKindDetectionFailure` enum（`None` / `UnsupportedExtension` / `FileNotFound` / `AccessDenied` / `InvalidFormat` / `UnknownWorkspaceKind` / `SchemaVersionTooNew` / `IoError` / `Unknown`）で理由を区別するようにした。`NestSuiteWorkspaceEnvelope.DetectKindFromFile`（新規、例外を外へ投げない）と `NestSuiteTabFactory.TryGetKind` の理由つきオーバーロード（`out WorkspaceKindDetectionFailure failure`）を追加した。旧シグネチャはすべて新オーバーロードへ委譲し後方互換を維持した。
