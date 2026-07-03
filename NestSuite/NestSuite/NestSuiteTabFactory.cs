@@ -93,23 +93,75 @@ public static class NestSuiteTabFactory
     /// v2.14.1 FM-1: `.nestsuite` の場合は wrapper の workspaceKind を内容から判定する
     /// （ファイル未存在・wrapper 不正時は false）。全経路の種別判定はこのメソッドに集約されている。
     /// </summary>
-    public static bool TryGetKind(string filePath, out NestSuiteWorkspaceKind kind)
+    public static bool TryGetKind(string filePath, out NestSuiteWorkspaceKind kind) =>
+        TryGetKind(filePath, out kind, out _);
+
+    /// <summary>
+    /// v2.14.7 SH-31: 判定失敗理由つきの種別判定。呼び元（セッション復元・pipe・起動引数・最近ファイル）が
+    /// 失敗を無言でスキップせず、理由に応じた文言（<see cref="Services.FileErrorMessages.ForKindDetectionFailure"/>）で
+    /// 通知できるようにする。
+    /// `.nestsuite` は wrapper の payloadSchemaVersion が現行より新しい場合、本読込（FM-4 ガード）まで
+    /// 進む前にここで <see cref="WorkspaceKindDetectionFailure.SchemaVersionTooNew"/> として検出する。
+    /// </summary>
+    public static bool TryGetKind(
+        string filePath, out NestSuiteWorkspaceKind kind, out WorkspaceKindDetectionFailure failure)
     {
+        failure = WorkspaceKindDetectionFailure.None;
         var ext = Path.GetExtension(filePath);
         if (KindByExtension.TryGetValue(ext, out kind)) return true;
 
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(filePath))
         {
-            var mapped = MapEnvelopeKind(NestSuiteWorkspaceEnvelope.TryDetectKindFromFile(filePath));
-            if (mapped != null)
+            var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(filePath);
+            if (result.Failure != WorkspaceKindDetectionFailure.None)
             {
-                kind = mapped.Value;
-                return true;
+                failure = result.Failure;
+                kind = default;
+                return false;
             }
+
+            var mapped = MapEnvelopeKind(result.WorkspaceKind);
+            if (mapped == null)
+            {
+                failure = WorkspaceKindDetectionFailure.UnknownWorkspaceKind;
+                kind = default;
+                return false;
+            }
+
+            if (IsPayloadSchemaTooNew(mapped.Value, result.PayloadSchemaVersion))
+            {
+                failure = WorkspaceKindDetectionFailure.SchemaVersionTooNew;
+                kind = default;
+                return false;
+            }
+
+            kind = mapped.Value;
+            return true;
         }
 
+        failure = WorkspaceKindDetectionFailure.UnsupportedExtension;
         kind = default;
         return false;
+    }
+
+    /// <summary>
+    /// v2.14.7 SH-31: wrapper の payloadSchemaVersion が該当 Workspace の現行 schema より新しいかを判定する。
+    /// 解釈できない version はここでは失敗にせず false を返す（本読込側の FM-4 ガード・検証に委ねる）。
+    /// </summary>
+    private static bool IsPayloadSchemaTooNew(NestSuiteWorkspaceKind kind, string payloadSchemaVersion)
+    {
+        if (string.IsNullOrWhiteSpace(payloadSchemaVersion)) return false;
+        var current = kind switch
+        {
+            NestSuiteWorkspaceKind.NoteNest => Models.Project.CurrentSchemaVersion,
+            NestSuiteWorkspaceKind.IdeaNest => IdeaNest.Services.IdeaNestFileService.SchemaVersion,
+            NestSuiteWorkspaceKind.ChatNest => ChatNest.ChatNestFileService.FileVersionString,
+            _ => null,
+        };
+        if (current == null) return false;
+        if (!SchemaVersionGuard.TryParse(payloadSchemaVersion, out var file) ||
+            !SchemaVersionGuard.TryParse(current, out var currentParsed)) return false;
+        return file > currentParsed;
     }
 
     /// <summary>wrapper の workspaceKind 文字列を enum へ対応付ける。未知の種別は null。</summary>

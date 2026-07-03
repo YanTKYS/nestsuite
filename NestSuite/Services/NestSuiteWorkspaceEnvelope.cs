@@ -112,19 +112,55 @@ public static class NestSuiteWorkspaceEnvelope
     }
 
     /// <summary>
-    /// ファイルから workspaceKind を判定する。wrapper として読めない・存在しない場合は null。
-    /// 例外を外へ投げない（呼び元は null を「判定不能」として扱う）。
+    /// v2.14.7 SH-31: ファイルからの workspaceKind 判定結果。失敗時は理由を保持する。
+    /// PayloadSchemaVersion は判定成功時のみ有効（呼び元での too-new 事前検出に使う）。
     /// </summary>
-    public static string? TryDetectKindFromFile(string path)
+    public sealed record KindDetectionResult(
+        string? WorkspaceKind,
+        string PayloadSchemaVersion,
+        WorkspaceKindDetectionFailure Failure);
+
+    /// <summary>
+    /// v2.14.7 SH-31: ファイルから workspaceKind を判定し、失敗時は理由つきで返す。
+    /// 例外を外へ投げない（呼び元は Failure で文言を出し分ける）。
+    /// </summary>
+    public static KindDetectionResult DetectKindFromFile(string path)
     {
         try
         {
-            if (!File.Exists(path)) return null;
-            return Read(File.ReadAllText(path)).WorkspaceKind;
+            if (!File.Exists(path))
+                return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.FileNotFound);
+            var envelope = Read(File.ReadAllText(path));
+            return new KindDetectionResult(
+                envelope.WorkspaceKind, envelope.PayloadSchemaVersion, WorkspaceKindDetectionFailure.None);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.AccessDenied);
+        }
+        catch (System.Security.SecurityException)
+        {
+            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.AccessDenied);
+        }
+        catch (InvalidDataException)
+        {
+            // Read() の失敗（JSON 破損・wrapper 形式不一致・必須項目欠落）はすべて「形式を確認できない」扱い
+            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.InvalidFormat);
+        }
+        catch (IOException)
+        {
+            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.IoError);
         }
         catch
         {
-            return null;
+            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.Unknown);
         }
     }
+
+    /// <summary>
+    /// ファイルから workspaceKind を判定する。wrapper として読めない・存在しない場合は null。
+    /// 例外を外へ投げない（呼び元は null を「判定不能」として扱う）。
+    /// 失敗理由が必要な場合は <see cref="DetectKindFromFile"/> を使う。
+    /// </summary>
+    public static string? TryDetectKindFromFile(string path) => DetectKindFromFile(path).WorkspaceKind;
 }

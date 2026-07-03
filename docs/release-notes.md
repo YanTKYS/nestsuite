@@ -7,6 +7,21 @@
 
 ---
 
+## v2.14.7 — SH-31: 読めない .nestsuite の復元・open 失敗通知と文言整理
+
+- **SH-31: `.nestsuite` の種別判定に失敗した理由を保持するようにした。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらずファイル内容の読取りが必要なため、判定失敗をこれまで「不明」で一律に扱っていたが、新しい `WorkspaceKindDetectionFailure` enum（`None` / `UnsupportedExtension` / `FileNotFound` / `AccessDenied` / `InvalidFormat` / `UnknownWorkspaceKind` / `SchemaVersionTooNew` / `IoError` / `Unknown`）で理由を区別するようにした。`NestSuiteWorkspaceEnvelope.DetectKindFromFile`（新規、例外を外へ投げない）と `NestSuiteTabFactory.TryGetKind` の理由つきオーバーロード（`out WorkspaceKindDetectionFailure failure`）を追加した。旧シグネチャはすべて新オーバーロードへ委譲し後方互換を維持した。
+- **セッション復元の無言スキップを廃止した。** `SessionTabMapper` に `SessionRestoreFailure` レコードと `TryCreateRestoreTarget` / `CreateRestoreTargets` の理由つきオーバーロードを追加した。読めない `.nestsuite`（ファイルは存在するが種別判定できない）がある場合、Shell（`NestSuiteShellWindow.Session.cs`）はまとめて 1 回 `_dialogs.ShowError` で通知する（1 件ずつダイアログは出さない）。**session からは削除しない**ため次回起動時にも再試行される。復元可能な他のタブの復元は妨げない。**空パス・ファイル欠落・未対応拡張子のスキップは既存仕様どおり無言のまま維持した**（session には保存対象タブのパスしか書かれない前提の防御的スキップであり、通知対象を広げていない）。
+- **pipe / ダブルクリック起動 / 起動引数 open の無言 return を廃止した。** `OpenFileFromPipe`（シングルインスタンス経由のダブルクリック受け口）はファイル不存在・種別判定失敗のいずれも理由別のエラーダイアログを表示するようにした（従来は早期 return で何も表示していなかった）。`LoadInitialFile`（起動引数）も同様に理由別文言へ変更した。
+- **最近使ったファイルは種別判定失敗では削除しないようにした。** `MenuRecentFile_Click` は `UnsupportedExtension`（未対応拡張子）のみ従来どおり一覧から削除する。それ以外の判定失敗（`InvalidFormat` 等）は「一時的に読めないだけ」の可能性があるため、理由別の文言で通知しつつ一覧には残す。
+- **文言方針を整理した（`FileErrorMessages.ForKindDetectionFailure`、新規）。** 「壊れています」と断定せず理由別に文言を出し分ける。`SchemaVersionTooNew` は FM-4（`SchemaVersionTooNewException`）と同じ「より新しいバージョンの NestSuite で作成された可能性があります」文言を使う。`InvalidFormat` / `UnknownWorkspaceKind` も「壊れているとは限りません」「より新しいバージョンの可能性」に触れ、破損を断定しない。**too-new（`payloadSchemaVersion` が現行より新しい）は種別判定段階（`TryGetKind`）でも事前検出するようにした**（NoteNest: `Project.CurrentSchemaVersion` / IdeaNest: `IdeaNestFileService.SchemaVersion` / ChatNest: `ChatNestFileService.FileVersionString` と比較）。解釈できないバージョン文字列はここでは失敗にせず、従来どおり本読込側の FM-4 ガードに委ねる。
+- **legacy 3 拡張子（`.notenest` / `.chatnest` / `.ideanest`）の通常 open への影響はない。** これらは拡張子だけで WorkspaceKind が確定するためファイル内容を読まず、常に `Failure = None` で成功する。
+- **TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は今回のスコープ外。** 未実装のまま backlog に残す。
+- **変更なし事項**: 保存形式・保存 JSON の内容は変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式（`FilePaths` / `ActiveFilePath` のみ）の変更なし。外部依存の追加なし。
+- **backlog: SH-31 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `NestSuiteWorkspaceEnvelopeTests` に `DetectKindFromFile` の成功・`FileNotFound`・`InvalidFormat`（破損 JSON・非 wrapper JSON の両方）を確認するテストを追加した。`NestSuiteDocumentTabTests` に `TryGetKind` 理由つきオーバーロードの legacy 拡張子・`FileNotFound`・`InvalidFormat`・`UnknownWorkspaceKind`・`SchemaVersionTooNew`・`UnsupportedExtension`・現行 schema version（`Project.CurrentSchemaVersion` 参照、リテラル不使用）での成功を確認するテストを追加した。`SessionTabMapperTests` に、読めない `.nestsuite` を含むセッションで他の正常なタブは復元されつつ失敗が 1 件報告されること・ファイル欠落と未対応拡張子は従来どおり無言スキップされ失敗として報告されないこと・too-new な `.nestsuite` が `SchemaVersionTooNew` として報告されることを確認するテストを追加した。`WorkspaceFileOperationHelperTests` に `FileErrorMessages.ForKindDetectionFailure` の文言（`FileNotFound` / `InvalidFormat` / `SchemaVersionTooNew` / `UnsupportedExtension`、破損断定なしの確認を含む）を確認するテストを追加した。既存テストの削除なし。
+
+---
+
 ## v2.14.6 — FM-3: .nestsuite のファイル関連付け追加
 
 - **FM-3: `.nestsuite` を「NestSuite Workspace」（ProgId `NoteNest.nestsuite`）として HKCU ファイル関連付け対象に追加した。** v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だったが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、既定形式で保存したファイルをダブルクリックで開けなかった。

@@ -370,4 +370,74 @@ public class SessionTabMapperTests
         finally { File.Delete(path); }
     }
 
+    // ── v2.14.7 SH-31: 読めない .nestsuite の復元通知 ──────────────────
+
+    [Fact]
+    public void CreateRestoreTargets_BrokenNestsuite_ReportsFailure_AndRestoresOthers()
+    {
+        var brokenPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        File.WriteAllText(brokenPath, "not json");
+        try
+        {
+            var state = new NestSuiteSessionState
+            {
+                FilePaths = [@"C:\work\note.notenest", brokenPath]
+            };
+
+            var targets = SessionTabMapper.CreateRestoreTargets(state, _ => true, out var failures);
+
+            Assert.Single(targets);
+            Assert.Equal(@"C:\work\note.notenest", targets[0].FilePath);
+            Assert.Equal(NestSuiteWorkspaceKind.NoteNest, targets[0].WorkspaceKind);
+
+            var failure = Assert.Single(failures);
+            Assert.Equal(brokenPath, failure.FilePath);
+            Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, failure.Failure);
+        }
+        finally { File.Delete(brokenPath); }
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_MissingFile_SkipsSilently_NoFailureEntry()
+    {
+        var state = new NestSuiteSessionState
+        {
+            FilePaths = [@"C:\work\missing.notenest"]
+        };
+
+        var targets = SessionTabMapper.CreateRestoreTargets(state, _ => false, out var failures);
+
+        Assert.Empty(targets);
+        Assert.Empty(failures);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_UnsupportedExtension_SkipsSilently()
+    {
+        var state = new NestSuiteSessionState
+        {
+            FilePaths = [@"C:\work\notes.txt"]
+        };
+
+        var targets = SessionTabMapper.CreateRestoreTargets(state, _ => true, out var failures);
+
+        Assert.Empty(targets);
+        Assert.Empty(failures);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_TooNewNestsuite_ReportsSchemaVersionTooNew()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "9.9.9", "{}"));
+
+            var ok = SessionTabMapper.TryCreateRestoreTarget(path, out _, out var failure, File.Exists);
+
+            Assert.False(ok);
+            Assert.Equal(WorkspaceKindDetectionFailure.SchemaVersionTooNew, failure);
+        }
+        finally { File.Delete(path); }
+    }
 }
