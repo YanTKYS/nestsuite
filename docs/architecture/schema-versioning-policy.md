@@ -192,6 +192,49 @@ major bump（例: 1.4.1 → 2.0.0）
 
 ---
 
+## 前方互換ガード（FM-4 v2.14.4 最小実装）
+
+現行より新しい schema / payloadSchemaVersion を持つファイルは `SchemaVersionGuard`
+（`NestSuite/Services/SchemaVersionGuard.cs`）により読み込み失敗する。
+
+- 数値比較（`System.Version` ベース）で「ファイル側 version が現行より新しいか」を判定する
+  （文字列比較ではないため `1.4.10` > `1.4.2` を正しく判定できる）
+- 新しいと判定した場合は `SchemaVersionTooNewException`（`InvalidDataException` 派生）を投げ、
+  読み込みを止める。無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ
+- `FileErrorMessages.ForLoad` が専用の文言（「より新しいバージョンの NestSuite で作成された
+  可能性があります」）へ変換する。「破損している」とは断定しない
+- `.nestsuite` wrapper では、wrapper の `payloadSchemaVersion` と payload 内部の
+  version フィールドの矛盾も確認する（`EnsureEnvelopeConsistent`）。矛盾と扱うのは
+  payload 側が wrapper より新しい方向のみで、逆方向（wrapper の方が新しい）は許容する。
+  これは v2.14.1〜v2.14.3 のアプリが旧 payload を現行 payloadSchemaVersion で包んで
+  保存した、実在する正当なファイル形状に合わせるための意図的な非対称ルールである
+- 対象: `.notenest` / `.ideanest` / `.chatnest` の各 Workspace 形式、および `.nestsuite`
+  wrapper の `payloadSchemaVersion`
+
+**今回実装しないもの:**
+
+- read-only モード（新しい schema のファイルを読み取り専用で開く機能）は未実装
+- `JsonExtensionData` 属性による未知フィールドの round-trip 保持は将来候補。
+  実装すれば新旧アプリが混在する環境でも「知らないフィールドを保存時に削ってしまう」事故を
+  防げるが、対象モデル全型への波及（属性追加・シリアライズ挙動の見直し）と、
+  保存 JSON の安定性（キー順序・フォーマットの回帰）検証が別途必要になるため、
+  今回のスコープには含めない
+
+## schema bump 時の更新箇所チェックリスト
+
+schema version（例: `Project.CurrentSchemaVersion`）を更新する際は、以下を漏れなく更新する。
+
+1. `Project.CurrentSchemaVersion`（`Project.cs`）
+2. `ApplicationVersionTests.NoteNestSchemaVersion_IsPinned` のリテラル
+3. guideline 本文の「NoteNest schema x.y.z 維持」表記（`PromptStandardContractTests` が
+   補間参照で強制検出する）
+4. `docs/development/nestsuite-development-guidelines.md` 内の schema 表記各所
+5. 本文書と `workspace-file-extension-unification.md` / `docs/guide/nestsuite-user-guide.md`
+   の現行 version 表記
+6. release notes に bump 理由を記載
+
+---
+
 ## 参照
 
 - `docs/backlog.md` — FM-1 および schema 変更を伴う候補一覧

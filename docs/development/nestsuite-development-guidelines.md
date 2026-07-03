@@ -107,19 +107,24 @@
 > アプリバージョンの確認は `ApplicationVersionTests.cs` に集約する。
 > `ApplicationVersionTests.ApplicationVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
 
-> **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加）**
-> `NoteNestSchemaVersion_Remains_1_4_2` メソッドを各機能テストクラスに追加しない。
-> NoteNest schema version 確認は `ApplicationVersionTests.cs` に集約する。
-> 機能テストクラスはその機能の仕様・回帰確認に集中する。
-> `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
-> schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` を参照する。
+> **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加、v2.14.4 TD-58 でリテラルスキャン方式へ更新）**
+> schema version リテラル（例: `"1.4.2"`）を各機能テストクラスに直接書かない。
+> NoteNest schema version の期待値確認は `ApplicationVersionTests.NoteNestSchemaVersion_IsPinned` に集約する。
+> このメソッド名自体は次回 schema bump でも変更しない（更新するのは内部のリテラル値のみ）。
+> 機能テストクラスはその機能の仕様・回帰確認に集中し、schema version を確認したい場合は
+> `Project.CurrentSchemaVersion` 定数参照による挙動 assert（保存・読込 round-trip など）を使う。
+> `ApplicationVersionTests.CurrentSchemaVersionLiteral_IsNotHardcoded_InOtherTestClasses` が、
+> 他テストファイルに現行 schema version の文字列リテラルが紛れ込んでいないかを自動検出する。
+> schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` の
+> 「schema bump 時の更新箇所チェックリスト」を参照する。
 
 ### テスト整合性の原則
 
 - 既存テストを削除しない
 - 既存テストをスキップ（`[Fact(Skip=...)]` 等）化しない
 - テストの期待値を、仕様変更でなく「通りやすくするため」だけの理由で変更しない
-- `ApplicationVersion_Is_*` や `NoteNestSchemaVersion_Remains_*` など version / schema 確認は `ApplicationVersionTests.cs` に集約する
+- `ApplicationVersion_Is_*` などアプリバージョン確認、および現行 schema version の文字列リテラル確認は
+  `ApplicationVersionTests.cs` に集約する（機能テストクラスでは `Project.CurrentSchemaVersion` 定数参照を使う）
 
 ### テストクラス命名・分類方針
 

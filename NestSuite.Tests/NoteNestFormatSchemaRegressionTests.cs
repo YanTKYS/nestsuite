@@ -30,9 +30,14 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
     // ── バージョン定数 ────────────────────────────────────────────────────
 
     [Fact]
-    public void NoteNest_SchemaVersionConstant_Is_1_4_2()
+    public void NoteNest_SchemaVersionConstant_MatchesBuiltProject()
     {
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        var path = Path.Combine(_tempDir, "constant.notenest");
+        var project = new Project { ProjectName = "ConstantCheck", Version = Project.CurrentSchemaVersion };
+        var svc = new ProjectFileService();
+        svc.Save(path, project);
+        var loaded = svc.Load(path);
+        Assert.Equal(Project.CurrentSchemaVersion, loaded.Version);
     }
 
     // ── JSON 構造 ─────────────────────────────────────────────────────────
@@ -91,10 +96,9 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         var svc = new ProjectFileService();
         svc.Save(path, new Project());
         var loaded = svc.Load(path);
-        // Project.Version はデフォルト "0.1.0" だが CurrentSchemaVersion は "1.4.2"
+        // Project.Version はデフォルト "0.1.0" だが CurrentSchemaVersion は別管理
         // スキーマバージョン定数が変わらないことを確認する
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
-        Assert.NotEqual("1.4.2", loaded.Version); // Version プロパティはスキーマバージョンではない
+        Assert.NotEqual(Project.CurrentSchemaVersion, loaded.Version); // Version プロパティはスキーマバージョンではない
     }
 
     [Fact]
@@ -354,7 +358,7 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.False(session.IsModified);
 
         var saved = new ProjectFileService().Load(path);
-        Assert.Equal("1.4.2", saved.Version);
+        Assert.Equal(Project.CurrentSchemaVersion, saved.Version);
         var regressionNb = saved.Notebooks.First(nb => nb.Title == "RegressionNB");
         Assert.Equal("[TODO] check me", regressionNb.Notes[0].Content);
         Assert.Contains(saved.Tasks.Today, t => t.Title == "RegressionTask" && t.Comment == "commit this");
@@ -503,19 +507,19 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
     // ── 保存スキーマバージョン ────────────────────────────────────────────
 
     [Fact]
-    public void SchemaVersion_Is_1_4_2()
+    public void CurrentSchemaVersion_IsAValidVersionString()
     {
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        Assert.True(System.Version.TryParse(Project.CurrentSchemaVersion, out _));
     }
 
     [Fact]
-    public void SavedFile_ContainsSchemaVersion_1_4_2()
+    public void SavedFile_ContainsCurrentSchemaVersion()
     {
         var (lc, session, _, _, _, _) = CreateV146Context();
         lc.CreateNew();
         var path = Path.Combine(_tempDir, "schema.notenest");
         lc.Save(path);
-        Assert.Contains("\"1.4.2\"", File.ReadAllText(path));
+        Assert.Contains($"\"{Project.CurrentSchemaVersion}\"", File.ReadAllText(path));
     }
 
     // ── 未保存状態 ───────────────────────────────────────────────────────
@@ -642,7 +646,7 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
     }
 
     [Fact]
-    public void NestSuiteSave_PayloadSchemaVersion_Is_1_4_2()
+    public void NestSuiteSave_PayloadSchemaVersion_MatchesCurrent()
     {
         Directory.CreateDirectory(_tempDir);
         var path = Path.Combine(_tempDir, "schema.nestsuite");
@@ -650,8 +654,78 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
 
         var envelope = NestSuiteWorkspaceEnvelope.Read(File.ReadAllText(path));
 
-        Assert.Equal("1.4.2", envelope.PayloadSchemaVersion);
+        Assert.Equal(Project.CurrentSchemaVersion, envelope.PayloadSchemaVersion);
         Assert.Equal(NestSuiteWorkspaceEnvelope.CurrentFormatVersion, envelope.FormatVersion);
+    }
+
+    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+    //
+    // LegacyNoteWithoutStarField_LoadsAsNotStarred / LegacySchemaNote_LoadThenSave_PreservesContentAndTasks
+    // が既に legacy .notenest（"version":"1.4.1"）の正常読込を確認済みのため、ここでは重複させない。
+
+    [Fact]
+    public void Load_NoteNestNewerVersion_ThrowsSchemaVersionTooNewException()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "toonew.notenest");
+        File.WriteAllText(path, """{"version":"1.4.3","projectName":"TooNew","notebooks":[]}""");
+
+        Assert.Throws<SchemaVersionTooNewException>(() => new ProjectFileService().Load(path));
+    }
+
+    [Fact]
+    public void Load_NoteNestNumericallyNewerVersion_ThrowsSchemaVersionTooNewException()
+    {
+        // "1.4.10" は文字列比較では現行 schema version より小さく見えるが、数値としては大きい。
+        // 数値比較（文字列比較ではない）で新しいと判定されることを確認する。
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "toonew-numeric.notenest");
+        File.WriteAllText(path, """{"version":"1.4.10","projectName":"TooNew","notebooks":[]}""");
+
+        Assert.Throws<SchemaVersionTooNewException>(() => new ProjectFileService().Load(path));
+    }
+
+    [Fact]
+    public void Load_NestSuiteEnvelope_PayloadSchemaVersionNewerThanCurrent_ThrowsSchemaVersionTooNewException()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "toonew-wrapper.nestsuite");
+        var payloadJson = $$"""{"version":"{{Project.CurrentSchemaVersion}}","projectName":"TooNewWrapper","notebooks":[]}""";
+        File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap(
+            NestSuiteWorkspaceEnvelope.KindNoteNest, "1.4.3", payloadJson));
+
+        Assert.Throws<SchemaVersionTooNewException>(() => new ProjectFileService().Load(path));
+    }
+
+    [Fact]
+    public void Load_NestSuiteEnvelope_PayloadNewerThanWrapper_ThrowsInvalidDataException()
+    {
+        // payload 内 version（現行 schema）がラッパーの payloadSchemaVersion（1.4.1）より新しい
+        // 矛盾方向のみ失敗させる。
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "inconsistent.nestsuite");
+        var payloadJson = $$"""{"version":"{{Project.CurrentSchemaVersion}}","projectName":"Inconsistent","notebooks":[]}""";
+        File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap(
+            NestSuiteWorkspaceEnvelope.KindNoteNest, "1.4.1", payloadJson));
+
+        Assert.Throws<InvalidDataException>(() => new ProjectFileService().Load(path));
+    }
+
+    [Fact]
+    public void Load_NestSuiteEnvelope_WrapperNewerThanPayload_LoadsFine()
+    {
+        // v2.14.1〜v2.14.3 のアプリが旧 payload（1.4.1）を現行 payloadSchemaVersion で包んだ
+        // 正当な既存ファイル形状。この方向は意図的に許容される。
+        Directory.CreateDirectory(_tempDir);
+        var path = Path.Combine(_tempDir, "wrapper-newer.nestsuite");
+        var payloadJson = """{"version":"1.4.1","projectName":"WrapperNewer","notebooks":[]}""";
+        File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap(
+            NestSuiteWorkspaceEnvelope.KindNoteNest, Project.CurrentSchemaVersion, payloadJson));
+
+        var loaded = new ProjectFileService().Load(path);
+
+        Assert.Equal("WrapperNewer", loaded.ProjectName);
+        Assert.Equal("1.4.1", loaded.Version);
     }
 
     [Fact]

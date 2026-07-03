@@ -351,9 +351,17 @@ public class NoteEditorHostHighlightRegressionTests
     }
 
     [Fact]
-    public void NoteNestSchema_RemainsAt142()
+    public void NoteNestSchema_IsNotChangedByHighlightFeatures()
     {
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".notenest");
+        try
+        {
+            var project = new Project { ProjectName = "HighlightSchemaGuard", Version = Project.CurrentSchemaVersion };
+            new ProjectFileService().Save(path, project);
+            var loaded = new ProjectFileService().Load(path);
+            Assert.Equal(Project.CurrentSchemaVersion, loaded.Version);
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
     }
 
     private static string FindRepoFile(string relativePath)

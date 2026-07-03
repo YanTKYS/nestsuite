@@ -60,7 +60,7 @@ public class PromptStandardContractTests
     [Fact]
     public void Guideline_FuturePromptTemplate_ContainsVersionSection()
     {
-        Assert.Contains("NoteNest schema 1.4.2 維持", ReadGuideline());
+        Assert.Contains($"NoteNest schema {Project.CurrentSchemaVersion} 維持", ReadGuideline());
     }
 
     // ── release-notes ───────────────────────────────────────────────────

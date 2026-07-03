@@ -62,6 +62,20 @@
 - `.nestsuite` は wrapper を剥がして既存のデシリアライズ・検証経路へ渡す
 - `.nestsuite` の `workspaceKind` が開こうとしている Workspace と食い違う場合は読み込み失敗
 
+## payloadSchemaVersion の読込時の扱い（v2.14.4〜）
+
+FM-4 で `SchemaVersionGuard`（`docs/architecture/schema-versioning-policy.md` 参照）による
+前方互換ガードを追加した。
+
+- `payloadSchemaVersion` が現行の payload schema version より新しい → 読み込み失敗
+  （`SchemaVersionTooNewException`）
+- `payloadSchemaVersion` の欠落 → 許容（従来どおり前方互換のため）
+- payload 内部の version フィールドが `payloadSchemaVersion` より新しい → 矛盾として読み込み失敗
+  （`InvalidDataException`）。逆方向（wrapper の `payloadSchemaVersion` の方が payload 内 version
+  より新しい）は許容する。これは v2.14.1〜v2.14.3 のアプリが旧 payload を現行
+  `payloadSchemaVersion` で包んで保存した、実在する正当なファイルに対応するため
+- wrapper 自体の `formatVersion` は `"1.0"` のまま変更なし
+
 ## 制限事項（v2.14.1 時点）
 
 - **ファイル関連付け（ProgId）は変更していない**（LT-3 / TD-55 方針）。`.nestsuite` のダブルクリック起動は未登録であり、ダイアログ・最近ファイル・セッション復元から開く。関連付け追加は将来 `FileAssociationService` + PowerShell スクリプトの 3 箇所同期で行う

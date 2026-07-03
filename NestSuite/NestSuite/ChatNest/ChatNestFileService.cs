@@ -51,14 +51,23 @@ public static class ChatNestFileService
     {
         var json = File.ReadAllText(path, System.Text.Encoding.UTF8);
         // v2.14.1 FM-1: .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
+        NestSuiteWorkspaceEnvelope.EnvelopeContent? envelope = null;
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
         {
-            var envelope = NestSuiteWorkspaceEnvelope.Read(json);
+            envelope = NestSuiteWorkspaceEnvelope.Read(json);
             NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindChatNest);
+            // v2.14.4 FM-4: payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
+            SchemaVersionGuard.EnsureNotNewer(envelope.PayloadSchemaVersion, FileVersionString, "ChatNest");
             json = envelope.PayloadJson;
         }
         var data = JsonSerializer.Deserialize<ChatSessionData>(json, JsonOptions)
             ?? throw new InvalidDataException(".chatnest ファイルの形式が無効です。");
+        // v2.14.4 FM-4: 現行より新しい version の読み込みを止め、保存で未知データを失う経路を防ぐ
+        // （未知 speaker の読込時スキップ仕様自体は従来どおり。新 version 検出時のみ失敗させる）
+        SchemaVersionGuard.EnsureNotNewer(data.Version, FileVersionString, "ChatNest");
+        if (envelope != null)
+            SchemaVersionGuard.EnsureEnvelopeConsistent(
+                envelope.PayloadSchemaVersion, data.Version, "ChatNest");
 
         var result = new List<Message>();
         foreach (var md in data.Messages)

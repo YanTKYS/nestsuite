@@ -7,6 +7,23 @@
 
 ---
 
+## v2.14.4 — TD-58 + FM-4: schema version 期待値の集約と前方互換ガードの最小実装
+
+- **TD-58: schema version リテラルの散在を解消した。** `Project.CurrentSchemaVersion`（`1.4.2`）をリテラルで assert していた機能テスト群（`NoteNestFormatSchemaRegressionTests` / `ThemeSettingsTests` / `MarkerLineDetectorTests` / `EditorLayoutTests` / `NoteNestMultiFileDesignTests` / `NoteEditorHostHighlightRegressionTests`）を、いずれも `Project.CurrentSchemaVersion` 定数参照による挙動 assert（保存→読込 round-trip での `.Version` 一致など）へ置き換え、版番号を含まないテスト名へ改名した。**現行 schema version の文字列リテラルは `ApplicationVersionTests.cs` にのみ残る。**
+- **メタテストをリテラルスキャン方式へ置き換えた。** 従来の `NoteNestSchemaVersion_IsNotTested_InOtherTestClasses`（旧メソッド名の文字列一致のみを検出）を `CurrentSchemaVersionLiteral_IsNotHardcoded_InOtherTestClasses` に改名し、他テストファイルのソースに現行 schema version の quoted literal（`"1.4.2"`）が存在しないかを直接スキャンする方式にした。旧固定確認テストは `NoteNestSchemaVersion_IsPinned`（旧 `NoteNestSchemaVersion_Remains_1_4_2`）に改名し、このメソッド名自体は今後の schema bump でも変更しない方針にした（変わるのは内部のリテラル値のみ）。
+- **guideline 本文の schema pin 表記をテストから強制検出する形にした。** `PromptStandardContractTests` の該当アサーションを `$"NoteNest schema {Project.CurrentSchemaVersion} 維持"` の補間参照に変更し、schema bump 時に guideline 本文の更新漏れがあれば CI で検出されるようにした。
+- **`docs/architecture/schema-versioning-policy.md` に「schema bump 時の更新箇所チェックリスト」を追加した。** `Project.CurrentSchemaVersion` 本体・`ApplicationVersionTests` のリテラル・guideline 本文表記・development guidelines 内の表記・関連 docs 3 種の現行 version 表記・release notes への記載、の 6 箇所を漏れなく更新するための一覧。
+- **FM-4: `SchemaVersionGuard`（新規、`NestSuite/Services/SchemaVersionGuard.cs`）による schema version 前方互換ガードを最小実装した。** `System.Version` ベースの数値比較を行うため、`1.4.2` と `1.4.10` のような文字列比較では逆転するケースも正しく判定できる。
+- **NoteNest（`.notenest` / `Project.CurrentSchemaVersion`）・IdeaNest（`.ideanest` / `IdeaNestSchema.CurrentVersion`）・ChatNest（`.chatnest` / `ChatNestFileService.FileVersionString`）の 3 Workspace 形式、および `.nestsuite` wrapper の `payloadSchemaVersion` それぞれで、「現行より新しい」ファイルを検出した場合に読み込みを止めるようにした。** 新しい `SchemaVersionTooNewException`（`InvalidDataException` 派生）を投げ、無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ。
+- **`payloadSchemaVersion` と payload 内部 `version` の矛盾も検出する（`EnsureEnvelopeConsistent`）。** payload 側が wrapper より新しい方向のみを失敗とし、逆方向（wrapper の `payloadSchemaVersion` の方が新しい）は意図的に許容する。これは v2.14.1〜v2.14.3 のアプリが旧 payload を現行 `payloadSchemaVersion` で包んで保存した、実在する正当なファイル形状に対応するための非対称ルール。
+- **専用のエラー文言を追加した（`FileErrorMessages.ForLoad`）。** 「このファイルは、より新しいバージョンの NestSuite で作成された可能性があります」という文言を返し、「破損している」とは断定しない。読み込み失敗により、そのまま上書き保存へ進むこともない。
+- **未実装であることを明記する。** read-only モード（新しい schema のファイルを読み取り専用で開く機能）は今回実装していない。`JsonExtensionData` による未知フィールドの round-trip 保持も将来候補のまま（実装すれば新旧混在環境でのフィールド喪失自体を防げるが、対象モデル全型への波及と保存 JSON の安定性検証が別途必要というトレードオフがある）。
+- **変更なし事項**: NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。`.ideanest` / `.chatnest` の保存内容自体の変更なし。外部依存の追加なし。
+- **backlog: TD-58・FM-4 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `SchemaVersionGuardTests`（`TryParse` / `IsNewer`（数値比較の証明を含む）/ `EnsureNotNewer` / `EnsureEnvelopeConsistent` の各分岐）。`WorkspaceFileOperationHelperTests` に `SchemaVersionTooNewException` 用のエラー文言テストを追加した。`NoteNestFormatSchemaRegressionTests` に `.notenest` / `.nestsuite` それぞれで「現行より新しい」「payloadSchemaVersion と payload の矛盾」「wrapper が新しい場合は許容」を確認する回帰を追加した。`IdeaNestFileServiceTests` / `ChatNestFileServiceTests` にも同様の新しい schema version 検出テストを追加した。既存テストの削除なし（版番号なしの名前へ改名のみ）。
+
+---
+
 ## v2.14.3 — M12: NoteNest ノートのスター（お気に入り）機能
 
 - **M12: ノート単位のスター（お気に入り）フラグを追加した。** `Note.IsStarred`（既定 `false`）を追加し、優先的に見返したいノートを目印できるようにした。
