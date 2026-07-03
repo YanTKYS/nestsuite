@@ -73,6 +73,53 @@ public class WorkspaceFileOperationHelperTests
         Assert.DoesNotContain("破損", message);
     }
 
+    // ── v2.14.7 SH-31: ForKindDetectionFailure 文言 ────────────────────────
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFound_ContainsNotFoundWording()
+    {
+        Assert.Contains(
+            "見つかりません",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound));
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_InvalidFormat_ContainsFormatWording_AndDoesNotAssertCorruption()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat);
+
+        Assert.Contains("形式", message);
+        Assert.Contains("とは限りません", message);
+        Assert.DoesNotContain("破損", message);
+        Assert.DoesNotContain("壊れています。", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_SchemaVersionTooNew_ContainsNewerVersionWording_NotCorruption()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew);
+
+        Assert.Contains("より新しいバージョン", message);
+        Assert.DoesNotContain("破損", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFoundAndInvalidFormat_HaveDifferentWording()
+    {
+        var fileNotFound = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound);
+        var invalidFormat = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat);
+
+        Assert.NotEqual(fileNotFound, invalidFormat);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_UnsupportedExtension_ListsSupportedFormats()
+    {
+        Assert.Contains(
+            ".nestsuite",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension));
+    }
+
     [Fact]
     public void ForSave_IOException_ReturnsIoMessage()
     {

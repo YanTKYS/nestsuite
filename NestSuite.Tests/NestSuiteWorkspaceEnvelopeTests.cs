@@ -160,4 +160,64 @@ public class NestSuiteWorkspaceEnvelopeTests
             try { Directory.Delete(tempDir, recursive: true); } catch { }
         }
     }
+
+    // ── v2.14.7 SH-31: DetectKindFromFile（理由つき判定） ──────────────
+
+    [Fact]
+    public void DetectKindFromFile_ValidEnvelope_ReturnsNoneFailure_AndKindAndSchemaVersion()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
+
+            var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(path);
+
+            Assert.Equal(WorkspaceKindDetectionFailure.None, result.Failure);
+            Assert.Equal("NoteNest", result.WorkspaceKind);
+            Assert.Equal("1.4.1", result.PayloadSchemaVersion);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void DetectKindFromFile_MissingFile_ReturnsFileNotFound()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(path);
+
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, result.Failure);
+        Assert.Null(result.WorkspaceKind);
+    }
+
+    [Fact]
+    public void DetectKindFromFile_BrokenJson_ReturnsInvalidFormat()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, "not json");
+
+            var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(path);
+
+            Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, result.Failure);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void DetectKindFromFile_ValidJsonButNotWrapperFormat_ReturnsInvalidFormat()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, """{"foo":1}""");
+
+            var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(path);
+
+            Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, result.Failure);
+        }
+        finally { File.Delete(path); }
+    }
 }

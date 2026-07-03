@@ -38,6 +38,10 @@
 
 判定は `NestSuiteTabFactory.TryGetKind` に集約されている（唯一の判定点）。
 
+## 読めない `.nestsuite` の扱い（v2.14.7 SH-31）
+
+種別判定失敗は理由（`WorkspaceKindDetectionFailure`）を保持し無言スキップしない。セッション復元はまとめて 1 回通知する（session から削除しない・次回起動時に再試行される）。pipe / 起動引数 / 最近使ったファイルは理由別の文言で通知する。最近使ったファイルからの削除は未対応拡張子のみ（既存挙動を維持）。破損と断定しない。`payloadSchemaVersion` の too-new（現行より新しい）は種別判定段階でも検出する（FM-4 と同じ文言）。TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は未実装のまま。
+
 ```text
 1. .notenest / .ideanest / .chatnest → 拡張子から直接（legacy、従来どおり）
 2. .nestsuite → ファイル内容の workspaceKind から判定
