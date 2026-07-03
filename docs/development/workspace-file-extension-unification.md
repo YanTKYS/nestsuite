@@ -80,7 +80,7 @@ FM-4 で `SchemaVersionGuard`（`docs/architecture/schema-versioning-policy.md` 
 
 ## 制限事項（v2.14.1 時点）
 
-- **ファイル関連付け（ProgId）は変更していない**（LT-3 / TD-55 方針）。`.nestsuite` のダブルクリック起動は未登録であり、ダイアログ・最近ファイル・セッション復元から開く。関連付け追加は将来 `FileAssociationService` + PowerShell スクリプトの 3 箇所同期で行う
+- **ファイル関連付け（ProgId）**: v2.14.6 FM-3 で `.nestsuite` を関連付け対象に追加済み（ProgId `NoteNest.nestsuite`、`FileAssociationService` + PowerShell スクリプト 2 本の 3 箇所同期、`FileAssociationServiceTests` が同期をテストで強制）。ダブルクリック起動は既存の起動引数 / pipe / `TryGetKind` 経路を使う（ダイアログ・最近ファイル・セッション復元からも従来どおり開ける）
 - タブ見出し・ツールチップの Workspace 種別表示は従来の絵文字プレフィックス / 種別ラベルで区別する（拡張子が同一でも見失わない）
 
 ## 将来 legacy 拡張子をどう扱うか

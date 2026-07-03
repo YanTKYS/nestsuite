@@ -19,6 +19,7 @@ public partial class FileAssociationDialog : Window
 
     private void RefreshStatus()
     {
+        SetStatus(StatusNestsuite, _service.GetStatus(".nestsuite", _exePath));
         SetStatus(StatusNotenest, _service.GetStatus(".notenest", _exePath));
         SetStatus(StatusChatnest, _service.GetStatus(".chatnest", _exePath));
         SetStatus(StatusIdeanest, _service.GetStatus(".ideanest", _exePath));
@@ -42,7 +43,7 @@ public partial class FileAssociationDialog : Window
     {
         if (MessageBox.Show(
             this,
-            $".notenest / .chatnest / .ideanest を\n\"{_exePath}\"\nに関連付けます。よろしいですか？",
+            $".nestsuite / .notenest / .chatnest / .ideanest を\n\"{_exePath}\"\nに関連付けます。よろしいですか？",
             "ファイル関連付けの登録",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Question) != MessageBoxResult.OK) return;
@@ -53,7 +54,7 @@ public partial class FileAssociationDialog : Window
             RefreshStatus();
             MessageBox.Show(
                 this,
-                "3 つの拡張子の関連付けを登録しました。\nファイルをダブルクリックして動作を確認してください。",
+                "4 つの拡張子の関連付けを登録しました。\nファイルをダブルクリックして動作を確認してください。",
                 "登録完了",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);

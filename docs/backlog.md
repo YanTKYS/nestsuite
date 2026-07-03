@@ -165,11 +165,8 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 スキーマ変更を伴う実装は `docs/architecture/schema-versioning-policy.md` の方針に従うこと（v2.10.2 整備）。
 
 SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧 FM-2 より移管）。  
-**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/development/workspace-file-extension-unification.md` 参照）。
-
-| No | 項目 | 概要 | 優先度 |
-|----|------|------|--------|
-| FM-3 | `.nestsuite` のファイル関連付け追加 | v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、**利用者が既定形式で保存したファイルをダブルクリックで開けない**。`FileAssociationService` と同梱 PowerShell スクリプト 2 本の 3 箇所同期で `.nestsuite` を追加登録できるようにする（`docs/development/workspace-file-extension-unification.md` §制限に将来対応として明記済み）。起動引数・pipe 経由の `.nestsuite` オープンは `TryGetKind` 集約により対応済みのため、登録側の追加のみで機能する見込み。注意点: ProgId は互換性識別子のため命名は `docs/development/compatibility-identifiers-audit.md`（LT-3）の分類に従って決定する。既存 legacy 3 拡張子の登録内容は変更しない | A |
+**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/development/workspace-file-extension-unification.md` 参照）。  
+**FM-3**（`.nestsuite` のファイル関連付け追加）は v2.14.6 で実装済み（欠番。`docs/operations/file-association.md` 参照）。
 
 ---
 

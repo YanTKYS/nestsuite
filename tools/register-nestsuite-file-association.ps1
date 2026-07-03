@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    .notenest / .chatnest / .ideanest を NestSuite.exe に関連付けます（ユーザー単位）。
+    .nestsuite / .notenest / .chatnest / .ideanest を NestSuite.exe に関連付けます（ユーザー単位）。
 
 .DESCRIPTION
     HKCU\Software\Classes にファイル関連付けを登録します。管理者権限は不要です。
@@ -32,7 +32,10 @@ if (-not $ExePath -or -not (Test-Path $ExePath)) {
     exit 1
 }
 
+# v2.14.6 FM-3: FileAssociationService.cs の Targets と 3 箇所同期必須
+# （FileAssociationService.cs / register-nestsuite-file-association.ps1 / unregister-nestsuite-file-association.ps1）
 $entries = @(
+    @{ Ext = ".nestsuite"; ProgId = "NoteNest.nestsuite"; Desc = "NestSuite Workspace" },
     @{ Ext = ".notenest"; ProgId = "NoteNest.notenest"; Desc = "NoteNest Document" },
     @{ Ext = ".chatnest"; ProgId = "NoteNest.chatnest"; Desc = "ChatNest Document" },
     @{ Ext = ".ideanest"; ProgId = "NoteNest.ideanest"; Desc = "IdeaNest Document" }
