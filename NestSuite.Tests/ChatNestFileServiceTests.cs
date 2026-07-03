@@ -261,4 +261,31 @@ public class ChatNestFileServiceTests : IDisposable
 
         Assert.Throws<InvalidDataException>(() => ChatNestFileService.Load(path));
     }
+
+    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+
+    [Fact]
+    public void Load_NewerVersion_ThrowsSchemaVersionTooNewException()
+    {
+        var path = TempPath("toonew.chatnest");
+        var json = """
+            {
+              "version": "9.9.9",
+              "messages": []
+            }
+            """;
+        File.WriteAllText(path, json, System.Text.Encoding.UTF8);
+        Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => ChatNestFileService.Load(path));
+    }
+
+    [Fact]
+    public void Load_NestSuiteEnvelope_NewerPayloadSchemaVersion_ThrowsSchemaVersionTooNewException()
+    {
+        var path = TempPath("toonew.nestsuite");
+        var envelopeJson = NestSuite.Services.NestSuiteWorkspaceEnvelope.Wrap(
+            "ChatNest", "9.9.9", """{"version":"9.9.9","messages":[]}""");
+        File.WriteAllText(path, envelopeJson);
+
+        Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => ChatNestFileService.Load(path));
+    }
 }

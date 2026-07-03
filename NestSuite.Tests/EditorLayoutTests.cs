@@ -82,8 +82,20 @@ public class EditorLayoutTests
     // ── L12: .notenest スキーマ非汚染確認 ────────────────────────────────
 
     [Fact]
-    public void Project_SchemaVersion_IsUnchangedAt142()
+    public void Project_SchemaVersion_IsNotChangedByEditorLayout()
     {
-        Assert.Equal("1.4.2", NestSuite.Models.Project.CurrentSchemaVersion);
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid() + ".notenest");
+        try
+        {
+            var project = new NestSuite.Models.Project
+            {
+                ProjectName = "EditorLayoutSchemaGuard",
+                Version = NestSuite.Models.Project.CurrentSchemaVersion,
+            };
+            new ProjectFileService().Save(path, project);
+            var loaded = new ProjectFileService().Load(path);
+            Assert.Equal(NestSuite.Models.Project.CurrentSchemaVersion, loaded.Version);
+        }
+        finally { if (System.IO.File.Exists(path)) System.IO.File.Delete(path); }
     }
 }

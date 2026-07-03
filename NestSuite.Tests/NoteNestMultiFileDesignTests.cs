@@ -1,6 +1,7 @@
 using NestSuite.Models;
 using NestSuite;
 using NestSuite.ChatNest;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -152,9 +153,17 @@ public class NoteNestMultiFileDesignTests
     // ── NoteNest 保存スキーマ設計固定 ───────────────────────────────────────
 
     [Fact]
-    public void NoteNest_SaveSchema_IsVersion_1_4_2()
+    public void NoteNest_SaveSchema_UsesCurrentSchemaVersion()
     {
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid() + ".notenest");
+        try
+        {
+            var project = new Project { ProjectName = "MultiFileSchemaGuard", Version = Project.CurrentSchemaVersion };
+            new ProjectFileService().Save(path, project);
+            var loaded = new ProjectFileService().Load(path);
+            Assert.Equal(Project.CurrentSchemaVersion, loaded.Version);
+        }
+        finally { if (System.IO.File.Exists(path)) System.IO.File.Delete(path); }
     }
 
     // ── NestSuiteTabFactory の .notenest 認識確認 ───────────────────────────

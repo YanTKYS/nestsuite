@@ -57,7 +57,10 @@ public class IdeaNestFileServiceTests
         {
             File.WriteAllText(path, "{broken");
             Assert.ThrowsAny<JsonException>(() => IdeaNestFileService.Load(path));
-            File.WriteAllText(path, """{"version":"99.0","ideas":[],"settings":{}}""");
+            // v2.14.4 FM-4: 数値として解釈できる「より新しい」version は SchemaVersionTooNewException の
+            // 対象になるため、ここでは数値比較の対象外（解釈不能）な garbage version で
+            // 従来どおりの NotSupportedException 経路を確認する。
+            File.WriteAllText(path, """{"version":"unsupported-version","ideas":[],"settings":{}}""");
             Assert.Throws<NotSupportedException>(() => IdeaNestFileService.Load(path));
             File.WriteAllText(path, """{"ideas":[],"settings":{}}""");
             Assert.Throws<InvalidDataException>(() => IdeaNestFileService.Load(path));
@@ -198,6 +201,20 @@ public class IdeaNestFileServiceTests
             Assert.Equal(IdeaNestFileService.SchemaVersion, loaded.Version);
         }
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+
+    [Fact]
+    public void Load_NewerSchemaVersion_ThrowsSchemaVersionTooNewException()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            File.WriteAllText(path, """{"version":"9.9.9","ideas":[],"settings":{}}""");
+            Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => IdeaNestFileService.Load(path));
+        }
+        finally { File.Delete(path); }
     }
 
     [Fact]

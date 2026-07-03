@@ -63,6 +63,16 @@ public class WorkspaceFileOperationHelperTests
         Assert.NotEmpty(FileErrorMessages.ForLoad(new InvalidOperationException("unknown")));
     }
 
+    // ── v2.14.4 FM-4: SchemaVersionTooNewException 専用文言 ────────────────
+
+    [Fact]
+    public void ForLoad_SchemaVersionTooNewException_ReturnsNewerVersionMessage_NotCorruptionMessage()
+    {
+        var message = FileErrorMessages.ForLoad(new SchemaVersionTooNewException("x"));
+        Assert.Contains("より新しいバージョン", message);
+        Assert.DoesNotContain("破損", message);
+    }
+
     [Fact]
     public void ForSave_IOException_ReturnsIoMessage()
     {

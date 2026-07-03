@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.14.3）
+# NestSuite リリース前確認チェックリスト（v2.14.4）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -15,7 +15,7 @@
 - [ ] release-notes エントリに保存形式変更有無が明記されている
 - [ ] release-notes エントリに session 形式変更有無が明記されている
 - [ ] release-notes エントリに schema bump 有無が明記されている
-- [ ] NoteNest schema が `1.4.2` のまま維持されている（`ApplicationVersionTests.NoteNestSchemaVersion_Remains_1_4_2`）
+- [ ] NoteNest schema が `1.4.2` のまま維持されている（`ApplicationVersionTests.NoteNestSchemaVersion_IsPinned`）
 - [ ] backlog 完了項目が backlog.md から削除されている（完了済み項目は release-notes で追跡）
 - [ ] `dotnet build` が通る
 - [ ] `dotnet test` が通る（全テスト）
