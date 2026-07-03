@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using NestSuite.Services;
 
 namespace NestSuite;
 
@@ -74,32 +75,7 @@ public class NestSuiteRecentFilesService
         }
     }
 
-    private void WriteAtomically(IReadOnlyList<string> files)
-    {
-        var directory = Path.GetDirectoryName(_dataPath)!;
-        Directory.CreateDirectory(directory);
-        var temporaryPath = Path.Combine(
-            directory, $"{Path.GetFileName(_dataPath)}.{Path.GetRandomFileName()}.tmp");
-
-        try
-        {
-            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(files));
-            if (File.Exists(_dataPath))
-                File.Replace(temporaryPath, _dataPath, destinationBackupFileName: null);
-            else
-                File.Move(temporaryPath, _dataPath);
-        }
-        finally
-        {
-            try
-            {
-                if (File.Exists(temporaryPath))
-                    File.Delete(temporaryPath);
-            }
-            catch
-            {
-                // cleanup failure is non-critical; persisted file remains authoritative
-            }
-        }
-    }
+    // v2.14.8: ランダム tmp 名の atomic write は AtomicFileWriter.WriteAllTextWithRandomTemp へ集約（挙動同一）
+    private void WriteAtomically(IReadOnlyList<string> files) =>
+        AtomicFileWriter.WriteAllTextWithRandomTemp(_dataPath, JsonSerializer.Serialize(files));
 }

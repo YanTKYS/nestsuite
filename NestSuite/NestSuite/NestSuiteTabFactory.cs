@@ -4,19 +4,21 @@ using NestSuite.Services;
 namespace NestSuite;
 
 /// <summary>
-/// <see cref="NestSuiteDocumentTab"/> を生成するファクトリ（設計レベルの骨格）。
+/// <see cref="NestSuiteDocumentTab"/> を生成するファクトリ。
 ///
-/// <para><b>v1.7.2 の位置づけ</b><br/>
-/// 骨格のみを提供する。実際のファイル読込・ViewModel 生成・ライフサイクル管理は v1.7.3 以降で行う。
+/// <para>ファイル拡張子（<c>.notenest</c> / <c>.chatnest</c> / <c>.ideanest</c>）および
+/// <c>.nestsuite</c> envelope の内容から <see cref="NestSuiteWorkspaceKind"/> を判定し、
+/// 判定失敗時は理由（<see cref="WorkspaceKindDetectionFailure"/>）付きで通知する。
 /// このクラスはタブモデルの「どの WorkspaceKind がどのファイル拡張子に対応するか」を
 /// <see cref="ExtensionByKind"/> の 1 箇所で管理する。<see cref="KindByExtension"/> は逆引き用として
 /// <see cref="ExtensionByKind"/> から導出し、二重管理を防ぐ。</para>
 ///
 /// <para><b>拡張子とタブの関係</b><br/>
 /// <list type="bullet">
-///   <item><term>.notenest</term><description>NoteNest タブ（既存保存形式 v1.4.1 を維持）</description></item>
+///   <item><term>.notenest</term><description>NoteNest タブ</description></item>
 ///   <item><term>.chatnest</term><description>ChatNest タブ</description></item>
 ///   <item><term>.ideanest</term><description>IdeaNest タブ</description></item>
+///   <item><term>.nestsuite</term><description>envelope 経由で内容から WorkspaceKind を判定するタブ</description></item>
 /// </list>
 /// </para>
 /// </summary>
@@ -29,9 +31,10 @@ public static class NestSuiteTabFactory
     private static readonly IReadOnlyDictionary<NestSuiteWorkspaceKind, string> ExtensionByKind =
         new Dictionary<NestSuiteWorkspaceKind, string>
         {
-            [NestSuiteWorkspaceKind.NoteNest] = ".notenest",
-            [NestSuiteWorkspaceKind.ChatNest] = ".chatnest",
-            [NestSuiteWorkspaceKind.IdeaNest] = ".ideanest",
+            // v2.14.8: 各 FileService の FileExtension 定数を単一情報源として参照する
+            [NestSuiteWorkspaceKind.NoteNest] = ProjectFileService.FileExtension,
+            [NestSuiteWorkspaceKind.ChatNest] = ChatNest.ChatNestFileService.FileExtension,
+            [NestSuiteWorkspaceKind.IdeaNest] = IdeaNest.Services.IdeaNestFileService.FileExtension,
         };
 
     /// <summary>
@@ -66,10 +69,11 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// ファイルパスからタブを生成する（骨格）。
+    /// ファイルパスからタブを生成する。
     /// 拡張子（.nestsuite の場合はファイル内容の workspaceKind）から
     /// <see cref="NestSuiteWorkspaceKind"/> を決定する。
-    /// <b>v1.7.2 では実ファイルの読込・ViewModel 生成は行わない。</b>
+    /// レガシー拡張子についてはファイル内容の読込は行わず、ViewModel の生成も行わない
+    /// （いずれも呼び出し側の責務）。
     /// </summary>
     /// <exception cref="ArgumentException">対応していない拡張子・種別判定不能の場合。</exception>
     public static NestSuiteDocumentTab FromFilePath(string filePath)

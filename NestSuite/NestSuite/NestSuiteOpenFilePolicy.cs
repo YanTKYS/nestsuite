@@ -7,11 +7,9 @@ namespace NestSuite;
 /// <para>v1.8.6 の <see cref="NestSuiteStartupTabPolicy"/> と同じ方針で、
 /// WPF ウィンドウを生成せずに判断ロジックを自動テストできるようにする。</para>
 ///
-/// <para><b>v1.9.0 の位置づけ（設計整理版）</b><br/>
-/// 同一ツール複数ファイル対応の本実装は v1.9.1 以降で行う。本クラスは
-/// 「同じファイルパスが既に開かれているかどうか」の比較方針だけを先に固定し、
-/// 将来の <c>OpenFile</c> 実装が迷わないようにする。タブコレクションの操作・
-/// WorkspaceSession の生成・破棄は本クラスでは行わない。</para>
+/// <para><b>現在の役割</b><br/>
+/// 方針は v1.9.0 で固定し、以降 <c>IsSameFile</c> / <c>IsDuplicateForSave</c> の判定に
+/// 使われている。タブコレクションの操作・WorkspaceSession の生成・破棄は本クラスでは行わない。</para>
 /// </summary>
 public static class NestSuiteOpenFilePolicy
 {

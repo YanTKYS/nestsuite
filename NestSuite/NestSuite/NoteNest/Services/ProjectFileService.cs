@@ -7,6 +7,13 @@ namespace NestSuite.Services;
 
 public class ProjectFileService
 {
+    /// <summary>
+    /// v2.14.8: `.notenest` 拡張子の定数。ChatNest / IdeaNest の FileService には従来から
+    /// FileExtension 定数があり NoteNest だけリテラル分散していた非対称
+    /// （compatibility-identifiers-audit.md §1-4 補足）を解消する。値は恒久維持（分類 A）。
+    /// </summary>
+    public const string FileExtension = ".notenest";
+
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
@@ -44,6 +51,6 @@ public class ProjectFileService
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
             json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindNoteNest, Project.CurrentSchemaVersion, json);
-        AtomicFileWriter.WriteAllText(path, json, Encoding.UTF8, path + ".bak");
+        AtomicFileWriter.WriteAllTextWithBackup(path, json, Encoding.UTF8);
     }
 }

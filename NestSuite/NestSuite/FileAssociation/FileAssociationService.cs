@@ -21,10 +21,11 @@ public sealed class FileAssociationService
     // tools/unregister-nestsuite-file-association.ps1 と 3 箇所同期必須（audit doc §1-4）。
     private static readonly (string Ext, string ProgId, string Description)[] Targets =
     [
-        (".nestsuite", ProgIdNestsuite, "NestSuite Workspace"),
-        (".notenest", ProgIdNotenest, "NoteNest Document"),
-        (".chatnest", ProgIdChatnest, "ChatNest Document"),
-        (".ideanest", ProgIdIdeanest, "IdeaNest Document"),
+        // v2.14.8: 拡張子は各 FileService / Envelope の FileExtension 定数を単一情報源として参照する
+        (Services.NestSuiteWorkspaceEnvelope.FileExtension, ProgIdNestsuite, "NestSuite Workspace"),
+        (Services.ProjectFileService.FileExtension, ProgIdNotenest, "NoteNest Document"),
+        (ChatNest.ChatNestFileService.FileExtension, ProgIdChatnest, "ChatNest Document"),
+        (IdeaNest.Services.IdeaNestFileService.FileExtension, ProgIdIdeanest, "IdeaNest Document"),
     ];
 
     /// <summary>

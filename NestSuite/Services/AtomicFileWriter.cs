@@ -46,6 +46,49 @@ public static class AtomicFileWriter
         }
     }
 
+    /// <summary>
+    /// v2.14.8: 保存先パス + ".bak" を単一世代バックアップとして残す atomic write（FM-5 の共通方針）。
+    /// <see cref="WriteAllText"/> の backupPath 指定を 3 FileService で重複させないための convenience overload。
+    /// </summary>
+    public static void WriteAllTextWithBackup(string path, string content, Encoding encoding) =>
+        WriteAllText(path, content, encoding, path + ".bak");
+
+    /// <summary>
+    /// v2.14.8: ランダムな一時ファイル名を使う atomic write（バックアップなし・既定 UTF-8）。
+    /// 固定 tmp 名（path + ".tmp"）と異なり同一ファイルへの並行書き込みで tmp 名が衝突しない。
+    /// RecentFiles / SessionState などの補助ファイル保存で共有する
+    /// （従来 3 サービスに重複していた実装を移設。挙動は従来と同一）。
+    /// </summary>
+    public static void WriteAllTextWithRandomTemp(string path, string content)
+    {
+        var directory = Path.GetDirectoryName(path)!;
+        Directory.CreateDirectory(directory);
+        var temporaryPath = Path.Combine(
+            directory, $"{Path.GetFileName(path)}.{Path.GetRandomFileName()}.tmp");
+
+        try
+        {
+            File.WriteAllText(temporaryPath, content);
+            if (File.Exists(path))
+                File.Replace(temporaryPath, path, destinationBackupFileName: null);
+            else
+                File.Move(temporaryPath, path);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+            }
+            catch
+            {
+                // 一時ファイルの掃除失敗は致命ではない。正本（path 側）が優先される。
+                // （移設元 3 サービスの従来挙動どおり、ここではログも出さない）
+            }
+        }
+    }
+
     private static void TryDeleteTemp(string tempPath)
     {
         try

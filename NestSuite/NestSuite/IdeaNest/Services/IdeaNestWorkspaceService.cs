@@ -92,5 +92,5 @@ public static class IdeaNestWorkspaceService
     /// 作れない場合は File.Replace が例外で失敗し、旧ファイルを壊さず保存失敗として扱われる。
     /// </summary>
     internal static void WriteJson(string path, string json) =>
-        AtomicFileWriter.WriteAllText(path, json, new UTF8Encoding(false), path + ".bak");
+        AtomicFileWriter.WriteAllTextWithBackup(path, json, new UTF8Encoding(false));
 }
