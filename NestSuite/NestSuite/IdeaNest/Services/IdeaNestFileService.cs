@@ -43,7 +43,12 @@ public static class IdeaNestFileService
                 throw new FileNotFoundException("IdeaNest ファイルが見つかりません。", path);
             var envelope = NestSuiteWorkspaceEnvelope.Read(File.ReadAllText(path));
             NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindIdeaNest);
-            return ValidatePayload(envelope.PayloadJson);
+            // v2.14.4 FM-4: payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
+            SchemaVersionGuard.EnsureNotNewer(envelope.PayloadSchemaVersion, SchemaVersion, "IdeaNest");
+            var workspace = ValidatePayload(envelope.PayloadJson);
+            SchemaVersionGuard.EnsureEnvelopeConsistent(
+                envelope.PayloadSchemaVersion, workspace.Version, "IdeaNest");
+            return workspace;
         }
 
         ValidateExtension(path);
@@ -62,6 +67,10 @@ public static class IdeaNestFileService
             throw new InvalidDataException("必須フィールド version がありません。");
 
         var workspace = IdeaNestWorkspaceService.DeserializeFromJson(json);
+        // v2.14.4 FM-4: 現行より新しい schema は「未対応」ではなく「新しいバージョンで作成された可能性」として
+        // 専用の失敗にする（数値比較）。それ以外の不一致は従来どおり NotSupportedException（既存挙動維持）。
+        if (SchemaVersionGuard.TryParse(workspace.Version, out _))
+            SchemaVersionGuard.EnsureNotNewer(workspace.Version, SchemaVersion, "IdeaNest");
         if (!string.Equals(workspace.Version, SchemaVersion, StringComparison.Ordinal))
             throw new NotSupportedException($"未対応の IdeaNest バージョンです: {workspace.Version}");
         return workspace;
