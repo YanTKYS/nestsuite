@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using NestSuite.Services;
 
@@ -37,13 +38,15 @@ public static class TempNestStoreService
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(DataPath)!);
             var data = new TempNestStoreData
             {
                 Version = 1,
                 Slots   = slots.ToList(),
             };
-            File.WriteAllText(DataPath, JsonSerializer.Serialize(data, JsonOpts));
+            // v2.14.10 TD-60: tmp 経由の atomic write 化。File.WriteAllText の既定エンコーディング
+            // （BOM なし UTF-8）を維持するため Encoding.UTF8（BOM あり）ではなく明示的に指定する。
+            var json = JsonSerializer.Serialize(data, JsonOpts);
+            AtomicFileWriter.WriteAllText(DataPath, json, new UTF8Encoding(false));
         }
         catch (Exception ex)
         {

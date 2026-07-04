@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using NestSuite.Models;
 
@@ -60,9 +61,10 @@ public class UiSettingsService
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(DataPath)!);
-            File.WriteAllText(DataPath, JsonSerializer.Serialize(settings,
-                new JsonSerializerOptions { WriteIndented = false }));
+            // v2.14.10 TD-60: tmp 経由の atomic write 化。File.WriteAllText の既定エンコーディング
+            // （BOM なし UTF-8）を維持するため Encoding.UTF8（BOM あり）ではなく明示的に指定する。
+            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = false });
+            AtomicFileWriter.WriteAllText(DataPath, json, new UTF8Encoding(false));
         }
         catch { }
     }

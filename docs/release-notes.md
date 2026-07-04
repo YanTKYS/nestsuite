@@ -7,6 +7,19 @@
 
 ---
 
+## v2.14.10 — TD-60: 補助ファイル保存の atomic write 適用
+
+- **TD-60: `UiSettingsService.Save` / `TempNestStoreService.Save` を `AtomicFileWriter.WriteAllText`（tmp 経由の atomic write）へ移行した。** 従来は素の `File.WriteAllText` で `ui-settings.json` / `tempnest.json` を保存しており、書き込み中クラッシュでファイルが破損し得たが、他の永続化（RecentFiles / SessionState / 3 Workspace FileService）と同じ atomic write 方式に揃えた。
+- **明示的な `Directory.CreateDirectory` 呼び出しを削除し、`AtomicFileWriter` 側のディレクトリ生成に統合した。** `AtomicFileWriter.WriteAllText` は保存先ディレクトリがなければ自動生成するため、各サービス側での重複呼び出しは不要になった。
+- **エンコーディングは `File.WriteAllText` の既定（BOM なし UTF-8）を維持するため `new UTF8Encoding(false)` を明示指定した。** `Encoding.UTF8` は BOM 付きのため使用していない。
+- **`.bak` は今回作成しない。** `AtomicFileWriter.WriteAllText` の `backupPath` は未指定（`null`）のままで、単一世代バックアップ管理（`.bak` 生成）は本タスクの対象外。
+- **`ui-settings.json` / `tempnest.json` の JSON 構造・保存先パス・`%APPDATA%\NoteNest` 配下という AppData パスは変更していない。** 保存タイミング・debounce・各設定の既定値にも変更なし。
+- **変更なし事項**: NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。UI 変更なし。
+- **backlog: TD-60 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `AtomicFileWriterTests` に `WriteAllText_NoBackupPath_ExistingFile_OverwritesContent_NoBakCreated`（backupPath: null + `UTF8Encoding(false)` での上書き成功時に `.bak` が作られないことを固定）を追加。新規 `UiSettingsServiceTests` / `TempNestStoreServiceTests` を追加し、各サービスの `Save`/`Load` と同一の serialize/write/read 手順（`DataPath` が private static readonly で固定のため実際の `Save()` は直接呼べない）を一時パスに対して再現し、上書き時に最新値が反映されること・JSON が往復すること・BOM が付かないこと・`.tmp` が残らないことを確認した。
+
+---
+
 ## v2.14.9 — TD-53: Coordinator / notify パターンのドキュメント化
 
 - **TD-53: `NoteChangeCoordinator` / `EditorChangeCoordinator` / `WorkspaceChangeCoordinator` の Publish/notify パターンを説明する開発者向け docs を新規作成した（`docs/development/coordinator-notification-pattern.md`）。** ロジック変更は伴わない、docs 整備のみ。
