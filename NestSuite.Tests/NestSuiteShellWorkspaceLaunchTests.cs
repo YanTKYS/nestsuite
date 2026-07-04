@@ -670,6 +670,7 @@ public class NestSuiteShellWorkspaceLaunchTests
     {
         // v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体が宣言されていることを確認。
         // シリアライズは各 Workspace につき 1 箇所（TrySaveXxxToPath）に集約される。
+        // v2.14.12 SH-33: notifyOnError（自動保存用の失敗ダイアログ抑制）パラメータが追加され 9 引数になった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("TrySaveWorkspaceToPath",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
@@ -682,6 +683,7 @@ public class NestSuiteShellWorkspaceLaunchTests
                     typeof(string),
                     typeof(string),
                     typeof(string),
+                    typeof(bool),
                     typeof(bool)
                 ],
                 null);
@@ -712,11 +714,12 @@ public class NestSuiteShellWorkspaceLaunchTests
     public void NestSuiteShellWindow_TrySaveIdeaNestToPath_HasShowNotificationOverload()
     {
         // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
+        // v2.14.12 SH-33: 自動保存用の notifyOnError パラメータが追加され 4 引数になった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("TrySaveIdeaNestToPath",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);
@@ -726,11 +729,12 @@ public class NestSuiteShellWorkspaceLaunchTests
     public void NestSuiteShellWindow_TrySaveChatNestToPath_HasShowNotificationOverload()
     {
         // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
+        // v2.14.12 SH-33: 自動保存用の notifyOnError パラメータが追加され 4 引数になった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("TrySaveChatNestToPath",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool)],
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);

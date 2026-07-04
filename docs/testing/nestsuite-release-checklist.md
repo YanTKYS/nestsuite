@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.14.11）
+# NestSuite リリース前確認チェックリスト（v2.14.12）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -105,6 +105,12 @@
 - [ ] IdeaNest タブを上書き保存できる（メニュー・Ctrl+S 両方）
 - [ ] 保存後に未保存マーク（`*`）が消える
 - [ ] 名前を付けて保存で別タブが開くパスを指定するとエラーが表示される
+
+### 自動保存（v2.14.12 SH-33）
+
+- [ ] 既存の保存先を持つ NoteNest/IdeaNest/ChatNest タブを編集後、手動保存せず放置すると自動保存されること（未保存マークが消える）
+- [ ] 新規未保存タブは自動保存されないこと
+- [ ] TempNest の自動保存間隔・動作に影響がないこと
 
 ### Ctrl+S ショートカット
 

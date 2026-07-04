@@ -30,7 +30,8 @@ public partial class NestSuiteShellWindow
         string errorOperation,
         string errorWorkspaceKind,
         string errorLabel,
-        bool showNotification)
+        bool showNotification,
+        bool notifyOnError = true)
     {
         path = NormalizeFilePath(path);
         try
@@ -41,7 +42,12 @@ public partial class NestSuiteShellWindow
         }
         catch (Exception ex)
         {
-            LogAndShowSaveError(errorOperation, errorWorkspaceKind, errorLabel, ex, path);
+            // v2.14.12 SH-33: 自動保存など、失敗を都度ダイアログ通知したくない呼び出しでは
+            // ErrorLogService への記録のみ行い、ダイアログは表示しない。
+            if (notifyOnError)
+                LogAndShowSaveError(errorOperation, errorWorkspaceKind, errorLabel, ex, path);
+            else
+                ErrorLogService.Log(errorOperation, ex, errorWorkspaceKind, path);
             return false;
         }
     }
@@ -50,7 +56,8 @@ public partial class NestSuiteShellWindow
     private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveIdeaNestToPath(session, path, showNotification: true);
 
-    private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path, bool showNotification)
+    private bool TrySaveIdeaNestToPath(
+        NestSuiteWorkspaceSession session, string path, bool showNotification, bool notifyOnError = true)
     {
         var vm = (IdeaNestWorkspaceViewModel)session.WorkspaceViewModel;
         return TrySaveWorkspaceToPath(
@@ -58,7 +65,7 @@ public partial class NestSuiteShellWindow
             p => { IdeaNestFileService.Save(p, vm.BuildWorkspaceForSave()); vm.MarkSaved(); },
             UpdateIdeaNestTabPath,
             "IdeaNestSave", "IdeaNest", "IdeaNest ファイルの保存に失敗しました。",
-            showNotification);
+            showNotification, notifyOnError);
     }
 
     /// <summary>v1.9.7: 選択中 IdeaNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
@@ -76,7 +83,8 @@ public partial class NestSuiteShellWindow
     private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveChatNestToPath(session, path, showNotification: true);
 
-    private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path, bool showNotification)
+    private bool TrySaveChatNestToPath(
+        NestSuiteWorkspaceSession session, string path, bool showNotification, bool notifyOnError = true)
     {
         var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
         return TrySaveWorkspaceToPath(
@@ -84,7 +92,7 @@ public partial class NestSuiteShellWindow
             p => { ChatNestFileService.Save(p, vm.MessageModels); vm.MarkSaved(); },
             UpdateChatNestTabPath,
             "ChatNestSave", "ChatNest", "ChatNest ファイルの保存に失敗しました。",
-            showNotification);
+            showNotification, notifyOnError);
     }
 
     /// <summary>v1.9.2: 選択中 ChatNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
