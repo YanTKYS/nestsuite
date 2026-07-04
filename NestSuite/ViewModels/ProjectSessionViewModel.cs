@@ -6,6 +6,8 @@ namespace NestSuite.ViewModels;
 /// <summary>現在開いているプロジェクトの識別情報、保存状態、最近使ったファイルを所有します。</summary>
 public sealed class ProjectSessionViewModel : BaseViewModel
 {
+    private static readonly TimeSpan MaxPlausibleUnsavedDuration = TimeSpan.FromDays(365);
+
     private readonly Func<DateTime> _now;
     private string _projectId = Guid.NewGuid().ToString();
     private string _projectName = "";
@@ -59,13 +61,26 @@ public sealed class ProjectSessionViewModel : BaseViewModel
         get
         {
             if (!_isModified) return "● 未保存";
-            var minutes = (int)(_now() - _unsavedSince).TotalMinutes;
-            return minutes >= 5 ? $"⚠ 未保存（{minutes}分）" : "● 未保存";
+            return SafeUnsavedMinutes() is int minutes && minutes >= 5 ? $"⚠ 未保存（{minutes}分）" : "● 未保存";
         }
     }
 
     public bool IsUnsavedWarning =>
-        _isModified && (int)(_now() - _unsavedSince).TotalMinutes >= 5;
+        _isModified && SafeUnsavedMinutes() is int minutes && minutes >= 5;
+
+    /// <summary>
+    /// バグ修正 v2.14.14: 未保存経過分数を安全に算出する。
+    /// _unsavedSince が未初期化（<see cref="DateTime.MinValue"/> 相当）だったり、
+    /// 時計のずれで負値・数十万分単位の異常値になったりした場合は <c>null</c> を返し、
+    /// 呼び出し側は経過分数なしの「● 未保存」表示にフォールバックする。
+    /// </summary>
+    private int? SafeUnsavedMinutes()
+    {
+        if (_unsavedSince == default) return null;
+        var elapsed = _now() - _unsavedSince;
+        if (elapsed < TimeSpan.Zero || elapsed > MaxPlausibleUnsavedDuration) return null;
+        return (int)elapsed.TotalMinutes;
+    }
 
     public bool IsSampleProject
     {
@@ -83,6 +98,11 @@ public sealed class ProjectSessionViewModel : BaseViewModel
         SetCurrentFilePath(filePath);
         LastSavedAt = lastSavedAt;
         IsSampleProject = isSampleProject;
+        // バグ修正 v2.14.14: 既存ファイルを開いた（＝新しいプロジェクトの追跡を開始する）直後、
+        // _unsavedSince を常に安全な現在時刻へ初期化する。IsModified が false→true へ
+        // 遷移しないまま何らかの経路で true として観測された場合でも、
+        // DateTime.MinValue との差分による異常な経過分数表示を防ぐ。
+        _unsavedSince = _now();
         IsModified = false;
     }
 

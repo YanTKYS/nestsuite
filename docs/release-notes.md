@@ -7,6 +7,18 @@
 
 ---
 
+## v2.14.14 — BUG: NoteNest 未保存経過時間の異常値修正
+
+- **バグ修正: NoteNest Workspace のステータスバーで、未保存時の経過時間として「未保存（1065313408分）」のような異常値が表示される問題を修正した。** 桁数（約 2025 年相当）から `DateTime.Now - DateTime.MinValue` に相当する計算になっていたと推定される。ChatNest / IdeaNest では発生せず、NoteNest でのみ発生し、一度自動保存されると解消する挙動と整合する。
+- **表示側の防御を追加した（`ProjectSessionViewModel`）**: `UnsavedIndicatorText` / `IsUnsavedWarning` が参照する経過時間計算を新設の `SafeUnsavedMinutes()` に統一した。未保存開始時刻 `_unsavedSince` が未初期化（`DateTime.MinValue` 相当）、負の経過値（時計のずれ等）、または 365 日を超える異常な経過値の場合は `null` を返し、経過分数を表示せず「● 未保存」にフォールバックする。
+- **初期化側の防御を追加した**: `ProjectSessionViewModel.Start()`（プロジェクトの新規追跡開始＝既存ファイルを開く／新規作成する際に呼ばれる）で `_unsavedSince` を常に現在時刻へ再初期化するようにした。`IsModified` が通常の false→true 遷移を経ずに true として観測されるような未知の経路があっても、異常値の温床になるのを防ぐ。
+- **自動保存の仕様は変更していない。** 自動保存の対象判定・間隔（Shell 側 `NestSuiteShellWindow.AutoSave.cs`、SH-33）、自動保存成功時に `LastSavedAt` が更新され `IsModified` が解除される既存挙動はそのまま維持した。
+- **ChatNest / IdeaNest への影響はない。** 修正対象は NoteNest の `ProjectSessionViewModel` に閉じている。
+- **変更なし事項**: UI レイアウト変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを追加した**: `ProjectSessionViewModelTests` に、`_unsavedSince` が未初期化・未来時刻・異常に大きい経過値のケースで「● 未保存」にフォールバックすることを固定する 3 件、`Start()` が `_unsavedSince` を安全な現在時刻へ初期化することを固定する 1 件、通常ケース（経過分数を正しく表示できること）の回帰確認 1 件、`MarkSaved()` の既存挙動（`LastSavedAt` 更新・`IsModified` 解除）を固定する 1 件を追加した。`NoteNestFormatSchemaRegressionTests` に、既存ファイルを開いた直後に異常な未保存表示が出ないことを確認する回帰テストを追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.13 — TD-61: NoteNest Classic 残存コードの棚卸しと縮退
 
 - **TD-61: NoteNest Classic / 旧単独起動時代の残存コードを棚卸しし、現行コードと誤読されやすい部分を縮退した。** 機能追加ではなく整理タスクであり、現行 NestSuite の動作は変更していない。棚卸しと判断根拠は新規 `docs/development/classic-code-contraction.md` に記録した。
