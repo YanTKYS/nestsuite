@@ -60,6 +60,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
 
         InitializeComponent();
+        // v2.14.11 SH-32: ウィンドウハンドル生成後にタイトルバーのダークモードを適用する
+        // （SourceInitialized 以前は HWND が存在せず DwmSetWindowAttribute を呼べないため）
+        SourceInitialized += (_, _) => ApplyTitleBarTheme(_currentTheme);
         UpdateThemeMenuChecks();
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
@@ -276,6 +279,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         _currentTheme = UiSettingsService.NormalizeTheme(theme);
         _themeService.Apply(_currentTheme);
+        ApplyTitleBarTheme(_currentTheme); // v2.14.11 SH-32
         var settings = _uiSettingsService.Load();
         settings.Theme = _currentTheme;
         _uiSettingsService.Save(settings);

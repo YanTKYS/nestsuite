@@ -7,6 +7,19 @@
 
 ---
 
+## v2.14.11 — SH-32: ダークテーマ未対応部の色統一
+
+- **SH-32: Shell タブバー右側の「＋」「▾」ボタンに `IconButton` スタイルを適用した。** 従来は `Style`/`Foreground` 指定がなく既定の黒文字のままだったため、ダークテーマの `GroupHeaderBg`（暗色）のタブストリップ背景に対して文字色が白浮きし、実質視認不可になっていた問題を解消した。ローカルの `Background="Transparent"` / `BorderThickness="0"` / `Cursor="Hand"` は `IconButton` スタイル側で同等の値が設定されるため削除した（ローカル値を残すとスタイルの hover トリガーを上書きしてしまい、ホバー時の視覚フィードバックが効かなくなるため）。
+- **NoteNest 右ペイン開閉ボタン（`RightPaneExpandButton`）は調査したが変更していない。** 開閉両状態とも既に `IconButton` スタイル＋`DynamicResource` ベースの配色を使っており、変化するのはグリフ（`»`/`«`）とツールチップ文言のみで、ダークテーマ不統一は確認されなかった。ただしこれはコードレベルでの確認であり、実機での見た目確認を推奨する。
+- **タイトルバーに `DwmSetWindowAttribute`（`DWMWA_USE_IMMERSIVE_DARK_MODE`）による最小限のダークモード適用を追加した（新規 `NestSuiteShellWindow.TitleBar.cs`）。** カスタムタイトルバー化（`WindowChrome` によるノンクライアント領域の全面作り直し）は行っていない。Windows 10 20H1 未満など非対応 OS では `DwmSetWindowAttribute` 呼び出しが失敗しても例外を投げず黙って何もせず、白いタイトルバーのままフォールバックする。
+- **起動時（`SourceInitialized`）とテーマ切替時（`ApplyAndSaveTheme`）の両方でタイトルバーのダークモードが更新される。** ウィンドウ生成直後は HWND が存在しないため `SourceInitialized` まで適用を遅延し、View メニューからのテーマ切替時にも即座に反映されるようにした。
+- **メニューバーは今回対象外のまま変更していない。** 過去の対応でメニューバーの見た目が不自然になった経緯があるため、スコープから除外した。
+- **ライトテーマの見た目・操作導線・レイアウトは変更していない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+- **テストは追加していない**: UI 見た目（ダークテーマでの配色）の変更であり自動テストでは検証しづらいため、今回は追加していない。実機（Windows）での目視確認が必要。
+
+---
+
 ## v2.14.10 — TD-60: 補助ファイル保存の atomic write 適用
 
 - **TD-60: `UiSettingsService.Save` / `TempNestStoreService.Save` を `AtomicFileWriter.WriteAllText`（tmp 経由の atomic write）へ移行した。** 従来は素の `File.WriteAllText` で `ui-settings.json` / `tempnest.json` を保存しており、書き込み中クラッシュでファイルが破損し得たが、他の永続化（RecentFiles / SessionState / 3 Workspace FileService）と同じ atomic write 方式に揃えた。
