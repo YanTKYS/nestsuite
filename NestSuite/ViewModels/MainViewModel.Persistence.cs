@@ -114,20 +114,6 @@ public partial class MainViewModel
         StatusMessage = "最近使ったファイルをクリアしました。";
     }
 
-    private void AutoSave()
-    {
-        if (!IsAutoSaveEnabled) return;
-        try
-        {
-            if (_lifecycle.TryAutoSave()) StatusMessage = "自動保存しました。";
-        }
-        catch (Exception ex)
-        {
-            ErrorLogService.Log("NoteNestAutoSave", ex, "NoteNest");
-            StatusMessage = "自動保存に失敗しました。";
-        }
-    }
-
     private bool TryOpenProject(string path)
     {
         try

@@ -73,11 +73,6 @@ public partial class MainViewModel
     public bool HasRecentFiles => _session.HasRecentFiles;
     public string? CurrentFilePath => _session.CurrentFilePath;
     public DateTime? LastSavedAt => _session.LastSavedAt;
-    public bool IsAutoSaveEnabled
-    {
-        get => _isAutoSaveEnabled;
-        set => SetProperty(ref _isAutoSaveEnabled, value);
-    }
     public string CurrentNoteTimestampSummary => _editor.IsTaskCommentMode ? "" : _editor.SelectedNote?.TimestampSummary ?? "";
 
     // 責務所有者への明示的な入口。新規コードは単純中継よりこちらを優先する。

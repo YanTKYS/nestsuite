@@ -16,17 +16,12 @@ public partial class MainViewModel : BaseViewModel, IDisposable
     private readonly ProjectLifecycleService _lifecycle;
     private readonly ExportService _exports = new();
     private readonly DispatcherTimer _unsavedTimer;
-    private readonly DispatcherTimer _autoSaveTimer;
-    private bool _isAutoSaveEnabled;
     private bool _disposed;
 
     public MainViewModel()
     {
         _unsavedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
         _unsavedTimer.Tick += UnsavedTimer_Tick;
-        _autoSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
-        _autoSaveTimer.Tick += AutoSaveTimer_Tick;
-        _autoSaveTimer.Start();
 
         _changeCoordinator = new WorkspaceChangeCoordinator(_notes, _tasks, _markers, _editor);
         _changeCoordinator.Changed += WorkspaceChanged;
@@ -79,8 +74,6 @@ public partial class MainViewModel : BaseViewModel, IDisposable
 
     private void UnsavedTimer_Tick(object? sender, EventArgs e) => _session.RefreshUnsavedStatus();
 
-    private void AutoSaveTimer_Tick(object? sender, EventArgs e) => AutoSave();
-
     private void WorkspaceChanged(object? sender, WorkspaceChangeEventArgs e)
     {
         if (e.IsDataChanged) IsModified = true;
@@ -94,14 +87,15 @@ public partial class MainViewModel : BaseViewModel, IDisposable
     /// v1.9.5: タイマーを停止し、内部イベント購読を解除する。
     /// NestSuite で NoteNest タブを閉じる際（<see cref="NestSuite.NestSuiteShellWindow"/>）に呼ぶ。
     /// 停止しないと DispatcherTimer が Dispatcher の内部リストに残り、
-    /// 閉じたタブの ViewModel が GC されず AutoSave が呼び続ける。
+    /// 閉じたタブの ViewModel が GC されず未保存ステータス更新が呼び続ける。
+    /// v2.14.13 TD-61: 旧 NoteNest Classic 由来の自動保存タイマーは撤去済み。
+    /// 現行の自動保存は <see cref="NestSuite.NestSuiteShellWindow"/> の
+    /// <c>NestSuiteShellWindow.AutoSave.cs</c>（SH-33）が担う。
     /// </summary>
     public void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
-        _autoSaveTimer.Stop();
-        _autoSaveTimer.Tick -= AutoSaveTimer_Tick;
         _unsavedTimer.Stop();
         _unsavedTimer.Tick -= UnsavedTimer_Tick;
         _changeCoordinator.Changed -= WorkspaceChanged;
