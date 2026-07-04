@@ -7,6 +7,20 @@
 
 ---
 
+## v2.14.9 — TD-53: Coordinator / notify パターンのドキュメント化
+
+- **TD-53: `NoteChangeCoordinator` / `EditorChangeCoordinator` / `WorkspaceChangeCoordinator` の Publish/notify パターンを説明する開発者向け docs を新規作成した（`docs/development/coordinator-notification-pattern.md`）。** ロジック変更は伴わない、docs 整備のみ。
+- **Shell（`MainViewModel.WorkspaceChanged`）と Workspace（各 Coordinator）の通知責務境界を整理した。** `WorkspaceChangeEventArgs(IsDataChanged, PropertyNames)` が全 Coordinator 共通の通知単位であり、`IsDataChanged` が未保存化、`PropertyNames` が facade プロパティの `OnPropertyChanged` 発火に対応することを明記した。
+- **facade プロパティ追加時・`NoteWorkspaceViewModel.NotePropertyChanged` allow-list・`BuildModels()` の 3 箇所を、見落としやすいポイントとして具体的なコード引用つきで整理した。** v2.13.2 の `CurrentNotebookName` 追従不具合、v2.14.3 M12 の `IsStarred` allow-list 対応を実例として記載。
+- **モデルへプロパティを追加する際のチェックリストを追加した。** schema bump 判断は `docs/architecture/schema-versioning-policy.md` に委ね、この文書は「確認先」を示すに留める。
+- **IdeaNest / ChatNest の dirty 管理（`MarkDirty()` / `IsDirty`）が NoteNest の Coordinator 方式と異なる設計であることも明記した**（NoteNest だけ複数子 ViewModel を持つため Coordinator 方式、他はワークスペース単体の単純フラグ）。
+- **`docs/development/nestsuite-development-guidelines.md` と `docs/testing/nestsuite-release-checklist.md` から新規 docs へリンクを追加した。**
+- **backlog: TD-53 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `CoordinatorNotificationPatternDocsTests`（docs の存在・主要参照ポイント記載・guideline / checklist からのリンクを確認）。
+- **変更なし事項**: Coordinator 実装・ViewModel 構造・Workspace 間連携に変更なし。UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+
+---
+
 ## v2.14.8 — リファクタリング: 保存系ヘルパーの重複解消と陳腐化コメント整理
 
 - **重複していたランダム tmp 名 atomic write を `AtomicFileWriter.WriteAllTextWithRandomTemp` へ集約した。** `RecentFilesService` / `NestSuiteRecentFilesService` / `NestSuiteSessionStateService` の private `WriteAtomically` は同一実装が 3 箇所に重複していたが、いずれも 1 行の委譲呼び出しに置き換えた（挙動同一・約 70 行削減）。
