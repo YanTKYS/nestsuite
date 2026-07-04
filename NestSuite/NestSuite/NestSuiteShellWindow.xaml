@@ -16,7 +16,10 @@
         <!-- v2.10.4 SH-20: Ctrl+Shift+S ですべて保存を実行する -->
         <CommandBinding Command="{x:Static local:NestSuiteShellWindow.SaveAllCommand}" Executed="CommandSaveAll_Executed"/>
     </Window.CommandBindings>
-    <DockPanel>
+    <!-- v2.14.11 SH-32: ルートに Background 未指定だと、子要素で覆われない隙間が
+         Window既定の白色で透けて見える（ダークテーマ時に右ペイン折り畳みボタン周辺が
+         白いバーになる不具合の原因）。AppBg を明示指定して背景を統一する。 -->
+    <DockPanel Background="{DynamicResource AppBg}">
         <!-- ファイルメニュー: 新規/開くはツール横断、保存系は選択中タブの WorkspaceKind に応じて処理する -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル(_F)">
