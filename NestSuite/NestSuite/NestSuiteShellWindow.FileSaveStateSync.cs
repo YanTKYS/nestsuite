@@ -41,5 +41,9 @@ public partial class NestSuiteShellWindow
 
     /// <summary>v2.7.15: 保存成功後の NoteNest タブ・Session 更新を共通経路へ委譲する。</summary>
     private void UpdateNoteNestTabPath(NestSuiteWorkspaceSession session, string path) =>
-        ApplySavedWorkspaceState(session, path, isModifiedAfterSave: false);
+        UpdateNoteNestTabPath(session, path, showNotification: true);
+
+    /// <summary>v2.14.12 SH-33: 自動保存など、既定の「保存しました」通知を出したくない呼び出し用。</summary>
+    private void UpdateNoteNestTabPath(NestSuiteWorkspaceSession session, string path, bool showNotification) =>
+        ApplySavedWorkspaceState(session, path, isModifiedAfterSave: false, showNotification);
 }

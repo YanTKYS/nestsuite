@@ -7,6 +7,21 @@
 
 ---
 
+## v2.14.12 — SH-33: 既存Workspaceの自動保存
+
+- **SH-33: 保存先パスを持つ NoteNest / IdeaNest / ChatNest タブのうち未保存のものを 30 秒間隔で自動保存するようにした。** 新規 `NestSuiteShellWindow.AutoSave.cs`（`DispatcherTimer` によるタイマー本体）と `AutoSaveCandidatePolicy`（UI 非依存の対象判定ロジック）を追加した。
+- **新規未保存タブ（FilePath なし）は自動保存の対象外。** 勝手に保存場所を作らない方針を維持する（`AutoSaveCandidatePolicy.IsCandidate` が `filePath != null` を要求）。
+- **TempNest は対象外。** 既存の `TempNestStoreService` による専用保存機構（TD-60 で atomic write 化済み）をそのまま使う。
+- **保存処理自体は既存の保存経路をそのまま再利用している。** `vm.SaveToPath` / `TrySaveIdeaNestToPath` / `TrySaveChatNestToPath`（FM-5/TD-60 で整備した atomic write を含む）を呼ぶだけで、自動保存専用の別形式・一時ファイルは作っていない。
+- **保存失敗時は未保存状態を維持し、失敗通知は同一タブでは成功するまで最初の 1 回のみに抑制する。** `MainViewModel.SaveToPath` / `DoSave` と Shell の `TrySaveWorkspaceToPath` に `notifyOnError` パラメータを追加した。`notifyOnError: false` の場合も `ErrorLogService.Log` への記録は従来どおり行うが、`ShowErrorDialog` / `LogAndShowSaveError` によるダイアログ表示のみ抑制する。Shell 側は `_autoSaveNotifiedFailureTabIds`（`HashSet<string>`）でタブ単位に通知済みを記録し、次に成功した時点で解除する。
+- **自動保存成功時の状態表示は、アクティブタブのみ短時間のステータス表示（「自動保存しました」）にとどめた。** バックグラウンドタブは未保存マーク（●）が消えることのみが結果表示で、常時表示 UI は増やしていない。
+- **手動保存の挙動・通知は変更していない。** `notifyOnError` / `showNotification` の既定値は従来どおり `true` で、既存の 1〜2 引数オーバーロードはすべて不変。
+- **既存の未配線 `IsAutoSaveEnabled` / `MainViewModel.AutoSave()` とは別の機構であることを明記する。** 旧経路は `UiSettingsService` の `IsAutoSaveEnabled`（既定 `false`、UI トグルなし）で完全にガードされたまま今回は未変更・未使用で、混同しないこと。今回追加したのは Shell 側で 3 Workspace 共通に常時動作する、独立した新しい自動保存である。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+- **テストを追加した**: 新規 `AutoSaveCandidatePolicyTests`（`IsCandidate` の対象判定を NoteNest/IdeaNest/ChatNest/Temp・FilePath 有無・isModified 有無の組み合わせで固定）。`NoteNestFormatSchemaRegressionTests` に `SaveToPath_NotifyOnErrorFalse_FailureDoesNotInvokeShowErrorDialog` / `SaveToPath_NotifyOnErrorTrue_FailureInvokesShowErrorDialog_DefaultBehaviorPreserved` を追加し、`notifyOnError` による `ShowErrorDialog` 抑制・既定動作維持を固定した。Shell 側の `TrySaveIdeaNestToPath`/`TrySaveChatNestToPath`/`RunAutoSaveTick` は WPF Window 依存のため直接テストしていない（同じ `TrySaveWorkspaceToPath` ヘルパーを経由するため、NoteNest 側の検証を配線パターンの代表確認としている）。タイマーの実時間待機を伴うテストは追加していない（対象判定と実行単位のテストで代替）。
+
+---
+
 ## v2.14.11 — SH-32: ダークテーマ未対応部の色統一
 
 - **SH-32: Shell タブバー右側の「＋」「▾」ボタンに `IconButton` スタイルを適用した。** 従来は `Style`/`Foreground` 指定がなく既定の黒文字のままだったため、ダークテーマの `GroupHeaderBg`（暗色）のタブストリップ背景に対して文字色が白浮きし、実質視認不可になっていた問題を解消した。ローカルの `Background="Transparent"` / `BorderThickness="0"` / `Cursor="Hand"` は `IconButton` スタイル側で同等の値が設定されるため削除した（ローカル値を残すとスタイルの hover トリガーを上書きしてしまい、ホバー時の視覚フィードバックが効かなくなるため）。

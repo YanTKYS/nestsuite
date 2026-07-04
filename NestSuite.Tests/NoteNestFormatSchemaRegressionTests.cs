@@ -746,6 +746,67 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.False(main.IsModified);
     }
 
+    // ── v2.14.12 SH-33: SaveToPath(path, notifyOnError) の通知抑制契約 ──────────
+    //
+    // Shell 側 TrySaveIdeaNestToPath/TrySaveChatNestToPath の notifyOnError 配線は
+    // TrySaveWorkspaceToPath という同じヘルパーを経由しており、NoteNest 側の
+    // MainViewModel.SaveToPath(path, notifyOnError) と全く同じ if/else 分岐パターンを使う。
+    // NestSuiteShellWindow は WPF Window で直接テストできない（Shell 上の private
+    // ヘルパーは WPF ウィンドウに依存するため直接テストしない、という既存方針）ため、
+    // ここでの NoteNest 側の検証が両方の notifyOnError 配線の正しさの代表確認となる。
+
+    [Fact]
+    public void SaveToPath_NotifyOnErrorFalse_FailureDoesNotInvokeShowErrorDialog()
+    {
+        var main = new MainViewModel();
+        var dialogShown = false;
+        main.ShowErrorDialog += (_, _) => dialogShown = true;
+
+        // AtomicFileWriter は保存先ディレクトリを自動作成するため、既存の「ファイル」を
+        // 親ディレクトリとして使うことで Directory.CreateDirectory を確実に失敗させる
+        // （ChatNestFileServiceTests.Save_ThrowsWhenParentPathIsAFile と同じ手法）。
+        var blockingFile = Path.Combine(_tempDir, "block-notify-false");
+        File.WriteAllText(blockingFile, "x");
+        try
+        {
+            var badPath = Path.Combine(blockingFile, "sub", "x.notenest");
+
+            var result = main.SaveToPath(badPath, notifyOnError: false);
+
+            Assert.False(result);
+            Assert.False(dialogShown);
+        }
+        finally
+        {
+            File.Delete(blockingFile);
+        }
+    }
+
+    [Fact]
+    public void SaveToPath_NotifyOnErrorTrue_FailureInvokesShowErrorDialog_DefaultBehaviorPreserved()
+    {
+        var main = new MainViewModel();
+        var dialogShown = false;
+        main.ShowErrorDialog += (_, _) => dialogShown = true;
+
+        var blockingFile = Path.Combine(_tempDir, "block-notify-true");
+        File.WriteAllText(blockingFile, "x");
+        try
+        {
+            var badPath = Path.Combine(blockingFile, "sub", "x.notenest");
+
+            // 既定（1 引数版）が従来どおりダイアログ通知することの回帰確認。
+            var result = main.SaveToPath(badPath);
+
+            Assert.False(result);
+            Assert.True(dialogShown);
+        }
+        finally
+        {
+            File.Delete(blockingFile);
+        }
+    }
+
     [Fact]
     public void LegacySchemaNote_LoadThenSave_PreservesContentAndTasks()
     {

@@ -100,6 +100,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）
             ActivateTab(tempTab);
         }
+
+        StartAutoSaveTimer(); // v2.14.12 SH-33
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -216,6 +218,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosed(EventArgs e)
     {
+        StopAutoSaveTimer(); // v2.14.12 SH-33
         StopNotificationTimer();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
