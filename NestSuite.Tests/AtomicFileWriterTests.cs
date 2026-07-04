@@ -137,6 +137,24 @@ public class AtomicFileWriterTests : IDisposable
         Assert.False(File.Exists(bakPath));
     }
 
+    // v2.14.10 TD-60: UiSettingsService.Save / TempNestStoreService.Save が使う
+    // 「backupPath: null（.bak 世代管理なし）+ UTF8Encoding(false)（BOM なし）」の組み合わせを
+    // helper 単位で固定する。DataPath が private static readonly で固定のため、両サービス自体の
+    // Save() は直接テストできない（本タスクのスコープ外の production 変更が必要）。
+    [Fact]
+    public void WriteAllText_NoBackupPath_ExistingFile_OverwritesContent_NoBakCreated()
+    {
+        var path    = Path.Combine(_tempDir, "no_backup_no_bom.txt");
+        var bakPath = path + ".bak";
+
+        AtomicFileWriter.WriteAllText(path, "A", new UTF8Encoding(false));
+        AtomicFileWriter.WriteAllText(path, "B", new UTF8Encoding(false), backupPath: null);
+
+        Assert.Equal("B", File.ReadAllText(path, new UTF8Encoding(false)));
+        Assert.False(File.Exists(bakPath));
+        Assert.False(File.Exists(path + ".tmp"));
+    }
+
     // ── エンコーディング — NoteNest/ChatNest(BOM) vs IdeaNest(no BOM) ────
 
     [Fact]
