@@ -384,6 +384,27 @@ public class ChatNestMultiTabSessionTests
         Assert.True(vmB.HasUnsavedChanges);
     }
 
+    /// <summary>
+    /// v2.14.12 SH-33 レビュー対応: 自動保存が ChatNest の dirty 判定に
+    /// <c>HasUnsavedChanges</c> ではなく <c>IsDirty</c> を使う根拠となる契約を固定する。
+    /// 投稿前の入力欄テキストが残っている間 HasUnsavedChanges は true のままだが、
+    /// MarkSaved() 後の IsDirty は確実に false になる（= 永続化観点では「保存済み」）。
+    /// 自動保存がこの判定を誤って HasUnsavedChanges 側で行うと、投稿前の下書きが
+    /// 残り続ける限り、保存内容が変わらないのに毎回自動保存が再実行されてしまう。
+    /// </summary>
+    [Fact]
+    public void MarkSaved_ClearsIsDirty_EvenWhenInputTextDraftRemains_HasUnsavedChangesStaysTrue()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+        vm.LoadMessages([new Message { Speaker = Speaker.自分, Text = "posted" }]);
+        vm.InputText = "投稿前の下書き";
+
+        vm.MarkSaved();
+
+        Assert.False(vm.IsDirty);
+        Assert.True(vm.HasUnsavedChanges);
+    }
+
     // 二重オープン検出：FilePath null の扱い
     [Fact]
     public void OpenFilePolicy_NullPathA_IsNotSameAsAnyPath()
