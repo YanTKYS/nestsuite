@@ -1,4 +1,5 @@
 using System.Windows.Threading;
+using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.Services;
 using NestSuite.ViewModels;
@@ -39,13 +40,29 @@ public partial class NestSuiteShellWindow
     {
         foreach (var tab in _tabs.ToList())
         {
-            if (!AutoSaveCandidatePolicy.IsCandidate(tab.WorkspaceKind, tab.FilePath, tab.IsModified)) continue;
+            if (tab.FilePath == null) continue;
             if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) continue;
+
+            var isDirtyForAutoSave = ResolveAutoSaveDirtyState(tab, session);
+            if (!AutoSaveCandidatePolicy.IsCandidate(tab.WorkspaceKind, tab.FilePath, isDirtyForAutoSave)) continue;
 
             if (AutoSaveTab(tab, session))
                 _autoSaveNotifiedFailureTabIds.Remove(tab.Id);
         }
     }
+
+    /// <summary>
+    /// v2.14.12 SH-33 レビュー対応: 自動保存の dirty 判定には、原則 <c>tab.IsModified</c> を使う。
+    /// ただし ChatNest だけは例外で、<c>ChatNestWorkspaceViewModel.HasUnsavedChanges</c>
+    /// （= tab.IsModified の元）が投稿前の入力欄テキスト・編集中差分という
+    /// **永続化されない一時状態**を含むため、保存しても解消されず無限に自動保存が
+    /// 繰り返されてしまう。ChatNest では実際に永続化される変更のみを表す
+    /// <c>IsDirty</c>（<c>MarkSaved()</c> で確実にクリアされる）を判定に使う。
+    /// </summary>
+    private static bool ResolveAutoSaveDirtyState(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session) =>
+        tab.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest
+            ? ((ChatNestWorkspaceViewModel)session.WorkspaceViewModel).IsDirty
+            : tab.IsModified;
 
     private bool AutoSaveTab(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
