@@ -340,6 +340,23 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.Null(session.CurrentFilePath);
     }
 
+    // v2.14.14 バグ修正: 既存ファイルを開いた直後、未保存表示に異常な分数（実機で観測された
+    // 「未保存（1065313408分）」相当）が出ないことを回帰確認する。
+    [Fact]
+    public void Open_ExistingFile_DoesNotShowImplausibleUnsavedMinutes()
+    {
+        var (lc, session, _, _, _, _) = CreateV146Context();
+        lc.CreateNew();
+        var path = Path.Combine(_tempDir, "existing.notenest");
+        lc.Save(path);
+
+        lc.Open(path);
+
+        Assert.False(session.IsModified);
+        Assert.Equal("● 未保存", session.UnsavedIndicatorText);
+        Assert.NotNull(session.LastSavedAt);
+    }
+
     [Fact]
     public void SaveLoad_RoundTrip_PreservesNotesTasksAndSchema()
     {
