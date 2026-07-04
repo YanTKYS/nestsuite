@@ -1,0 +1,59 @@
+// ⚠ 現行コードではない / NOT CURRENT CODE ⚠
+//
+// これは NoteNest Classic（旧単独起動）時代の MainViewModel が持っていた自動保存機構の
+// 撤去前スナップショットである。v2.14.13 TD-61 で撤去した。
+// 拡張子は .cs.txt であり、ビルド対象には入らない。参照用の履歴として残しているだけ。
+//
+// 撤去理由:
+//   - IsAutoSaveEnabled が現行コードのどこからも true に設定されず、AutoSave() は常に早期 return する
+//     完全なデッドコードだった（UI トグルも配線もない）。
+//   - 現行の自動保存は Shell 側の NestSuiteShellWindow.AutoSave.cs（SH-33）が
+//     全 Workspace（NoteNest / IdeaNest / ChatNest）共通で担う。旧経路と Shell 側の
+//     二重存在が「どちらが現行か」の誤読要因になっていた。
+//
+// 現行の自動保存を確認する場合は次を参照:
+//   - NestSuite/NestSuite/NestSuiteShellWindow.AutoSave.cs
+//   - NestSuite/Services/AutoSaveCandidatePolicy.cs
+//
+// ── 撤去した MainViewModel 側コード（抜粋） ──────────────────────────────
+
+// MainViewModel.cs（フィールド・コンストラクタ・Dispose）
+private readonly DispatcherTimer _autoSaveTimer;
+private bool _isAutoSaveEnabled;
+
+// コンストラクタ内:
+_autoSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+_autoSaveTimer.Tick += AutoSaveTimer_Tick;
+_autoSaveTimer.Start();
+
+private void AutoSaveTimer_Tick(object? sender, EventArgs e) => AutoSave();
+
+// Dispose 内:
+_autoSaveTimer.Stop();
+_autoSaveTimer.Tick -= AutoSaveTimer_Tick;
+
+// MainViewModel.Facade.cs（プロパティ）
+public bool IsAutoSaveEnabled
+{
+    get => _isAutoSaveEnabled;
+    set => SetProperty(ref _isAutoSaveEnabled, value);
+}
+
+// MainViewModel.Persistence.cs（保存本体）
+private void AutoSave()
+{
+    if (!IsAutoSaveEnabled) return;   // ← ここが常に true で return していた（デッド）
+    try
+    {
+        if (_lifecycle.TryAutoSave()) StatusMessage = "自動保存しました。";
+    }
+    catch (Exception ex)
+    {
+        ErrorLogService.Log("NoteNestAutoSave", ex, "NoteNest");
+        StatusMessage = "自動保存に失敗しました。";
+    }
+}
+
+// 注: ProjectLifecycleService.TryAutoSave() は撤去していない。
+//     「変更あり かつ 保存先ありなら保存する」という小さなサービスメソッドで、
+//     NoteNestFormatSchemaRegressionTests から直接テストされているため現行コードとして残す。

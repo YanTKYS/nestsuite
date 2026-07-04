@@ -7,6 +7,19 @@
 
 ---
 
+## v2.14.13 — TD-61: NoteNest Classic 残存コードの棚卸しと縮退
+
+- **TD-61: NoteNest Classic / 旧単独起動時代の残存コードを棚卸しし、現行コードと誤読されやすい部分を縮退した。** 機能追加ではなく整理タスクであり、現行 NestSuite の動作は変更していない。棚卸しと判断根拠は新規 `docs/development/classic-code-contraction.md` に記録した。
+- **削除したコード（現行ビルド対象から除外）**: 旧 `MainViewModel` 側の自動保存機構を撤去した。具体的には `MainViewModel._autoSaveTimer`（5 分間隔 `DispatcherTimer`）とその生成・`Start()`・`Dispose()` での停止、`AutoSaveTimer_Tick`、`MainViewModel.AutoSave()`、`MainViewModel.IsAutoSaveEnabled` プロパティおよび `_isAutoSaveEnabled` フィールドを削除した。`IsAutoSaveEnabled` は現行コードのどこからも `true` に設定されず `AutoSave()` が常に早期 return する完全なデッドコードで、v2.14.12 SH-33 で追加した Shell 側自動保存と二重に存在して誤読要因になっていた。
+- **旧 `MainViewModel` の AutoSave は現行コードではなく、削除済みである。** 現行の自動保存は Shell 側の `NestSuiteShellWindow.AutoSave.cs`（SH-33、30 秒間隔・全 Workspace 共通）と `AutoSaveCandidatePolicy` が担う。この機構には一切変更を加えていない。
+- **参照退避したコード**: 撤去した旧自動保存コードの撤去前スナップショットを `reference/legacy/MainViewModel.AutoSave.legacy.cs.txt`（`.cs.txt` = 暗黙 Compile 対象外）として残し、`reference/legacy/README.md` に「現行コードではない」旨を明記した。
+- **保留したコードと理由**: `MainViewModel` 本体および各 partial は名前が Classic 由来なだけで現行 NoteNest Workspace の VM（Shell・多数テストが参照）のため保留。`ProjectLifecycleService.TryAutoSave()` は `NoteNestFormatSchemaRegressionTests` から直接検証される小さな保存ヘルパーのため保留。`UiSettingsModel.IsAutoSaveEnabled`（設定モデルのフィールド、既定 `false`、旧 VM とは未配線で別物）は設定ファイル形状に関わるため保存形式変更なし方針に従い保留。`reference/external/` は参照専用として削除対象外。
+- **テスト**: 旧自動保存タイマーを検証していた 2 テスト（`NoteNestMultiTabSessionTests`）を、現行も残る未保存ステータス用 `_unsavedTimer` のライフサイクル検証（`MainViewModel_UnsavedTimer_IsEnabled_WhenModified` / `MainViewModel_Dispose_StopsUnsavedTimer`）へ差し替えた。テスト本数は維持し、スキップ化・削除はしていない。`MainViewModel.AutoSave` を参照するテストは残っていない。
+- **変更なし事項**: UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。AppData パス・ProgId・Mutex/Pipe 名変更なし。外部依存追加なし。net48_test 再開なし。
+- **backlog: TD-61 は完了済みとして backlog.md には項目を追加せず、完了済み欠番の記載のみ更新した（未着手一覧には残さない）。**
+
+---
+
 ## v2.14.12 — SH-33: 既存Workspaceの自動保存
 
 - **SH-33: 保存先パスを持つ NoteNest / IdeaNest / ChatNest タブのうち未保存のものを 30 秒間隔で自動保存するようにした。** 新規 `NestSuiteShellWindow.AutoSave.cs`（`DispatcherTimer` によるタイマー本体）と `AutoSaveCandidatePolicy`（UI 非依存の対象判定ロジック）を追加した。
