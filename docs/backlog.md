@@ -171,11 +171,10 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-52、TD-54〜TD-57 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-53、TD-54〜TD-57 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-53 | Coordinator の Publish/notify パターンのドキュメント化 | `MainViewModel.Facade.cs` の派生プロパティ（`CurrentNoteTitle` 等）は、値を計算するだけでは画面に反映されず、`NoteChangeCoordinator` / `EditorChangeCoordinator` の Publish/notify 呼び出しに対象プロパティ名を追加しないと `PropertyChanged` が発火しない。現在この方式で 14 個の facade プロパティが手動同期されているが、このパターン自体を説明する docs が存在しない（v2.13.2 で `CurrentNotebookName` がこのパターンの見落としにより表示が古いまま残る不具合が発生し、レビューで指摘・修正した実例あり）。`docs/development/` に「新しい facade プロパティを追加する際は、どの Coordinator のどの通知経路に追加が必要か」を判断するための短いチェックリストを追加し、同種の見落としを防ぐ。ロジック変更は伴わない、docs 整備のみ。同種の見落とし箇所として `NoteWorkspaceViewModel.NotePropertyChanged` のプロパティ名 allow-list（v2.14.3 M12 の `IsStarred` 追加時に更新が必要だった箇所）も記載対象に含める | A |
 | TD-59 | `.nestsuite` オープン時の二重読込・二重パース解消 | `.nestsuite` を開く全経路（Open ダイアログ・起動引数・最近ファイル・セッション復元・pipe）で、種別判定（`TryGetKind` → `TryDetectKindFromFile` が `File.ReadAllText` + JSON パース）と本読込（各 FileService の `Load` が再度 `File.ReadAllText` + wrapper パース）の 2 回、同じファイルを読み込み解析している。現状は実害が小さい（判定と読込の間に内容が変わっても `EnsureKind` が明確なエラーで失敗する）が、大きいファイル・遅いストレージでは無駄が倍になる。判定結果（envelope 内容）を読込へ引き渡す形を検討する。注意点: `TryGetKind` の単一集約点という FM-1 の設計利点を壊さないこと。急ぎではない | C |
 | TD-60 | 補助ファイル保存の atomic write 未適用 | `UiSettingsService.Save` と `TempNestStoreService.Save` は tmp 経由の atomic write を使わず素の `File.WriteAllText` で保存しており、書き込み中クラッシュで `ui-settings.json` / `tempnest.json` が破損し得る。他の永続化（RecentFiles / SessionState / 3 Workspace FileService）はすべて atomic write 済みで、この 2 箇所だけ堅牢性が非対称。対応時は書き込み順序・ロック時の失敗モードが変わる挙動変更を伴うため、テストを先に用意した明示的なタスクとして実施する（v2.14.8 リファクタ調査で確認、同調査では挙動変更を避けるため見送り） | B |
 

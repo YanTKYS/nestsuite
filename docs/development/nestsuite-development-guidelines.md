@@ -525,6 +525,10 @@ ToolTip="すべて保存 (Ctrl+Shift+S)"
 - 新しい共通基盤・汎用 Registry / Factory / Coordinator は明示指示なしに追加しない → §14-1
 - Workspace の独立性を壊さない → §12 / §14-1
 
+**Coordinator / notify（v2.14.9 TD-53）**
+- NoteNest の facade プロパティ・`NotePropertyChanged` allow-list・`BuildModels()` を変更する際は
+  `docs/development/coordinator-notification-pattern.md` のチェックリストを確認する
+
 **docs 長文化抑制** → §19 参照
 
 保存形式・スキーマ変更が必要な場合は

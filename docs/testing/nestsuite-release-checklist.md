@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.14.8）
+# NestSuite リリース前確認チェックリスト（v2.14.9）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -232,6 +232,7 @@
 - [ ] `docs/guide/nestsuite-user-guide.md` が存在する
 - [ ] `docs/design/nestsuite-known-limitations.md` が存在する
 - [ ] `docs/release-notes.md` に最新バージョンエントリが記載されている
+- [ ] NoteNest の facade プロパティ・`NotePropertyChanged` allow-list・`BuildModels()` を変更した場合、`docs/development/coordinator-notification-pattern.md` のチェックリストを確認済み
 
 ---
 
