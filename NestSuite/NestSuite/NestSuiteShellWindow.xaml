@@ -118,16 +118,15 @@
                     BorderThickness="0,0,0,1">
                 <DockPanel>
                     <!-- v2.2.0 SH-5: 新規タブ追加ボタン。クリックで NoteNest/IdeaNest/ChatNest 選択メニューを表示 -->
+                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabAddButton"
                             AutomationProperties.Name="Shell.TabAddButton"
                             Content="＋"
+                            Style="{StaticResource IconButton}"
                             FontSize="14"
                             Width="36"
                             VerticalAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
                             ToolTip="新規タブを追加"
                             Click="TabAddButton_Click">
                         <Button.ContextMenu>
@@ -139,16 +138,15 @@
                         </Button.ContextMenu>
                     </Button>
                     <!-- v2.7.9 SH-6: タブ一覧ボタン。クリックで開いているタブをドロップダウン一覧表示 -->
+                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabListButton"
                             AutomationProperties.Name="Shell.TabListButton"
                             Content="▾"
+                            Style="{StaticResource IconButton}"
                             FontSize="12"
                             Width="28"
                             VerticalAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
                             ToolTip="タブ一覧"
                             Click="TabListButton_Click"/>
                     <ListBox x:Name="TabStrip"
