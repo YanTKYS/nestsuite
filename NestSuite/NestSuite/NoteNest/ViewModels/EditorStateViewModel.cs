@@ -14,6 +14,7 @@ public sealed class EditorStateViewModel : BaseViewModel
     private NoteViewModel? _editingTaskRelatedNote;
     private string _content = "";
     private string _fontFamily = "Yu Gothic UI";
+    private string _savedFontFamily = "Yu Gothic UI";
     private double _fontSize = 14;
     private string _caretPositionText = "";
     private bool _showLineNumbers = true;
@@ -49,11 +50,23 @@ public sealed class EditorStateViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// v2.14.16 BUG: NoteNest 本文エディタの表示フォント種類。UI 設定（Shell の
+    /// NoteNestEditorFontFamily）駆動の値であり、変更しても Workspace を dirty にせず、
+    /// 保存対象（<see cref="SavedFontFamily"/>）にも影響しない。ファイルへ永続化したい
+    /// 値は <see cref="LoadSettings"/> 経由でのみ <see cref="SavedFontFamily"/> に反映される。
+    /// </summary>
     public string FontFamily
     {
         get => _fontFamily;
-        set { if (SetProperty(ref _fontFamily, value) && !_suppressSettingsChanged) SettingsChanged?.Invoke(this, EventArgs.Empty); }
+        set => SetProperty(ref _fontFamily, value);
     }
+
+    /// <summary>
+    /// v2.14.16 BUG: プロジェクト読込時点の FontFamily（Workspace ファイルへ保存する値）。
+    /// <see cref="FontFamily"/>（表示用・UI 設定で上書きされ得る）とは独立して保持する。
+    /// </summary>
+    public string SavedFontFamily => _savedFontFamily;
 
     public double FontSize
     {
@@ -74,6 +87,7 @@ public sealed class EditorStateViewModel : BaseViewModel
         try
         {
             FontFamily = fontFamily;
+            _savedFontFamily = fontFamily;
             FontSize = fontSize;
         }
         finally { _suppressSettingsChanged = false; }
