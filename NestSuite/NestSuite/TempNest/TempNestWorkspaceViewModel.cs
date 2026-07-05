@@ -13,6 +13,21 @@ public class TempNestWorkspaceViewModel : BaseViewModel, IDisposable
     public TempNestSlotViewModel Slot3 { get; } = new();
     public TempNestSlotViewModel Slot4 { get; } = new();
 
+    private string _contentFontFamily = "Yu Gothic UI";
+
+    /// <summary>
+    /// L22: 各スロットのタイトル欄・本文欄に適用する Workspace 共通フォント種類。
+    /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値。
+    /// TempNest はファイル型 Workspace ではないため <see cref="TempNestStoreService"/> の
+    /// 保存データ（<see cref="SaveNow"/>）には含めない。変更しても <see cref="OnSlotChanged"/>
+    /// を経由しないため自動保存タイマーも起動しない。
+    /// </summary>
+    public string ContentFontFamily
+    {
+        get => _contentFontFamily;
+        set => SetProperty(ref _contentFontFamily, value);
+    }
+
     public TempNestWorkspaceViewModel()
     {
         _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };

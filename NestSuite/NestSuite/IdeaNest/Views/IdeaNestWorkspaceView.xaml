@@ -490,6 +490,7 @@
 
                                         <!-- Body preview (fixed mode): 論理行数を IdeaBodyTrimConverter で制限して省略表示 -->
                                         <TextBlock TextWrapping="Wrap" Margin="0,2,0,4"
+                                                   FontFamily="{Binding DataContext.ContentFontFamily, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource IdeaCardTextPrimaryBrush}"
                                                    Opacity="0.85">
@@ -513,6 +514,7 @@
                                         <!-- Body full text (auto height mode) -->
                                         <TextBlock Text="{Binding Body}"
                                                    TextWrapping="Wrap" Margin="0,2,0,4"
+                                                   FontFamily="{Binding DataContext.ContentFontFamily, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource IdeaCardTextPrimaryBrush}"
                                                    Opacity="0.85">

@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.Services;
+using NestSuite.TempNest;
 using NestSuite.ViewModels;
 
 namespace NestSuite;
@@ -153,31 +154,44 @@ public partial class NestSuiteShellWindow
             uiSvc.Save(ui);
         }
 
-        // L21: NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
+        // L22: NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
         // _suppressFontSizePropagation は「ファイル読込中の自前設定適用」を示す既存フラグを
         // フォント種類にも共用する（ファイル自身の AppSettings.FontFamily 読込時の再伝播を防ぐ）。
         if (e.PropertyName == nameof(MainViewModel.EditorFontFamily) &&
             sender is MainViewModel familyVm &&
             !_suppressFontSizePropagation &&
-            familyVm.EditorFontFamily != _noteNestEditorFontFamily)
-        {
-            _noteNestEditorFontFamily = familyVm.EditorFontFamily;
-            foreach (var s in _sessionManager.Sessions
-                .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
-                            !ReferenceEquals(s.WorkspaceViewModel, familyVm)))
-            {
-                if (s.WorkspaceViewModel is MainViewModel otherFamilyVm)
-                    otherFamilyVm.EditorFontFamily = _noteNestEditorFontFamily;
-            }
-            var uiSvc = new UiSettingsService();
-            var ui = uiSvc.Load();
-            ui.NoteNestEditorFontFamily = _noteNestEditorFontFamily;
-            uiSvc.Save(ui);
-        }
+            familyVm.EditorFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.EditorFontFamily, familyVm);
 
         if (e.PropertyName is nameof(MainViewModel.MarkerCount) or nameof(MainViewModel.TotalIncompleteTaskCountText) &&
             sender is MainViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+    }
+
+    /// <summary>
+    /// L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、変更元以外の
+    /// 全セッションへ伝播し ui-settings.json（WorkspaceEditorFontFamily）へ永続化する。
+    /// Workspace ファイル本体（.notenest/.nestsuite/.ideanest/.chatnest/tempnest.json）には
+    /// 一切保存しない（各 ViewModel の ContentFontFamily/EditorFontFamily は保存モデルに含まれない）。
+    /// </summary>
+    private void PropagateWorkspaceEditorFontFamily(string family, object exclude)
+    {
+        _workspaceEditorFontFamily = family;
+        foreach (var s in _sessionManager.Sessions)
+        {
+            if (ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
+            switch (s.WorkspaceViewModel)
+            {
+                case MainViewModel otherNoteVm: otherNoteVm.EditorFontFamily = family; break;
+                case IdeaNestWorkspaceViewModel otherIdeaVm: otherIdeaVm.ContentFontFamily = family; break;
+                case ChatNestWorkspaceViewModel otherChatVm: otherChatVm.ContentFontFamily = family; break;
+                case TempNestWorkspaceViewModel otherTempVm: otherTempVm.ContentFontFamily = family; break;
+            }
+        }
+        var uiSvc = new UiSettingsService();
+        var ui = uiSvc.Load();
+        ui.WorkspaceEditorFontFamily = family;
+        uiSvc.Save(ui);
     }
 
     private void OnChatNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -190,6 +204,12 @@ public partial class NestSuiteShellWindow
                            or nameof(ChatNestWorkspaceViewModel.SelectedSpeaker) &&
             sender is ChatNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+
+        // L22: ChatNest メッセージ本文・入力欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is ChatNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
     }
 
     private void OnIdeaNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -203,5 +223,23 @@ public partial class NestSuiteShellWindow
                            or nameof(IdeaNestWorkspaceViewModel.HasActiveFilter) &&
             sender is IdeaNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+
+        // L22: IdeaNest カード本文・カード編集欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        if (e.PropertyName == nameof(IdeaNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is IdeaNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
+    }
+
+    /// <summary>
+    /// L22: TempNest 各スロットのタイトル欄・本文欄のフォント種類。Workspace 共通設定への伝播・永続化。
+    /// TempNest は保存対象の変化を検知する必要がないため、フォント種類変更以外は扱わない。
+    /// </summary>
+    private void OnTempNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TempNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is TempNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
     }
 }

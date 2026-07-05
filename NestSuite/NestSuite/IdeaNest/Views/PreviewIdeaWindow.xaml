@@ -156,6 +156,7 @@
                          Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
                          TextWrapping="Wrap"
                          Foreground="{DynamicResource IdeaCardTextPrimaryBrush}"
+                         FontFamily="{Binding ContentFontFamily}"
                          FontSize="16"
                          AcceptsReturn="True"
                          VerticalScrollBarVisibility="Auto"

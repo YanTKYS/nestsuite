@@ -75,6 +75,7 @@ public partial class NestSuiteShellWindow
         try
         {
             var newVm = new ChatNestWorkspaceViewModel();
+            newVm.ContentFontFamily = _workspaceEditorFontFamily;
             var messages = ChatNestFileService.Load(path);
             newVm.LoadMessages(messages);
             var tab = NestSuiteTabFactory.FromFilePath(path);
@@ -226,7 +227,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) return;
             vm.EditorFontSize = _noteNestEditorFontSize;
-            vm.EditorFontFamily = _noteNestEditorFontFamily;
+            vm.EditorFontFamily = _workspaceEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -257,7 +258,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) { EnsureDefaultTab(); return; }
             vm.EditorFontSize = _noteNestEditorFontSize;
-            vm.EditorFontFamily = _noteNestEditorFontFamily;
+            vm.EditorFontFamily = _workspaceEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -303,6 +304,7 @@ public partial class NestSuiteShellWindow
         try
         {
             var newVm = new ChatNestWorkspaceViewModel();
+            newVm.ContentFontFamily = _workspaceEditorFontFamily;
             var messages = ChatNestFileService.Load(path);
             newVm.LoadMessages(messages);
 

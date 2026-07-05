@@ -104,6 +104,20 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     public WorkspaceSettings Settings => _workspace.Settings;
 
+    private string _contentFontFamily = "Yu Gothic UI";
+
+    /// <summary>
+    /// L22: カード本文・カード編集欄に適用する Workspace 共通フォント種類。
+    /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
+    /// カードの枠・ボタン・タグ・ツールバーなどの UI フォントには適用しない。
+    /// .ideanest（<see cref="BuildWorkspaceForSave"/>）へは保存しないため、変更しても <see cref="HasChanges"/> は立たない。
+    /// </summary>
+    public string ContentFontFamily
+    {
+        get => _contentFontFamily;
+        set => SetField(ref _contentFontFamily, value);
+    }
+
     public bool HasChanges
     {
         get => _hasChanges;
@@ -277,7 +291,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
                 vm.ApplyTo(draft);
                 return _cardOps.CommitAdd(draft);
             },
-            onCommitEdit: c => _cardOps.CommitEdit(c))
+            onCommitEdit: c => _cardOps.CommitEdit(c),
+            contentFontFamily: ContentFontFamily)
         {
             Owner = _ui.Owner,
         };
@@ -294,7 +309,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         var dlg = new PreviewIdeaWindow(
             cards,
             index,
-            onCommitEdit: c => _cardOps.CommitEdit(c))
+            onCommitEdit: c => _cardOps.CommitEdit(c),
+            contentFontFamily: ContentFontFamily)
         {
             Owner = _ui.Owner,
         };

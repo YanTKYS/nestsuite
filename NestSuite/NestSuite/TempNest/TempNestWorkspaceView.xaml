@@ -43,7 +43,7 @@
                              AutomationProperties.Name="TempNest.Slot1.TitleBox"
                              BorderThickness="0,0,0,1" BorderBrush="{DynamicResource PaneBorder}"
                              Background="Transparent" Foreground="{DynamicResource AppFg}"
-                             FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
+                             FontFamily="{Binding ContentFontFamily}" FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
                              MaxLength="100"/>
                     <TextBlock Text="タイトル"
                                Foreground="{DynamicResource MutedFg}"
@@ -70,7 +70,7 @@
                              VerticalScrollBarVisibility="Auto"
                              BorderThickness="0" Background="Transparent"
                              Foreground="{DynamicResource AppFg}"
-                             VerticalContentAlignment="Top" FontSize="12" Padding="0"
+                             VerticalContentAlignment="Top" FontFamily="{Binding ContentFontFamily}" FontSize="12" Padding="0"
                              SpellCheck.IsEnabled="False"/>
                     <TextBlock Text="一時メモ"
                                Foreground="{DynamicResource MutedFg}"
@@ -122,7 +122,7 @@
                              AutomationProperties.Name="TempNest.Slot2.TitleBox"
                              BorderThickness="0,0,0,1" BorderBrush="{DynamicResource PaneBorder}"
                              Background="Transparent" Foreground="{DynamicResource AppFg}"
-                             FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
+                             FontFamily="{Binding ContentFontFamily}" FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
                              MaxLength="100"/>
                     <TextBlock Text="タイトル"
                                Foreground="{DynamicResource MutedFg}"
@@ -149,7 +149,7 @@
                              VerticalScrollBarVisibility="Auto"
                              BorderThickness="0" Background="Transparent"
                              Foreground="{DynamicResource AppFg}"
-                             VerticalContentAlignment="Top" FontSize="12" Padding="0"
+                             VerticalContentAlignment="Top" FontFamily="{Binding ContentFontFamily}" FontSize="12" Padding="0"
                              SpellCheck.IsEnabled="False"/>
                     <TextBlock Text="一時メモ"
                                Foreground="{DynamicResource MutedFg}"
@@ -201,7 +201,7 @@
                              AutomationProperties.Name="TempNest.Slot3.TitleBox"
                              BorderThickness="0,0,0,1" BorderBrush="{DynamicResource PaneBorder}"
                              Background="Transparent" Foreground="{DynamicResource AppFg}"
-                             FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
+                             FontFamily="{Binding ContentFontFamily}" FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
                              MaxLength="100"/>
                     <TextBlock Text="タイトル"
                                Foreground="{DynamicResource MutedFg}"
@@ -228,7 +228,7 @@
                              VerticalScrollBarVisibility="Auto"
                              BorderThickness="0" Background="Transparent"
                              Foreground="{DynamicResource AppFg}"
-                             VerticalContentAlignment="Top" FontSize="12" Padding="0"
+                             VerticalContentAlignment="Top" FontFamily="{Binding ContentFontFamily}" FontSize="12" Padding="0"
                              SpellCheck.IsEnabled="False"/>
                     <TextBlock Text="一時メモ"
                                Foreground="{DynamicResource MutedFg}"
@@ -280,7 +280,7 @@
                              AutomationProperties.Name="TempNest.Slot4.TitleBox"
                              BorderThickness="0,0,0,1" BorderBrush="{DynamicResource PaneBorder}"
                              Background="Transparent" Foreground="{DynamicResource AppFg}"
-                             FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
+                             FontFamily="{Binding ContentFontFamily}" FontSize="12" FontWeight="SemiBold" Padding="0,0,0,4"
                              MaxLength="100"/>
                     <TextBlock Text="タイトル"
                                Foreground="{DynamicResource MutedFg}"
@@ -307,7 +307,7 @@
                              VerticalScrollBarVisibility="Auto"
                              BorderThickness="0" Background="Transparent"
                              Foreground="{DynamicResource AppFg}"
-                             VerticalContentAlignment="Top" FontSize="12" Padding="0"
+                             VerticalContentAlignment="Top" FontFamily="{Binding ContentFontFamily}" FontSize="12" Padding="0"
                              SpellCheck.IsEnabled="False"/>
                     <TextBlock Text="一時メモ"
                                Foreground="{DynamicResource MutedFg}"

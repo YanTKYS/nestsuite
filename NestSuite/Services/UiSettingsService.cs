@@ -28,7 +28,21 @@ public class UiSettings
     public double? NestSuiteWindowLeft { get; set; }
     public double? NestSuiteWindowTop { get; set; }
     public double NoteNestEditorFontSize { get; set; } = 14;
+
+    /// <summary>
+    /// L21 で追加した NoteNest 限定のフォント種類設定。L22 で <see cref="WorkspaceEditorFontFamily"/>
+    /// へ発展的に移行したため新規の読み書きはしないが、既存 ui-settings.json との後方互換のため
+    /// フィールド自体とその既定値は維持する（<see cref="UiSettingsService.ResolveWorkspaceEditorFontFamily"/> 参照）。
+    /// </summary>
     public string NoteNestEditorFontFamily { get; set; } = "Yu Gothic UI";
+
+    /// <summary>
+    /// L22: NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類設定。
+    /// Workspace ファイル本体には保存せず、この ui-settings.json 上でのみ管理する。
+    /// 未設定（null）の場合は <see cref="NoteNestEditorFontFamily"/>（L21 の旧設定）を移行元として使う。
+    /// </summary>
+    public string? WorkspaceEditorFontFamily { get; set; }
+
     public double? PreviewIdeaWindowWidth { get; set; }
     public double? PreviewIdeaWindowHeight { get; set; }
     public double? PreviewIdeaWindowLeft { get; set; }
@@ -61,6 +75,54 @@ public class UiSettingsService
         !string.IsNullOrWhiteSpace(family) && ValidNoteNestEditorFontFamilies.Contains(family)
             ? family
             : DefaultNoteNestEditorFontFamily;
+
+    /// <summary>既定値。NestSuite 全体の UI フォント（メニュー・タブ・ボタン・ダイアログ）には適用しない。</summary>
+    public const string DefaultWorkspaceEditorFontFamily = "Yu Gothic UI";
+
+    /// <summary>
+    /// L22: NoteNest / IdeaNest / ChatNest / TempNest の本文・編集領域で選択可能なフォント種類
+    /// （端末非依存の主要候補に限定）。L21 の <see cref="ValidNoteNestEditorFontFamilies"/> に
+    /// BIZ UDMincho / UD Digi Kyokasho N-R を加えた Workspace 共通版。
+    /// </summary>
+    public static readonly IReadOnlyList<string> ValidWorkspaceEditorFontFamilies =
+    [
+        DefaultWorkspaceEditorFontFamily,
+        "Meiryo UI",
+        "MS Gothic",
+        "BIZ UDGothic",
+        "BIZ UDMincho",
+        "UD Digi Kyokasho N-R",
+        "Consolas",
+    ];
+
+    /// <summary>
+    /// L22: 未設定・空文字・候補外（削除されたフォント名の残存等）の場合は既定へフォールバックする。
+    /// これにより ui-settings.json に不正なフォント名が残っていても起動・各 Workspace 表示が壊れない。
+    /// </summary>
+    public static string ValidateWorkspaceEditorFontFamily(string? family) =>
+        !string.IsNullOrWhiteSpace(family) && ValidWorkspaceEditorFontFamilies.Contains(family)
+            ? family
+            : DefaultWorkspaceEditorFontFamily;
+
+    /// <summary>
+    /// L22: 実際に適用する値を解決する。優先順位は次のとおり。
+    /// 1. <see cref="UiSettings.WorkspaceEditorFontFamily"/>（新設定）が候補内なら、それを使う。
+    /// 2. なければ <see cref="UiSettings.NoteNestEditorFontFamily"/>（L21 の旧設定）を移行元として使う。
+    /// 3. どちらも無効・未設定なら既定 <see cref="DefaultWorkspaceEditorFontFamily"/> を使う。
+    /// 保存は常に新設定名（<see cref="UiSettings.WorkspaceEditorFontFamily"/>）へ行う（呼び出し側の責務）。
+    /// </summary>
+    public static string ResolveWorkspaceEditorFontFamily(UiSettings settings)
+    {
+        if (!string.IsNullOrWhiteSpace(settings.WorkspaceEditorFontFamily) &&
+            ValidWorkspaceEditorFontFamilies.Contains(settings.WorkspaceEditorFontFamily))
+            return settings.WorkspaceEditorFontFamily;
+
+        if (!string.IsNullOrWhiteSpace(settings.NoteNestEditorFontFamily) &&
+            ValidWorkspaceEditorFontFamilies.Contains(settings.NoteNestEditorFontFamily))
+            return settings.NoteNestEditorFontFamily;
+
+        return DefaultWorkspaceEditorFontFamily;
+    }
 
     public static AppTheme NormalizeTheme(AppTheme theme) =>
         Enum.IsDefined(typeof(AppTheme), theme) ? theme : AppTheme.Light;

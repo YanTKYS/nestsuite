@@ -7,6 +7,23 @@
 
 ---
 
+## v2.14.17 — L22: Workspace共通エディタフォント種類の拡大
+
+- **L22: NoteNest 限定だったエディタフォント種類変更（L21/v2.14.15、v2.14.16 で保存分離）を、IdeaNest / ChatNest / TempNest の本文・編集領域へ拡大した。** 主目的は各 Workspace の本文入力・閲覧時の可読性向上。
+  - NoteNest: 本文エディタ（既存、v2.14.16 の分離方針を維持）。
+  - IdeaNest: カード本文（グリッド表示）とカード編集欄（プレビュー／編集ウィンドウの本文 TextBox）。カードの枠・ボタン・タグ・ツールバーは対象外。
+  - ChatNest: メッセージ本文（吹き出し表示・インライン編集）と入力欄。発言者ラベル・ボタン・ツールバーは対象外。
+  - TempNest: 各スロットのタイトル欄・本文欄。
+- **フォント候補に `BIZ UDMincho` / `UD Digi Kyokasho N-R` を追加した。** 候補一覧は `Yu Gothic UI`（既定）/ `Meiryo UI` / `MS Gothic` / `BIZ UDGothic` / `BIZ UDMincho` / `UD Digi Kyokasho N-R` / `Consolas` の 7 種類。外部フォントは同梱しない。
+- **設定名を `NoteNestEditorFontFamily` から `WorkspaceEditorFontFamily` へ整理した。** 対象が Workspace 共通になったことに合わせた命名変更。既存ユーザーの `ui-settings.json` との互換のため、`UiSettingsService.ResolveWorkspaceEditorFontFamily` が「新設定があればそれを使う→なければ旧 `NoteNestEditorFontFamily` を移行元として使う→どちらも無効なら既定」の順で解決する。旧設定フィールド自体は削除していない。保存は常に新設定名で行う。
+- **Workspace ファイル本体には保存しない。** IdeaNest（`WorkspaceSettings`）・ChatNest（`Message`）・TempNest（`TempNestSlot`）のいずれの保存モデルにもフォント項目を追加していない。各 ViewModel の `ContentFontFamily`（IdeaNest/ChatNest/TempNest）・`EditorFontFamily`（NoteNest）は表示専用の UI 設定駆動値であり、変更しても各 Workspace の未保存状態（`HasChanges`/`IsDirty`/`IsModified`）を立てない。
+- **いずれかのタブでフォントを変更すると、開いている全 Workspace（種別を問わず）の対応する領域と `ui-settings.json` に同期する。** Shell 側に共通の伝播・永続化ヘルパー（`PropagateWorkspaceEditorFontFamily`）を新設し、NoteNest/IdeaNest/ChatNest/TempNest の各 PropertyChanged ハンドラから呼び出す形に整理した。
+- **アプリ全体の UI フォント（メニュー・タブ・ボタン・ダイアログ）には一切影響しない。**
+- **変更なし事項**: UI レイアウト変更なし（フォント選択導線の追加のみ）。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォントサイズの仕様・挙動は変更していない。
+- **テストを更新・追加した**: `EditorLayoutTests` に、`WorkspaceEditorFontFamily` の既定値・候補一覧（7 種類）・不正値フォールバック・旧設定からの移行（`ResolveWorkspaceEditorFontFamily`）・round-trip、IdeaNest/ChatNest/TempNest 各 ViewModel の `ContentFontFamily` 既定値・変更時に未保存状態を立てないことの固定、IdeaNest/ChatNest/TempNest の保存モデルにフォント項目が存在しないことの型レベル確認を追加した。v2.14.15 で追加した「他 Workspace に FontFamily 概念が存在しないこと」を確認するテストは、今回の意図（Workspace 共通化）と矛盾するため、削除ではなく「反映されるが保存対象にはならないこと」を確認する新仕様のテストへ更新した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.16 — BUG: NoteNest エディタフォント種類を Workspace 保存対象から分離
 
 - **バグ修正: v2.14.15（L21）で追加した NoteNest エディタフォント種類の UI 設定が、実際には Workspace ファイル本体（`.notenest`/`.nestsuite` payload の `settings.fontFamily`）にも影響し得る構造だった問題を修正した。** レビュー指摘のとおり、`EditorStateViewModel.FontFamily` の変更は `SettingsChanged` を発火し `EditorChangeCoordinator` がデータ変更として扱うため、フォント種類を変えただけで NoteNest タブが未保存扱いになり、次回保存で `settings.fontFamily` が UI 設定側の値に更新され得た。「UI 設定として扱い、Workspace ファイル本体には保存しない」という v2.14.15 の意図とズレていたため分離した。
