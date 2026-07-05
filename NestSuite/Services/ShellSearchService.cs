@@ -66,62 +66,80 @@ public static class ShellSearchService
     /// <summary>結果件数の上限。これを超える一致がある場合は先頭からこの件数まで切り詰める。</summary>
     public const int MaxResults = 100;
 
+    /// <summary>結果を最大 <see cref="MaxResults"/> 件に切り詰めて返す。件数がちょうど上限だっただけなのか、
+    /// 実際に切り詰めが発生したのかは呼び出し側から区別できないため、切り詰めの有無を知りたい場合は
+    /// <see cref="Search(string, IEnumerable{ShellSearchTabEntry}, out bool)"/> を使うこと。</summary>
     public static IReadOnlyList<ShellSearchResult> Search(string query, IEnumerable<ShellSearchTabEntry> tabs)
+        => Search(query, tabs, out _);
+
+    /// <summary>結果を最大 <see cref="MaxResults"/> 件に切り詰めて返す。<paramref name="isTruncated"/> には
+    /// 実際に上限を超える一致があり切り詰めが発生した場合にのみ <c>true</c> を返す
+    /// （一致がちょうど <see cref="MaxResults"/> 件だった場合は <c>false</c>）。</summary>
+    public static IReadOnlyList<ShellSearchResult> Search(
+        string query, IEnumerable<ShellSearchTabEntry> tabs, out bool isTruncated)
     {
+        isTruncated = false;
+
         var results = new List<ShellSearchResult>();
         if (string.IsNullOrEmpty(query)) return results;
+
+        // 上限を超えたかどうかを判定するため、上限より 1 件多く走査する。
+        const int scanLimit = MaxResults + 1;
 
         foreach (var tab in tabs)
         {
             switch (tab.WorkspaceViewModel)
             {
                 case MainViewModel noteVm:
-                    SearchNoteNest(tab, noteVm, query, results);
+                    SearchNoteNest(tab, noteVm, query, results, scanLimit);
                     break;
                 case IdeaNestWorkspaceViewModel ideaVm:
-                    SearchIdeaNest(tab, ideaVm, query, results);
+                    SearchIdeaNest(tab, ideaVm, query, results, scanLimit);
                     break;
                 case ChatNestWorkspaceViewModel chatVm:
-                    SearchChatNest(tab, chatVm, query, results);
+                    SearchChatNest(tab, chatVm, query, results, scanLimit);
                     break;
                 case TempNestWorkspaceViewModel tempVm:
-                    SearchTempNest(tab, tempVm, query, results);
+                    SearchTempNest(tab, tempVm, query, results, scanLimit);
                     break;
             }
-            if (results.Count >= MaxResults) break;
+            if (results.Count >= scanLimit) break;
         }
 
-        return results.Count > MaxResults ? results.Take(MaxResults).ToList() : results;
+        if (results.Count <= MaxResults) return results;
+
+        isTruncated = true;
+        return results.Take(MaxResults).ToList();
     }
 
-    private static void SearchNoteNest(ShellSearchTabEntry tab, MainViewModel vm, string query, List<ShellSearchResult> results)
+    private static void SearchNoteNest(ShellSearchTabEntry tab, MainViewModel vm, string query, List<ShellSearchResult> results, int scanLimit)
     {
         foreach (var note in vm.AllNotes)
         {
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(note.Title, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.NoteTitle, note.Title, Truncate(note.Title)));
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(note.Content, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.NoteBody, note.Title, BuildPreview(note.Content, query)));
         }
     }
 
-    private static void SearchIdeaNest(ShellSearchTabEntry tab, IdeaNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results)
+    private static void SearchIdeaNest(ShellSearchTabEntry tab, IdeaNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results, int scanLimit)
     {
         foreach (var card in vm.AllCards)
         {
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(card.Title, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.CardTitle, card.Title, Truncate(card.Title)));
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(card.Body, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.CardBody, card.Title, BuildPreview(card.Body, query)));
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             var matchedTags = card.TagsList.Where(t => Matches(t, query)).ToList();
             if (matchedTags.Count > 0)
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
@@ -129,18 +147,18 @@ public static class ShellSearchService
         }
     }
 
-    private static void SearchChatNest(ShellSearchTabEntry tab, ChatNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results)
+    private static void SearchChatNest(ShellSearchTabEntry tab, ChatNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results, int scanLimit)
     {
         foreach (var message in vm.Messages)
         {
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(message.Text, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.ChatMessage, message.Speaker.ToString(), BuildPreview(message.Text, query)));
         }
     }
 
-    private static void SearchTempNest(ShellSearchTabEntry tab, TempNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results)
+    private static void SearchTempNest(ShellSearchTabEntry tab, TempNestWorkspaceViewModel vm, string query, List<ShellSearchResult> results, int scanLimit)
     {
         var slots = new (string Name, TempNestSlotViewModel Slot)[]
         {
@@ -148,11 +166,11 @@ public static class ShellSearchService
         };
         foreach (var (name, slot) in slots)
         {
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(slot.Title, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.TempSlotTitle, name, Truncate(slot.Title)));
-            if (results.Count >= MaxResults) return;
+            if (results.Count >= scanLimit) return;
             if (Matches(slot.Body, query))
                 results.Add(new ShellSearchResult(tab.WorkspaceKind, tab.TabId, tab.TabTitle,
                     ShellSearchSourceKind.TempSlotBody, name, BuildPreview(slot.Body, query)));

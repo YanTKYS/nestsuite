@@ -68,11 +68,11 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel
             return;
         }
 
-        var matches = ShellSearchService.Search(SearchText, _getTabs());
+        var matches = ShellSearchService.Search(SearchText, _getTabs(), out var isTruncated);
         foreach (var match in matches)
             Results.Add(match);
 
-        StatusMessage = matches.Count >= ShellSearchService.MaxResults
+        StatusMessage = isTruncated
             ? "結果が多すぎるため、先頭100件のみ表示しています。"
             : "";
     }

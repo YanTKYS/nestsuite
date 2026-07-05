@@ -59,6 +59,23 @@ public class ShellSearchPanelViewModelTests
     }
 
     [Fact]
+    public void SearchText_ExactlyMaxResults_DoesNotShowTruncationMessage()
+    {
+        // レビュー指摘: 一致がちょうど MaxResults 件だっただけの場合、実際には切り詰められて
+        // いないので「結果が多すぎる」メッセージを出してはいけない。
+        var vm = new IdeaNestWorkspaceViewModel();
+        for (int i = 0; i < ShellSearchService.MaxResults; i++)
+            vm.AllCards.Add(new IdeaCardViewModel(new Idea { Title = $"検索対象{i}", Body = "" }));
+        var panel = new ShellSearchPanelViewModel(() =>
+            new[] { new ShellSearchTabEntry("t1", "A", NestSuiteWorkspaceKind.IdeaNest, vm) });
+
+        panel.SearchText = "検索対象";
+
+        Assert.Equal(ShellSearchService.MaxResults, panel.Results.Count);
+        Assert.False(panel.HasStatusMessage);
+    }
+
+    [Fact]
     public void Reset_ClearsSearchTextResultsAndMessage()
     {
         var panel = new ShellSearchPanelViewModel(() => new[] { CreateIdeaTab("t1", "A", "検索対象カード") });
