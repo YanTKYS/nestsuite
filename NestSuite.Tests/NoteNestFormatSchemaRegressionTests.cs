@@ -133,6 +133,9 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         var note = context.Notes.AddNote(notebook, "リンク先")!;
         context.Editor.SelectNote(note);
         context.Editor.Content = "[TODO] 本文と [[リンク先]]";
+        // v2.14.16 BUG: FontFamily は NestSuite の UI 設定（NoteNestEditorFontFamily）駆動の
+        // 表示専用値になったため、ここで直接変更しても Workspace ファイルの
+        // settings.fontFamily には反映されない（SavedFontFamily ＝ 読込時点の値のみを書き戻す）。
         context.Editor.FontFamily = "Meiryo UI";
         context.Editor.FontSize = 18;
         var task = context.Tasks.AddTask("today", "確認タスク")!;
@@ -143,6 +146,12 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         var path = Path.Combine(_tempDir, "regression.notenest");
 
         context.Lifecycle.Save(path);
+
+        // v2.14.16 BUG: 保存直後の payload に UI 設定駆動の FontFamily（"Meiryo UI"）が
+        // 書き込まれていないことを確認する（サンプルプロジェクトの既定 "Yu Gothic UI" のまま）。
+        using (var savedJson = JsonDocument.Parse(File.ReadAllText(path)))
+            Assert.Equal("Yu Gothic UI", savedJson.RootElement.GetProperty("settings").GetProperty("fontFamily").GetString());
+
         context.Lifecycle.Open(path);
 
         var reloadedNote = Assert.Single(context.Notes.AllNotes.Where(item => item.Title == "リンク先"));
@@ -152,7 +161,10 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.Equal("保存するコメント", reloadedTask.Comment);
         Assert.Equal(reloadedNote.Id, reloadedTask.LinkedNoteId);
         Assert.Equal(reloadedNote.Id, context.Editor.SelectedNote?.Id);
-        Assert.Equal("Meiryo UI", context.Editor.FontFamily);
+        // v2.14.16 BUG: FontFamily は Workspace 保存対象から分離したため、
+        // 保存前に直接変更した "Meiryo UI" ではなく、ファイルの settings.fontFamily
+        // （読込時点の既定 "Yu Gothic UI"）が復元される。
+        Assert.Equal("Yu Gothic UI", context.Editor.FontFamily);
         Assert.Equal(18, context.Editor.FontSize);
         Assert.Contains(context.Markers.Markers, marker => marker.Type == "TODO" && marker.SourceNote?.Id == reloadedNote.Id);
         Assert.False(context.Session.IsModified);

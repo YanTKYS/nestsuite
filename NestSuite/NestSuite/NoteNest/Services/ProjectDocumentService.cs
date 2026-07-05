@@ -34,7 +34,11 @@ public sealed class ProjectDocumentService
         Settings = new AppSettings
         {
             LastOpenedNoteId = editor.SelectedNote?.Id ?? "",
-            FontFamily = editor.FontFamily,
+            // v2.14.16 BUG: FontFamily は NestSuite UI 設定（NoteNestEditorFontFamily）駆動の
+            // 表示専用値のため、Workspace ファイルへは読込時点の値（SavedFontFamily）を
+            // そのまま書き戻す。editor.FontFamily（現在の表示値）を書き戻すと、UI 設定の
+            // 変更が Workspace ファイル本体の差分になってしまうため使用しない。
+            FontFamily = editor.SavedFontFamily,
             FontSize = editor.FontSize,
         },
     };

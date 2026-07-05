@@ -7,6 +7,17 @@
 
 ---
 
+## v2.14.16 — BUG: NoteNest エディタフォント種類を Workspace 保存対象から分離
+
+- **バグ修正: v2.14.15（L21）で追加した NoteNest エディタフォント種類の UI 設定が、実際には Workspace ファイル本体（`.notenest`/`.nestsuite` payload の `settings.fontFamily`）にも影響し得る構造だった問題を修正した。** レビュー指摘のとおり、`EditorStateViewModel.FontFamily` の変更は `SettingsChanged` を発火し `EditorChangeCoordinator` がデータ変更として扱うため、フォント種類を変えただけで NoteNest タブが未保存扱いになり、次回保存で `settings.fontFamily` が UI 設定側の値に更新され得た。「UI 設定として扱い、Workspace ファイル本体には保存しない」という v2.14.15 の意図とズレていたため分離した。
+- **`EditorStateViewModel` に表示用の `FontFamily` と保存対象の `SavedFontFamily` を分離した。** `FontFamily`（NestSuite UI 設定 `NoteNestEditorFontFamily` 駆動の表示専用値）を変更しても `SettingsChanged` は発火せず、Workspace は dirty にならない。`SavedFontFamily` はファイル読込時点（`LoadSettings`）の値のみを保持し、`ProjectDocumentService.Build()` はこちらを `Settings.FontFamily` へ書き戻す。これにより NoteNest エディタのフォント種類変更が Workspace ファイルの差分を生まなくなった。
+- **フォントサイズの挙動は変更していない。** `EditorStateViewModel.FontSize` は引き続き `SettingsChanged` を発火し、Workspace を dirty にする既存挙動のまま（本バグ修正の対象外）。
+- **`AppSettings.FontFamily` フィールド自体は削除・変更していない。** 既存 `.notenest`/`.nestsuite` ファイルに保存済みのフォント設定は引き続き読み込め、読込時点の値としてそのまま保存し続ける（round-trip は維持）。今回変更したのは「NoteNest エディタの現在の表示フォントを Shell の UI 設定で上書きしても、その値がファイルへ書き込まれない」という一点のみ。
+- **変更なし事項**: UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを更新・追加した**: `NoteNestFormatSchemaRegressionTests.SaveAndReloadPreservesNotesTasksLinksSettingsSelectionAndSchema` を新しい仕様（直接の FontFamily 変更は保存対象に含まれない）に合わせて更新した（既存テストの削除・スキップ化ではなく、意図的な仕様変更に合わせた期待値の修正）。`EditorStateViewModelTests` / `MainViewModelCompositionTests` / `ProjectDocumentServiceTests` に、FontFamily 変更が Workspace を dirty にしないこと・`SavedFontFamily` が読込時点の値を保持すること・`Build()` が `SavedFontFamily` を書き戻すことを固定する新規テストを追加した。
+
+---
+
 ## v2.14.15 — L21: NoteNest エディタフォント種類の変更設定
 
 - **L21: NoteNest 本文エディタのフォント種類を、端末にインストール済みのフォントから選択できるようにした。** 主目的はノート本文の読み書きにおける視認性・可読性の改善。フォントサイズ変更（既存機能）とは分けて実装している。
