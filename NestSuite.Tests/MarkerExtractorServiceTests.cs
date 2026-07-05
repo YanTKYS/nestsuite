@@ -66,6 +66,41 @@ public class MarkerExtractorServiceTests
         Assert.Equal("spaces", results[0].Excerpt);
     }
 
+    // v2.14.19 バグ修正: 角括弧付きマーカーであっても行頭（または行頭の空白後）でなければ検出しない。
+
+    [Fact]
+    public void Extract_TodoWordAlone_NotMatched()
+    {
+        Assert.Empty(_svc.Extract("TODO 対応する", "Note"));
+    }
+
+    [Fact]
+    public void Extract_BracketedMarkerMidSentence_NotMatched()
+    {
+        Assert.Empty(_svc.Extract("これは [TODO] です", "Note"));
+    }
+
+    [Fact]
+    public void Extract_BracketedMarkerImmediatelyAfterText_NotMatched()
+    {
+        Assert.Empty(_svc.Extract("abc[TODO] 対応する", "Note"));
+    }
+
+    [Fact]
+    public void Extract_IndentedBracketedTodo_Matched()
+    {
+        // 行頭の空白後にある [TODO] は行頭扱いで検出する。
+        var results = _svc.Extract("    [TODO] インデント付き", "Note");
+        Assert.Single(results);
+        Assert.Equal("TODO", results[0].Type);
+    }
+
+    [Fact]
+    public void Extract_NotebookPartialMatch_NotMatched()
+    {
+        Assert.Empty(_svc.Extract("[NOTEBOOK] 対応しない", "Note"));
+    }
+
     // ── HasMarkers ────────────────────────────────────────────────────────────
 
     [Fact]
@@ -102,5 +137,17 @@ public class MarkerExtractorServiceTests
     public void HasMarkers_ReturnsFalseForHack()
     {
         Assert.False(MarkerExtractorService.HasMarkers("[HACK] not a recognized marker"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsFalseForBracketedMarkerMidSentence()
+    {
+        Assert.False(MarkerExtractorService.HasMarkers("これは [TODO] です"));
+    }
+
+    [Fact]
+    public void HasMarkers_ReturnsFalseForWordAlone()
+    {
+        Assert.False(MarkerExtractorService.HasMarkers("TODO 対応する"));
     }
 }

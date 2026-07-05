@@ -6,8 +6,12 @@ public sealed record LineHighlightInfo(int LogicalIndex, LineHighlightKind Kind)
 
 public static class MarkerLineDetector
 {
-    // Returns one LineHighlightInfo per logical line that contains a recognised marker.
-    // Priority when multiple markers appear on the same line: FIXME > TODO > NOTE > NoteLink.
+    /// <summary>
+    /// バグ修正 v2.14.19: 1 行につき 1 件、行頭（または行頭の空白後）にある角括弧付きマーカー
+    /// （<c>[TODO]</c> / <c>[FIXME]</c> / <c>[NOTE]</c>、<see cref="NestSuite.Services.MarkerExtractorService"/>
+    /// と同一の判定ルール・大文字小文字区別）を検出する。単語単体や文中の角括弧は対象外。
+    /// 行頭に該当マーカーがない場合のみ、行内のどこにあっても <c>[[</c>（NoteLink）を検出する。
+    /// </summary>
     public static IReadOnlyList<LineHighlightInfo> Detect(string text)
     {
         if (string.IsNullOrEmpty(text)) return Array.Empty<LineHighlightInfo>();
@@ -32,37 +36,27 @@ public static class MarkerLineDetector
     private static LineHighlightKind? ClassifyLine(string text, int offset, int length)
     {
         ReadOnlySpan<char> span = text.AsSpan(offset, length);
-        if (span.IndexOf("FIXME", StringComparison.OrdinalIgnoreCase) >= 0) return LineHighlightKind.Fixme;
-        if (span.IndexOf("TODO",  StringComparison.OrdinalIgnoreCase) >= 0) return LineHighlightKind.Todo;
-        if (ContainsNoteOutsideBrackets(span))                               return LineHighlightKind.Note;
-        if (span.IndexOf("[[",    StringComparison.Ordinal)            >= 0) return LineHighlightKind.NoteLink;
+        ReadOnlySpan<char> trimmed = TrimLeadingSpacesAndTabs(span);
+        if (StartsWithBracketedMarker(trimmed, "FIXME")) return LineHighlightKind.Fixme;
+        if (StartsWithBracketedMarker(trimmed, "TODO"))  return LineHighlightKind.Todo;
+        if (StartsWithBracketedMarker(trimmed, "NOTE"))  return LineHighlightKind.Note;
+        if (span.IndexOf("[[", StringComparison.Ordinal) >= 0) return LineHighlightKind.NoteLink;
         return null;
     }
 
-    // Returns true if "NOTE" (case-insensitive) appears outside any [[...]] span.
-    // Content inside [[ ... ]] is skipped so that note titles like [[My Note]] do
-    // not falsely trigger the NOTE marker. Unclosed [[ consumes the rest of the line.
-    private static bool ContainsNoteOutsideBrackets(ReadOnlySpan<char> span)
+    private static ReadOnlySpan<char> TrimLeadingSpacesAndTabs(ReadOnlySpan<char> span)
     {
         int i = 0;
-        while (i < span.Length)
-        {
-            if (i + 1 < span.Length && span[i] == '[' && span[i + 1] == '[')
-            {
-                int closeIdx = -1;
-                for (int j = i + 2; j + 1 < span.Length; j++)
-                {
-                    if (span[j] == ']' && span[j + 1] == ']') { closeIdx = j + 2; break; }
-                }
-                if (closeIdx < 0) return false; // unclosed [[, nothing more to check
-                i = closeIdx;
-                continue;
-            }
-            if (i + 4 <= span.Length &&
-                span.Slice(i, 4).Equals("NOTE".AsSpan(), StringComparison.OrdinalIgnoreCase))
-                return true;
-            i++;
-        }
-        return false;
+        while (i < span.Length && (span[i] == ' ' || span[i] == '\t')) i++;
+        return span[i..];
+    }
+
+    // trimmed が "[" + markerName + "]" で始まるか（大文字小文字区別）を、割り当てなしで判定する。
+    private static bool StartsWithBracketedMarker(ReadOnlySpan<char> trimmed, string markerName)
+    {
+        if (trimmed.Length < markerName.Length + 2) return false;
+        if (trimmed[0] != '[') return false;
+        if (!trimmed.Slice(1, markerName.Length).SequenceEqual(markerName.AsSpan())) return false;
+        return trimmed[1 + markerName.Length] == ']';
     }
 }

@@ -32,33 +32,44 @@ public class NoteEditorHostHighlightRegressionTests
     }
 
     // v2.8.2 regression: HACK was removed from the marker system.
+    // v2.14.19: バグ修正で角括弧付き・行頭条件が必須になったため、除外確認も角括弧付き表記に更新した
+    // （HACK は角括弧付き・行頭であっても、既存マーカー種別に含まれないため対象外のまま）。
     [Fact]
     public void Classify_HackLine_ExcludedFromHighlightSystem()
     {
-        Assert.Empty(MarkerLineDetector.Detect("HACK: this is a workaround"));
+        Assert.Empty(MarkerLineDetector.Detect("[HACK] this is a workaround"));
     }
 
     [Fact]
     public void Classify_HackLowercase_ExcludedFromHighlightSystem()
     {
-        Assert.Empty(MarkerLineDetector.Detect("hack: lowercase workaround"));
+        Assert.Empty(MarkerLineDetector.Detect("[hack] lowercase workaround"));
+    }
+
+    // v2.14.19 バグ修正: マーカーは角括弧付き・行頭・大文字小文字区別ありに変更した
+    // （NestSuite.Services.MarkerExtractorService と同一ルール）。
+    [Theory]
+    [InlineData("[TODO]",  LineHighlightKind.Todo)]
+    [InlineData("[FIXME]", LineHighlightKind.Fixme)]
+    [InlineData("[NOTE]",  LineHighlightKind.Note)]
+    public void Classify_BracketedMarkerAtLineStart_CorrectKind(string marker, LineHighlightKind expected)
+    {
+        var result = MarkerLineDetector.Detect($"{marker} something here");
+        Assert.Single(result);
+        Assert.Equal(expected, result[0].Kind);
     }
 
     [Theory]
-    [InlineData("todo",  LineHighlightKind.Todo)]
-    [InlineData("Todo",  LineHighlightKind.Todo)]
-    [InlineData("TODO",  LineHighlightKind.Todo)]
-    [InlineData("fixme", LineHighlightKind.Fixme)]
-    [InlineData("Fixme", LineHighlightKind.Fixme)]
-    [InlineData("FIXME", LineHighlightKind.Fixme)]
-    [InlineData("note",  LineHighlightKind.Note)]
-    [InlineData("Note",  LineHighlightKind.Note)]
-    [InlineData("NOTE",  LineHighlightKind.Note)]
-    public void Classify_MarkerKeyword_CaseInsensitive_CorrectKind(string marker, LineHighlightKind expected)
+    [InlineData("todo")]
+    [InlineData("Todo")]
+    [InlineData("fixme")]
+    [InlineData("Fixme")]
+    [InlineData("note")]
+    [InlineData("Note")]
+    public void Classify_BracketedMarker_LowercaseOrMixedCase_NotDetected(string marker)
     {
-        var result = MarkerLineDetector.Detect($"{marker}: something here");
-        Assert.Single(result);
-        Assert.Equal(expected, result[0].Kind);
+        // 大文字小文字を区別するため、完全一致の大文字表記以外は検出しない。
+        Assert.Empty(MarkerLineDetector.Detect($"[{marker}] something here"));
     }
 
     // v2.8.4 hotfix regression: "note" inside [[...]] title must not trigger Note kind.
@@ -75,45 +86,33 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.Equal(LineHighlightKind.NoteLink, result[0].Kind);
     }
 
-    // Regression: NOTE keyword appearing before [[...]] must win over NoteLink.
+    // v2.14.19: 行頭に角括弧付き NOTE がなければ、文中の NOTE（単語単体）はもう Note の根拠にならない。
+    // [[...]] が行内にあれば NoteLink として扱われる。
     [Fact]
-    public void Classify_NoteKeywordOutsideBracket_IsNote_NotNoteLink()
+    public void Classify_NoteKeywordOutsideBracket_WithoutLineStartMarker_IsNoteLink_NotNote()
     {
         var result = MarkerLineDetector.Detect("NOTE: see [[reference]]");
         Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Note, result[0].Kind);
+        Assert.Equal(LineHighlightKind.NoteLink, result[0].Kind);
     }
 
     [Fact]
-    public void Classify_NoteKeywordAfterClosedBracket_IsNote_NotNoteLink()
+    public void Classify_NoteKeywordAfterClosedBracket_WithoutLineStartMarker_IsNoteLink_NotNote()
     {
         var result = MarkerLineDetector.Detect("[[ref]] NOTE: see below");
         Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Note, result[0].Kind);
+        Assert.Equal(LineHighlightKind.NoteLink, result[0].Kind);
     }
 
-    // ── 2. Priority: FIXME > TODO > NOTE > NoteLink ───────────────────────────
-
-    [Fact]
-    public void Priority_FixmeBeatorTodo()
-    {
-        var result = MarkerLineDetector.Detect("TODO and FIXME on same line");
-        Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
-    }
-
-    [Fact]
-    public void Priority_TodoBeatsNote()
-    {
-        var result = MarkerLineDetector.Detect("NOTE see also TODO");
-        Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
-    }
+    // ── 2. Priority: 行頭マーカー vs NoteLink ─────────────────────────────────
+    // v2.14.19: TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の優先順位という
+    // 概念自体が成立しなくなった。引き続き意味を持つのは「行頭マーカーは [[NoteLink]] より優先される」
+    // という関係のみ。
 
     [Fact]
     public void Priority_NoteBeatsNoteLink()
     {
-        var result = MarkerLineDetector.Detect("NOTE: see [[reference]]");
+        var result = MarkerLineDetector.Detect("[NOTE] see [[reference]]");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Note, result[0].Kind);
     }
@@ -121,7 +120,7 @@ public class NoteEditorHostHighlightRegressionTests
     [Fact]
     public void Priority_TodoBeatsNoteLink()
     {
-        var result = MarkerLineDetector.Detect("TODO: check [[My Note]]");
+        var result = MarkerLineDetector.Detect("[TODO] check [[My Note]]");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
     }
@@ -129,15 +128,15 @@ public class NoteEditorHostHighlightRegressionTests
     [Fact]
     public void Priority_FixmeBeatsNoteLink()
     {
-        var result = MarkerLineDetector.Detect("FIXME: broken [[ref link]]");
+        var result = MarkerLineDetector.Detect("[FIXME] broken [[ref link]]");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
     }
 
     [Fact]
-    public void Priority_AllFourKindsOnSameLine_FixmeAlwaysWins()
+    public void Priority_LineStartMarker_BeatsNoteLinkEvenWithTrailingKeywords()
     {
-        var result = MarkerLineDetector.Detect("TODO [[link]] NOTE FIXME all mixed");
+        var result = MarkerLineDetector.Detect("[FIXME] TODO NOTE [[link]] all mixed");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
     }
@@ -145,7 +144,7 @@ public class NoteEditorHostHighlightRegressionTests
     [Fact]
     public void Priority_MultiLine_EachLineClassifiedIndependently()
     {
-        var text = "FIXME: line 0\nTODO: line 1\nNOTE: line 2\n[[link]] line 3\nplain line 4";
+        var text = "[FIXME] line 0\n[TODO] line 1\n[NOTE] line 2\n[[link]] line 3\nplain line 4";
         var result = MarkerLineDetector.Detect(text);
 
         Assert.Equal(4, result.Count);
