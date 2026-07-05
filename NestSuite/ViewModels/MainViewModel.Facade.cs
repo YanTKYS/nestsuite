@@ -85,6 +85,10 @@ public partial class MainViewModel
 
     public static readonly IReadOnlyList<double> EditorFontSizeChoices = [12, 14, 16, 18, 20];
 
+    /// <summary>L21: NoteNest 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。</summary>
+    public static readonly IReadOnlyList<string> EditorFontFamilyChoices =
+        NestSuite.Services.UiSettingsService.ValidNoteNestEditorFontFamilies;
+
     // 複数責務を組み合わせるため MainViewModel に残す派生表示。
     public static string ApplicationVersion
     {

@@ -7,6 +7,19 @@
 
 ---
 
+## v2.14.15 — L21: NoteNest エディタフォント種類の変更設定
+
+- **L21: NoteNest 本文エディタのフォント種類を、端末にインストール済みのフォントから選択できるようにした。** 主目的はノート本文の読み書きにおける視認性・可読性の改善。フォントサイズ変更（既存機能）とは分けて実装している。
+- **選択候補は主要な 5 種類に絞った**（`Yu Gothic UI`（既定）/ `Meiryo UI` / `MS Gothic` / `BIZ UDGothic` / `Consolas`）。一般職員向けツールとして過剰に細かい一覧を出すと認知負荷が高くなるため、外部フォント同梱・全フォント列挙は行っていない。
+- **設定導線は NoteNest Workspace 本文エディタ上部のツールバーに新設したコンボボックス。** 既存のフォントサイズ選択コンボボックスの隣に配置し、選択すると開いている NoteNest 本文エディタへ再起動なしで即時反映される。
+- **設定値は `ui-settings.json` にのみ保存する（`NoteNestEditorFontFamily`）。** Workspace ファイル本体（`.notenest`/`.nestsuite`）には新規保存項目を追加していない。既存のフォントサイズ（`NoteNestEditorFontSize`）と対称に、Shell 起動時・ファイルを開いた直後に NoteNest 本文エディタへ適用し、いずれかのタブで変更すると他の NoteNest タブ・`ui-settings.json` へも同期する。
+- **不正・存在しないフォント名は既定へ安全にフォールバックする。** `UiSettingsService.ValidateNoteNestEditorFontFamily` が `ui-settings.json` の値を検証し、未設定・空文字・候補外（削除されたフォント名の残存等）の場合は既定 `Yu Gothic UI` を返す。これにより起動や NoteNest 表示が壊れない。
+- **アプリ全体の UI フォントには一切影響しない。** メニュー・タブ・ボタン・ダイアログの `FontFamily` は変更しておらず、IdeaNest / ChatNest / TempNest にも適用されない（対象は NoteNest 本文エディタの `EditorFontFamily` のみ）。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォントサイズの仕様・挙動は変更していない。
+- **テストを追加した**: `EditorLayoutTests` に、`NoteNestEditorFontFamily` の既定値・`ValidateNoteNestEditorFontFamily` の正常系（5 候補）・異常系（未設定・空文字・空白・候補外フォント名）のフォールバック・`ui-settings.json` 相当のシリアライズ round-trip・`MainViewModel.EditorFontFamilyChoices` の内容と既定復帰可能性・`MainViewModel.EditorFontFamily` が NoteNest エディタへのみ反映されることを固定するテストを追加した。IdeaNest / ChatNest / TempNest の ViewModel に `FontFamily` 関連メンバーが存在しないことを型レベルで確認するテストも追加し、意図しない適用がないことを固定した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.14 — BUG: NoteNest 未保存経過時間の異常値修正
 
 - **バグ修正: NoteNest Workspace のステータスバーで、未保存時の経過時間として「未保存（1065313408分）」のような異常値が表示される問題を修正した。** 桁数（約 2025 年相当）から `DateTime.Now - DateTime.MinValue` に相当する計算になっていたと推定される。ChatNest / IdeaNest では発生せず、NoteNest でのみ発生し、一度自動保存されると解消する挙動と整合する。

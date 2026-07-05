@@ -392,6 +392,12 @@
                               ItemsSource="{x:Static vm:MainViewModel.EditorFontSizeChoices}"
                               SelectedItem="{Binding EditorFontSize, Mode=TwoWay}"
                               ToolTip="フォントサイズ"/>
+                    <ComboBox DockPanel.Dock="Right"
+                              FontSize="11" Width="108" Margin="0,0,4,0"
+                              VerticalAlignment="Center"
+                              ItemsSource="{x:Static vm:MainViewModel.EditorFontFamilyChoices}"
+                              SelectedItem="{Binding EditorFontFamily, Mode=TwoWay}"
+                              ToolTip="エディタフォント（既定: Yu Gothic UI）"/>
                     <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" MaxWidth="140"/>
