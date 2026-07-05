@@ -386,18 +386,14 @@
                         <TextBlock Text="コメント編集中"
                                    FontSize="10.5" Foreground="{DynamicResource CommentBadgeFg}"/>
                     </Border>
+                    <!-- v2.14.18 SH: Workspace 共通フォント種類の ComboBox はメニューバー（表示 > 本文フォント）へ移動した。
+                         フォントサイズは NoteNest 固有設定のためここに残す。 -->
                     <ComboBox DockPanel.Dock="Right"
                               FontSize="11" Width="52" Margin="0,0,4,0"
                               VerticalAlignment="Center"
                               ItemsSource="{x:Static vm:MainViewModel.EditorFontSizeChoices}"
                               SelectedItem="{Binding EditorFontSize, Mode=TwoWay}"
                               ToolTip="フォントサイズ"/>
-                    <ComboBox DockPanel.Dock="Right"
-                              FontSize="11" Width="108" Margin="0,0,4,0"
-                              VerticalAlignment="Center"
-                              ItemsSource="{x:Static vm:MainViewModel.EditorFontFamilyChoices}"
-                              SelectedItem="{Binding EditorFontFamily, Mode=TwoWay}"
-                              ToolTip="エディタフォント（既定: Yu Gothic UI）"/>
                     <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" MaxWidth="140"/>

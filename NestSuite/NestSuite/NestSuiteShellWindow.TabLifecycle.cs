@@ -169,17 +169,20 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、変更元以外の
-    /// 全セッションへ伝播し ui-settings.json（WorkspaceEditorFontFamily）へ永続化する。
+    /// L22/v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、
+    /// 変更元以外の全セッションへ伝播し ui-settings.json（WorkspaceEditorFontFamily）へ永続化する。
     /// Workspace ファイル本体（.notenest/.nestsuite/.ideanest/.chatnest/tempnest.json）には
     /// 一切保存しない（各 ViewModel の ContentFontFamily/EditorFontFamily は保存モデルに含まれない）。
+    /// <paramref name="exclude"/> は変更元 Workspace の ViewModel（既にその場で新しい値を持っている）を
+    /// 二重適用しないためのもの。表示 > 本文フォント メニューのように変更元 Workspace が存在しない
+    /// 呼び出しでは <c>null</c> を渡し、開いている全セッションへ適用する。
     /// </summary>
-    private void PropagateWorkspaceEditorFontFamily(string family, object exclude)
+    private void PropagateWorkspaceEditorFontFamily(string family, object? exclude)
     {
         _workspaceEditorFontFamily = family;
         foreach (var s in _sessionManager.Sessions)
         {
-            if (ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
+            if (exclude != null && ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
             switch (s.WorkspaceViewModel)
             {
                 case MainViewModel otherNoteVm: otherNoteVm.EditorFontFamily = family; break;
@@ -192,6 +195,7 @@ public partial class NestSuiteShellWindow
         var ui = uiSvc.Load();
         ui.WorkspaceEditorFontFamily = family;
         uiSvc.Save(ui);
+        UpdateWorkspaceFontMenuChecks();
     }
 
     private void OnChatNestPropertyChanged(object? sender, PropertyChangedEventArgs e)

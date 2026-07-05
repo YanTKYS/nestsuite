@@ -69,6 +69,20 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // （SourceInitialized 以前は HWND が存在せず DwmSetWindowAttribute を呼べないため）
         SourceInitialized += (_, _) => ApplyTitleBarTheme(_currentTheme);
         UpdateThemeMenuChecks();
+
+        // v2.14.18 SH: Workspace 共通フォント種類メニュー（表示 > 本文フォント）の選択状態初期化。
+        _workspaceFontMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
+        {
+            { "Yu Gothic UI", WorkspaceFontYuGothicUiMenuItem },
+            { "Meiryo UI", WorkspaceFontMeiryoUiMenuItem },
+            { "MS Gothic", WorkspaceFontMsGothicMenuItem },
+            { "BIZ UDGothic", WorkspaceFontBizUdGothicMenuItem },
+            { "BIZ UDMincho", WorkspaceFontBizUdMinchoMenuItem },
+            { "UD Digi Kyokasho N-R", WorkspaceFontUdDigiKyokashoMenuItem },
+            { "Consolas", WorkspaceFontConsolasMenuItem },
+        };
+        UpdateWorkspaceFontMenuChecks();
+
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
         UpdateRecentFilesMenu();
@@ -298,6 +312,31 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         ThemeLightMenuItem.IsChecked = _currentTheme == AppTheme.Light;
         ThemeDarkMenuItem.IsChecked = _currentTheme == AppTheme.Dark;
+    }
+
+    /// <summary>
+    /// v2.14.18 SH: 表示 > 本文フォント メニューの選択項目。ツールメニュー（<see cref="_toolMenuItems"/>）
+    /// と対称の Tag→MenuItem 辞書。<see cref="InitializeComponent"/> 後に構築する。
+    /// </summary>
+    private Dictionary<string, MenuItem> _workspaceFontMenuItems = null!;
+
+    /// <summary>
+    /// v2.14.18 SH: 表示 > 本文フォント メニューのクリックハンドラ。NoteNest を開いていない状態でも
+    /// 呼び出せる（Workspace 選択に依存しない Shell メニュー操作のため）。
+    /// 変更元 Workspace が存在しないため、<see cref="PropagateWorkspaceEditorFontFamily"/> は
+    /// 除外なし（全セッション対象）で呼ぶ。
+    /// </summary>
+    private void MenuWorkspaceFont_Click(object sender, RoutedEventArgs e)
+    {
+        var family = UiSettingsService.ValidateWorkspaceEditorFontFamily((string)((FrameworkElement)sender).Tag);
+        PropagateWorkspaceEditorFontFamily(family, exclude: null);
+    }
+
+    /// <summary>v2.14.18 SH: 現在の Workspace 共通フォント種類をメニューのチェック状態へ反映する。</summary>
+    private void UpdateWorkspaceFontMenuChecks()
+    {
+        foreach (var (family, menuItem) in _workspaceFontMenuItems)
+            menuItem.IsChecked = family == _workspaceEditorFontFamily;
     }
 
     // ── v1.7.3: ファイル単位タブ管理 ─────────────────────────────────────
