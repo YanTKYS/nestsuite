@@ -10,36 +10,10 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // EnsureTabForToolId（タブランチャー起動口）・タブ生成・ViewModel 置換・PropertyChanged 購読を扱う partial。
-    // 新しい Workspace 起動は EnsureTabForToolId を通すこと。
-
-    /// <summary>
-    /// 指定ツール ID に対応するタブを開く。既存タブがあればそれをアクティブ化し、
-    /// なければ無題タブを新規作成してアクティブ化する。
-    /// v1.7.3: サイドバー・ツールメニューのクリックから呼ばれるタブランチャーエントリポイント。
-    /// </summary>
-    private void EnsureTabForToolId(string toolId)
-    {
-        var existing = _tabs.FirstOrDefault(t => t.ToolId == toolId);
-        if (existing != null)
-        {
-            ActivateTab(existing);
-            return;
-        }
-
-        var kind = toolId switch
-        {
-            NestSuiteToolRegistry.NoteNestToolId => NestSuiteWorkspaceKind.NoteNest,
-            NestSuiteToolRegistry.ChatNestToolId => NestSuiteWorkspaceKind.ChatNest,
-            NestSuiteToolRegistry.IdeaNestToolId => NestSuiteWorkspaceKind.IdeaNest,
-            _ => throw new ArgumentException($"未知のツール ID: {toolId}", nameof(toolId))
-        };
-
-        var tab = NestSuiteTabFactory.CreateUntitled(kind);
-        _tabs.Add(tab);
-        _sessionManager.Add(CreateSessionForTab(tab));
-        ActivateTab(tab);
-    }
+    // タブ生成・ViewModel 置換・PropertyChanged 購読を扱う partial。
+    // v2.15.1 SH: 各 Nest の新規作成はファイル > 新規作成・タブバー ＋ ボタン（NewWorkspaceSession）に
+    // 一本化した。かつてのツールメニュー由来の「既存タブがあれば切替、なければ新規作成」という
+    // タブランチャー（EnsureTabForToolId）はツールメニューの Nest 項目撤去に伴い削除した。
 
     private void TabStrip_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

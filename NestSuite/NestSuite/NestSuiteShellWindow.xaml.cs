@@ -87,13 +87,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         ApplyWindowSize(uiSettings);
         UpdateRecentFilesMenu();
 
-        _toolMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
-        {
-            { NestSuiteToolRegistry.NoteNestToolId, ToolMenuNoteNest },
-            { NestSuiteToolRegistry.IdeaNestToolId, ToolMenuIdeaNest },
-            { NestSuiteToolRegistry.ChatNestToolId, ToolMenuChatNest },
-        };
-
         WorkspaceView.DialogHost = this;
 
         // v1.9.2: ChatNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
@@ -315,8 +308,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     }
 
     /// <summary>
-    /// v2.14.18 SH: 表示 > 本文フォント メニューの選択項目。ツールメニュー（<see cref="_toolMenuItems"/>）
-    /// と対称の Tag→MenuItem 辞書。<see cref="InitializeComponent"/> 後に構築する。
+    /// v2.14.18 SH: 表示 > 本文フォント メニューの選択項目。Tag→MenuItem 辞書。
+    /// <see cref="InitializeComponent"/> 後に構築する。
     /// </summary>
     private Dictionary<string, MenuItem> _workspaceFontMenuItems = null!;
 
@@ -361,8 +354,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     /// <summary>現在選択中のタブのツール ID。タブ未選択時は <see cref="DefaultToolId"/>。</summary>
     public string SelectedToolId => _selectedTab?.ToolId ?? DefaultToolId;
-
-    private Dictionary<string, MenuItem> _toolMenuItems = null!;
 
     /// <summary>
     /// v1.9.1: タブに対応する WorkspaceSession を生成する。

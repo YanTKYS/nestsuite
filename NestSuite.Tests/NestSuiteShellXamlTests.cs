@@ -33,9 +33,9 @@ public class NestSuiteShellXamlTests
     }
 
     [Fact]
-    public void ShellXaml_ToolMenu_HasDescriptions()
+    public void ShellXaml_NewMenu_HasDescriptions()
     {
-        // SH-25: ツールメニュー項目に説明文を追加した
+        // SH-25 で追加した説明文は、v2.15.1 でツールメニューからファイル > 新規作成へ移動した。
         var src = ReadShellXaml();
         Assert.Contains("ノートをプロジェクト単位で管理", src);
         Assert.Contains("アイデアをカード形式で整理", src);
@@ -135,6 +135,99 @@ public class NestSuiteShellXamlTests
         // v2.15.0 SH: 横断検索は Shell の補助機能であり、新規 SearchNest Workspace ではない
         var src = ReadShellXaml();
         Assert.DoesNotContain("SearchNestWorkspaceView", src);
+    }
+
+    // ── v2.15.1 SH: 横断検索導線・メニュー整理・タブ移動ショートカット調整 ─
+
+    [Fact]
+    public void ShellXaml_ViewMenu_NoLongerContainsCrossSearchMenuItem()
+    {
+        // 横断検索は「表示」（表示切替）ではなく「ツール」（作業補助）配下へ移動した。
+        var src = ReadShellXaml();
+        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
+        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
+        Assert.True(viewMenuStart >= 0, "表示メニューが見つからない");
+        Assert.True(toolMenuStart >= 0, "ツールメニューが見つからない");
+        Assert.True(toolMenuStart < viewMenuStart, "ツールメニューは表示メニューより前に定義されている想定");
+
+        // 表示メニューの範囲（ツールメニュー終了〜表示メニュー開始の次の閉じタグまで）に
+        // 横断検索メニュー項目が含まれないことを確認する。
+        var viewMenuSection = src.Substring(viewMenuStart);
+        var viewMenuEnd = viewMenuSection.IndexOf("<MenuItem Header=\"ヘルプ(_H)\"", StringComparison.Ordinal);
+        Assert.True(viewMenuEnd >= 0, "ヘルプメニューが見つからない（表示メニューの終端検出に使用）");
+        var viewMenuOnly = viewMenuSection.Substring(0, viewMenuEnd);
+        Assert.DoesNotContain("Shell.CrossSearchMenuItem", viewMenuOnly);
+    }
+
+    [Fact]
+    public void ShellXaml_ToolMenu_ContainsCrossSearchMenuItem()
+    {
+        var src = ReadShellXaml();
+        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
+        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
+        Assert.True(toolMenuStart >= 0 && viewMenuStart > toolMenuStart);
+        var toolMenuSection = src.Substring(toolMenuStart, viewMenuStart - toolMenuStart);
+        Assert.Contains("Shell.CrossSearchMenuItem", toolMenuSection);
+        Assert.Contains("Ctrl+Shift+F", toolMenuSection);
+    }
+
+    [Fact]
+    public void ShellXaml_ToolMenu_NoLongerContainsPerNestLaunchItems()
+    {
+        // v2.15.1 SH: 各 Nest の新規作成・起動項目はツールメニューから削除し、
+        // ファイル > 新規作成 とタブバー ＋ ボタンへ集約した。
+        var src = ReadShellXaml();
+        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
+        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
+        Assert.True(toolMenuStart >= 0 && viewMenuStart > toolMenuStart);
+        var toolMenuSection = src.Substring(toolMenuStart, viewMenuStart - toolMenuStart);
+        Assert.DoesNotContain("Shell.MenuToolNoteNest", toolMenuSection);
+        Assert.DoesNotContain("Shell.MenuToolIdeaNest", toolMenuSection);
+        Assert.DoesNotContain("Shell.MenuToolChatNest", toolMenuSection);
+        Assert.DoesNotContain("MenuTool_Click", toolMenuSection);
+    }
+
+    [Fact]
+    public void ShellXaml_FileNewMenu_ContainsPerNestDescriptiveLabelsAndAutomationIds()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("Shell.FileMenu", src);
+        Assert.Contains("Shell.NewMenu", src);
+        Assert.Contains("Shell.MenuNewNoteNest", src);
+        Assert.Contains("Shell.MenuNewIdeaNest", src);
+        Assert.Contains("Shell.MenuNewChatNest", src);
+        Assert.Contains("新規 NoteNest — ノートをプロジェクト単位で管理", src);
+        Assert.Contains("新規 IdeaNest — アイデアをカード形式で整理", src);
+        Assert.Contains("新規 ChatNest — チャット形式でブレスト記録", src);
+    }
+
+    [Fact]
+    public void ShellXaml_TabAddButtonMenu_ContainsPerNestDescriptiveLabels()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("Shell.TabAddMenuNoteNest", src);
+        Assert.Contains("Shell.TabAddMenuIdeaNest", src);
+        Assert.Contains("Shell.TabAddMenuChatNest", src);
+        // タブバー新規メニューも ファイル > 新規作成 と同じ説明文を再利用する。
+        var occurrences = System.Text.RegularExpressions.Regex.Matches(
+            src, System.Text.RegularExpressions.Regex.Escape("ノートをプロジェクト単位で管理")).Count;
+        Assert.Equal(2, occurrences); // ファイル > 新規作成 とタブバー新規メニューの計2箇所
+    }
+
+    [Fact]
+    public void ShellXaml_CrossSearchPanelCloseButton_IsPinnedToGridEdgeColumn()
+    {
+        // v2.15.1 SH: 閉じるボタンが中央寄りに見えていた不具合を修正。
+        // ヘッダーを Grid 化し、閉じるボタンを Auto 幅の右端カラム（Grid.Column="1"）へ固定した。
+        var src = ReadShellXaml();
+        var buttonIndex = src.IndexOf("CrossSearchCloseButton_Click", StringComparison.Ordinal);
+        Assert.True(buttonIndex >= 0, "CrossSearchCloseButton_Click が見つからない");
+        var precedingButtonTagStart = src.LastIndexOf("<Button", buttonIndex, StringComparison.Ordinal);
+        Assert.True(precedingButtonTagStart >= 0);
+        var buttonTag = src.Substring(precedingButtonTagStart, buttonIndex - precedingButtonTagStart);
+        Assert.Contains("Grid.Column=\"1\"", buttonTag);
+        // 旧実装（DockPanel.Dock="Right" が LastChildFill に無視される構成）には戻っていないこと。
+        Assert.DoesNotContain("DockPanel.Dock=\"Right\"", buttonTag);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────
