@@ -11,11 +11,6 @@ public partial class NestSuiteShellWindow
 
     private void MenuExit_Click(object sender, RoutedEventArgs e) => Close();
 
-    // ── ツール選択ハンドラ ────────────────────────────────────────────────
-
-    private void MenuTool_Click(object sender, RoutedEventArgs e)
-        => EnsureTabForToolId((string)((FrameworkElement)sender).Tag);
-
     private void MenuFileAssociation_Click(object sender, RoutedEventArgs e)
     {
         var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName

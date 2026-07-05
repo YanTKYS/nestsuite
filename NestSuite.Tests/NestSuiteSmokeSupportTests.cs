@@ -75,12 +75,19 @@ public class NestSuiteSmokeSupportTests
     }
 
     [Fact]
-    public void SmokeProgram_CoversToolMenuIds()
+    public void SmokeProgram_CoversFileNewMenuIds()
     {
+        // v2.15.1 SH: 各 Nest の起動導線はツールメニューからファイル > 新規作成へ移動したため、
+        // スモークテストのナビゲーション先も Shell.MenuNewXxx（Shell.FileMenu > Shell.NewMenu 配下）に追従する。
         var src = ReadSmokeProgram();
-        Assert.Contains("Shell.MenuToolNoteNest", src);
-        Assert.Contains("Shell.MenuToolIdeaNest", src);
-        Assert.Contains("Shell.MenuToolChatNest", src);
+        Assert.Contains("Shell.MenuNewNoteNest", src);
+        Assert.Contains("Shell.MenuNewIdeaNest", src);
+        Assert.Contains("Shell.MenuNewChatNest", src);
+        Assert.Contains("Shell.FileMenu", src);
+        Assert.Contains("Shell.NewMenu", src);
+        Assert.DoesNotContain("Shell.MenuToolNoteNest", src);
+        Assert.DoesNotContain("Shell.MenuToolIdeaNest", src);
+        Assert.DoesNotContain("Shell.MenuToolChatNest", src);
     }
 
     [Fact]

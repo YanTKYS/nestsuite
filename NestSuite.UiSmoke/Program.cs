@@ -135,11 +135,12 @@ class Program
         if (!CheckRequiredElements(mainWindow, proc, TimeSpan.FromSeconds(15), "TempNest", TempNestElements))
             return 1;
 
-        // 4. NoteNest — invoke menu item, then check workspace elements
+        // 4. NoteNest — v2.15.1 SH: 各 Nest の新規作成導線はツールメニューから
+        //    ファイル > 新規作成 へ移動したため、そのメニュー階層を辿って新規タブを開く。
         Console.WriteLine("Navigating to NoteNest...");
-        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolNoteNest"))
+        if (!InvokeMenuItem(mainWindow, "Shell.MenuNewNoteNest", "Shell.FileMenu", "Shell.NewMenu"))
         {
-            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolNoteNest");
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuNewNoteNest");
             return 1;
         }
         Thread.Sleep(800);
@@ -148,9 +149,9 @@ class Program
 
         // 5. IdeaNest
         Console.WriteLine("Navigating to IdeaNest...");
-        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolIdeaNest"))
+        if (!InvokeMenuItem(mainWindow, "Shell.MenuNewIdeaNest", "Shell.FileMenu", "Shell.NewMenu"))
         {
-            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolIdeaNest");
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuNewIdeaNest");
             return 1;
         }
         Thread.Sleep(800);
@@ -159,9 +160,9 @@ class Program
 
         // 6. ChatNest
         Console.WriteLine("Navigating to ChatNest...");
-        if (!InvokeToolMenuItem(mainWindow, "Shell.MenuToolChatNest"))
+        if (!InvokeMenuItem(mainWindow, "Shell.MenuNewChatNest", "Shell.FileMenu", "Shell.NewMenu"))
         {
-            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuToolChatNest");
+            Console.Error.WriteLine("FAIL: Could not invoke Shell.MenuNewChatNest");
             return 1;
         }
         Thread.Sleep(800);
@@ -238,20 +239,27 @@ class Program
         return true;
     }
 
-    static bool InvokeToolMenuItem(AutomationElement root, string menuItemId)
+    /// <summary>
+    /// v2.15.1 SH: 任意の深さのメニュー階層（<paramref name="parentMenuIds"/> を根から葉の順に指定）を
+    /// 順に Expand してから、<paramref name="menuItemId"/> の項目を Invoke する。
+    /// 旧 InvokeToolMenuItem（ツールメニュー直下 1 階層のみ対応）を一般化したもの。
+    /// </summary>
+    static bool InvokeMenuItem(AutomationElement root, string menuItemId, params string[] parentMenuIds)
     {
         try
         {
-            // Expand the parent ツール menu so children become accessible
-            var toolMenu = root.FindFirst(
-                TreeScope.Descendants,
-                new PropertyCondition(AutomationElement.AutomationIdProperty, "Shell.ToolMenu"));
-            if (toolMenu != null &&
-                toolMenu.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var ecObj) &&
-                ecObj is ExpandCollapsePattern ec)
+            foreach (var parentMenuId in parentMenuIds)
             {
-                ec.Expand();
-                Thread.Sleep(150);
+                var parentMenu = root.FindFirst(
+                    TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, parentMenuId));
+                if (parentMenu != null &&
+                    parentMenu.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var ecObj) &&
+                    ecObj is ExpandCollapsePattern ec)
+                {
+                    ec.Expand();
+                    Thread.Sleep(150);
+                }
             }
 
             var el = root.FindFirst(

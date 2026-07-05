@@ -7,6 +7,21 @@
 
 ---
 
+## v2.15.1 — SH: 横断検索導線・メニュー整理・タブ移動ショートカット調整
+
+- **横断検索を「表示」メニューから「ツール」メニューへ移動した。** 横断検索は表示テーマや表示切替の類ではなく「作業補助ツール」であるため、利用者感覚に合わせて移動した。ショートカット `Ctrl+Shift+F` は維持している。「表示」メニューには横断検索項目を残していない。
+- **「ツール」メニューから NoteNest / IdeaNest / ChatNest の新規作成・起動項目を削除した。** 「ツール」メニューは今後、横断検索のような Shell 補助機能（将来的な横断タスクビュー・関連管理・振り返りダッシュボードなど）を置く場所とする。各 Nest の起動・新規作成導線と切り離すことで混在を避けた。
+- **各 Nest の新規作成導線を「ファイル > 新規作成」とタブバーの「＋」ボタンへ集約した。** 「ツール」メニューにあった説明的表記（NoteNest — ノートをプロジェクト単位で管理／IdeaNest — アイデアをカード形式で整理／ChatNest — チャット形式でブレスト記録）は、そのまま「ファイル > 新規作成」の各項目とタブバー「＋」ボタンのコンテキストメニューへ引き継いだ。「新規」メニューの見出しも「新規作成」に改めた。
+  - TempNest は固定の常設タブ（複数生成する概念がない）であるため、「新規作成」導線には追加していない。各 Nest の作成処理そのもの（NewNoteNestSession 等）は変更していない。
+- **横断検索パネルの閉じるボタン（×）の配置を修正した。** 旧実装は内側 `DockPanel` の最後の子要素（× ボタン）が `LastChildFill` の既定動作により `DockPanel.Dock="Right"` を無視して残り領域いっぱいに広がり、中央寄りに見える不具合があった。ヘッダーを `Grid`（タイトル列 `*`・閉じるボタン列 `Auto`）へ変更し、閉じるボタンを右端に固定した。
+- **タブ移動ショートカットのうち `Shift+←` / `Shift+→` を廃止した。** テキスト入力中の範囲選択操作（TextBox 等での `Shift+←→` による文字選択）と競合するため、Shell 側では横取りしない方針にした。NoteNest / ChatNest / TempNest などテキスト編集中心の Workspace でのテキスト選択操作は通常どおり動作する。`Ctrl+Tab` / `Ctrl+Shift+Tab` / `Ctrl+1〜9` など他のタブ切替ショートカットは維持している。
+- **横断検索の検索対象・検索ロジックは変更していない。** `ShellSearchService` / `ShellSearchPanelViewModel` は今回の対象外であり、検索対象は引き続き開いているタブのみ。**新規の `SearchNest` Workspace は追加していない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。各 Nest の作成処理そのものへの変更なし。
+- **実装**: ツールメニューの Nest 起動導線（`EnsureTabForToolId`・`MenuTool_Click`・`_toolMenuItems` によるチェック状態同期）はツールメニューから Nest 項目を撤去したことで不要になったため削除した。ファイルメニューの新規作成項目とタブバー「＋」ボタンのコンテキストメニューに `AutomationProperties.AutomationId`（`Shell.FileMenu` / `Shell.NewMenu` / `Shell.MenuNewNoteNest` 等 / `Shell.TabAddMenuNoteNest` 等）を追加し、UI Smoke テスト（`NestSuite.UiSmoke/Program.cs`）のナビゲーション先もツールメニュー経由からファイル > 新規作成 経由へ更新した（`InvokeToolMenuItem` を、任意の深さのメニュー階層を辿れる `InvokeMenuItem` へ一般化）。
+- **テストを更新・追加した**: `NestSuiteShellXamlTests`（表示メニューに横断検索が残っていないこと・ツールメニューに横断検索があること・ツールメニューから各 Nest 項目が削除されていること・ファイル > 新規作成とタブバー新規メニューに説明的表記があること・閉じるボタンが Grid の右端カラムに固定されていること）、`ShellTabNavigationShortcutTests`（新規。`Shift+←→` によるタブ移動処理が削除されていること・`Ctrl+Tab`/`Ctrl+1〜9` は維持されていること）、`NestSuiteSmokeSupportTests`（UI Smoke テストのナビゲーション先が新しい Automation ID に追従していること）を更新・追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.15.0 — SH: Shell横断検索の最小実装
 
 - **SH: NestSuite Shell に、現在開いているタブを対象にした最小限の横断検索機能を追加した。** NoteNest / IdeaNest / ChatNest / TempNest のすべてを横断して検索できる。**新規の `SearchNest` Workspace は追加していない**。あくまで Shell 側の補助機能であり、Workspace の一種として扱われるものではない。

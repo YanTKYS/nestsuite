@@ -24,11 +24,26 @@
     <DockPanel Background="{DynamicResource AppBg}">
         <!-- ファイルメニュー: 新規/開くはツール横断、保存系は選択中タブの WorkspaceKind に応じて処理する -->
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="ファイル(_F)">
-                <MenuItem Header="新規(_N)">
-                    <MenuItem Header="新規 NoteNest(_N)" Click="MenuNewNoteNest_Click"/>
-                    <MenuItem Header="新規 ChatNest(_C)"  Click="MenuNewChatNest_Click"/>
-                    <MenuItem Header="新規 IdeaNest(_I)"  Click="MenuNewIdeaNest_Click"/>
+            <MenuItem Header="ファイル(_F)"
+                      AutomationProperties.AutomationId="Shell.FileMenu"
+                      AutomationProperties.Name="Shell.FileMenu">
+                <!-- v2.15.1 SH: 各 Nest の新規作成導線はここ（ファイル > 新規作成）とタブバーの
+                     ＋ ボタンへ集約する。ツールメニューからは各 Nest の起動・新規作成項目を削除した。 -->
+                <MenuItem Header="新規作成(_N)"
+                          AutomationProperties.AutomationId="Shell.NewMenu"
+                          AutomationProperties.Name="Shell.NewMenu">
+                    <MenuItem Header="新規 NoteNest — ノートをプロジェクト単位で管理(_N)"
+                              AutomationProperties.AutomationId="Shell.MenuNewNoteNest"
+                              AutomationProperties.Name="Shell.MenuNewNoteNest"
+                              Click="MenuNewNoteNest_Click"/>
+                    <MenuItem Header="新規 IdeaNest — アイデアをカード形式で整理(_I)"
+                              AutomationProperties.AutomationId="Shell.MenuNewIdeaNest"
+                              AutomationProperties.Name="Shell.MenuNewIdeaNest"
+                              Click="MenuNewIdeaNest_Click"/>
+                    <MenuItem Header="新規 ChatNest — チャット形式でブレスト記録(_C)"
+                              AutomationProperties.AutomationId="Shell.MenuNewChatNest"
+                              AutomationProperties.Name="Shell.MenuNewChatNest"
+                              Click="MenuNewChatNest_Click"/>
                 </MenuItem>
                 <MenuItem Header="開く(_O)..." Click="MenuOpen_Click"/>
                 <MenuItem x:Name="RecentFilesMenu" Header="最近使ったファイル(_R)">
@@ -42,28 +57,19 @@
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
             </MenuItem>
+            <!-- v2.15.1 SH: ツールメニューは各 Nest の起動・新規作成導線ではなく、Shell の補助機能
+                 （横断検索、将来的な横断タスクビュー・関連管理・振り返りダッシュボードなど）を置く場所とする。
+                 各 Nest の新規作成は ファイル > 新規作成 とタブバーの ＋ ボタンに集約した。 -->
             <MenuItem Header="ツール(_T)"
                       AutomationProperties.AutomationId="Shell.ToolMenu"
                       AutomationProperties.Name="Shell.ToolMenu">
-                <!-- v1.7.3: ツール選択はタブランチャーとして機能する。既存タブがあれば移動、なければ新規作成 -->
-                <MenuItem x:Name="ToolMenuNoteNest" Header="NoteNest — ノートをプロジェクト単位で管理"
-                          AutomationProperties.AutomationId="Shell.MenuToolNoteNest"
-                          AutomationProperties.Name="Shell.MenuToolNoteNest"
-                          Tag="NoteNest"
-                          IsCheckable="True" IsChecked="True"
-                          Click="MenuTool_Click"/>
-                <MenuItem x:Name="ToolMenuIdeaNest" Header="IdeaNest — アイデアをカード形式で整理"
-                          AutomationProperties.AutomationId="Shell.MenuToolIdeaNest"
-                          AutomationProperties.Name="Shell.MenuToolIdeaNest"
-                          Tag="IdeaNest"
-                          IsCheckable="True"
-                          Click="MenuTool_Click"/>
-                <MenuItem x:Name="ToolMenuChatNest" Header="ChatNest — チャット形式でブレスト記録"
-                          AutomationProperties.AutomationId="Shell.MenuToolChatNest"
-                          AutomationProperties.Name="Shell.MenuToolChatNest"
-                          Tag="ChatNest"
-                          IsCheckable="True"
-                          Click="MenuTool_Click"/>
+                <!-- v2.15.0 SH: Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能） -->
+                <!-- v2.15.1 SH: 表示メニューから移動した。「表示切替」ではなく「作業補助ツール」であるため。 -->
+                <MenuItem Header="横断検索(_S)"
+                          AutomationProperties.AutomationId="Shell.CrossSearchMenuItem"
+                          AutomationProperties.Name="Shell.CrossSearchMenuItem"
+                          Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}"
+                          InputGestureText="Ctrl+Shift+F"/>
             </MenuItem>
             <MenuItem Header="表示(_V)">
                 <MenuItem Header="テーマ(_T)">
@@ -117,12 +123,6 @@
                               IsCheckable="True"
                               Click="MenuWorkspaceFont_Click"/>
                 </MenuItem>
-                <!-- v2.15.0 SH: Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能） -->
-                <MenuItem Header="横断検索(_S)"
-                          AutomationProperties.AutomationId="Shell.CrossSearchMenuItem"
-                          AutomationProperties.Name="Shell.CrossSearchMenuItem"
-                          Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}"
-                          InputGestureText="Ctrl+Shift+F"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
@@ -163,17 +163,25 @@
                 BorderThickness="1,0,0,0">
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <DockPanel Margin="0,0,0,6">
-                        <TextBlock Text="横断検索" FontWeight="Bold"
+                    <!-- v2.15.1 SH: 閉じるボタンが中央寄りに見える不具合を修正。
+                         旧実装は内側 DockPanel の最後の子（× ボタン）が LastChildFill により
+                         Dock="Right" を無視して残り領域いっぱいに広がっていたため、Grid 化して
+                         タイトル列（*）と閉じるボタン列（Auto）を明示的に分離し、右端に固定する。 -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="横断検索" FontWeight="Bold"
                                    Foreground="{DynamicResource PrimaryTextBrush}"
                                    VerticalAlignment="Center"/>
-                        <Button DockPanel.Dock="Right"
+                        <Button Grid.Column="1"
                                 Content="×" FontSize="12"
                                 Width="22" Height="22"
                                 Background="Transparent" BorderThickness="0"
                                 ToolTip="横断検索パネルを閉じる"
                                 Click="CrossSearchCloseButton_Click"/>
-                    </DockPanel>
+                    </Grid>
                     <TextBox x:Name="CrossSearchBox"
                              AutomationProperties.AutomationId="Shell.CrossSearchBox"
                              AutomationProperties.Name="Shell.CrossSearchBox"
@@ -240,10 +248,20 @@
                             ToolTip="新規タブを追加"
                             Click="TabAddButton_Click">
                         <Button.ContextMenu>
+                            <!-- v2.15.1 SH: ファイル > 新規作成 と同じ説明的表記を用いる -->
                             <ContextMenu>
-                                <MenuItem Header="新規 NoteNest(_N)" Click="MenuNewNoteNest_Click"/>
-                                <MenuItem Header="新規 IdeaNest(_I)"  Click="MenuNewIdeaNest_Click"/>
-                                <MenuItem Header="新規 ChatNest(_C)"  Click="MenuNewChatNest_Click"/>
+                                <MenuItem Header="新規 NoteNest — ノートをプロジェクト単位で管理(_N)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuNoteNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuNoteNest"
+                                          Click="MenuNewNoteNest_Click"/>
+                                <MenuItem Header="新規 IdeaNest — アイデアをカード形式で整理(_I)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuIdeaNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuIdeaNest"
+                                          Click="MenuNewIdeaNest_Click"/>
+                                <MenuItem Header="新規 ChatNest — チャット形式でブレスト記録(_C)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuChatNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuChatNest"
+                                          Click="MenuNewChatNest_Click"/>
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
