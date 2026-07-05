@@ -58,7 +58,11 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _currentTheme = UiSettingsService.NormalizeTheme(uiSettings.Theme);
         _themeService.Apply(_currentTheme);
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
-        _noteNestEditorFontFamily = UiSettingsService.ValidateNoteNestEditorFontFamily(uiSettings.NoteNestEditorFontFamily);
+        // L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定。
+        // 新設 WorkspaceEditorFontFamily があればそれを使い、なければ L21 の旧設定
+        // NoteNestEditorFontFamily を移行元として使う（ResolveWorkspaceEditorFontFamily 参照）。
+        _workspaceEditorFontFamily = UiSettingsService.ValidateWorkspaceEditorFontFamily(
+            UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));
 
         InitializeComponent();
         // v2.14.11 SH-32: ウィンドウハンドル生成後にタイトルバーのダークモードを適用する
@@ -308,7 +312,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;
-    private string _noteNestEditorFontFamily = UiSettingsService.DefaultNoteNestEditorFontFamily;
+    // L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定（旧 _noteNestEditorFontFamily）。
+    private string _workspaceEditorFontFamily = UiSettingsService.DefaultWorkspaceEditorFontFamily;
     private bool _suppressFontSizePropagation;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
@@ -332,7 +337,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             NestSuiteWorkspaceKind.NoteNest => CreateNoteNestViewModel(),
             NestSuiteWorkspaceKind.ChatNest => CreateChatNestViewModel(),
             NestSuiteWorkspaceKind.IdeaNest => CreateIdeaNestViewModel(),
-            NestSuiteWorkspaceKind.Temp     => new TempNestWorkspaceViewModel(),
+            NestSuiteWorkspaceKind.Temp     => CreateTempNestViewModel(),
             _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
         };
         return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
@@ -354,7 +359,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.RequestClose = Close;
         WireNoteNestViewCallbacks(vm, WorkspaceView);
         vm.EditorFontSize = _noteNestEditorFontSize;
-        vm.EditorFontFamily = _noteNestEditorFontFamily;
+        vm.EditorFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }
@@ -366,6 +371,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private ChatNestWorkspaceViewModel CreateChatNestViewModel()
     {
         var vm = new ChatNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnChatNestPropertyChanged;
         return vm;
     }
@@ -378,7 +384,21 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private IdeaNestWorkspaceViewModel CreateIdeaNestViewModel()
     {
         var vm = new IdeaNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnIdeaNestPropertyChanged;
+        return vm;
+    }
+
+    /// <summary>
+    /// L22: TempNest タブ用の独立 ViewModel を生成し、PropertyChanged を購読する。
+    /// ChatNest/IdeaNest の Create*ViewModel と対称な実装。TempNest はファイル型 Workspace ではないため
+    /// ダイアログ・コールバックの配線は不要。
+    /// </summary>
+    private TempNestWorkspaceViewModel CreateTempNestViewModel()
+    {
+        var vm = new TempNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
+        vm.PropertyChanged += OnTempNestPropertyChanged;
         return vm;
     }
 

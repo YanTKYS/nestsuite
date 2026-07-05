@@ -40,6 +40,9 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     // CH-8: タイムスタンプ表示切替（起動中のみ保持。既定 false）
     private bool _showTimestamps = false;
 
+    // L22: Workspace 共通のメッセージ本文・入力欄フォント種類（既定 "Yu Gothic UI"）
+    private string _contentFontFamily = "Yu Gothic UI";
+
     // CH-5 search state
     private string _searchText = string.Empty;
     private bool _isSearchBarVisible;
@@ -181,6 +184,18 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     {
         get => _showTimestamps;
         set { _showTimestamps = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>
+    /// L22: メッセージ本文・入力欄に適用する Workspace 共通フォント種類。
+    /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
+    /// 発言者ラベル・ボタン・ツールバーなどの UI フォントには適用しない。
+    /// .chatnest（<see cref="MessageModels"/>）へは保存しないため、変更しても <see cref="IsDirty"/> は立たない。
+    /// </summary>
+    public string ContentFontFamily
+    {
+        get => _contentFontFamily;
+        set { _contentFontFamily = value; OnPropertyChanged(); }
     }
 
     public event EventHandler? WorkspaceModified;
