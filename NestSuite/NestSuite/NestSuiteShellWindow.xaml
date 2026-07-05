@@ -74,6 +74,47 @@
                               IsCheckable="True"
                               Click="MenuThemeDark_Click"/>
                 </MenuItem>
+                <!-- v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類。
+                     NoteNest を開いていなくても変更できるよう、Workspace 内 ComboBox からメニューバーへ移動した。 -->
+                <MenuItem Header="本文フォント(_F)"
+                          AutomationProperties.AutomationId="Shell.WorkspaceFontMenu"
+                          AutomationProperties.Name="Shell.WorkspaceFontMenu">
+                    <MenuItem x:Name="WorkspaceFontYuGothicUiMenuItem"
+                              Header="Yu Gothic UI"
+                              Tag="Yu Gothic UI"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontMeiryoUiMenuItem"
+                              Header="Meiryo UI"
+                              Tag="Meiryo UI"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontMsGothicMenuItem"
+                              Header="MS Gothic"
+                              Tag="MS Gothic"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontBizUdGothicMenuItem"
+                              Header="BIZ UDGothic"
+                              Tag="BIZ UDGothic"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontBizUdMinchoMenuItem"
+                              Header="BIZ UDMincho"
+                              Tag="BIZ UDMincho"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontUdDigiKyokashoMenuItem"
+                              Header="UD Digi Kyokasho N-R"
+                              Tag="UD Digi Kyokasho N-R"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontConsolasMenuItem"
+                              Header="Consolas"
+                              Tag="Consolas"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>

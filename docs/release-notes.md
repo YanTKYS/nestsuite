@@ -7,6 +7,20 @@
 
 ---
 
+## v2.14.18 — SH: Workspace共通フォント設定をメニューバーへ移動
+
+- **SH: v2.14.17（L22）で Workspace 共通になったエディタフォント種類の変更導線を、NoteNest Workspace 内 ComboBox からメニューバー（表示 > 本文フォント）へ移動した。** フォント設定は Workspace 共通であるにもかかわらず、NoteNest を開いていないと変更しづらい導線になっていたズレを解消した。
+- **NoteNest を開いていない状態でも、メニューバーから Workspace 共通フォントを変更できる。** 変更すると開いている全 Workspace（NoteNest 本文エディタ／IdeaNest カード本文・カード編集欄／ChatNest メッセージ本文・入力欄／TempNest 各スロットのタイトル欄・本文欄）へ即時反映される。
+- **NoteNest Workspace 上部ツールバーのフォント種類 ComboBox を廃止した。** フォントサイズ ComboBox は NoteNest 固有設定のため維持している。
+- **選択中のフォントはメニュー上でチェック表示される。** 既存のテーマメニュー（表示 > テーマ）と同様の `IsCheckable` パターンを踏襲した。
+- **設定保存先・分離方針は v2.14.17 のまま変更していない。** 保存先は引き続き `ui-settings.json` の `WorkspaceEditorFontFamily`（旧 `NoteNestEditorFontFamily` からの移行にも対応）。Workspace ファイル本体（`.notenest`/`.nestsuite`/`.ideanest`/`.chatnest`/`tempnest.json`）には保存せず、フォント変更で各 Workspace を未保存扱い（dirty）にもしない。
+- **実装は v2.14.17 で追加した共通伝播処理（`PropagateWorkspaceEditorFontFamily`）を再利用した。** 変更元 Workspace を前提にした `exclude` 引数を `null` 許容へ小さく整理し、メニュー操作（変更元 Workspace が存在しない呼び出し）でも同じ経路で全セッションへ適用できるようにした。NoteNest 専用処理としては実装していない。
+- **アプリ全体の UI フォントには一切影響しない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォント候補一覧（7 種類）・既定 `Yu Gothic UI`・不正値フォールバックは v2.14.17 のまま変更していない。
+- **テストを更新・追加した**: `NestSuiteShellXamlTests` に、メニュー項目が `UiSettingsService.ValidWorkspaceEditorFontFamilies` の全候補と一致すること・共通クリックハンドラを共有すること・NoteNest の旧フォント種類 ComboBox が廃止されていること・フォントサイズ ComboBox は維持されていることを固定するテストを追加した。Shell 側のメニュークリックハンドラ（`MenuWorkspaceFont_Click`）自体は WPF Window 依存のため直接テストしていない（実体である `PropagateWorkspaceEditorFontFamily` の効果は v2.14.17 で追加した ViewModel レベルのテスト群でも代表確認できているため、配線のみメニュー項目の静的確認で代替した）。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.17 — L22: Workspace共通エディタフォント種類の拡大
 
 - **L22: NoteNest 限定だったエディタフォント種類変更（L21/v2.14.15、v2.14.16 で保存分離）を、IdeaNest / ChatNest / TempNest の本文・編集領域へ拡大した。** 主目的は各 Workspace の本文入力・閲覧時の可読性向上。
