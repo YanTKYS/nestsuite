@@ -7,6 +7,18 @@
 
 ---
 
+## v2.14.19 — BUG: NoteNest 本文ハイライトのマーカー判定を角括弧付き・行頭条件へ修正
+
+- **バグ修正: NoteNest の本文ハイライトが、`TODO` / `NOTE` などの単語単体や、文中の `[TODO]` にも反応していた問題を修正した。** 角括弧付き（`[TODO]` 等）かつ原則として行頭（または行頭の空白後）にある場合のみ検出するよう厳格化した。マーカー種別（`TODO`/`FIXME`/`NOTE`）は変更していない。
+- **検出条件**: `^[ \t]*\[(TODO|FIXME|NOTE)\]` 相当（行頭、または行頭の空白/タブ後、角括弧付き、大文字小文字区別あり）。`TODO 対応する`・`これは TODO です`・`これは [TODO] です`・`abc[TODO] 対応する`・`[TODOではない]`・`[NOTEBOOK]` はいずれも検出しない。`[TODO] 対応する` や、行頭の空白後の `    [TODO] インデント付き` は検出する。
+- **本文エディタのハイライト（`MarkerLineDetector`）とマーカーパネル／件数表示（`MarkerExtractorService`）の判定ルールを揃えた。** 従来、`MarkerLineDetector` は角括弧を要求せず大文字小文字も区別しない単語単体一致だったのに対し、`MarkerExtractorService` は角括弧必須・大文字小文字区別ありだが行頭条件がなかった。両方を「角括弧付き・行頭（または行頭空白後）・大文字小文字区別あり」に統一した。
+- **`MarkerLineDetector` から `[[Note Title]]`（NoteLink）誤検出回避用の特別処理（`ContainsNoteOutsideBrackets`）を削除した。** 新しい行頭・角括弧条件下では `[[NOTE]]`（二重角括弧）が `[NOTE]`（単一角括弧）と誤って一致することは構造上あり得ないため、当該ワークアラウンドは不要になった（副次的な簡素化。大規模リファクタリングは行っていない）。
+- **NoteLink（`[[...]]`）の検出仕様自体は変更していない。** 対象は TODO/FIXME/NOTE マーカーの判定条件のみで、行内のどこにあっても検出する既存の NoteLink 挙動はそのまま。
+- **変更なし事項**: マーカー種別の追加・変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを更新・追加した**: `MarkerLineDetectorTests` / `NoteEditorHostHighlightRegressionTests` の既存テスト（単語単体・大文字小文字非区別を前提としていたもの）を新仕様に合わせて更新し、行頭・角括弧・大文字小文字区別・部分一致除外・NoteLink との優先関係を固定するテストを追加した。`MarkerExtractorServiceTests` にも行頭以外の `[TODO]`・単語単体・部分一致（`[NOTEBOOK]`）が検出されないことを固定するテストを追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.18 — SH: Workspace共通フォント設定をメニューバーへ移動
 
 - **SH: v2.14.17（L22）で Workspace 共通になったエディタフォント種類の変更導線を、NoteNest Workspace 内 ComboBox からメニューバー（表示 > 本文フォント）へ移動した。** フォント設定は Workspace 共通であるにもかかわらず、NoteNest を開いていないと変更しづらい導線になっていたズレを解消した。
