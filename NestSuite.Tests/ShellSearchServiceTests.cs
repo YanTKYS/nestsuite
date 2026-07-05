@@ -190,9 +190,26 @@ public class ShellSearchServiceTests
             vm.AllCards.Add(new IdeaCardViewModel(new Idea { Title = $"検索対象カード{i}", Body = "" }));
         var tabs = new[] { new ShellSearchTabEntry("t1", "A", NestSuiteWorkspaceKind.IdeaNest, vm) };
 
-        var results = ShellSearchService.Search("検索対象", tabs);
+        var results = ShellSearchService.Search("検索対象", tabs, out var isTruncated);
 
         Assert.Equal(ShellSearchService.MaxResults, results.Count);
+        Assert.True(isTruncated);
+    }
+
+    [Fact]
+    public void Search_ResultCount_ExactlyMax_IsNotReportedAsTruncated()
+    {
+        // レビュー指摘: 一致がちょうど MaxResults 件だっただけの場合、実際には切り詰めが
+        // 発生していないため isTruncated は false であるべき（「多すぎる」表示は誤り）。
+        var vm = new IdeaNestWorkspaceViewModel();
+        for (int i = 0; i < ShellSearchService.MaxResults; i++)
+            vm.AllCards.Add(new IdeaCardViewModel(new Idea { Title = $"検索対象カード{i}", Body = "" }));
+        var tabs = new[] { new ShellSearchTabEntry("t1", "A", NestSuiteWorkspaceKind.IdeaNest, vm) };
+
+        var results = ShellSearchService.Search("検索対象", tabs, out var isTruncated);
+
+        Assert.Equal(ShellSearchService.MaxResults, results.Count);
+        Assert.False(isTruncated);
     }
 
     // ── ジャンプ先タブの特定 ─────────────────────────────────────────────
