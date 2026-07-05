@@ -153,6 +153,28 @@ public partial class NestSuiteShellWindow
             uiSvc.Save(ui);
         }
 
+        // L21: NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
+        // _suppressFontSizePropagation は「ファイル読込中の自前設定適用」を示す既存フラグを
+        // フォント種類にも共用する（ファイル自身の AppSettings.FontFamily 読込時の再伝播を防ぐ）。
+        if (e.PropertyName == nameof(MainViewModel.EditorFontFamily) &&
+            sender is MainViewModel familyVm &&
+            !_suppressFontSizePropagation &&
+            familyVm.EditorFontFamily != _noteNestEditorFontFamily)
+        {
+            _noteNestEditorFontFamily = familyVm.EditorFontFamily;
+            foreach (var s in _sessionManager.Sessions
+                .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+                            !ReferenceEquals(s.WorkspaceViewModel, familyVm)))
+            {
+                if (s.WorkspaceViewModel is MainViewModel otherFamilyVm)
+                    otherFamilyVm.EditorFontFamily = _noteNestEditorFontFamily;
+            }
+            var uiSvc = new UiSettingsService();
+            var ui = uiSvc.Load();
+            ui.NoteNestEditorFontFamily = _noteNestEditorFontFamily;
+            uiSvc.Save(ui);
+        }
+
         if (e.PropertyName is nameof(MainViewModel.MarkerCount) or nameof(MainViewModel.TotalIncompleteTaskCountText) &&
             sender is MainViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();

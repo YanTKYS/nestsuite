@@ -226,6 +226,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) return;
             vm.EditorFontSize = _noteNestEditorFontSize;
+            vm.EditorFontFamily = _noteNestEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -256,6 +257,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) { EnsureDefaultTab(); return; }
             vm.EditorFontSize = _noteNestEditorFontSize;
+            vm.EditorFontFamily = _noteNestEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);

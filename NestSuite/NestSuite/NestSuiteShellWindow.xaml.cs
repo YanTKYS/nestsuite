@@ -58,6 +58,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _currentTheme = UiSettingsService.NormalizeTheme(uiSettings.Theme);
         _themeService.Apply(_currentTheme);
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
+        _noteNestEditorFontFamily = UiSettingsService.ValidateNoteNestEditorFontFamily(uiSettings.NoteNestEditorFontFamily);
 
         InitializeComponent();
         // v2.14.11 SH-32: ウィンドウハンドル生成後にタイトルバーのダークモードを適用する
@@ -307,6 +308,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;
+    private string _noteNestEditorFontFamily = UiSettingsService.DefaultNoteNestEditorFontFamily;
     private bool _suppressFontSizePropagation;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
@@ -352,6 +354,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.RequestClose = Close;
         WireNoteNestViewCallbacks(vm, WorkspaceView);
         vm.EditorFontSize = _noteNestEditorFontSize;
+        vm.EditorFontFamily = _noteNestEditorFontFamily;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }
