@@ -15,6 +15,8 @@
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandSave_Executed"/>
         <!-- v2.10.4 SH-20: Ctrl+Shift+S ですべて保存を実行する -->
         <CommandBinding Command="{x:Static local:NestSuiteShellWindow.SaveAllCommand}" Executed="CommandSaveAll_Executed"/>
+        <!-- v2.15.0 SH: Ctrl+Shift+F で Shell 横断検索パネルを開閉する -->
+        <CommandBinding Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}" Executed="CommandCrossSearch_Executed"/>
     </Window.CommandBindings>
     <!-- v2.14.11 SH-32: ルートに Background 未指定だと、子要素で覆われない隙間が
          Window既定の白色で透けて見える（ダークテーマ時に右ペイン折り畳みボタン周辺が
@@ -115,6 +117,12 @@
                               IsCheckable="True"
                               Click="MenuWorkspaceFont_Click"/>
                 </MenuItem>
+                <!-- v2.15.0 SH: Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能） -->
+                <MenuItem Header="横断検索(_S)"
+                          AutomationProperties.AutomationId="Shell.CrossSearchMenuItem"
+                          AutomationProperties.Name="Shell.CrossSearchMenuItem"
+                          Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}"
+                          InputGestureText="Ctrl+Shift+F"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
@@ -143,6 +151,64 @@
                 <TextBlock x:Name="WorkspaceStatusText"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
             </StackPanel>
+        </Border>
+
+        <!-- v2.15.0 SH: Shell横断検索パネル（開いているタブのみが対象。表示状態・検索語・結果はどこにも永続化しない） -->
+        <Border x:Name="CrossSearchPanel"
+                DockPanel.Dock="Right"
+                Width="300"
+                Visibility="Collapsed"
+                Background="{DynamicResource SidebarBg}"
+                BorderBrush="{DynamicResource PaneBorder}"
+                BorderThickness="1,0,0,0">
+            <DockPanel Margin="10">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <DockPanel Margin="0,0,0,6">
+                        <TextBlock Text="横断検索" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right"
+                                Content="×" FontSize="12"
+                                Width="22" Height="22"
+                                Background="Transparent" BorderThickness="0"
+                                ToolTip="横断検索パネルを閉じる"
+                                Click="CrossSearchCloseButton_Click"/>
+                    </DockPanel>
+                    <TextBox x:Name="CrossSearchBox"
+                             AutomationProperties.AutomationId="Shell.CrossSearchBox"
+                             AutomationProperties.Name="Shell.CrossSearchBox"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Padding="4"/>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource MutedFg}"
+                               FontSize="11" Margin="0,4,0,0"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
+                </StackPanel>
+                <ListBox x:Name="CrossSearchResultsList"
+                         AutomationProperties.AutomationId="Shell.CrossSearchResultsList"
+                         AutomationProperties.Name="Shell.CrossSearchResultsList"
+                         ItemsSource="{Binding Results}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="CrossSearchResultsList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,5">
+                                <TextBlock Text="{Binding HeaderText}" FontSize="11"
+                                           Foreground="{DynamicResource MutedFg}"/>
+                                <TextBlock Text="{Binding PreviewText}" FontSize="12"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Border>
 
         <!-- メインエリア: Workspace 領域（v1.16.2: 左ツール選択カラムを廃止し全幅化） -->

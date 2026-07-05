@@ -7,6 +7,22 @@
 
 ---
 
+## v2.15.0 — SH: Shell横断検索の最小実装
+
+- **SH: NestSuite Shell に、現在開いているタブを対象にした最小限の横断検索機能を追加した。** NoteNest / IdeaNest / ChatNest / TempNest のすべてを横断して検索できる。**新規の `SearchNest` Workspace は追加していない**。あくまで Shell 側の補助機能であり、Workspace の一種として扱われるものではない。
+- **検索対象は「現在開いているタブ」のみ。** 未オープンのファイル・最近使ったファイル一覧・フォルダ検索・ローカル索引を用いた検索は対象外（今回のスコープ外）。
+- **検索方法は単純な大文字小文字を区別しない部分一致のみ。** 全角半角正規化・かな正規化・AND/OR・正規表現には対応しない。検索語が空の場合は「検索語を入力してください。」と表示し、結果は返さない。
+- **検索対象フィールド**: NoteNest はノートタイトル・本文、IdeaNest はカードタイトル・本文・タグ、ChatNest は発言本文（発言者種別も結果に含める）、TempNest は Slot1〜Slot4 のタイトル・本文。
+- **結果件数は最大100件。** それを超える一致がある場合は「結果が多すぎるため、先頭100件のみ表示しています。」と表示する。
+- **UI**: メニュー「表示 > 横断検索」（`Ctrl+Shift+F` にも対応。既存のショートカットとの競合がないことを確認済み）でパネルの表示・非表示を切り替える。パネルには検索ボックスと結果一覧（Workspace 種別タグ・タブ名・一致箇所の抜粋を表示）を持ち、**結果をクリックすると対応するタブへ切り替わる**（`ActivateTab` を利用）。Workspace 内部（該当ノートの選択・該当カードのプレビュー表示など、より深いジャンプ）は今回未対応（将来の拡張候補）。
+- **パネルの表示状態・検索語・検索結果はセッション内のみで保持し、どこにも永続化しない。** `ui-settings.json` への保存は行わず、パネルを閉じると検索語・結果もクリアされる。
+- **テーマ対応**: 既存の `DynamicResource` テーマブラシ（`SidebarBg`/`PrimaryTextBrush`/`InputBackgroundBrush`/`BorderBrush`/`PaneBorder`/`MutedFg` 等）のみを使用し、ハードコードされた色は追加していない。Light/Dark 両テーマで確認可能な設計。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。各 Workspace の保存モデルへの変更なし（検索用にデータを複製・永続化していない）。外部依存追加なし。net48_test 再開なし。
+- **実装**: 検索ロジックは `ShellSearchService`（純粋な静的ロジック、`ShellSearchTabEntry` を受け取り `ShellSearchResult` を返す）に切り出し、WPF に依存しないユニットテストで検証できるようにした。パネルの状態管理は `ShellSearchPanelViewModel` が担い、Shell 側（`NestSuiteShellWindow.CrossSearch.cs`）はタブ一覧の収集とパネルの表示切替・クリックによるタブ遷移のみを扱う。
+- **テストを追加した**: `ShellSearchServiceTests`（空検索語・NoteNest タイトル/本文一致・IdeaNest タイトル/本文/タグ一致・ChatNest 発言一致・TempNest スロットタイトル/本文一致・大文字小文字非区別・結果件数上限・ジャンプ先タブの特定）、`ShellSearchPanelViewModelTests`（空検索語時のメッセージ・一致時の結果反映・件数超過時のメッセージ・リセット）、`NestSuiteShellXamlTests`（横断検索メニュー項目とショートカット表示・パネルがテーマブラシを使用していること・`SearchNest` Workspace を追加していないこと）を追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
 ## v2.14.19 — BUG: NoteNest 本文ハイライトのマーカー判定を角括弧付き・行頭条件へ修正
 
 - **バグ修正: NoteNest の本文ハイライトが、`TODO` / `NOTE` などの単語単体や、文中の `[TODO]` にも反応していた問題を修正した。** 角括弧付き（`[TODO]` 等）かつ原則として行頭（または行頭の空白後）にある場合のみ検出するよう厳格化した。マーカー種別（`TODO`/`FIXME`/`NOTE`）は変更していない。

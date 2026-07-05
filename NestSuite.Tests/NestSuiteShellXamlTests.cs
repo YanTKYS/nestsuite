@@ -105,6 +105,38 @@ public class NestSuiteShellXamlTests
         Assert.DoesNotContain("タグをカンマ区切りで入力", src);
     }
 
+    // ── v2.15.0 SH: Shell横断検索の最小実装 ──────────────────────────────
+
+    [Fact]
+    public void ShellXaml_ContainsCrossSearchMenuItem_WithShortcutText()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("Shell.CrossSearchMenuItem", src);
+        Assert.Contains("Ctrl+Shift+F", src);
+        Assert.Contains("CrossSearchCommand", src);
+    }
+
+    [Fact]
+    public void ShellXaml_ContainsCrossSearchPanel_UsingThemeBrushes()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("CrossSearchPanel", src);
+        Assert.Contains("Shell.CrossSearchBox", src);
+        Assert.Contains("Shell.CrossSearchResultsList", src);
+        // ハードコードされた色ではなく既存テーマブラシを再利用すること
+        Assert.Contains("{DynamicResource SidebarBg}", src);
+        Assert.Contains("{DynamicResource PrimaryTextBrush}", src);
+        Assert.Contains("{DynamicResource InputBackgroundBrush}", src);
+    }
+
+    [Fact]
+    public void ShellXaml_DoesNotIntroduce_SearchNestWorkspace()
+    {
+        // v2.15.0 SH: 横断検索は Shell の補助機能であり、新規 SearchNest Workspace ではない
+        var src = ReadShellXaml();
+        Assert.DoesNotContain("SearchNestWorkspaceView", src);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     private string ReadShellXaml()
