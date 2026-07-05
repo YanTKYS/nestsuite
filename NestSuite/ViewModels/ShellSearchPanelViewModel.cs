@@ -29,8 +29,11 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel
         get => _searchText;
         set
         {
-            if (SetProperty(ref _searchText, value))
-                RunSearch();
+            // SetProperty は値が変化しない限り通知しないため、"" → "" のような
+            // 無変化の再設定（初期状態や Reset 直後の再検索）でも必ず結果を再計算するよう
+            // SetProperty の戻り値に関わらず RunSearch を呼ぶ。
+            SetProperty(ref _searchText, value);
+            RunSearch();
         }
     }
 
