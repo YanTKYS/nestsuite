@@ -57,6 +57,9 @@ public partial class MainViewModel
         return copy;
     }
 
+    /// <summary>v2.14.3 M12: ノートのスター（お気に入り）状態を反転する。</summary>
+    public void ToggleNoteStar(NoteViewModel note) => _notes.ToggleStar(note);
+
     public void MoveNoteUp(NoteViewModel note) => _notes.MoveNoteUp(note);
     public void MoveNoteDown(NoteViewModel note) => _notes.MoveNoteDown(note);
     public void MoveNotebookUp(NotebookViewModel notebook) => _notes.MoveNotebookUp(notebook);

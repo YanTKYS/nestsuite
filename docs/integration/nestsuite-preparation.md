@@ -1,5 +1,7 @@
 # NestSuite対応準備メモ
 
+> **[履歴文書]** この文書は v1.7〜v1.8 時点の統合設計メモです。記載された AppShell / Workspace 統合は実装済みであり、現行コードの参照元ではありません。詳細は [`docs/integration/README.md`](README.md) を参照してください。
+
 ## 目的
 
 NoteNestを将来的にNestSuiteへ統合できるよう、単体アプリの外枠（AppShell）と

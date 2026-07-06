@@ -12,6 +12,8 @@
 
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
             <conv:WorkspaceKindToAccentBrushConverter x:Key="KindToAccent"/>
+            <conv:HasNoTasksToRowHeightConverter x:Key="HasNoTasksToRowHeight"/>
+            <conv:HasNoTasksToRowMinHeightConverter x:Key="HasNoTasksToRowMinHeight"/>
 
             <!-- SH-10: common controls resolve colors through theme resources. -->
             <Style TargetType="Window">

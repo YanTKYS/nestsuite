@@ -40,6 +40,8 @@ public partial class ChatNestWorkspaceView : UserControl
         AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(OnGlobalPreviewMouseLeftButtonUp));
     }
 
+    // ── 初期化・DataContext 管理 ──────────────────────────────────────────────
+
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.OldValue is ChatNestWorkspaceViewModel oldVm)
@@ -199,10 +201,7 @@ public partial class ChatNestWorkspaceView : UserControl
         };
         if (dlg.ShowDialog(Window.GetWindow(this)) != true) return;
 
-        var isMarkdown = dlg.FilterIndex == 2;
-        var content = isMarkdown
-            ? ChatNestExportFormatter.BuildMarkdownConversation(vm.MessageModels)
-            : ChatNestExportFormatter.BuildPlainTextConversation(vm.MessageModels);
+        var content = BuildExportContent(dlg.FilterIndex, vm.MessageModels);
 
         try
         {
@@ -216,6 +215,12 @@ public partial class ChatNestWorkspaceView : UserControl
                             MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    // FilterIndex 2 = Markdown (*.md)；それ以外 = プレーンテキスト (*.txt)
+    private static string BuildExportContent(int filterIndex, IEnumerable<Message> messages)
+        => filterIndex == 2
+            ? ChatNestExportFormatter.BuildMarkdownConversation(messages)
+            : ChatNestExportFormatter.BuildPlainTextConversation(messages);
 
     // ── CH-13: ドラッグ並び替え ──────────────────────────────────────────────
 

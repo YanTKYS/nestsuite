@@ -65,9 +65,17 @@ public partial class MainViewModel
     }
 
     /// <summary>Shell が重複パス検出後にパス指定で保存するためのエントリポイント。</summary>
-    public bool SaveToPath(string path) => DoSave(path);
+    public bool SaveToPath(string path) => DoSave(path, notifyOnError: true);
 
-    private bool DoSave(string path)
+    /// <summary>
+    /// v2.14.12 SH-33: 自動保存など、失敗をユーザーへ都度ダイアログ通知したくない呼び出し用。
+    /// 失敗時も <see cref="ErrorLogService"/> へは記録するが、<see cref="ShowErrorDialog"/> は呼ばない。
+    /// </summary>
+    public bool SaveToPath(string path, bool notifyOnError) => DoSave(path, notifyOnError);
+
+    private bool DoSave(string path) => DoSave(path, notifyOnError: true);
+
+    private bool DoSave(string path, bool notifyOnError)
     {
         try
         {
@@ -78,9 +86,12 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             bool logged = ErrorLogService.Log("NoteNestSave", ex, "NoteNest", path);
-            var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
-            ShowErrorDialog?.Invoke("保存エラー",
-                $"保存に失敗しました。\n{FileErrorMessages.ForSave(ex)}{logHint}");
+            if (notifyOnError)
+            {
+                var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
+                ShowErrorDialog?.Invoke("保存エラー",
+                    $"保存に失敗しました。\n{FileErrorMessages.ForSave(ex)}{logHint}");
+            }
             return false;
         }
     }
@@ -101,20 +112,6 @@ public partial class MainViewModel
     {
         _lifecycle.ClearRecentFiles();
         StatusMessage = "最近使ったファイルをクリアしました。";
-    }
-
-    private void AutoSave()
-    {
-        if (!IsAutoSaveEnabled) return;
-        try
-        {
-            if (_lifecycle.TryAutoSave()) StatusMessage = "自動保存しました。";
-        }
-        catch (Exception ex)
-        {
-            ErrorLogService.Log("NoteNestAutoSave", ex, "NoteNest");
-            StatusMessage = "自動保存に失敗しました。";
-        }
     }
 
     private bool TryOpenProject(string path)

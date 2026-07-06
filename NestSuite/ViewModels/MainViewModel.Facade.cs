@@ -58,6 +58,8 @@ public partial class MainViewModel
     public ObservableCollection<NotebookViewModel> Notebooks => _notes.Notebooks;
     public ObservableCollection<TaskGroupViewModel> TaskGroups => _tasks.TaskGroups;
     public string TotalIncompleteTaskCountText => _tasks.TotalIncompleteTaskCountText;
+    public bool HasAnyTasks => _tasks.HasAnyTasks;
+    public bool HasNoTasks => !_tasks.HasAnyTasks;
     public ObservableCollection<MarkerViewModel> Markers => _markers.Markers;
     public int MarkerCount => _markers.MarkerCount;
     public IEnumerable<NoteViewModel> AllNotes => _notes.AllNotes;
@@ -65,15 +67,12 @@ public partial class MainViewModel
     public bool HasSelectedNote => _editor.SelectedNote != null;
     public bool HasAnyNotes => _notes.AllNotes.Any();
     public string? CurrentNoteTitle => _editor.SelectedNote?.Title;
+    public string? CurrentNotebookName =>
+        _editor.SelectedNote == null ? null : FindNotebookOf(_editor.SelectedNote)?.Title;
     public ObservableCollection<RecentFileViewModel> RecentFiles => _session.RecentFiles;
     public bool HasRecentFiles => _session.HasRecentFiles;
     public string? CurrentFilePath => _session.CurrentFilePath;
     public DateTime? LastSavedAt => _session.LastSavedAt;
-    public bool IsAutoSaveEnabled
-    {
-        get => _isAutoSaveEnabled;
-        set => SetProperty(ref _isAutoSaveEnabled, value);
-    }
     public string CurrentNoteTimestampSummary => _editor.IsTaskCommentMode ? "" : _editor.SelectedNote?.TimestampSummary ?? "";
 
     // 責務所有者への明示的な入口。新規コードは単純中継よりこちらを優先する。
@@ -85,6 +84,14 @@ public partial class MainViewModel
     public ProjectSessionViewModel Session => _session;
 
     public static readonly IReadOnlyList<double> EditorFontSizeChoices = [12, 14, 16, 18, 20];
+
+    /// <summary>
+    /// L22: NoteNest 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。
+    /// L21 時点では NoteNest 限定の一覧だったが、Workspace 共通設定への拡大に伴い
+    /// IdeaNest / ChatNest / TempNest とも共有する <see cref="NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies"/> を参照する。
+    /// </summary>
+    public static readonly IReadOnlyList<string> EditorFontFamilyChoices =
+        NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies;
 
     // 複数責務を組み合わせるため MainViewModel に残す派生表示。
     public static string ApplicationVersion

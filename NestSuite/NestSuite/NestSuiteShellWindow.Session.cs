@@ -48,13 +48,23 @@ public partial class NestSuiteShellWindow
             UpdateRecentFilesMenu();
             return;
         }
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
+        if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
         {
+            // v2.14.7 SH-31: 未対応拡張子は従来どおり履歴から削除する。
+            // 一方 `.nestsuite` の種別判定失敗は「一時的に読めない」だけの可能性があるため、
+            // 理由に応じた文言で通知し、履歴からは削除しない。
+            if (failure == WorkspaceKindDetectionFailure.UnsupportedExtension)
+            {
+                _dialogs.ShowError(
+                    $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n最近使ったファイルの一覧から削除しました。\n\n{path}",
+                    "未対応のファイル形式");
+                _recentFiles.Remove(path);
+                UpdateRecentFilesMenu();
+                return;
+            }
             _dialogs.ShowError(
-                $"このファイル形式は NestSuite では開けません。\n対応形式: .notenest / .chatnest / .ideanest\n\n最近使ったファイルの一覧から削除しました。\n\n{path}",
-                "未対応のファイル形式");
-            _recentFiles.Remove(path);
-            UpdateRecentFilesMenu();
+                $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                "ファイルを開けません");
             return;
         }
         if (TryActivateExistingTab(kind, path)) return;
@@ -76,19 +86,24 @@ public partial class NestSuiteShellWindow
     /// v1.15.0: 前回セッションのタブを復元する。
     /// 存在しないファイルや未対応拡張子のエントリはスキップする。
     /// 1 件以上復元できた場合 true を返す。復元対象がない場合 false を返し、呼び元が無題タブを作成する。
+    /// v2.14.7 SH-31: 読めない `.nestsuite`（存在するのに種別判定できない）は無言でスキップせず、
+    /// まとめて 1 回通知する。session からの削除はしない（次回起動時に再試行される）。
     /// </summary>
     private bool TryRestoreSession()
     {
         var state = _sessionState.Load();
         if (state.FilePaths.Count == 0) return false;
 
+        var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
         int restoredCount = 0;
-        foreach (var target in SessionTabMapper.CreateRestoreTargets(state, File.Exists))
+        foreach (var target in targets)
         {
             int tabsBefore = _tabs.Count;
             LoadWorkspaceFileAt(target.WorkspaceKind, target.FilePath);
             if (_tabs.Count > tabsBefore) restoredCount++;
         }
+
+        NotifyRestoreFailures(failures);
 
         if (restoredCount == 0) return false;
 
@@ -103,11 +118,30 @@ public partial class NestSuiteShellWindow
         return true;
     }
 
+    /// <summary>
+    /// v2.14.7 SH-31: セッション復元で復元できなかったファイルをまとめて 1 回通知する。
+    /// 1 件ずつ MessageBox を出さない。復元可能なタブの復元は既に完了している。
+    /// </summary>
+    private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)
+    {
+        if (failures.Count == 0) return;
+
+        var lines = failures.Select(f =>
+            $"- {Path.GetFileName(f.FilePath)}\n  {FileErrorMessages.ForKindDetectionFailure(f.Failure).Split('\n')[0]}");
+        _dialogs.ShowError(
+            "一部のファイルを復元できませんでした。\n\n" +
+            string.Join("\n", lines) +
+            "\n\nファイルが壊れているとは限りません。\nより新しいバージョンの NestSuite で作成された可能性があります。\n該当ファイルは次回起動時にも再試行されます。",
+            "セッション復元");
+    }
+
     // ── v1.18.1: パイプ経由ファイルオープン（シングルインスタンス） ──────────
 
     /// <summary>
     /// v1.18.1: Named Pipe 経由で受け取ったファイルパスを UI スレッドで開く。
     /// 既存の Load*FileAt メソッドを再利用し、重複タブ検出・最近ファイル更新を維持する。
+    /// v2.14.7 SH-31: 開けないファイル（存在しない・種別判定不能）を無言で捨てず、
+    /// 既存ウィンドウ側で理由に応じた文言を通知する（ダブルクリック起動の受け口）。
     /// </summary>
     internal void OpenFileFromPipe(string rawPath)
     {
@@ -115,7 +149,20 @@ public partial class NestSuiteShellWindow
         {
             BringWindowToFront();
             var path = NormalizeFilePath(rawPath);
-            if (!File.Exists(path) || !NestSuiteTabFactory.TryGetKind(path, out var kind)) return;
+            if (!File.Exists(path))
+            {
+                _dialogs.ShowError(
+                    $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{path}",
+                    "ファイルを開けません");
+                return;
+            }
+            if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
+            {
+                _dialogs.ShowError(
+                    $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                    "ファイルを開けません");
+                return;
+            }
             if (TryActivateExistingTab(kind, path)) return;
             LoadWorkspaceFileAt(kind, path);
         });

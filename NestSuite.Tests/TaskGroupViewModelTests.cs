@@ -88,4 +88,35 @@ public class TaskGroupViewModelTests
 
         Assert.Equal("1/2", group.CountText);
     }
+
+    // v2.13.4 M16: 既存タスクがないグループを右ペインの互換表示から隠すための判定
+    [Fact]
+    public void HasTasks_FalseWhenEmpty_TrueAfterAdd_FalseAfterRemove()
+    {
+        var group = new TaskGroupViewModel("Today", "today");
+        Assert.False(group.HasTasks);
+
+        var task = Task("A");
+        group.AddTask(task);
+        Assert.True(group.HasTasks);
+
+        group.RemoveTask(task);
+        Assert.False(group.HasTasks);
+    }
+
+    [Fact]
+    public void HasTasks_RaisesPropertyChanged_OnAddAndRemove()
+    {
+        var group = new TaskGroupViewModel("Today", "today");
+        var changed = new List<string?>();
+        group.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        var task = Task("A");
+        group.AddTask(task);
+        Assert.Contains(nameof(TaskGroupViewModel.HasTasks), changed);
+
+        changed.Clear();
+        group.RemoveTask(task);
+        Assert.Contains(nameof(TaskGroupViewModel.HasTasks), changed);
+    }
 }

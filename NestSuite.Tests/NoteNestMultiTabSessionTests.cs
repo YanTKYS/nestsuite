@@ -198,33 +198,38 @@ public class NoteNestMultiTabSessionTests
         vm.Dispose();
     }
 
-    // ── v1.9.6: AutoSave タイマー停止の実効確認 ──────────────────────────
+    // ── v2.14.13 TD-61: 未保存ステータスタイマー停止の実効確認 ──────────
+    // 旧 NoteNest Classic 由来の自動保存タイマー（_autoSaveTimer）は撤去済み。
+    // Dispose が停止すべき DispatcherTimer は未保存ステータス更新用の _unsavedTimer。
+    // 現行の自動保存は NestSuiteShellWindow.AutoSave.cs（SH-33）が担う。
 
-    private static DispatcherTimer GetAutoSaveTimer(MainViewModel vm) =>
+    private static DispatcherTimer GetUnsavedTimer(MainViewModel vm) =>
         (DispatcherTimer)typeof(MainViewModel)
-            .GetField("_autoSaveTimer", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetField("_unsavedTimer", BindingFlags.Instance | BindingFlags.NonPublic)!
             .GetValue(vm)!;
 
     [Fact]
-    public void MainViewModel_AutoSaveTimer_IsEnabled_AfterConstruction()
+    public void MainViewModel_UnsavedTimer_IsEnabled_WhenModified()
     {
-        // v1.9.6: コンストラクタで _autoSaveTimer.Start() が呼ばれていることを確認
-        // （Dispose が必要な根拠となるタイマーが実際に稼働していることの検証）
+        // IsModified になると _unsavedTimer が稼働することを確認
+        // （Dispose が必要な根拠となるタイマーが実際に稼働し得ることの検証）
         using var vm = new MainViewModel();
-        Assert.True(GetAutoSaveTimer(vm).IsEnabled);
+        vm.IsModified = true;
+        Assert.True(GetUnsavedTimer(vm).IsEnabled);
     }
 
     [Fact]
-    public void MainViewModel_Dispose_StopsAutoSaveTimer()
+    public void MainViewModel_Dispose_StopsUnsavedTimer()
     {
-        // v1.9.6: Dispose() によって _autoSaveTimer が停止されることを確認
-        // NoteNest タブを閉じると対応 MainViewModel の AutoSave が呼ばれなくなる
+        // Dispose() によって _unsavedTimer が停止されることを確認
+        // NoteNest タブを閉じると対応 MainViewModel のタイマーが呼ばれなくなる
         var vm = new MainViewModel();
-        Assert.True(GetAutoSaveTimer(vm).IsEnabled);  // 破棄前は動作中
+        vm.IsModified = true;
+        Assert.True(GetUnsavedTimer(vm).IsEnabled);  // 破棄前は動作中
 
         vm.Dispose();
 
-        Assert.False(GetAutoSaveTimer(vm).IsEnabled); // 破棄後は停止
+        Assert.False(GetUnsavedTimer(vm).IsEnabled); // 破棄後は停止
     }
 
     // ── v1.9.6: タブ削除時の Session 削除確認 ────────────────────────────

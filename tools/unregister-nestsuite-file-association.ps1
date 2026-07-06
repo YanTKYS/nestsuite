@@ -15,7 +15,10 @@
 [CmdletBinding(SupportsShouldProcess)]
 param()
 
+# v2.14.6 FM-3: FileAssociationService.cs の Targets と 3 箇所同期必須
+# （FileAssociationService.cs / register-nestsuite-file-association.ps1 / unregister-nestsuite-file-association.ps1）
 $entries = @(
+    @{ Ext = ".nestsuite"; ProgId = "NoteNest.nestsuite" },
     @{ Ext = ".notenest"; ProgId = "NoteNest.notenest" },
     @{ Ext = ".chatnest"; ProgId = "NoteNest.chatnest" },
     @{ Ext = ".ideanest"; ProgId = "NoteNest.ideanest" }

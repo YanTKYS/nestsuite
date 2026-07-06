@@ -51,12 +51,12 @@
 
 | ルール | 詳細 |
 |--------|------|
-| NoteNest 保存スキーマを変更しない | 明示指示がない限り `1.4.1` を維持する |
+| NoteNest 保存スキーマを変更しない | 明示指示がない限り `1.4.2` を維持する |
 | `.chatnest` 保存形式を変更しない | — |
 | `.ideanest` 保存形式を変更しない | — |
 | 保存形式を変更する場合は別バージョンで整理する | 設計・移行方針・後方互換性を事前に文書化してから実装する |
 | UI 表示設定とユーザーデータを混ぜない | 表示設定は `settings` セクションに留め、本文データに持ち込まない |
-| 保存形式変更がない場合は明記する | release notes に「保存スキーマ `1.4.1` を維持している」と記載する |
+| 保存形式変更がない場合は明記する | release notes に「保存スキーマ `1.4.2` を維持している」と記載する |
 | 保存形式・スキーマ変更を伴う作業は事前に方針を確認する | `docs/architecture/schema-versioning-policy.md` を参照し、schema bump 基準・互換読み込み・マイグレーション・テスト方針に従うこと（FM-1、v2.10.2 整備） |
 
 ---
@@ -84,12 +84,15 @@
 | IdeaNest の軸：カード中心の軽い編集体験 | 管理機能を増やしすぎない |
 | ChatNest の軸：軽い会話記録体験 | 管理機能を増やしすぎない |
 | 利用者向け UI に「暫定」「試験配置」等の文字を残さない | 内部管理用のラベルを本番 UI に入れない |
+| XAML binding 名を不用意に変更しない | DataContext 側の変更も必要になり影響範囲が広い |
+| public property / command 名を不用意に変更しない | 外部からの参照・テストへの影響を避ける |
+| 新しいショートカットキーを追加・変更する場合は個別プロンプトで明示する | 既存操作との衝突・ユーザー習慣への影響があるため |
 
 ---
 
 ## 7. バージョン更新
 
-> 詳細は §13-4 参照。
+> 詳細は §14-4 参照。
 
 実装バージョンが変わる場合は、**必ず以下をすべて更新する**。
 
@@ -104,12 +107,24 @@
 > アプリバージョンの確認は `ApplicationVersionTests.cs` に集約する。
 > `ApplicationVersionTests.ApplicationVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
 
-> **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加）**
-> `NoteNestSchemaVersion_Remains_1_4_1` メソッドを各機能テストクラスに追加しない。
-> NoteNest schema version 確認は `ApplicationVersionTests.cs` に集約する。
-> 機能テストクラスはその機能の仕様・回帰確認に集中する。
-> `ApplicationVersionTests.NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` がこのルールを自動検出する。
-> schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` を参照する。
+> **SchemaVersion テスト集約ルール（v2.10.15 TD-29 追加、v2.14.4 TD-58 でリテラルスキャン方式へ更新）**
+> schema version リテラル（例: `"1.4.2"`）を各機能テストクラスに直接書かない。
+> NoteNest schema version の期待値確認は `ApplicationVersionTests.NoteNestSchemaVersion_IsPinned` に集約する。
+> このメソッド名自体は次回 schema bump でも変更しない（更新するのは内部のリテラル値のみ）。
+> 機能テストクラスはその機能の仕様・回帰確認に集中し、schema version を確認したい場合は
+> `Project.CurrentSchemaVersion` 定数参照による挙動 assert（保存・読込 round-trip など）を使う。
+> `ApplicationVersionTests.CurrentSchemaVersionLiteral_IsNotHardcoded_InOtherTestClasses` が、
+> 他テストファイルに現行 schema version の文字列リテラルが紛れ込んでいないかを自動検出する。
+> schema 変更を伴う場合は `docs/architecture/schema-versioning-policy.md` の
+> 「schema bump 時の更新箇所チェックリスト」を参照する。
+
+### テスト整合性の原則
+
+- 既存テストを削除しない
+- 既存テストをスキップ（`[Fact(Skip=...)]` 等）化しない
+- テストの期待値を、仕様変更でなく「通りやすくするため」だけの理由で変更しない
+- `ApplicationVersion_Is_*` などアプリバージョン確認、および現行 schema version の文字列リテラル確認は
+  `ApplicationVersionTests.cs` に集約する（機能テストクラスでは `Project.CurrentSchemaVersion` 定数参照を使う）
 
 ### テストクラス命名・分類方針
 
@@ -140,7 +155,7 @@
 
 ## 8. docs 更新
 
-> 詳細は §13-3 参照。
+> 詳細は §14-3 参照。
 
 | ルール | 詳細 |
 |--------|------|
@@ -167,7 +182,7 @@
 
 ## 10. 実装後報告
 
-> 詳細は §13-6 参照。
+> 詳細は §14-6 参照。
 
 実装完了後は、以下をすべて報告する。
 
@@ -189,7 +204,7 @@
 ```text
 - 指示外の機能追加
 - 保存形式変更
-- NoteNest 保存スキーマ変更（現行: 1.4.1）
+- NoteNest 保存スキーマ変更（現行: 1.4.2）
 - .chatnest / .ideanest 保存形式変更
 - 外部通信追加
 - 外部 API 依存
@@ -204,9 +219,31 @@
 
 ---
 
-## 12. 今後のプロンプトでの参照方法
+## 12. Workspace ディレクトリ構成方針
 
-> より完全なテンプレートは §15 参照。
+> 追加: v2.11.7 TD-43
+
+各 Workspace の関連ファイルは、対応する Workspace ディレクトリ配下にまとめる。
+
+| Workspace | 配置先 |
+|-----------|--------|
+| NoteNest  | `NestSuite/NestSuite/NoteNest/` |
+| IdeaNest  | `NestSuite/NestSuite/IdeaNest/` |
+| ChatNest  | `NestSuite/NestSuite/ChatNest/` |
+| TempNest  | `NestSuite/NestSuite/TempNest/` |
+
+Shell 共通コンポーネント（MainViewModel / BaseViewModel / RelayCommand / AppSettings 等）は引き続き `NestSuite/ViewModels/`・`NestSuite/Models/`・`NestSuite/Services/` に置く。
+
+**ディレクトリ配置の原則:**
+- 旧前身由来の配置（旧 `NoteNest/` ルート）を増やさない
+- ディレクトリ移動と namespace 変更を同時実施しない
+- 配置整理は挙動変更と分けて行う
+
+---
+
+## 13. 今後のプロンプトでの参照方法
+
+> より完全なテンプレートは §16 参照。
 
 ### 短縮参照文
 
@@ -235,7 +272,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-## 13. プロンプト標準契約
+## 14. プロンプト標準契約
 
 > 追加: v2.6.3
 > 目的: 通常プロンプトを短くするため、毎回書かなくてよい標準ルールを一か所にまとめる。
@@ -245,7 +282,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-1. 変更範囲の原則
+### 14-1. 変更範囲の原則
 
 通常プロンプトに「変更しないこと」を列挙しなくても、以下は標準で守ります。
 
@@ -257,26 +294,28 @@ NestSuite vX.Y.Z として、○○に対応してください。
 | UI 全体のデザイン変更に広げない | 一局所的な修正で済む場合は局所的に行う |
 | 外部依存・外部ライブラリを追加しない | 事前整理なしの追加は禁止（§5 参照） |
 | 外部通信を追加しない | アプリはローカル完結が原則（§5 参照） |
-| 保存形式を明示指示なしに変えない | §4 および §13-2 参照 |
+| 保存形式を明示指示なしに変えない | §4 および §14-2 参照 |
+| Workspace の独立性を壊さない | NoteNest / IdeaNest / ChatNest 間の直接依存は作らない（§12 参照） |
+| 「統一しない判断」も理由を明記すれば有効な設計判断として扱う | 重複削減だけで統一を判断しない（§15 RelayCommand 参照） |
 
 ---
 
-### 13-2. 保存形式・スキーマの原則
+### 14-2. 保存形式・スキーマの原則
 
 明示指示がない限り、以下はすべて現状維持です。
 
 | 対象 | 現状 | 変更が必要な場合 |
 |------|------|-----------------|
-| NoteNest 保存スキーマ | `1.4.1` | 明示指示＋設計・移行方針文書が必要 |
+| NoteNest 保存スキーマ | `1.4.2` | 明示指示＋設計・移行方針文書が必要 |
 | `.chatnest` 保存形式 | 現行形式 | 明示指示が必要 |
 | `.ideanest` 保存形式 | 現行形式 | 明示指示が必要 |
 | TempNest 内部 JSON `version` | `1` | 明示指示が必要 |
 
-保存形式を変更しない場合は、release notes に「保存スキーマ `1.4.1` を維持している」と必ず記載します。
+保存形式を変更しない場合は、release notes に「保存スキーマ `1.4.2` を維持している」と必ず記載します。
 
 ---
 
-### 13-3. docs 更新の原則
+### 14-3. docs 更新の原則
 
 機能追加・修正時は、**原則として以下をすべて更新**します。
 
@@ -291,7 +330,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-4. バージョン更新の原則
+### 14-4. バージョン更新の原則
 
 リリース対象作業では、**以下を必ずすべて更新**します（§7 の詳細版）。
 
@@ -305,7 +344,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-5. テスト・確認の原則
+### 14-5. テスト・確認の原則
 
 受入条件として、以下を標準とします。
 
@@ -318,7 +357,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-6. 実装後報告の標準形式
+### 14-6. 実装後報告の標準形式
 
 実装完了後は、原則として以下の項目を報告します（§10 の詳細版）。
 
@@ -337,7 +376,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-7. backlog / release notes 運用ルール（v2.10.19 TD-33 追加）
+### 14-7. backlog / release notes 運用ルール（v2.10.19 TD-33 追加）
 
 - `docs/backlog.md` は未着手・保留・将来候補のみを管理する
 - 完了済み項目は `docs/release-notes.md` に記録し、backlog には残さない
@@ -352,7 +391,7 @@ NestSuite vX.Y.Z として、○○に対応してください。
 
 ---
 
-### 13-8. 通常プロンプトの標準テンプレート
+### 14-8. 通常プロンプトの標準テンプレート
 
 以下のテンプレートを使うことで、禁止事項・受入条件・報告形式の記述を省略できます。
 
@@ -381,35 +420,116 @@ NestSuite vX.Y.Z として、以下を実装してください。
 
 **省略できる記述（このテンプレートを使う場合）:**
 
-- 「保存形式を変えないでください」→ §13-2 で標準ルール化済み
-- 「UIを大きく変えないでください」→ §13-1 で標準ルール化済み
-- 「外部依存を追加しないでください」→ §13-1 で標準ルール化済み
-- 「docs/backlog.md・release-notes を更新してください」→ §13-3 で標準ルール化済み
-- 「GitHub Actions が通ることを受入条件とします」→ §13-5 で標準ルール化済み
-- 「実装後に変更ファイル・影響範囲・未確認事項を報告してください」→ §13-6 で標準ルール化済み
+- 「保存形式を変えないでください」→ §14-2 で標準ルール化済み
+- 「UIを大きく変えないでください」→ §14-1 で標準ルール化済み
+- 「外部依存を追加しないでください」→ §14-1 で標準ルール化済み
+- 「docs/backlog.md・release-notes を更新してください」→ §14-3 で標準ルール化済み
+- 「GitHub Actions が通ることを受入条件とします」→ §14-5 で標準ルール化済み
+- 「実装後に変更ファイル・影響範囲・未確認事項を報告してください」→ §14-6 で標準ルール化済み
 
 ---
 
-## 14. プロンプト標準契約（凝縮版）
+## 15. RelayCommand 実装方針（v2.12.6 TD-42 追加）
 
-> 追加: v2.10.8
+NestSuite 内に 3 種類の RelayCommand 実装が存在する。意図的に分けており、統一しない。
+
+| 実装クラス | ネームスペース | 用途 | CanExecuteChanged の仕組み |
+|-----------|--------------|------|--------------------------|
+| `RelayCommand` | `NestSuite.ViewModels` | Shell / NoteNest / TempNest | `CommandManager.RequerySuggested` に連動 |
+| `IdeaNestRelayCommand` | `NestSuite.IdeaNest.Commands` | IdeaNest Workspace | `CommandManager.RequerySuggested` に連動。`RaiseCanExecuteChanged()` は `CommandManager.InvalidateRequerySuggested()` を呼ぶラッパー |
+| `ChatNestRelayCommand` | `NestSuite.ChatNest` | ChatNest Workspace | 手動 event（CommandManager 非使用）。ViewModel が明示的に `RaiseCanExecuteChanged()` を呼び出す |
+
+**統一しない理由:**
+- `ChatNestRelayCommand` は手動 event 方式。CommandManager の自動再クエリを使わず、ChatNest ViewModel が状態変化のタイミングで明示的に `RaiseCanExecuteChanged()` を呼ぶ。これは意図的な設計選択であり変えない。
+- `IdeaNestRelayCommand` を共通 `RelayCommand` に統合すると、IdeaNest が `NestSuite.ViewModels` 名前空間に依存し、Workspace 独立性（§12 参照）が損なわれる。
+
+**新規コマンド追加時の判断基準:**
+- IdeaNest Workspace に Command を追加する場合は `IdeaNestRelayCommand` を使う
+- ChatNest Workspace に Command を追加する場合は `ChatNestRelayCommand` を使う
+- Shell / NoteNest / TempNest に Command を追加する場合は `RelayCommand` を使う
+- 新しい汎用 Command 基底クラス・Command Registry・Command Factory は作成しない
+
+---
+
+## 16. UI テキスト規約
+
+> 追加: v2.12.8
+> 目的: ツールチップ・ショートカット表記・確認ダイアログの記述スタイルを統一し、認知負荷を下げる。
+
+### ツールチップのショートカットキー表記
+
+- 形式: `操作説明 (Ctrl+X)` — 説明の後に半角スペースを 1 つ置き、`(Ctrl+X)` を末尾に付ける
+- `+` の前後にスペースを入れない（例: `Ctrl+S`, `Ctrl+Shift+S`）
+- 英数字はすべて半角 ASCII
+- ショートカットキーが存在しないボタンには括弧表記を付けない
+
+例:
+```
+ToolTip="保存 (Ctrl+S)"
+ToolTip="すべて保存 (Ctrl+Shift+S)"
+```
+
+### コンテキストメニュー・メニューのショートカット表記
+
+- WPF `CommandBinding` を使うメニュー項目はフレームワークが `InputGestureText` を自動設定するため手動付与不要
+- 上記以外でショートカットが存在するメニュー項目は `InputGestureText` を明示する
+- ショートカットが存在しない項目には `InputGestureText` を付けない
+
+### 確認ダイアログの文言
+
+- タイトルは「何に関するダイアログか」を示す（例: `"削除の確認"`, `"未保存の NoteNest"`, `"スロットのクリア"`）
+- 汎用タイトル `"確認"` は使用しない
+- ボタンが 3 択（YesNoCancel）の場合はメッセージ本文に各ボタンの意味を明記する:
+  ```
+  \n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）
+  ```
+- 取り消しのできない操作には `「この操作は取り消せません。」` を必ず含める
+
+---
+
+## 17. プロンプト標準契約（凝縮版）
+
+> 追加: v2.10.8 / 更新: v2.12.9 TD-51
 > 目的: 今後の実装プロンプトをさらに短くするため、毎回繰り返す共通ルールを箇条書き形式でまとめる。
 
-通常の実装プロンプトでは、以下を共通前提とする。
+通常の実装プロンプトでは、以下を共通前提とする。個別プロンプトが明示的に上書きした場合はその指示を優先する。
 
+**通常制約**
 - 本指示 > guideline
 - 指示された対象ID以外を実装しない
-- 保存形式変更は明示指示がある場合のみ行う
-- schema bumpは明示指示がある場合のみ行う
-- session.json変更は明示指示がある場合のみ行う
-- `.notenest` schemaは原則 `1.4.1` 維持
-- `.chatnest` / `.ideanest` / TempNest JSON の形式変更は明示指示がある場合のみ行う
-- 外部依存を追加しない
+- 保存形式変更なし・schema bumpなし・session.json変更なし（明示指示がある場合のみ行う）→ §4 / §14-2
+- `.notenest` schemaは原則 `1.4.2` 維持
+- 外部依存を追加しない → §5
 - release workflowを変更しない
 - net48_testを再開しない
-- ErrorLog方針はErrorのみ
+- ErrorLog方針はErrorのみ（Info/Warning 不可）
 - local dotnet build/test は optional
 - GitHub Actions CI green / UI Smoke green を完了条件とする
+
+**バージョン・スキーマ更新**
+- バージョン更新時は `NestSuite.csproj` と `ApplicationVersionTests.cs` を同時に更新する → §7 / §14-4
+- NoteNest schema は明示がない限り `1.4.2` 維持
+
+**release notes / backlog 運用** → §14-7 参照
+
+**テスト方針**
+- 既存テストを削除しない・スキップ化しない
+- 期待値を目的外の理由で変更しない
+- 新規テストクラスは課題番号ベース命名を避ける → §7
+
+**UI 変更方針**
+- XAML binding 名・public property / command 名を不用意に変更しない → §6
+- ショートカットキーを追加・変更する場合は個別プロンプトで明示する → §6
+
+**共通基盤化・抽象化の抑制**
+- 新しい共通基盤・汎用 Registry / Factory / Coordinator は明示指示なしに追加しない → §14-1
+- Workspace の独立性を壊さない → §12 / §14-1
+
+**Coordinator / notify（v2.14.9 TD-53）**
+- NoteNest の facade プロパティ・`NotePropertyChanged` allow-list・`BuildModels()` を変更する際は
+  `docs/development/coordinator-notification-pattern.md` のチェックリストを確認する
+
+**docs 長文化抑制** → §19 参照
 
 保存形式・スキーマ変更が必要な場合は
 `docs/architecture/schema-versioning-policy.md`
@@ -417,7 +537,7 @@ NestSuite vX.Y.Z として、以下を実装してください。
 
 ---
 
-## 15. 今後の通常プロンプト形式
+## 18. 今後の通常プロンプト形式
 
 > 追加: v2.10.8
 > 目的: 各プロンプトで「今回やること」に集中できるよう、最小構成の短縮テンプレートを提供する。
@@ -444,10 +564,23 @@ Requirements:
 
 Version:
 - app version X.Y.Z
-- NoteNest schema 1.4.1 維持
+- NoteNest schema 1.4.2 維持
 
 Done:
 - 完了条件
 - GitHub Actions CI green
 - UI Smoke green
 ```
+
+---
+
+## 19. docs 長文化抑制
+
+> 追加: v2.12.9 TD-51
+> 目的: docs が肥大化して参照コストが上がることを防ぐ。
+
+- docs は後続開発者の判断負荷を減らすために書く（経緯の羅列ではなく、判断軸を書く）
+- 現行方針と変更履歴を同じ文書の前面に並べない（履歴は `release-notes.md` に記録する）
+- 同じ内容を複数 docs に重複して書かない（参照リンクを使う）
+- docs 追加時は「今後何を判断しやすくするか」を一言で言えることを確認する
+- 詳細履歴・移行経緯が必要な場合は `history` / `migration` などの別ファイルへ分離する

@@ -1,6 +1,6 @@
 # ファイル関連付けの設定
 
-NoteNest v1.18.0 以降、NestSuite のヘルプメニューから `.notenest` / `.chatnest` / `.ideanest` のファイル関連付けを登録・解除できます。
+NoteNest v1.18.0 以降、NestSuite のヘルプメニューから `.notenest` / `.chatnest` / `.ideanest` / `.nestsuite` のファイル関連付けを登録・解除できます。
 
 ## 概要
 
@@ -11,6 +11,7 @@ NoteNest v1.18.0 以降、NestSuite のヘルプメニューから `.notenest` /
 | `.notenest` | NoteNest Workspace |
 | `.chatnest` | ChatNest Workspace |
 | `.ideanest` | IdeaNest Workspace |
+| `.nestsuite` | ファイル内容の workspaceKind に応じた Workspace（NoteNest / IdeaNest / ChatNest） |
 
 ## アプリ内から設定する（推奨）
 
@@ -24,7 +25,7 @@ NoteNest v1.18.0 以降、NestSuite のヘルプメニューから `.notenest` /
 
 ## 登録後の動作確認
 
-エクスプローラーで `.notenest` / `.chatnest` / `.ideanest` ファイルをダブルクリックすると NestSuite が起動し、対応する Workspace タブでファイルが開きます。
+エクスプローラーで `.notenest` / `.chatnest` / `.ideanest` / `.nestsuite` ファイルをダブルクリックすると NestSuite が起動し、対応する Workspace タブでファイルが開きます。
 
 **v1.18.1 以降のシングルインスタンス動作**: NestSuite が既に起動中の場合、新しいウィンドウは開かず、既存のウィンドウに新しいタブが追加されます。NestSuite が最小化されていた場合は自動的に前面に表示されます。
 
@@ -32,12 +33,14 @@ NoteNest v1.18.0 以降、NestSuite のヘルプメニューから `.notenest` /
 
 反映されない場合は、エクスプローラーを再起動（または一度ログアウト・ログイン）してください。
 
+**v2.14.7 以降**: 開けない `.nestsuite`（内容が読み取れない・種別を判定できない等）をダブルクリックした場合は、理由に応じたエラーメッセージが表示されます。無言で失敗することはありません。
+
 ## 関連付けの解除
 
 1. 「ヘルプ → ファイル関連付けの設定...」を開く
 2. 「関連付けを解除」ボタンを押す
 
-この操作では、この機能（ProgId: `NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest`）で作成した登録のみ削除します。他アプリや OS 全体の設定は変更しません。
+この操作では、この機能（ProgId: `NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest` / `NoteNest.nestsuite`）で作成した登録のみ削除します。他アプリや OS 全体の設定は変更しません。
 
 ## 仕様
 

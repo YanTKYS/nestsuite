@@ -35,10 +35,8 @@ public partial class NestSuiteShellWindow
                 if (_sessionManager.TryGet(tab.Id, out var tempSession) && tempSession != null)
                     TempNestWorkspaceView.DataContext = tempSession.WorkspaceViewModel;
 
-                foreach (var kvp in _toolMenuItems)
-                    kvp.Value.IsChecked = false;
-
-                NestSuiteModeSuffix.Text = "  /  TempNest";
+                // v2.13.3 SH-30: TempNest にはファイル名表示がないため「/」を前置しない
+                NestSuiteModeSuffix.Text = "TempNest";
                 RefreshWorkspaceStatus();
                 return;
             }
@@ -86,10 +84,6 @@ public partial class NestSuiteShellWindow
                     $"{tool.DisplayName} はまだ統合されていません。\n将来のバージョンで統合予定です。";
             }
 
-            // ツールメニューのチェック状態更新
-            foreach (var kvp in _toolMenuItems)
-                kvp.Value.IsChecked = kvp.Key == toolId;
-
             // ステータスバー更新
             NestSuiteModeSuffix.Text = $"  /  {tool.DisplayName}";
             RefreshWorkspaceStatus();
@@ -103,9 +97,11 @@ public partial class NestSuiteShellWindow
     // ── v2.4.0 SH-4: タブ切替キーボードショートカット ───────────────────
 
     /// <summary>
-    /// v2.4.0 SH-4: Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 / Shift+←→ でタブを切り替える。
+    /// v2.4.0 SH-4: Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 でタブを切り替える。
     /// NoteNest の Ctrl+Enter / Escape など既存ショートカットは e.Handled = false のままにして
     /// WPF の通常ルーティングへ流す。
+    /// v2.15.1 SH: Shift+←→ によるタブ切替は廃止した。テキスト入力中の範囲選択操作
+    /// （TextBox 等の Shift+←→ による文字選択）と競合するため、Shell 側では横取りしない。
     /// </summary>
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
@@ -118,13 +114,6 @@ public partial class NestSuiteShellWindow
         if (ctrl && e.Key == Key.Tab)
         {
             NavigateTab(forward: !shift);
-            e.Handled = true;
-            return;
-        }
-
-        if (shift && !ctrl && (e.Key == Key.Left || e.Key == Key.Right))
-        {
-            NavigateTab(forward: e.Key == Key.Right);
             e.Handled = true;
             return;
         }
@@ -180,6 +169,8 @@ public partial class NestSuiteShellWindow
 
     private void RefreshWorkspaceStatus()
     {
+        RefreshShellStatusBar();
+
         if (_isShowingNotification) return;
         if (!TryGetActiveSession(out var session) || session == null)
         {
@@ -194,6 +185,39 @@ public partial class NestSuiteShellWindow
             TempNestWorkspaceViewModel        => "",
             _                                 => ""
         };
+    }
+
+    /// <summary>
+    /// v2.13.3 SH-30: ステータスバー左側（ファイル名・未保存表示）を、
+    /// 現在アクティブな <see cref="_selectedTab"/> を基準に再計算する。
+    /// Window.DataContext（NoteNest 固有の MainViewModel）には依存しない。
+    /// 閉じたタブや非アクティブな Workspace の状態が残らないよう、タブ切替・タブクローズ・
+    /// 未保存状態変化のたびに <see cref="RefreshWorkspaceStatus"/> 経由で呼び出す。
+    /// </summary>
+    private void RefreshShellStatusBar()
+    {
+        var tab = _selectedTab;
+        if (tab == null)
+        {
+            ShellStatusFileText.Text = "";
+            ShellStatusUnsavedText.Text = "";
+            ShellStatusUnsavedText.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        // TempNest はファイルに紐づかないため、ファイル名欄は空のままにする（L20/SH-29 とは別軸）
+        ShellStatusFileText.Text = tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp ? "" : tab.DisplayName;
+
+        // NoteNest はアクティブ Session の MainViewModel から経過時間つき表示を引き継ぐ。
+        // それ以外は tab.IsModified に基づく既定表示にする。
+        var unsavedText = "● 未保存";
+        if (tab.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
+            TryGetActiveSession(out var noteSession) &&
+            noteSession?.WorkspaceViewModel is MainViewModel noteVm)
+            unsavedText = noteVm.UnsavedIndicatorText;
+
+        ShellStatusUnsavedText.Text = unsavedText;
+        ShellStatusUnsavedText.Visibility = tab.IsModified ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private static string BuildNoteNestStatusText(MainViewModel vm)

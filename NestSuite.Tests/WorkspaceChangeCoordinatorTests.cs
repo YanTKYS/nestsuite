@@ -94,5 +94,21 @@ public class WorkspaceChangeCoordinatorTests
         Assert.Contains(changes, change => change.IsDataChanged);
     }
 
+    // v2.13.4 M16: タスクの追加/削除で HasAnyTasks・HasNoTasks が facade へ通知されることを確認する
+    // （タスク欄を互換表示するかどうかの判定が、右ペイン UI へ正しく伝わるための回帰）
+    [Fact]
+    public void AddingTaskPublishesHasAnyTasksAndHasNoTasks()
+    {
+        var coordinator = CreateCoordinator();
+        var changes = new List<WorkspaceChangeEventArgs>();
+        coordinator.Changed += (_, change) => changes.Add(change);
+
+        _tasks.AddTask("today", "Task");
+
+        var propertyNames = changes.SelectMany(c => c.PropertyNames).ToList();
+        Assert.Contains(nameof(MainViewModel.HasAnyTasks), propertyNames);
+        Assert.Contains(nameof(MainViewModel.HasNoTasks), propertyNames);
+    }
+
     private WorkspaceChangeCoordinator CreateCoordinator() => new(_notes, _tasks, _markers, _editor);
 }

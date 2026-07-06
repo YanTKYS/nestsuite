@@ -69,7 +69,11 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public string SearchText      { get => Filter.SearchText;    set => Filter.SearchText = value; }
     public string SelectedTag     { get => Filter.SelectedTag;   set => Filter.SelectedTag = value; }
     public string SelectedColor   { get => Filter.SelectedColor; set => Filter.SelectedColor = value; }
+    public ArchiveFilterMode ArchiveFilterMode { get => Filter.ArchiveFilterMode; set => Filter.ArchiveFilterMode = value; }
     public bool   ShowArchived    { get => Filter.ShowArchived;  set => Filter.ShowArchived = value; }
+    public bool   IsArchiveActiveOnly => Filter.IsArchiveActiveOnly;
+    public bool   IsArchiveIncludeArchived => Filter.IsArchiveIncludeArchived;
+    public bool   IsArchiveArchivedOnly => Filter.IsArchiveArchivedOnly;
     public bool   HasActiveFilter => Filter.HasActiveFilter;
 
     // ── Tag panel: forward to TagPanel sub-ViewModel ─────────────────────────
@@ -104,6 +108,20 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     public WorkspaceSettings Settings => _workspace.Settings;
 
+    private string _contentFontFamily = "Yu Gothic UI";
+
+    /// <summary>
+    /// L22: カード本文・カード編集欄に適用する Workspace 共通フォント種類。
+    /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
+    /// カードの枠・ボタン・タグ・ツールバーなどの UI フォントには適用しない。
+    /// .ideanest（<see cref="BuildWorkspaceForSave"/>）へは保存しないため、変更しても <see cref="HasChanges"/> は立たない。
+    /// </summary>
+    public string ContentFontFamily
+    {
+        get => _contentFontFamily;
+        set => SetField(ref _contentFontFamily, value);
+    }
+
     public bool HasChanges
     {
         get => _hasChanges;
@@ -117,6 +135,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public ICommand DeleteIdeaCommand { get; }
     public ICommand TogglePinCommand { get; }
     public ICommand ToggleArchiveCommand { get; }
+    public ICommand SetArchiveFilterModeCommand { get; }
     public ICommand SelectTagCommand { get; }
     public ICommand ClearTagCommand { get; }
     public ICommand ClearSearchCommand { get; }
@@ -172,11 +191,14 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         get
         {
-            if (TotalCount == 0)
-                return "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。";
-            if (HasActiveFilter)
-                return "検索語やタグを変更してください。";
-            return "「アーカイブを表示」を有効にすると、アーカイブ済みカードが見られます。";
+            var hasActiveFilter = HasActiveFilter;
+            return (TotalCount, hasActiveFilter, ArchiveFilterMode) switch
+            {
+                (0, _, _) => "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。",
+                (_, true, _) => "検索語やタグを変更してください。",
+                (_, _, ArchiveFilterMode.ArchivedOnly) => "アーカイブ済みカードはありません。",
+                _ => "アーカイブを含める表示に切り替えると、アーカイブ済みカードが見られます。",
+            };
         }
     }
 
@@ -208,6 +230,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         DeleteIdeaCommand      = new IdeaNestRelayCommand(p => DeleteIdea(p as IdeaCardViewModel));
         TogglePinCommand       = new IdeaNestRelayCommand(p => TogglePin(p as IdeaCardViewModel));
         ToggleArchiveCommand   = new IdeaNestRelayCommand(p => ToggleArchive(p as IdeaCardViewModel));
+        SetArchiveFilterModeCommand = new IdeaNestRelayCommand(p => SetArchiveFilterMode(p));
         SelectTagCommand       = new IdeaNestRelayCommand(p => TagPanel.SelectTag(p as string ?? string.Empty));
         ClearTagCommand        = new IdeaNestRelayCommand(_ => SelectedTag = string.Empty);
         ClearSearchCommand     = new IdeaNestRelayCommand(_ => SearchText = string.Empty);
@@ -266,6 +289,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         OnPropertyChanged(nameof(EmptyStateMessage));
     }
 
+    // ── カード操作 ────────────────────────────────────────────────────────────
+
     private void AddIdea()
     {
         var dlg = new PreviewIdeaWindow(
@@ -275,7 +300,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
                 vm.ApplyTo(draft);
                 return _cardOps.CommitAdd(draft);
             },
-            onCommitEdit: c => _cardOps.CommitEdit(c))
+            onCommitEdit: c => _cardOps.CommitEdit(c),
+            contentFontFamily: ContentFontFamily)
         {
             Owner = _ui.Owner,
         };
@@ -292,7 +318,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         var dlg = new PreviewIdeaWindow(
             cards,
             index,
-            onCommitEdit: c => _cardOps.CommitEdit(c))
+            onCommitEdit: c => _cardOps.CommitEdit(c),
+            contentFontFamily: ContentFontFamily)
         {
             Owner = _ui.Owner,
         };
@@ -326,11 +353,27 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         _cardOps.TogglePin(card);
     }
 
+    private void SetArchiveFilterMode(object? parameter)
+    {
+        if (parameter is ArchiveFilterMode mode)
+        {
+            ArchiveFilterMode = mode;
+            return;
+        }
+
+        if (parameter is string text && Enum.TryParse(text, ignoreCase: false, out ArchiveFilterMode parsed))
+        {
+            ArchiveFilterMode = parsed;
+        }
+    }
+
     private void ToggleArchive(IdeaCardViewModel? card)
     {
         if (card == null) return;
         _cardOps.ToggleArchive(card);
     }
+
+    // ── 状態管理・設定同期 ────────────────────────────────────────────────────
 
     public void MarkDirty()
     {
@@ -423,6 +466,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         dlg.ShowDialog();
     }
 
+    // ── ステータス表示 ────────────────────────────────────────────────────────
+
     private void ShowStatus(string message)
     {
         StatusMessage = message;
@@ -445,9 +490,13 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         _statusClearTimer?.Stop();
     }
 
+    // ── タグ管理（TagManagementWindow 用） ────────────────────────────────────
+
     public void RenameTag(string oldName, string newName) => _tagMgmt.RenameTag(oldName, newName);
 
     public void DeleteTag(string tagName) => _tagMgmt.DeleteTag(tagName);
+
+    // ── クリップボード・ファイルインポート ────────────────────────────────────
 
     public bool PasteAsNewCard()
     {
@@ -494,36 +543,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     private void RefreshVisible()
     {
-        var query = (SearchText ?? string.Empty).Trim();
-        var tag = (SelectedTag ?? string.Empty).Trim();
-        var color = (SelectedColor ?? string.Empty).Trim();
-
-        IEnumerable<IdeaCardViewModel> items = AllCards;
-
-        if (!ShowArchived)
-        {
-            items = items.Where(c => !c.IsArchived);
-        }
-
-        if (!string.IsNullOrEmpty(tag))
-        {
-            items = items.Where(c => c.Tags.Any(t => string.Equals(t, tag, StringComparison.Ordinal)));
-        }
-
-        if (!string.IsNullOrEmpty(color))
-        {
-            items = items.Where(c => string.Equals(
-                string.IsNullOrWhiteSpace(c.Color) ? "yellow" : c.Color,
-                color, StringComparison.Ordinal));
-        }
-
-        if (!string.IsNullOrEmpty(query))
-        {
-            items = items.Where(c =>
-                (c.Title ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
-                || (c.Body ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
-                || c.Tags.Any(t => t.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0));
-        }
+        var items = Filter.Apply(AllCards);
 
         var pinned = items.Where(c => c.IsPinned)
                           .OrderByDescending(c => c.UpdatedAt);

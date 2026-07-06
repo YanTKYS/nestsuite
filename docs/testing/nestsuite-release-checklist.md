@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.11.6）
+# NestSuite リリース前確認チェックリスト（v2.14.12）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -15,7 +15,7 @@
 - [ ] release-notes エントリに保存形式変更有無が明記されている
 - [ ] release-notes エントリに session 形式変更有無が明記されている
 - [ ] release-notes エントリに schema bump 有無が明記されている
-- [ ] NoteNest schema が `1.4.1` のまま維持されている（`ApplicationVersionTests.NoteNestSchemaVersion_Remains_1_4_1`）
+- [ ] NoteNest schema が `1.4.2` のまま維持されている（`ApplicationVersionTests.NoteNestSchemaVersion_IsPinned`）
 - [ ] backlog 完了項目が backlog.md から削除されている（完了済み項目は release-notes で追跡）
 - [ ] `dotnet build` が通る
 - [ ] `dotnet test` が通る（全テスト）
@@ -29,7 +29,7 @@
 - [ ] `dotnet build` が通る
 - [ ] `dotnet test` が通る（全テスト）
 - [ ] `ApplicationVersionTests` でバージョンが正しく表示されることを確認
-- [ ] `NoteNest保存スキーマが 1.4.1` のままであることを確認
+- [ ] `NoteNest保存スキーマが 1.4.2` のままであることを確認
 
 ---
 
@@ -106,6 +106,12 @@
 - [ ] 保存後に未保存マーク（`*`）が消える
 - [ ] 名前を付けて保存で別タブが開くパスを指定するとエラーが表示される
 
+### 自動保存（v2.14.12 SH-33）
+
+- [ ] 既存の保存先を持つ NoteNest/IdeaNest/ChatNest タブを編集後、手動保存せず放置すると自動保存されること（未保存マークが消える）
+- [ ] 新規未保存タブは自動保存されないこと
+- [ ] TempNest の自動保存間隔・動作に影響がないこと
+
 ### Ctrl+S ショートカット
 
 - [ ] NoteNest タブで Ctrl+S を押すと上書き保存される
@@ -133,6 +139,7 @@
 - [ ] 引数指定ファイルが復元済みタブと同じ場合は重複タブを作らず既存タブがアクティブになる
 - [ ] セッションに記録されたファイルが存在しない場合はスキップして他のファイルを復元する
 - [ ] 復元対象が 1 件もない場合は Temp タブがアクティブになる
+- [ ] 読めない `.nestsuite`（内容が破損・種別判定不能等）がセッションに含まれる場合、まとめて 1 回通知され、他の正常なタブは復元される
 
 ---
 
@@ -231,6 +238,7 @@
 - [ ] `docs/guide/nestsuite-user-guide.md` が存在する
 - [ ] `docs/design/nestsuite-known-limitations.md` が存在する
 - [ ] `docs/release-notes.md` に最新バージョンエントリが記載されている
+- [ ] NoteNest の facade プロパティ・`NotePropertyChanged` allow-list・`BuildModels()` を変更した場合、`docs/development/coordinator-notification-pattern.md` のチェックリストを確認済み
 
 ---
 
@@ -239,16 +247,19 @@
 - [ ] NestSuite 起動済みの状態で `.notenest` をダブルクリックすると既存ウィンドウに NoteNest タブが追加される
 - [ ] NestSuite 起動済みの状態で `.chatnest` をダブルクリックすると既存ウィンドウに ChatNest タブが追加される
 - [ ] NestSuite 起動済みの状態で `.ideanest` をダブルクリックすると既存ウィンドウに IdeaNest タブが追加される
+- [ ] NestSuite 起動済みの状態で `.nestsuite` をダブルクリックすると既存ウィンドウにファイル内容に応じた Workspace タブが追加される
 - [ ] 既に開いているファイルを再度開くと既存タブがアクティブになる（重複タブなし）
 - [ ] 既存ウィンドウが最小化されている場合、ファイルを受け取ると前面表示される
 - [ ] ファイル指定なしで 2 プロセス目を起動した場合、既存ウィンドウに変化がない
 - [ ] `--classic-notenest` を指定しても NestSuite のシングルインスタンス制御が通常どおり動作する
+- [ ] 読めない `.nestsuite`（内容が破損・種別判定不能等）をダブルクリックすると理由が通知される（無言で終わらない）
 
 ### 未起動時の関連付け起動＋タブ復元
 
 - [ ] NestSuite 未起動状態で `.notenest` をダブルクリックすると、前回タブが復元されたうえで対象ファイルが追加タブとして開く
 - [ ] NestSuite 未起動状態で `.chatnest` をダブルクリックすると、前回タブが復元されたうえで対象ファイルが追加タブとして開く
 - [ ] NestSuite 未起動状態で `.ideanest` をダブルクリックすると、前回タブが復元されたうえで対象ファイルが追加タブとして開く
+- [ ] NestSuite 未起動状態で `.nestsuite` をダブルクリックすると、前回タブが復元されたうえでファイル内容に応じた Workspace タブが追加タブとして開く
 - [ ] 追加で開いたファイルのタブがアクティブになる
 - [ ] 引数指定ファイルが復元済みタブと同じ場合は重複タブを作らず復元済みタブがアクティブになる
 

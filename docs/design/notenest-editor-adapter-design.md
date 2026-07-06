@@ -1,5 +1,7 @@
 # NoteNest ITextEditorAdapter 設計
 
+> **[履歴文書]** この文書は v2.5.2 (H0-2)〜v2.5.x 時点の設計メモです。記載されたエディタアダプタ実装は v2.5.x で完了しており、現行コードの参照元ではありません。詳細は [`docs/design/README.md`](README.md) を参照してください。
+
 > 作成: v2.5.2 (H0-2)
 > 更新: v2.5.3 (H0-3) — 実装完了。ファイルパスを確定版に修正
 > 更新: v2.5.4 (H0-4) — EditorHost 導入方針を `notenest-editor-host-design.md` に整理

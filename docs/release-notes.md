@@ -7,6 +7,655 @@
 
 ---
 
+## v2.15.3 — SH: デバイス移行パックのエクスポート・インポート
+
+- **ツールメニューに「デバイス移行パックをエクスポート...」「デバイス移行パックをインポート...」を追加した。** 横断検索と同じ Shell 補助機能であり、新しい Workspace は追加していない。
+- **デバイス移行パックのエクスポートを追加した。** 現在開いている保存済み Workspace ファイル（`.nestsuite` / `.notenest` / `.ideanest` / `.chatnest`）と、存在する `ui-settings.json` / `tempnest.json` / `nestsuite-session.json` を .NET 標準の `System.IO.Compression` で ZIP 化できる。ZIP には `manifest.json` を含め、Workspace は `workspaces/`、環境ファイルは `environment/` 配下に格納する。
+- **デバイス移行パックをインポートして安全に展開できるようにした。** `manifest.json` の存在、`format`、`formatVersion`、参照 entry の存在、想定拡張子を検証し、不正な ZIP は拒否する。
+- **ZIP Slip / パストラバーサル対策を追加した。** `../`、バックスラッシュ、ドライブレター、絶対パスなどを含む危険な entry を拒否し、展開先が選択フォルダ配下に収まることを確認してから展開する。
+- **元の絶対パスへ自動復元しない。** manifest の `originalPath` は参考情報として保持するだけで、インポート時は利用者が選んだ展開先配下へ展開する。
+- **既存ファイルを無確認で上書きしない。** 同名ファイルが存在する場合は ` (1)`、` (2)` のような連番名で保存する。環境ファイルも既存の `ui-settings.json` / `tempnest.json` / `session.json` を自動上書きせず、展開のみ行う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、`.notenest` / `.ideanest` / `.chatnest` / `tempnest.json` の保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
+## v2.15.2 — IdeaNest アーカイブ表示フィルタ追加・視認性改善
+
+- **IdeaNest に「アーカイブだけ表示」を追加した。** 既存の「アーカイブを含まず表示（通常）」と「アーカイブを含めて表示」を維持しつつ、通常 / アーカイブ含む / アーカイブのみ の 3 状態を明確に選べるようにした。
+- **アーカイブ済みカードをカード一覧で視覚的に分かりやすくした。** カードに「アーカイブ」バッジを表示し、カード全体を軽く muted 表現にすることで、色だけに依存せず判別できるようにした。
+- **検索・タグフィルタとアーカイブ表示モードの組み合わせを維持した。** 「アーカイブのみ」でも検索語・タグ・色フィルタを無視せず、既存の絞り込み条件と合成して表示する。
+- **保存形式 / schema / wrapper / session 変更なし。** `.ideanest` のカード保存形式、NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、session 形式はいずれも変更していない。
+
+---
+
+## v2.15.1 — SH: 横断検索導線・メニュー整理・タブ移動ショートカット調整
+
+- **横断検索を「表示」メニューから「ツール」メニューへ移動した。** 横断検索は表示テーマや表示切替の類ではなく「作業補助ツール」であるため、利用者感覚に合わせて移動した。ショートカット `Ctrl+Shift+F` は維持している。「表示」メニューには横断検索項目を残していない。
+- **「ツール」メニューから NoteNest / IdeaNest / ChatNest の新規作成・起動項目を削除した。** 「ツール」メニューは今後、横断検索のような Shell 補助機能（将来的な横断タスクビュー・関連管理・振り返りダッシュボードなど）を置く場所とする。各 Nest の起動・新規作成導線と切り離すことで混在を避けた。
+- **各 Nest の新規作成導線を「ファイル > 新規作成」とタブバーの「＋」ボタンへ集約した。** 「ツール」メニューにあった説明的表記（NoteNest — ノートをプロジェクト単位で管理／IdeaNest — アイデアをカード形式で整理／ChatNest — チャット形式でブレスト記録）は、そのまま「ファイル > 新規作成」の各項目とタブバー「＋」ボタンのコンテキストメニューへ引き継いだ。「新規」メニューの見出しも「新規作成」に改めた。
+  - TempNest は固定の常設タブ（複数生成する概念がない）であるため、「新規作成」導線には追加していない。各 Nest の作成処理そのもの（NewNoteNestSession 等）は変更していない。
+- **横断検索パネルの閉じるボタン（×）の配置を修正した。** 旧実装は内側 `DockPanel` の最後の子要素（× ボタン）が `LastChildFill` の既定動作により `DockPanel.Dock="Right"` を無視して残り領域いっぱいに広がり、中央寄りに見える不具合があった。ヘッダーを `Grid`（タイトル列 `*`・閉じるボタン列 `Auto`）へ変更し、閉じるボタンを右端に固定した。
+- **タブ移動ショートカットのうち `Shift+←` / `Shift+→` を廃止した。** テキスト入力中の範囲選択操作（TextBox 等での `Shift+←→` による文字選択）と競合するため、Shell 側では横取りしない方針にした。NoteNest / ChatNest / TempNest などテキスト編集中心の Workspace でのテキスト選択操作は通常どおり動作する。`Ctrl+Tab` / `Ctrl+Shift+Tab` / `Ctrl+1〜9` など他のタブ切替ショートカットは維持している。
+- **横断検索の検索対象・検索ロジックは変更していない。** `ShellSearchService` / `ShellSearchPanelViewModel` は今回の対象外であり、検索対象は引き続き開いているタブのみ。**新規の `SearchNest` Workspace は追加していない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。各 Nest の作成処理そのものへの変更なし。
+- **実装**: ツールメニューの Nest 起動導線（`EnsureTabForToolId`・`MenuTool_Click`・`_toolMenuItems` によるチェック状態同期）はツールメニューから Nest 項目を撤去したことで不要になったため削除した。ファイルメニューの新規作成項目とタブバー「＋」ボタンのコンテキストメニューに `AutomationProperties.AutomationId`（`Shell.FileMenu` / `Shell.NewMenu` / `Shell.MenuNewNoteNest` 等 / `Shell.TabAddMenuNoteNest` 等）を追加し、UI Smoke テスト（`NestSuite.UiSmoke/Program.cs`）のナビゲーション先もツールメニュー経由からファイル > 新規作成 経由へ更新した（`InvokeToolMenuItem` を、任意の深さのメニュー階層を辿れる `InvokeMenuItem` へ一般化）。
+- **テストを更新・追加した**: `NestSuiteShellXamlTests`（表示メニューに横断検索が残っていないこと・ツールメニューに横断検索があること・ツールメニューから各 Nest 項目が削除されていること・ファイル > 新規作成とタブバー新規メニューに説明的表記があること・閉じるボタンが Grid の右端カラムに固定されていること）、`ShellTabNavigationShortcutTests`（新規。`Shift+←→` によるタブ移動処理が削除されていること・`Ctrl+Tab`/`Ctrl+1〜9` は維持されていること）、`NestSuiteSmokeSupportTests`（UI Smoke テストのナビゲーション先が新しい Automation ID に追従していること）を更新・追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.15.0 — SH: Shell横断検索の最小実装
+
+- **SH: NestSuite Shell に、現在開いているタブを対象にした最小限の横断検索機能を追加した。** NoteNest / IdeaNest / ChatNest / TempNest のすべてを横断して検索できる。**新規の `SearchNest` Workspace は追加していない**。あくまで Shell 側の補助機能であり、Workspace の一種として扱われるものではない。
+- **検索対象は「現在開いているタブ」のみ。** 未オープンのファイル・最近使ったファイル一覧・フォルダ検索・ローカル索引を用いた検索は対象外（今回のスコープ外）。
+- **検索方法は単純な大文字小文字を区別しない部分一致のみ。** 全角半角正規化・かな正規化・AND/OR・正規表現には対応しない。検索語が空の場合は「検索語を入力してください。」と表示し、結果は返さない。
+- **検索対象フィールド**: NoteNest はノートタイトル・本文、IdeaNest はカードタイトル・本文・タグ、ChatNest は発言本文（発言者種別も結果に含める）、TempNest は Slot1〜Slot4 のタイトル・本文。
+- **結果件数は最大100件。** それを超える一致がある場合は「結果が多すぎるため、先頭100件のみ表示しています。」と表示する。
+- **UI**: メニュー「表示 > 横断検索」（`Ctrl+Shift+F` にも対応。既存のショートカットとの競合がないことを確認済み）でパネルの表示・非表示を切り替える。パネルには検索ボックスと結果一覧（Workspace 種別タグ・タブ名・一致箇所の抜粋を表示）を持ち、**結果をクリックすると対応するタブへ切り替わる**（`ActivateTab` を利用）。Workspace 内部（該当ノートの選択・該当カードのプレビュー表示など、より深いジャンプ）は今回未対応（将来の拡張候補）。
+- **パネルの表示状態・検索語・検索結果はセッション内のみで保持し、どこにも永続化しない。** `ui-settings.json` への保存は行わず、パネルを閉じると検索語・結果もクリアされる。
+- **テーマ対応**: 既存の `DynamicResource` テーマブラシ（`SidebarBg`/`PrimaryTextBrush`/`InputBackgroundBrush`/`BorderBrush`/`PaneBorder`/`MutedFg` 等）のみを使用し、ハードコードされた色は追加していない。Light/Dark 両テーマで確認可能な設計。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。各 Workspace の保存モデルへの変更なし（検索用にデータを複製・永続化していない）。外部依存追加なし。net48_test 再開なし。
+- **実装**: 検索ロジックは `ShellSearchService`（純粋な静的ロジック、`ShellSearchTabEntry` を受け取り `ShellSearchResult` を返す）に切り出し、WPF に依存しないユニットテストで検証できるようにした。パネルの状態管理は `ShellSearchPanelViewModel` が担い、Shell 側（`NestSuiteShellWindow.CrossSearch.cs`）はタブ一覧の収集とパネルの表示切替・クリックによるタブ遷移のみを扱う。
+- **テストを追加した**: `ShellSearchServiceTests`（空検索語・NoteNest タイトル/本文一致・IdeaNest タイトル/本文/タグ一致・ChatNest 発言一致・TempNest スロットタイトル/本文一致・大文字小文字非区別・結果件数上限・ジャンプ先タブの特定）、`ShellSearchPanelViewModelTests`（空検索語時のメッセージ・一致時の結果反映・件数超過時のメッセージ・リセット）、`NestSuiteShellXamlTests`（横断検索メニュー項目とショートカット表示・パネルがテーマブラシを使用していること・`SearchNest` Workspace を追加していないこと）を追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.19 — BUG: NoteNest 本文ハイライトのマーカー判定を角括弧付き・行頭条件へ修正
+
+- **バグ修正: NoteNest の本文ハイライトが、`TODO` / `NOTE` などの単語単体や、文中の `[TODO]` にも反応していた問題を修正した。** 角括弧付き（`[TODO]` 等）かつ原則として行頭（または行頭の空白後）にある場合のみ検出するよう厳格化した。マーカー種別（`TODO`/`FIXME`/`NOTE`）は変更していない。
+- **検出条件**: `^[ \t]*\[(TODO|FIXME|NOTE)\]` 相当（行頭、または行頭の空白/タブ後、角括弧付き、大文字小文字区別あり）。`TODO 対応する`・`これは TODO です`・`これは [TODO] です`・`abc[TODO] 対応する`・`[TODOではない]`・`[NOTEBOOK]` はいずれも検出しない。`[TODO] 対応する` や、行頭の空白後の `    [TODO] インデント付き` は検出する。
+- **本文エディタのハイライト（`MarkerLineDetector`）とマーカーパネル／件数表示（`MarkerExtractorService`）の判定ルールを揃えた。** 従来、`MarkerLineDetector` は角括弧を要求せず大文字小文字も区別しない単語単体一致だったのに対し、`MarkerExtractorService` は角括弧必須・大文字小文字区別ありだが行頭条件がなかった。両方を「角括弧付き・行頭（または行頭空白後）・大文字小文字区別あり」に統一した。
+- **`MarkerLineDetector` から `[[Note Title]]`（NoteLink）誤検出回避用の特別処理（`ContainsNoteOutsideBrackets`）を削除した。** 新しい行頭・角括弧条件下では `[[NOTE]]`（二重角括弧）が `[NOTE]`（単一角括弧）と誤って一致することは構造上あり得ないため、当該ワークアラウンドは不要になった（副次的な簡素化。大規模リファクタリングは行っていない）。
+- **NoteLink（`[[...]]`）の検出仕様自体は変更していない。** 対象は TODO/FIXME/NOTE マーカーの判定条件のみで、行内のどこにあっても検出する既存の NoteLink 挙動はそのまま。
+- **変更なし事項**: マーカー種別の追加・変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを更新・追加した**: `MarkerLineDetectorTests` / `NoteEditorHostHighlightRegressionTests` の既存テスト（単語単体・大文字小文字非区別を前提としていたもの）を新仕様に合わせて更新し、行頭・角括弧・大文字小文字区別・部分一致除外・NoteLink との優先関係を固定するテストを追加した。`MarkerExtractorServiceTests` にも行頭以外の `[TODO]`・単語単体・部分一致（`[NOTEBOOK]`）が検出されないことを固定するテストを追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.18 — SH: Workspace共通フォント設定をメニューバーへ移動
+
+- **SH: v2.14.17（L22）で Workspace 共通になったエディタフォント種類の変更導線を、NoteNest Workspace 内 ComboBox からメニューバー（表示 > 本文フォント）へ移動した。** フォント設定は Workspace 共通であるにもかかわらず、NoteNest を開いていないと変更しづらい導線になっていたズレを解消した。
+- **NoteNest を開いていない状態でも、メニューバーから Workspace 共通フォントを変更できる。** 変更すると開いている全 Workspace（NoteNest 本文エディタ／IdeaNest カード本文・カード編集欄／ChatNest メッセージ本文・入力欄／TempNest 各スロットのタイトル欄・本文欄）へ即時反映される。
+- **NoteNest Workspace 上部ツールバーのフォント種類 ComboBox を廃止した。** フォントサイズ ComboBox は NoteNest 固有設定のため維持している。
+- **選択中のフォントはメニュー上でチェック表示される。** 既存のテーマメニュー（表示 > テーマ）と同様の `IsCheckable` パターンを踏襲した。
+- **設定保存先・分離方針は v2.14.17 のまま変更していない。** 保存先は引き続き `ui-settings.json` の `WorkspaceEditorFontFamily`（旧 `NoteNestEditorFontFamily` からの移行にも対応）。Workspace ファイル本体（`.notenest`/`.nestsuite`/`.ideanest`/`.chatnest`/`tempnest.json`）には保存せず、フォント変更で各 Workspace を未保存扱い（dirty）にもしない。
+- **実装は v2.14.17 で追加した共通伝播処理（`PropagateWorkspaceEditorFontFamily`）を再利用した。** 変更元 Workspace を前提にした `exclude` 引数を `null` 許容へ小さく整理し、メニュー操作（変更元 Workspace が存在しない呼び出し）でも同じ経路で全セッションへ適用できるようにした。NoteNest 専用処理としては実装していない。
+- **アプリ全体の UI フォントには一切影響しない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォント候補一覧（7 種類）・既定 `Yu Gothic UI`・不正値フォールバックは v2.14.17 のまま変更していない。
+- **テストを更新・追加した**: `NestSuiteShellXamlTests` に、メニュー項目が `UiSettingsService.ValidWorkspaceEditorFontFamilies` の全候補と一致すること・共通クリックハンドラを共有すること・NoteNest の旧フォント種類 ComboBox が廃止されていること・フォントサイズ ComboBox は維持されていることを固定するテストを追加した。Shell 側のメニュークリックハンドラ（`MenuWorkspaceFont_Click`）自体は WPF Window 依存のため直接テストしていない（実体である `PropagateWorkspaceEditorFontFamily` の効果は v2.14.17 で追加した ViewModel レベルのテスト群でも代表確認できているため、配線のみメニュー項目の静的確認で代替した）。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.17 — L22: Workspace共通エディタフォント種類の拡大
+
+- **L22: NoteNest 限定だったエディタフォント種類変更（L21/v2.14.15、v2.14.16 で保存分離）を、IdeaNest / ChatNest / TempNest の本文・編集領域へ拡大した。** 主目的は各 Workspace の本文入力・閲覧時の可読性向上。
+  - NoteNest: 本文エディタ（既存、v2.14.16 の分離方針を維持）。
+  - IdeaNest: カード本文（グリッド表示）とカード編集欄（プレビュー／編集ウィンドウの本文 TextBox）。カードの枠・ボタン・タグ・ツールバーは対象外。
+  - ChatNest: メッセージ本文（吹き出し表示・インライン編集）と入力欄。発言者ラベル・ボタン・ツールバーは対象外。
+  - TempNest: 各スロットのタイトル欄・本文欄。
+- **フォント候補に `BIZ UDMincho` / `UD Digi Kyokasho N-R` を追加した。** 候補一覧は `Yu Gothic UI`（既定）/ `Meiryo UI` / `MS Gothic` / `BIZ UDGothic` / `BIZ UDMincho` / `UD Digi Kyokasho N-R` / `Consolas` の 7 種類。外部フォントは同梱しない。
+- **設定名を `NoteNestEditorFontFamily` から `WorkspaceEditorFontFamily` へ整理した。** 対象が Workspace 共通になったことに合わせた命名変更。既存ユーザーの `ui-settings.json` との互換のため、`UiSettingsService.ResolveWorkspaceEditorFontFamily` が「新設定があればそれを使う→なければ旧 `NoteNestEditorFontFamily` を移行元として使う→どちらも無効なら既定」の順で解決する。旧設定フィールド自体は削除していない。保存は常に新設定名で行う。
+- **Workspace ファイル本体には保存しない。** IdeaNest（`WorkspaceSettings`）・ChatNest（`Message`）・TempNest（`TempNestSlot`）のいずれの保存モデルにもフォント項目を追加していない。各 ViewModel の `ContentFontFamily`（IdeaNest/ChatNest/TempNest）・`EditorFontFamily`（NoteNest）は表示専用の UI 設定駆動値であり、変更しても各 Workspace の未保存状態（`HasChanges`/`IsDirty`/`IsModified`）を立てない。
+- **いずれかのタブでフォントを変更すると、開いている全 Workspace（種別を問わず）の対応する領域と `ui-settings.json` に同期する。** Shell 側に共通の伝播・永続化ヘルパー（`PropagateWorkspaceEditorFontFamily`）を新設し、NoteNest/IdeaNest/ChatNest/TempNest の各 PropertyChanged ハンドラから呼び出す形に整理した。
+- **アプリ全体の UI フォント（メニュー・タブ・ボタン・ダイアログ）には一切影響しない。**
+- **変更なし事項**: UI レイアウト変更なし（フォント選択導線の追加のみ）。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォントサイズの仕様・挙動は変更していない。
+- **テストを更新・追加した**: `EditorLayoutTests` に、`WorkspaceEditorFontFamily` の既定値・候補一覧（7 種類）・不正値フォールバック・旧設定からの移行（`ResolveWorkspaceEditorFontFamily`）・round-trip、IdeaNest/ChatNest/TempNest 各 ViewModel の `ContentFontFamily` 既定値・変更時に未保存状態を立てないことの固定、IdeaNest/ChatNest/TempNest の保存モデルにフォント項目が存在しないことの型レベル確認を追加した。v2.14.15 で追加した「他 Workspace に FontFamily 概念が存在しないこと」を確認するテストは、今回の意図（Workspace 共通化）と矛盾するため、削除ではなく「反映されるが保存対象にはならないこと」を確認する新仕様のテストへ更新した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.16 — BUG: NoteNest エディタフォント種類を Workspace 保存対象から分離
+
+- **バグ修正: v2.14.15（L21）で追加した NoteNest エディタフォント種類の UI 設定が、実際には Workspace ファイル本体（`.notenest`/`.nestsuite` payload の `settings.fontFamily`）にも影響し得る構造だった問題を修正した。** レビュー指摘のとおり、`EditorStateViewModel.FontFamily` の変更は `SettingsChanged` を発火し `EditorChangeCoordinator` がデータ変更として扱うため、フォント種類を変えただけで NoteNest タブが未保存扱いになり、次回保存で `settings.fontFamily` が UI 設定側の値に更新され得た。「UI 設定として扱い、Workspace ファイル本体には保存しない」という v2.14.15 の意図とズレていたため分離した。
+- **`EditorStateViewModel` に表示用の `FontFamily` と保存対象の `SavedFontFamily` を分離した。** `FontFamily`（NestSuite UI 設定 `NoteNestEditorFontFamily` 駆動の表示専用値）を変更しても `SettingsChanged` は発火せず、Workspace は dirty にならない。`SavedFontFamily` はファイル読込時点（`LoadSettings`）の値のみを保持し、`ProjectDocumentService.Build()` はこちらを `Settings.FontFamily` へ書き戻す。これにより NoteNest エディタのフォント種類変更が Workspace ファイルの差分を生まなくなった。
+- **フォントサイズの挙動は変更していない。** `EditorStateViewModel.FontSize` は引き続き `SettingsChanged` を発火し、Workspace を dirty にする既存挙動のまま（本バグ修正の対象外）。
+- **`AppSettings.FontFamily` フィールド自体は削除・変更していない。** 既存 `.notenest`/`.nestsuite` ファイルに保存済みのフォント設定は引き続き読み込め、読込時点の値としてそのまま保存し続ける（round-trip は維持）。今回変更したのは「NoteNest エディタの現在の表示フォントを Shell の UI 設定で上書きしても、その値がファイルへ書き込まれない」という一点のみ。
+- **変更なし事項**: UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを更新・追加した**: `NoteNestFormatSchemaRegressionTests.SaveAndReloadPreservesNotesTasksLinksSettingsSelectionAndSchema` を新しい仕様（直接の FontFamily 変更は保存対象に含まれない）に合わせて更新した（既存テストの削除・スキップ化ではなく、意図的な仕様変更に合わせた期待値の修正）。`EditorStateViewModelTests` / `MainViewModelCompositionTests` / `ProjectDocumentServiceTests` に、FontFamily 変更が Workspace を dirty にしないこと・`SavedFontFamily` が読込時点の値を保持すること・`Build()` が `SavedFontFamily` を書き戻すことを固定する新規テストを追加した。
+
+---
+
+## v2.14.15 — L21: NoteNest エディタフォント種類の変更設定
+
+- **L21: NoteNest 本文エディタのフォント種類を、端末にインストール済みのフォントから選択できるようにした。** 主目的はノート本文の読み書きにおける視認性・可読性の改善。フォントサイズ変更（既存機能）とは分けて実装している。
+- **選択候補は主要な 5 種類に絞った**（`Yu Gothic UI`（既定）/ `Meiryo UI` / `MS Gothic` / `BIZ UDGothic` / `Consolas`）。一般職員向けツールとして過剰に細かい一覧を出すと認知負荷が高くなるため、外部フォント同梱・全フォント列挙は行っていない。
+- **設定導線は NoteNest Workspace 本文エディタ上部のツールバーに新設したコンボボックス。** 既存のフォントサイズ選択コンボボックスの隣に配置し、選択すると開いている NoteNest 本文エディタへ再起動なしで即時反映される。
+- **Shell 全体の既定値は `ui-settings.json` の `NoteNestEditorFontFamily` として保存する。** Workspace 側の保存モデル（`AppSettings`）に新規フィールドは追加していない。既存のフォントサイズ（`NoteNestEditorFontSize`）と対称に、Shell 起動時・ファイルを開いた直後に NoteNest 本文エディタへ既定値を適用し、いずれかのタブで変更すると他の NoteNest タブ・`ui-settings.json` へも同期する。
+- **訂正（レビュー指摘対応）: 「Workspace ファイル本体には保存しない」という当初の記述は不正確だった。** `AppSettings.FontFamily`（`.notenest`/`.nestsuite` payload 内の既存フィールド、FontSize と同じ仕組みを共有）は、NoteNest 本文エディタのフォント種類を変更すると引き続き「データ変更」として扱われ、そのタブは未保存状態になり、次回保存時にファイル自身の `settings.fontFamily` へ書き込まれる。これはフォントサイズが v2.14.x 以前から一貫して持つ、意図された・テスト済みの既存挙動（`NoteNestFormatSchemaRegressionTests.SaveAndReloadPreservesNotesTasksLinksSettingsSelectionAndSchema` 等で固定済み）であり、本リリースはこれを変更していない。`ui-settings.json` の値は「次にタブを開く／Shell を起動した際の既定値」を提供するものであり、個々の `.notenest` ファイルに保存済みのフォント設定を上書きしない・その仕組み自体には手を入れていない。
+- **不正・存在しないフォント名は既定へ安全にフォールバックする。** `UiSettingsService.ValidateNoteNestEditorFontFamily` が `ui-settings.json` の値を検証し、未設定・空文字・候補外（削除されたフォント名の残存等）の場合は既定 `Yu Gothic UI` を返す。これにより起動や NoteNest 表示が壊れない。
+- **アプリ全体の UI フォントには一切影響しない。** メニュー・タブ・ボタン・ダイアログの `FontFamily` は変更しておらず、IdeaNest / ChatNest / TempNest にも適用されない（対象は NoteNest 本文エディタの `EditorFontFamily` のみ）。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。フォントサイズの仕様・挙動は変更していない。
+- **テストを追加した**: `EditorLayoutTests` に、`NoteNestEditorFontFamily` の既定値・`ValidateNoteNestEditorFontFamily` の正常系（5 候補）・異常系（未設定・空文字・空白・候補外フォント名）のフォールバック・`ui-settings.json` 相当のシリアライズ round-trip・`MainViewModel.EditorFontFamilyChoices` の内容と既定復帰可能性・`MainViewModel.EditorFontFamily` が NoteNest エディタへのみ反映されることを固定するテストを追加した。IdeaNest / ChatNest / TempNest の ViewModel に `FontFamily` 関連メンバーが存在しないことを型レベルで確認するテストも追加し、意図しない適用がないことを固定した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.14 — BUG: NoteNest 未保存経過時間の異常値修正
+
+- **バグ修正: NoteNest Workspace のステータスバーで、未保存時の経過時間として「未保存（1065313408分）」のような異常値が表示される問題を修正した。** 桁数（約 2025 年相当）から `DateTime.Now - DateTime.MinValue` に相当する計算になっていたと推定される。ChatNest / IdeaNest では発生せず、NoteNest でのみ発生し、一度自動保存されると解消する挙動と整合する。
+- **表示側の防御を追加した（`ProjectSessionViewModel`）**: `UnsavedIndicatorText` / `IsUnsavedWarning` が参照する経過時間計算を新設の `SafeUnsavedMinutes()` に統一した。未保存開始時刻 `_unsavedSince` が未初期化（`DateTime.MinValue` 相当）、負の経過値（時計のずれ等）、または 365 日を超える異常な経過値の場合は `null` を返し、経過分数を表示せず「● 未保存」にフォールバックする。
+- **初期化側の防御を追加した**: `ProjectSessionViewModel.Start()`（プロジェクトの新規追跡開始＝既存ファイルを開く／新規作成する際に呼ばれる）で `_unsavedSince` を常に現在時刻へ再初期化するようにした。`IsModified` が通常の false→true 遷移を経ずに true として観測されるような未知の経路があっても、異常値の温床になるのを防ぐ。
+- **自動保存の仕様は変更していない。** 自動保存の対象判定・間隔（Shell 側 `NestSuiteShellWindow.AutoSave.cs`、SH-33）、自動保存成功時に `LastSavedAt` が更新され `IsModified` が解除される既存挙動はそのまま維持した。
+- **ChatNest / IdeaNest への影響はない。** 修正対象は NoteNest の `ProjectSessionViewModel` に閉じている。
+- **変更なし事項**: UI レイアウト変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。net48_test 再開なし。
+- **テストを追加した**: `ProjectSessionViewModelTests` に、`_unsavedSince` が未初期化・未来時刻・異常に大きい経過値のケースで「● 未保存」にフォールバックすることを固定する 3 件、`Start()` が `_unsavedSince` を安全な現在時刻へ初期化することを固定する 1 件、通常ケース（経過分数を正しく表示できること）の回帰確認 1 件、`MarkSaved()` の既存挙動（`LastSavedAt` 更新・`IsModified` 解除）を固定する 1 件を追加した。`NoteNestFormatSchemaRegressionTests` に、既存ファイルを開いた直後に異常な未保存表示が出ないことを確認する回帰テストを追加した。既存テストの削除・スキップ化は行っていない。
+
+---
+
+## v2.14.13 — TD-61: NoteNest Classic 残存コードの棚卸しと縮退
+
+- **TD-61: NoteNest Classic / 旧単独起動時代の残存コードを棚卸しし、現行コードと誤読されやすい部分を縮退した。** 機能追加ではなく整理タスクであり、現行 NestSuite の動作は変更していない。棚卸しと判断根拠は新規 `docs/development/classic-code-contraction.md` に記録した。
+- **削除したコード（現行ビルド対象から除外）**: 旧 `MainViewModel` 側の自動保存機構を撤去した。具体的には `MainViewModel._autoSaveTimer`（5 分間隔 `DispatcherTimer`）とその生成・`Start()`・`Dispose()` での停止、`AutoSaveTimer_Tick`、`MainViewModel.AutoSave()`、`MainViewModel.IsAutoSaveEnabled` プロパティおよび `_isAutoSaveEnabled` フィールドを削除した。`IsAutoSaveEnabled` は現行コードのどこからも `true` に設定されず `AutoSave()` が常に早期 return する完全なデッドコードで、v2.14.12 SH-33 で追加した Shell 側自動保存と二重に存在して誤読要因になっていた。
+- **旧 `MainViewModel` の AutoSave は現行コードではなく、削除済みである。** 現行の自動保存は Shell 側の `NestSuiteShellWindow.AutoSave.cs`（SH-33、30 秒間隔・全 Workspace 共通）と `AutoSaveCandidatePolicy` が担う。この機構には一切変更を加えていない。
+- **参照退避したコード**: 撤去した旧自動保存コードの撤去前スナップショットを `reference/legacy/MainViewModel.AutoSave.legacy.cs.txt`（`.cs.txt` = 暗黙 Compile 対象外）として残し、`reference/legacy/README.md` に「現行コードではない」旨を明記した。
+- **保留したコードと理由**: `MainViewModel` 本体および各 partial は名前が Classic 由来なだけで現行 NoteNest Workspace の VM（Shell・多数テストが参照）のため保留。`ProjectLifecycleService.TryAutoSave()` は `NoteNestFormatSchemaRegressionTests` から直接検証される小さな保存ヘルパーのため保留。`UiSettingsModel.IsAutoSaveEnabled`（設定モデルのフィールド、既定 `false`、旧 VM とは未配線で別物）は設定ファイル形状に関わるため保存形式変更なし方針に従い保留。`reference/external/` は参照専用として削除対象外。
+- **テスト**: 旧自動保存タイマーを検証していた 2 テスト（`NoteNestMultiTabSessionTests`）を、現行も残る未保存ステータス用 `_unsavedTimer` のライフサイクル検証（`MainViewModel_UnsavedTimer_IsEnabled_WhenModified` / `MainViewModel_Dispose_StopsUnsavedTimer`）へ差し替えた。テスト本数は維持し、スキップ化・削除はしていない。`MainViewModel.AutoSave` を参照するテストは残っていない。
+- **変更なし事項**: UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。AppData パス・ProgId・Mutex/Pipe 名変更なし。外部依存追加なし。net48_test 再開なし。
+- **backlog: TD-61 は完了済みとして backlog.md には項目を追加せず、完了済み欠番の記載のみ更新した（未着手一覧には残さない）。**
+
+---
+
+## v2.14.12 — SH-33: 既存Workspaceの自動保存
+
+- **SH-33: 保存先パスを持つ NoteNest / IdeaNest / ChatNest タブのうち未保存のものを 30 秒間隔で自動保存するようにした。** 新規 `NestSuiteShellWindow.AutoSave.cs`（`DispatcherTimer` によるタイマー本体）と `AutoSaveCandidatePolicy`（UI 非依存の対象判定ロジック）を追加した。
+- **新規未保存タブ（FilePath なし）は自動保存の対象外。** 勝手に保存場所を作らない方針を維持する（`AutoSaveCandidatePolicy.IsCandidate` が `filePath != null` を要求）。
+- **TempNest は対象外。** 既存の `TempNestStoreService` による専用保存機構（TD-60 で atomic write 化済み）をそのまま使う。
+- **保存処理自体は既存の保存経路をそのまま再利用している。** `vm.SaveToPath` / `TrySaveIdeaNestToPath` / `TrySaveChatNestToPath`（FM-5/TD-60 で整備した atomic write を含む）を呼ぶだけで、自動保存専用の別形式・一時ファイルは作っていない。
+- **保存失敗時は未保存状態を維持し、失敗通知は同一タブでは成功するまで最初の 1 回のみに抑制する。** `MainViewModel.SaveToPath` / `DoSave` と Shell の `TrySaveWorkspaceToPath` に `notifyOnError` パラメータを追加した。`notifyOnError: false` の場合も `ErrorLogService.Log` への記録は従来どおり行うが、`ShowErrorDialog` / `LogAndShowSaveError` によるダイアログ表示のみ抑制する。Shell 側は `_autoSaveNotifiedFailureTabIds`（`HashSet<string>`）でタブ単位に通知済みを記録し、次に成功した時点で解除する。
+- **自動保存成功時の状態表示は、アクティブタブのみ短時間のステータス表示（「自動保存しました」）にとどめた。** バックグラウンドタブは未保存マーク（●）が消えることのみが結果表示で、常時表示 UI は増やしていない。
+- **手動保存の挙動・通知は変更していない。** `notifyOnError` / `showNotification` の既定値は従来どおり `true` で、既存の 1〜2 引数オーバーロードはすべて不変。
+- **既存の未配線 `IsAutoSaveEnabled` / `MainViewModel.AutoSave()` とは別の機構であることを明記する。** 旧経路は `UiSettingsService` の `IsAutoSaveEnabled`（既定 `false`、UI トグルなし）で完全にガードされたまま今回は未変更・未使用で、混同しないこと。今回追加したのは Shell 側で 3 Workspace 共通に常時動作する、独立した新しい自動保存である。
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+- **テストを追加した**: 新規 `AutoSaveCandidatePolicyTests`（`IsCandidate` の対象判定を NoteNest/IdeaNest/ChatNest/Temp・FilePath 有無・isModified 有無の組み合わせで固定）。`NoteNestFormatSchemaRegressionTests` に `SaveToPath_NotifyOnErrorFalse_FailureDoesNotInvokeShowErrorDialog` / `SaveToPath_NotifyOnErrorTrue_FailureInvokesShowErrorDialog_DefaultBehaviorPreserved` を追加し、`notifyOnError` による `ShowErrorDialog` 抑制・既定動作維持を固定した。Shell 側の `TrySaveIdeaNestToPath`/`TrySaveChatNestToPath`/`RunAutoSaveTick` は WPF Window 依存のため直接テストしていない（同じ `TrySaveWorkspaceToPath` ヘルパーを経由するため、NoteNest 側の検証を配線パターンの代表確認としている）。タイマーの実時間待機を伴うテストは追加していない（対象判定と実行単位のテストで代替）。
+
+---
+
+## v2.14.11 — SH-32: ダークテーマ未対応部の色統一
+
+- **SH-32: Shell タブバー右側の「＋」「▾」ボタンに `IconButton` スタイルを適用した。** 従来は `Style`/`Foreground` 指定がなく既定の黒文字のままだったため、ダークテーマの `GroupHeaderBg`（暗色）のタブストリップ背景に対して文字色が白浮きし、実質視認不可になっていた問題を解消した。ローカルの `Background="Transparent"` / `BorderThickness="0"` / `Cursor="Hand"` は `IconButton` スタイル側で同等の値が設定されるため削除した（ローカル値を残すとスタイルの hover トリガーを上書きしてしまい、ホバー時の視覚フィードバックが効かなくなるため）。
+- **NoteNest 右ペイン開閉ボタン（`RightPaneExpandButton`）は調査したが変更していない。** 開閉両状態とも既に `IconButton` スタイル＋`DynamicResource` ベースの配色を使っており、変化するのはグリフ（`»`/`«`）とツールチップ文言のみで、ダークテーマ不統一は確認されなかった。ただしこれはコードレベルでの確認であり、実機での見た目確認を推奨する。
+- **タイトルバーに `DwmSetWindowAttribute`（`DWMWA_USE_IMMERSIVE_DARK_MODE`）による最小限のダークモード適用を追加した（新規 `NestSuiteShellWindow.TitleBar.cs`）。** カスタムタイトルバー化（`WindowChrome` によるノンクライアント領域の全面作り直し）は行っていない。Windows 10 20H1 未満など非対応 OS では `DwmSetWindowAttribute` 呼び出しが失敗しても例外を投げず黙って何もせず、白いタイトルバーのままフォールバックする。
+- **起動時（`SourceInitialized`）とテーマ切替時（`ApplyAndSaveTheme`）の両方でタイトルバーのダークモードが更新される。** ウィンドウ生成直後は HWND が存在しないため `SourceInitialized` まで適用を遅延し、View メニューからのテーマ切替時にも即座に反映されるようにした。
+- **メニューバーは今回対象外のまま変更していない。** 過去の対応でメニューバーの見た目が不自然になった経緯があるため、スコープから除外した。
+- **ライトテーマの見た目・操作導線・レイアウトは変更していない。**
+- **変更なし事項**: 保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+- **テストは追加していない**: UI 見た目（ダークテーマでの配色）の変更であり自動テストでは検証しづらいため、今回は追加していない。実機（Windows）での目視確認が必要。
+
+---
+
+## v2.14.10 — TD-60: 補助ファイル保存の atomic write 適用
+
+- **TD-60: `UiSettingsService.Save` / `TempNestStoreService.Save` を `AtomicFileWriter.WriteAllText`（tmp 経由の atomic write）へ移行した。** 従来は素の `File.WriteAllText` で `ui-settings.json` / `tempnest.json` を保存しており、書き込み中クラッシュでファイルが破損し得たが、他の永続化（RecentFiles / SessionState / 3 Workspace FileService）と同じ atomic write 方式に揃えた。
+- **明示的な `Directory.CreateDirectory` 呼び出しを削除し、`AtomicFileWriter` 側のディレクトリ生成に統合した。** `AtomicFileWriter.WriteAllText` は保存先ディレクトリがなければ自動生成するため、各サービス側での重複呼び出しは不要になった。
+- **エンコーディングは `File.WriteAllText` の既定（BOM なし UTF-8）を維持するため `new UTF8Encoding(false)` を明示指定した。** `Encoding.UTF8` は BOM 付きのため使用していない。
+- **`.bak` は今回作成しない。** `AtomicFileWriter.WriteAllText` の `backupPath` は未指定（`null`）のままで、単一世代バックアップ管理（`.bak` 生成）は本タスクの対象外。
+- **`ui-settings.json` / `tempnest.json` の JSON 構造・保存先パス・`%APPDATA%\NoteNest` 配下という AppData パスは変更していない。** 保存タイミング・debounce・各設定の既定値にも変更なし。
+- **変更なし事項**: NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。UI 変更なし。
+- **backlog: TD-60 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `AtomicFileWriterTests` に `WriteAllText_NoBackupPath_ExistingFile_OverwritesContent_NoBakCreated`（backupPath: null + `UTF8Encoding(false)` での上書き成功時に `.bak` が作られないことを固定）を追加。新規 `UiSettingsServiceTests` / `TempNestStoreServiceTests` を追加し、各サービスの `Save`/`Load` と同一の serialize/write/read 手順（`DataPath` が private static readonly で固定のため実際の `Save()` は直接呼べない）を一時パスに対して再現し、上書き時に最新値が反映されること・JSON が往復すること・BOM が付かないこと・`.tmp` が残らないことを確認した。
+
+---
+
+## v2.14.9 — TD-53: Coordinator / notify パターンのドキュメント化
+
+- **TD-53: `NoteChangeCoordinator` / `EditorChangeCoordinator` / `WorkspaceChangeCoordinator` の Publish/notify パターンを説明する開発者向け docs を新規作成した（`docs/development/coordinator-notification-pattern.md`）。** ロジック変更は伴わない、docs 整備のみ。
+- **Shell（`MainViewModel.WorkspaceChanged`）と Workspace（各 Coordinator）の通知責務境界を整理した。** `WorkspaceChangeEventArgs(IsDataChanged, PropertyNames)` が全 Coordinator 共通の通知単位であり、`IsDataChanged` が未保存化、`PropertyNames` が facade プロパティの `OnPropertyChanged` 発火に対応することを明記した。
+- **facade プロパティ追加時・`NoteWorkspaceViewModel.NotePropertyChanged` allow-list・`BuildModels()` の 3 箇所を、見落としやすいポイントとして具体的なコード引用つきで整理した。** v2.13.2 の `CurrentNotebookName` 追従不具合、v2.14.3 M12 の `IsStarred` allow-list 対応を実例として記載。
+- **モデルへプロパティを追加する際のチェックリストを追加した。** schema bump 判断は `docs/architecture/schema-versioning-policy.md` に委ね、この文書は「確認先」を示すに留める。
+- **IdeaNest / ChatNest の dirty 管理（`MarkDirty()` / `IsDirty`）が NoteNest の Coordinator 方式と異なる設計であることも明記した**（NoteNest だけ複数子 ViewModel を持つため Coordinator 方式、他はワークスペース単体の単純フラグ）。
+- **`docs/development/nestsuite-development-guidelines.md` と `docs/testing/nestsuite-release-checklist.md` から新規 docs へリンクを追加した。**
+- **backlog: TD-53 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `CoordinatorNotificationPatternDocsTests`（docs の存在・主要参照ポイント記載・guideline / checklist からのリンクを確認）。
+- **変更なし事項**: Coordinator 実装・ViewModel 構造・Workspace 間連携に変更なし。UI 変更なし。保存形式変更なし。NoteNest schema `1.4.2` 維持。`.nestsuite` wrapper `formatVersion` `1.0` 維持。session 形式変更なし。外部依存追加なし。
+
+---
+
+## v2.14.8 — リファクタリング: 保存系ヘルパーの重複解消と陳腐化コメント整理
+
+- **重複していたランダム tmp 名 atomic write を `AtomicFileWriter.WriteAllTextWithRandomTemp` へ集約した。** `RecentFilesService` / `NestSuiteRecentFilesService` / `NestSuiteSessionStateService` の private `WriteAtomically` は同一実装が 3 箇所に重複していたが、いずれも 1 行の委譲呼び出しに置き換えた（挙動同一・約 70 行削減）。
+- **`.bak` 付き保存の `WriteAllTextWithBackup` overload を `AtomicFileWriter` に追加し、3 FileService の保存経路の参照を統一した。** これまで各 FileService が `path + ".bak"` を個別に組み立てていた箇所を共通 API 呼び出しに統一した。
+- **`ProjectFileService.FileExtension`（`.notenest`）を新設し、`.notenest` リテラル分散を解消した。** `NestSuiteTabFactory.ExtensionByKind` と `FileAssociationService.Targets` は各 FileService / Envelope の `FileExtension` 定数を参照する形に変更した。`DialogService` のフィルタ表示文字列は全拡張子一様のリテラル表記のまま（意図的、変更していない）。`docs/development/compatibility-identifiers-audit.md` §1-4 補足を更新した。
+- **v1.7.2 / v1.9.0 時代の「骨格のみ」「未統合」等の陳腐化した設計コメントを現行実装に合わせて更新した（コメントのみ、コード変更なし）。** `NestSuiteTabFactory` / `NestSuiteDocumentTab` / `NestSuiteWorkspaceKind` / `NestSuiteOpenFilePolicy` の doc コメントが対象。
+- **見送り判断を記録した。** `OnClosing` の分割（テスト不在の UI クローズ確認フローで可読性のみの利得のため見送り）、3 FileService の envelope 分岐統合（schema クリティカルな 3 保存経路の同時変更を伴うため方針どおり見送り）。`UiSettingsService.Save` / `TempNestStoreService.Save` の atomic write 化は挙動変更を伴うため実施せず、TD-60 として backlog に採番した。
+- **変更なし事項**: 挙動変更なし・保存形式変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。外部依存の追加なし。UI 変更なし。
+- **backlog: 新規追加なし（今回のスコープの対応 ID なし）。TD-60 を新規追加した。**
+
+---
+
+## v2.14.7 — SH-31: 読めない .nestsuite の復元・open 失敗通知と文言整理
+
+- **SH-31: `.nestsuite` の種別判定に失敗した理由を保持するようにした。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらずファイル内容の読取りが必要なため、判定失敗をこれまで「不明」で一律に扱っていたが、新しい `WorkspaceKindDetectionFailure` enum（`None` / `UnsupportedExtension` / `FileNotFound` / `AccessDenied` / `InvalidFormat` / `UnknownWorkspaceKind` / `SchemaVersionTooNew` / `IoError` / `Unknown`）で理由を区別するようにした。`NestSuiteWorkspaceEnvelope.DetectKindFromFile`（新規、例外を外へ投げない）と `NestSuiteTabFactory.TryGetKind` の理由つきオーバーロード（`out WorkspaceKindDetectionFailure failure`）を追加した。旧シグネチャはすべて新オーバーロードへ委譲し後方互換を維持した。
+- **セッション復元の無言スキップを廃止した。** `SessionTabMapper` に `SessionRestoreFailure` レコードと `TryCreateRestoreTarget` / `CreateRestoreTargets` の理由つきオーバーロードを追加した。読めない `.nestsuite`（ファイルは存在するが種別判定できない）がある場合、Shell（`NestSuiteShellWindow.Session.cs`）はまとめて 1 回 `_dialogs.ShowError` で通知する（1 件ずつダイアログは出さない）。**session からは削除しない**ため次回起動時にも再試行される。復元可能な他のタブの復元は妨げない。**空パス・ファイル欠落・未対応拡張子のスキップは既存仕様どおり無言のまま維持した**（session には保存対象タブのパスしか書かれない前提の防御的スキップであり、通知対象を広げていない）。
+- **pipe / ダブルクリック起動 / 起動引数 open の無言 return を廃止した。** `OpenFileFromPipe`（シングルインスタンス経由のダブルクリック受け口）はファイル不存在・種別判定失敗のいずれも理由別のエラーダイアログを表示するようにした（従来は早期 return で何も表示していなかった）。`LoadInitialFile`（起動引数）も同様に理由別文言へ変更した。
+- **最近使ったファイルは種別判定失敗では削除しないようにした。** `MenuRecentFile_Click` は `UnsupportedExtension`（未対応拡張子）のみ従来どおり一覧から削除する。それ以外の判定失敗（`InvalidFormat` 等）は「一時的に読めないだけ」の可能性があるため、理由別の文言で通知しつつ一覧には残す。
+- **文言方針を整理した（`FileErrorMessages.ForKindDetectionFailure`、新規）。** 「壊れています」と断定せず理由別に文言を出し分ける。`SchemaVersionTooNew` は FM-4（`SchemaVersionTooNewException`）と同じ「より新しいバージョンの NestSuite で作成された可能性があります」文言を使う。`InvalidFormat` / `UnknownWorkspaceKind` も「壊れているとは限りません」「より新しいバージョンの可能性」に触れ、破損を断定しない。**too-new（`payloadSchemaVersion` が現行より新しい）は種別判定段階（`TryGetKind`）でも事前検出するようにした**（NoteNest: `Project.CurrentSchemaVersion` / IdeaNest: `IdeaNestFileService.SchemaVersion` / ChatNest: `ChatNestFileService.FileVersionString` と比較）。解釈できないバージョン文字列はここでは失敗にせず、従来どおり本読込側の FM-4 ガードに委ねる。
+- **legacy 3 拡張子（`.notenest` / `.chatnest` / `.ideanest`）の通常 open への影響はない。** これらは拡張子だけで WorkspaceKind が確定するためファイル内容を読まず、常に `Failure = None` で成功する。
+- **TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は今回のスコープ外。** 未実装のまま backlog に残す。
+- **変更なし事項**: 保存形式・保存 JSON の内容は変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式（`FilePaths` / `ActiveFilePath` のみ）の変更なし。外部依存の追加なし。
+- **backlog: SH-31 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `NestSuiteWorkspaceEnvelopeTests` に `DetectKindFromFile` の成功・`FileNotFound`・`InvalidFormat`（破損 JSON・非 wrapper JSON の両方）を確認するテストを追加した。`NestSuiteDocumentTabTests` に `TryGetKind` 理由つきオーバーロードの legacy 拡張子・`FileNotFound`・`InvalidFormat`・`UnknownWorkspaceKind`・`SchemaVersionTooNew`・`UnsupportedExtension`・現行 schema version（`Project.CurrentSchemaVersion` 参照、リテラル不使用）での成功を確認するテストを追加した。`SessionTabMapperTests` に、読めない `.nestsuite` を含むセッションで他の正常なタブは復元されつつ失敗が 1 件報告されること・ファイル欠落と未対応拡張子は従来どおり無言スキップされ失敗として報告されないこと・too-new な `.nestsuite` が `SchemaVersionTooNew` として報告されることを確認するテストを追加した。`WorkspaceFileOperationHelperTests` に `FileErrorMessages.ForKindDetectionFailure` の文言（`FileNotFound` / `InvalidFormat` / `SchemaVersionTooNew` / `UnsupportedExtension`、破損断定なしの確認を含む）を確認するテストを追加した。既存テストの削除なし。
+
+---
+
+## v2.14.6 — FM-3: .nestsuite のファイル関連付け追加
+
+- **FM-3: `.nestsuite` を「NestSuite Workspace」（ProgId `NoteNest.nestsuite`）として HKCU ファイル関連付け対象に追加した。** v2.14.1 FM-1 以降、新規保存の既定拡張子は `.nestsuite` だったが、ファイル関連付け（ProgId）は legacy 3 拡張子のみ登録可能で、既定形式で保存したファイルをダブルクリックで開けなかった。
+- **ProgId の命名は既存の `NoteNest.*` 互換識別子族の規則に合わせた。** `docs/development/compatibility-identifiers-audit.md`（LT-3）の分類 A の方針どおり、既存識別子（`NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest`）は変更していない。
+- **legacy 3 拡張子の関連付け・ProgId は維持。** 登録内容・表示名（NoteNest Document / ChatNest Document / IdeaNest Document）とも変更なし。
+- **`FileAssociationService` の `Targets` を単一情報源化した。** 拡張子・ProgId・表示名の対応表が `Targets` 配列と `GetProgId` の switch 文に二重管理されていた点を解消し、`GetProgId` は `Targets` を走査する実装に変更した。新しい `AssociationTargets` 公開プロパティ（読み取り専用ビュー）により、レジストリに触れずに対応表の内容をテストできるようにした。
+- **PowerShell スクリプト 2 本（`tools/register-nestsuite-file-association.ps1` / `tools/unregister-nestsuite-file-association.ps1`）の `$entries` にも `.nestsuite` エントリを追加し、3 箇所同期を維持した。** `FileAssociationServiceTests` が service の `AssociationTargets` と両スクリプトの内容一致をテストで強制する。
+- **関連付けダイアログ（`FileAssociationDialog`）に `.nestsuite` の状態表示行を追加した。** 確認メッセージ・登録後の動作説明も 4 拡張子分に更新した。
+- **ダブルクリック起動は既存の起動引数 / pipe / `TryGetKind` 経路をそのまま使う。** `.nestsuite` はファイル内容の `workspaceKind` に応じて開く Workspace を決めるため、拡張子だけでは Workspace が確定しない。この経路は v2.14.1 FM-1 で対応済みで、今回の変更なし。
+- **変更なし事項**: 保存形式・保存 JSON の内容は変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。外部依存の追加なし。
+- **backlog: FM-3 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `FileAssociationServiceTests`（レジストリ非接触）。`AssociationTargets` に `.nestsuite` が ProgId `NoteNest.nestsuite` / 表示名「NestSuite Workspace」で含まれることを確認するテスト、legacy 3 拡張子の ProgId・表示名が変わっていないことを固定する回帰テスト、対応表が過不足なく 4 件であることを確認するテスト、PowerShell スクリプト 2 本それぞれが `AssociationTargets` の全拡張子・ProgId を含むことを構造的に検証するテスト（将来 `Targets` に拡張子を追加してスクリプト側を更新し忘れた場合に検出できる）を追加した。既存テストの削除なし。
+
+---
+
+## v2.14.5 — FM-5: 保存バックアップ方針の 3 Workspace 統一
+
+- **FM-5: NoteNest / IdeaNest / ChatNest の 3 Workspace（および `.nestsuite`）で、通常保存時のバックアップ方式を統一した。** 従来は三様だった: NoteNest は `AtomicFileWriter` の `File.Replace` 統合 `.bak`、IdeaNest は保存前 `File.Copy`（**失敗を catch で握りつぶす** silent catch）、ChatNest は**バックアップなし**。今回、いずれも「既存ファイルへの上書き保存時に保存先パス + `.bak` の単一世代バックアップを作る」`AtomicFileWriter` の `File.Replace` 統合方式へ寄せた。
+- **ChatNest に初めて `.bak` バックアップを追加した。** `ChatNestFileService.Save` が `AtomicFileWriter.WriteAllText` へ `path + ".bak"` を渡すようになった。
+- **IdeaNest の保存前 `File.Copy` + silent catch を廃止した。** `IdeaNestWorkspaceService.WriteJson` は `AtomicFileWriter.WriteAllText(path, json, encoding, path + ".bak")` の一行に簡素化した。**`.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する**ようになった（旧実装は `.bak` 作成失敗を握りつぶし、保存は成功したように見えていた）。旧ファイルは失敗時も壊れない。
+- **NoteNest（`ProjectFileService`）は従来方針のまま変更なし。**
+- **新規保存時（既存ファイルなし）は `.bak` を作らない。** これは 3 Workspace とも従来どおり（`File.Move` 経路）。
+- **`.nestsuite` パスでも同方針で動作する。** `foo.nestsuite.bak` として単一世代バックアップが作られる。wrapper 内部の payload 単位で個別バックアップを作ることはしない。
+- **`.bak` のローテーション・世代管理・自動復元 UI は今回のスコープ外。** 未実装のまま（backlog `L8` 等の関連項目は継続）。
+- **v2.14.4 の docs / comment 不整合修正を含む**: `SchemaVersionTooNewException` の継承元説明（`InvalidDataException` は sealed のため `Exception` を直接継承する、という記述）の不整合を修正した。挙動・実装の変更はなし。
+- **変更なし事項**: 保存 JSON の内容・フォーマットは変更なし。NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。UI 変更なし。外部依存の追加なし。
+- **backlog: FM-5 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: `ChatNestFileServiceTests` / `IdeaNestFileServiceTests` に、既存ファイル上書き時の `.bak` 作成と直前内容の保持・新規保存時に `.bak` を作らないこと・`.nestsuite` パスでの `.bak` 作成を確認する回帰を追加した。`ProjectFileServiceTests` に `.nestsuite` パスでの `.bak` 作成テストを追加した（legacy `.notenest` の `.bak` テストは従来から存在）。`AtomicFileWriterTests` に、バックアップパスへの書き込みが失敗した場合に保存自体が例外で失敗し元ファイルが保持されることを確認する回帰を追加し、IdeaNest の事前バックアップに関する陳腐化したコメント・テスト名（旧 `File.Copy` 前提）を現行実装に合わせて更新した。既存テストの削除なし。
+
+---
+
+## v2.14.4 — TD-58 + FM-4: schema version 期待値の集約と前方互換ガードの最小実装
+
+- **TD-58: schema version リテラルの散在を解消した。** `Project.CurrentSchemaVersion`（`1.4.2`）をリテラルで assert していた機能テスト群（`NoteNestFormatSchemaRegressionTests` / `ThemeSettingsTests` / `MarkerLineDetectorTests` / `EditorLayoutTests` / `NoteNestMultiFileDesignTests` / `NoteEditorHostHighlightRegressionTests`）を、いずれも `Project.CurrentSchemaVersion` 定数参照による挙動 assert（保存→読込 round-trip での `.Version` 一致など）へ置き換え、版番号を含まないテスト名へ改名した。**現行 schema version の文字列リテラルは `ApplicationVersionTests.cs` にのみ残る。**
+- **メタテストをリテラルスキャン方式へ置き換えた。** 従来の `NoteNestSchemaVersion_IsNotTested_InOtherTestClasses`（旧メソッド名の文字列一致のみを検出）を `CurrentSchemaVersionLiteral_IsNotHardcoded_InOtherTestClasses` に改名し、他テストファイルのソースに現行 schema version の quoted literal（`"1.4.2"`）が存在しないかを直接スキャンする方式にした。旧固定確認テストは `NoteNestSchemaVersion_IsPinned`（旧 `NoteNestSchemaVersion_Remains_1_4_2`）に改名し、このメソッド名自体は今後の schema bump でも変更しない方針にした（変わるのは内部のリテラル値のみ）。
+- **guideline 本文の schema pin 表記をテストから強制検出する形にした。** `PromptStandardContractTests` の該当アサーションを `$"NoteNest schema {Project.CurrentSchemaVersion} 維持"` の補間参照に変更し、schema bump 時に guideline 本文の更新漏れがあれば CI で検出されるようにした。
+- **`docs/architecture/schema-versioning-policy.md` に「schema bump 時の更新箇所チェックリスト」を追加した。** `Project.CurrentSchemaVersion` 本体・`ApplicationVersionTests` のリテラル・guideline 本文表記・development guidelines 内の表記・関連 docs 3 種の現行 version 表記・release notes への記載、の 6 箇所を漏れなく更新するための一覧。
+- **FM-4: `SchemaVersionGuard`（新規、`NestSuite/Services/SchemaVersionGuard.cs`）による schema version 前方互換ガードを最小実装した。** `System.Version` ベースの数値比較を行うため、`1.4.2` と `1.4.10` のような文字列比較では逆転するケースも正しく判定できる。
+- **NoteNest（`.notenest` / `Project.CurrentSchemaVersion`）・IdeaNest（`.ideanest` / `IdeaNestSchema.CurrentVersion`）・ChatNest（`.chatnest` / `ChatNestFileService.FileVersionString`）の 3 Workspace 形式、および `.nestsuite` wrapper の `payloadSchemaVersion` それぞれで、「現行より新しい」ファイルを検出した場合に読み込みを止めるようにした。** 新しい `SchemaVersionTooNewException`（`InvalidDataException` は sealed のため `Exception` を直接継承する専用型。呼び出し元の broad `catch (Exception ex)` で捕捉される）を投げ、無警告のまま読み込んで上書き保存し未知フィールドを失う経路を防ぐ。
+- **`payloadSchemaVersion` と payload 内部 `version` の矛盾も検出する（`EnsureEnvelopeConsistent`）。** payload 側が wrapper より新しい方向のみを失敗とし、逆方向（wrapper の `payloadSchemaVersion` の方が新しい）は意図的に許容する。これは v2.14.1〜v2.14.3 のアプリが旧 payload を現行 `payloadSchemaVersion` で包んで保存した、実在する正当なファイル形状に対応するための非対称ルール。
+- **専用のエラー文言を追加した（`FileErrorMessages.ForLoad`）。** 「このファイルは、より新しいバージョンの NestSuite で作成された可能性があります」という文言を返し、「破損している」とは断定しない。読み込み失敗により、そのまま上書き保存へ進むこともない。
+- **未実装であることを明記する。** read-only モード（新しい schema のファイルを読み取り専用で開く機能）は今回実装していない。`JsonExtensionData` による未知フィールドの round-trip 保持も将来候補のまま（実装すれば新旧混在環境でのフィールド喪失自体を防げるが、対象モデル全型への波及と保存 JSON の安定性検証が別途必要というトレードオフがある）。
+- **変更なし事項**: NoteNest schema は `1.4.2` を維持。`.nestsuite` wrapper の `formatVersion` は `1.0` を維持。session 形式の変更なし。`.ideanest` / `.chatnest` の保存内容自体の変更なし。外部依存の追加なし。
+- **backlog: TD-58・FM-4 を実装済みとして backlog.md から削除した。**
+- **テストを追加した**: 新規 `SchemaVersionGuardTests`（`TryParse` / `IsNewer`（数値比較の証明を含む）/ `EnsureNotNewer` / `EnsureEnvelopeConsistent` の各分岐）。`WorkspaceFileOperationHelperTests` に `SchemaVersionTooNewException` 用のエラー文言テストを追加した。`NoteNestFormatSchemaRegressionTests` に `.notenest` / `.nestsuite` それぞれで「現行より新しい」「payloadSchemaVersion と payload の矛盾」「wrapper が新しい場合は許容」を確認する回帰を追加した。`IdeaNestFileServiceTests` / `ChatNestFileServiceTests` にも同様の新しい schema version 検出テストを追加した。既存テストの削除なし（版番号なしの名前へ改名のみ）。
+
+---
+
+## v2.14.3 — M12: NoteNest ノートのスター（お気に入り）機能
+
+- **M12: ノート単位のスター（お気に入り）フラグを追加した。** `Note.IsStarred`（既定 `false`）を追加し、優先的に見返したいノートを目印できるようにした。
+- **`.notenest` schema を `1.4.1` → `1.4.2` へ patch bump した（`Project.CurrentSchemaVersion`）。** `docs/architecture/schema-versioning-policy.md` の patch bump 基準（optional field 追加のみ）に該当する FM-1 後初の schema 拡張。migration framework は導入せず、既定値補完のみで対応している。
+- **既存ファイルはそのまま読める。** 旧 `1.4.1` の `.notenest`、および `payloadSchemaVersion` が `1.4.1` の `.nestsuite` はいずれも `isStarred` 欠落時 `false` として読み込まれる。
+- **`.nestsuite`（NoteNest wrapper）の `payloadSchemaVersion` は今回から `1.4.2` になる。** wrapper 自体の `formatVersion` は `1.0` のまま変更していない（wrapper schema と payload schema を分離する FM-1 方針どおり）。
+- **UI**: ノート一覧にスターインジケーター（★、テーマ別 `NoteStarIndicator` ブラシを新設）を表示し、ノートの右クリックメニューから「スターを付ける／外す」で切り替えられるようにした。
+- **スター切替はプロジェクトを未保存状態にするが、ノートの更新日時（`UpdatedAt`）は変更しない。** 本文編集とは区別する。
+- **ノート複製（`DuplicateNote`）はスター状態もコピーする。**
+- **backlog M12 に記載していた「左ペイン最上位に自動固定表示」は今回のスコープに含めていない。** スター表示・切替のみを実装しており、並び替え・自動上部固定・フィルタ・検索への連動は対象外（将来の別項目として検討）。
+- **backlog: M12 を実装済みとして backlog.md から削除した。**
+- **session 形式変更なし。`.ideanest` / `.chatnest` の保存内容変更なし。外部依存追加なし。**
+- **テストを追加した**: `NoteNestFormatSchemaRegressionTests` に `Note.IsStarred` 既定値・旧 schema（`isStarred` 欠落・`version: 1.4.1`）読み込み・`.notenest` / `.nestsuite` 双方でのスター round-trip・`.nestsuite` payloadSchemaVersion 固定・旧 schema ファイルの読込→保存でのデータ非欠落を確認する回帰を追加した。`NoteWorkspaceViewModelTests` に `IsStarred` 切替時の `Changed` 発火・`ToggleStar` の反転・`BuildModels` / `DuplicateNote` での保持・`UpdatedAt` 非変更を確認するテストを追加した。既存テストの削除・期待値変更なし（schema・バージョン関連の期待値は `1.4.2` / `2.14.3` へ更新）。
+
+---
+
+## v2.14.2 — FM-1 fix: `.nestsuite` 保存時の WorkspaceKind 横断重複タブ検出
+
+- **v2.14.1 FM-1 のレビュー指摘（コードレビュー: PR #441）を修正した。** `.nestsuite` は拡張子だけでは WorkspaceKind が定まらない（ファイル内容の `workspaceKind` で判定する）形式だが、名前を付けて保存時の重複タブ検出 `CheckAndActivateDuplicateTabForSave` が `WorkspaceKind` 一致を条件にしていたため、**同じ `.nestsuite` パスを別 WorkspaceKind のタブが既に開いている場合に検出できず、上書き保存でそのタブの内容と実ファイルが食い違う**バグがあった（例: `.nestsuite` を ChatNest として開いた状態で、別タブの NoteNest が同じパスへ Save As すると検出されずに上書きされる）。
+- **修正**: 重複判定ロジックを `NestSuiteOpenFilePolicy.IsDuplicateForSave`（新規、UI 非依存の純粋関数）へ抽出した。legacy 拡張子（`.notenest` / `.ideanest` / `.chatnest`）は従来どおり `WorkspaceKind` が一致する場合のみ重複とみなし、`.nestsuite` は `WorkspaceKind` に関係なく同一パスであれば重複とみなす。`CheckAndActivateDuplicateTabForSave` はこの純粋関数に委譲するのみとした（`SaveNoteNestFileAs` / `SaveIdeaNestFileAs` / `SaveChatNestFileAs` / `ResolveSaveTargetPath` 経由の `SaveForTabId` / `SaveAll` すべてに適用される）。
+- **テストを追加した**: `WorkspaceFileOperationHelperTests` に `IsDuplicateForSave` の legacy 拡張子（同一 kind / 別 kind）・`.nestsuite`（別 kind 同士でも検出・別パスは非検出・既存タブパス `null`）の回帰を追加した。既存テストの削除・期待値変更なし。
+- **wrapper 形式・種別判定集約・FileService 分岐・legacy 互換方針は v2.14.1 のまま変更なし。** session 形式変更なし。schema bump なし（NoteNest `1.4.1` 維持）。外部依存追加なし。
+
+---
+
+## v2.14.1 — FM-1: Workspace ファイル拡張子 `.nestsuite` 統一
+
+- **FM-1: 1タブ1ファイル構成を維持したまま、新しい標準 Workspace 拡張子を `.nestsuite` に統一した。** 複数 Workspace を 1 ファイルにまとめる統合コンテナ（LT-1）ではない。
+- **`.nestsuite` は wrapper 形式**（`NestSuiteWorkspaceEnvelope`、新規 `NestSuite/Services/`）: `format` / `formatVersion`（wrapper 自体の版 = `1.0`）/ `workspaceKind`（NoteNest / IdeaNest / ChatNest）/ `payloadSchemaVersion` / `payload`（既存 Workspace の保存 JSON をそのまま格納）。**wrapper schema と payload schema を分離**し、既存 Workspace schema の bump は行っていない（NoteNest `1.4.1` 維持）。
+- **将来の schema 拡張に備えた**: 読み込みは JsonNode ベースで未知の追加プロパティを無視する（将来 `createdAt` / `metadata` 等を足しても壊れない）。必須項目（`format` / `workspaceKind` / `payload`）欠落は分かりやすい `InvalidDataException` で失敗する。`formatVersion` / `payloadSchemaVersion` により将来の migration 判断ができる。大規模 migration framework は作っていない。
+- **種別判定は `NestSuiteTabFactory.TryGetKind` に集約した**: legacy 拡張子は従来どおり拡張子から、`.nestsuite` はファイル内容の `workspaceKind` から判定する。これにより保存後タブ更新（`SavedWorkspaceStateUpdater`）・NoteNest タブ同期・セッション復元（`SessionTabMapper`）・最近ファイル・pipe 経由オープンの**既存呼び出し箇所は変更なしで `.nestsuite` に対応**した。
+- **各 FileService（Project / IdeaNest / ChatNest）の入口に envelope 分岐を追加した。** `.nestsuite` なら wrapper を剥がして（保存時は包んで）既存のシリアライズ・検証・正規化・`.bak` バックアップ経路をそのまま通す。`workspaceKind` が期待と食い違う場合は明快なエラーで失敗する。
+- **新規保存 / 名前を付けて保存の既定拡張子を `.nestsuite` に寄せた。** 保存ダイアログの filter 先頭 + `DefaultExt` を `.nestsuite` にし、Workspace 種別に応じた Legacy filter も選べる。既定ファイル名（`ideas` / `chat`）も `.nestsuite` に変更した。
+- **legacy 互換を維持した**: 既存 `.notenest` / `.ideanest` / `.chatnest` は従来どおり開ける。legacy ファイルの**上書き保存は従来形式のまま**（保存形式は保存先パスの拡張子で決まる）。**旧ファイルの自動リネーム・自動削除・強制変換は行わない。**
+- **最近ファイル / session は `.nestsuite` を自然に扱える**（パス保存 + `TryGetKind` 集約のため追加変更なし）。開けない形式のエラーメッセージ 2 箇所に `.nestsuite` を追記した。
+- **ファイル関連付け（ProgId）は変更していない**（LT-3 / TD-55 方針）。`.nestsuite` のダブルクリック起動は未登録であり、将来 3 箇所同期（app + PowerShell スクリプト 2 本）で追加する。制限として docs に明記した。
+- **テストを追加した**: `NestSuiteWorkspaceEnvelopeTests`（新規: wrapper round-trip・必須項目欠落・未知プロパティ許容・種別不一致・破損 JSON）、各 FileServiceTests の `.nestsuite` round-trip と種別不一致、`NestSuiteDocumentTabTests` の内容ベース種別判定、`SavedWorkspaceStateUpdaterTests` / `SessionTabMapperTests` の `.nestsuite` パス対応。既存テストの削除・期待値変更なし。
+- **`docs/development/workspace-file-extension-unification.md` を新規作成した。**
+- **backlog: FM-1 を実装済み（欠番）とし、LT-1 を「統合コンテナ形式」として本件との違いを明記する形に整理した。**
+- **session 形式変更なし。既存 schema bumpなし。NoteNest schema `1.4.1` 維持。`.ideanest` / `.chatnest` の保存内容変更なし。外部依存追加なし。**
+
+---
+
+## v2.14.0 — TD-57: LT-12 ErrorLogService ローテーションの安全設計・最小実装
+
+- **TD-57: LT-12「ErrorLogService ローテーション」として、エラーログにサイズベースの最小ローテーションを追加した。**
+- **`ErrorLogRotation`（新規、`NestSuite/Services/`）**: 現行ログが 1MB 以上なら追記直前に世代退避する。現行 → `nestsuite-error.1.log`、既存世代は 1 つずつ後ろへずらし、3 世代を超える最古（`.3.log` の旧内容）は削除する。`AtomicFileWriter` と同じ「小さな公開ヘルパー + 直接テスト」の前例に従った。
+- **現行ログファイル名・保存先（`%APPDATA%\NoteNest\logs\nestsuite-error.log`）は変更していない。** LT-3 / TD-55 の互換性方針（A 分類）どおり。保存先の互換はテストで固定した。
+- **ローテーション失敗時もアプリ本体を止めない。** `RotateIfNeeded` は例外を外へ投げず `Debug.WriteLine` に留める。失敗しても追記は現行ファイルへ続行され、新しいログエントリを失わない。ErrorLogService 内の失敗を ErrorLogService へ再帰的に記録しない。
+- **Error のみ記録する方針を維持した。** Info / Warning ログは追加していない。追記後に閾値を超えるケースは許容し（次回出力時にローテーション）、厳密なバイト制御より単純さと安全性を優先した。
+- **テストを追加した。** `ErrorLogRotationTests`（新規、7 件: 閾値未満・ファイルなし・世代シフトと最古削除・世代 0・排他ロック中の失敗耐性等）。`ErrorLogServiceTests` にローテーション統合テストと保存先互換の固定テストを追加し、テストヘルパーが本番と同じ `ErrorLogRotation` を経由するよう変更した（ローテーション部分はロジック複製ではなく本物を検証する）。既存テストの削除・期待値変更なし。
+- **`docs/development/error-log-policy.md` を新規作成した。** Error 専用方針・ローテーション方式（1MB / 3 世代）・失敗時の扱い・将来の見直し観点を記載した。
+- **UI 変更なし。設定画面追加なし。外部ログライブラリ導入なし。ログ保存先・AppData パス変更なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.9 — TD-56: LT-11 大量データ性能計測の開発者向け基盤
+
+- **TD-56: LT-11「パフォーマンス自己診断」の第一段階として、開発者向けの大量データ性能計測基盤を整備した。** 利用者向けの診断 UI は追加していない。
+- **`NestSuite.Tests/Performance/` に計測ハーネスを追加した。** `PerfDataGenerator`（決定的な大量データ生成）・`PerfReport`（`Stopwatch` + `GC.GetTotalMemory` 計測と Markdown / CSV 出力）・`PerformanceScenarioTests`（Workspace 別シナリオ）の 3 ファイル構成。外部依存なし（BenchmarkDotNet 不使用）。
+- **環境変数 `NESTSUITE_PERF=1` が設定されているときだけ実測する。** 未設定時は即 return するため、通常の `dotnet test` / CI では 0ms 相当で通過し、**CI workflow の変更なしで通常 CI を重くしない**。テストプロジェクト内に置くことで、本体 API 変更による計測コードの破損を CI の通常ビルドで検出できる。
+- **計測対象**: NoteNest（生成 / `.notenest` 保存・読込 / ViewModel 構築 / マーカー抽出 / リンク解析 / 全ノート検索）、IdeaNest（生成 / `.ideanest` 保存・読込 / ViewModel 構築 / 検索・タグフィルタ）、ChatNest（生成 / `.chatnest` 保存・読込 / ViewModel 構築 / エクスポート文字列生成 / 全発言検索）。いずれも実際の FileService・サービス・ViewModel を使用する。
+- **データ規模**: Small（100 ノート / 100 カード / 500 発言）・Medium（約 1,000 / 1,000 / 5,000）・Large（5,000 / 5,000 / 20,000）。生成は乱数を使わない添字ベースの固定規則（マーカー・ノート間リンク・タグ・4 話者を規則的に混入）で、同一規模なら毎回同一データになるため前後比較ができる。
+- **生成データは `%TEMP%\nestsuite-perf\` に作成し、計測結果は `artifacts/performance-results/`（`.gitignore` 追加済み）へ出力する。** いずれもリポジトリにコミットされない。
+- **`docs/development/performance-measurement.md` を新規作成した。** 実行手順・結果の読み方（絶対値でなく規模間の伸び方を見る、環境間比較をしない）・通常 CI に入れない理由・利用者向け自己診断へ進める場合の条件を記載した。
+- **LT-11 の backlog 記載を更新した。** 実利用で性能課題が観測され本基盤の数値で裏づけられた場合に UI 化を再検討する。
+- **本番アプリへの変更なし。UI 変更なし。通常起動・保存・読込への影響なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.8 — TD-55: LT-3 設定キー / ProgId / AppData パスの互換性棚卸し
+
+- **TD-55: LT-3「設定キー / ProgId / AppData パス整理」の互換性棚卸しを行い、`docs/development/compatibility-identifiers-audit.md` を新規作成した。** 実装変更は行っていない。
+- **`NoteNest` 系識別子を全数棚卸しし、A（維持すべき）/ B（移行設計つきで将来変更可能）/ C（変更してよい）/ D（判断保留）に分類した。** 分類理由を各識別子に明記した。
+- **互換性クリティカル（A）と確認したもの**: AppData ディレクトリ `%APPDATA%\NoteNest\`（設定・最近ファイル×2系統・session・TempNest・ログの全6永続ファイルの親）、各永続ファイル名、ProgId `NoteNest.notenest` / `NoteNest.chatnest` / `NoteNest.ideanest`（HKCU 永続・app + PowerShell スクリプト2本の3箇所同期必須）、`ui-settings.json` の JSON キー `NoteNestEditorFontSize`（プロパティ名がそのまま on-disk キー）、ファイル拡張子。
+- **単純置換しない方針を明記した。** 機械的な `NoteNest`→`NestSuite` 置換は、既存ユーザーの永続データ孤立・ファイル関連付け破壊（`Unregister` は現 ProgId 一致時のみ削除するため旧登録の掃除手段も失う）・アップグレード境界での多重起動制御破綻を同時に引き起こす。
+- **Mutex / Pipe 名（`NoteNest_NestSuite_*`）は非永続・プロセス寿命スコープであることを確認し、B（最も移行が軽い。同一リリースでの同時切替のみで足りる）と分類した。**
+- **namespace・ウィンドウタイトル・UI 文言の NestSuite 化は既に完了済みであることを確認した。** `namespace NoteNest` は 0 件。残る `NoteNest` は「互換性のため意図的に残すもの」と「ソースディレクトリ名の名残（実害なし・C）」のみ。
+- **将来 NestSuite 系へ寄せる場合の移行段階案（旧パス読み取りフォールバック → コピー移行 → Mutex/Pipe 同時切替 → 旧 ProgId 掃除つき Unregister 先行）を整理した。**
+- **LT-3 は保留継続とし、backlog の記載を棚卸し結果に基づいて更新した。** 変更の必要性が実際に発生した時点で移行段階案に従う。
+- **実装変更なし。UI 変更なし。AppData / 設定キー / Mutex / Pipe / ProgId / ファイル関連付けの変更なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.7 — TD-54: LT-2 SQLite 補助インデックス方式の feasibility spike
+
+- **TD-54: LT-2「SQLite 補助インデックス方式」の採用可否判断を行い、`docs/development/sqlite-index-feasibility.md` を新規作成した。** 本番機能としての SQLite 導入は行っていない。
+- **判断結果: 保留継続（採用候補として残す）。** LT-2 の backlog 記載を今回の検証結果に基づいて更新した。
+- **単一EXE配布方針（RJ-5）への影響を検証した。** 現行 release.yml は self-contained 単一EXE（`IncludeNativeLibrariesForSelfExtract=true` 設定済み）、本体 csproj の NuGet 依存はゼロであることを確認したうえで、依存ルート 2 案を比較した。
+  - **ルート B（第一候補）**: `SQLitePCLRaw.bundle_winsqlite3` — Windows 10 以降の OS 同梱 `winsqlite3.dll` を使用。**追加ネイティブDLLなし・実行時自己展開なし・EXEサイズ増 約1.5MB** で単一EXE方針を完全に維持できる見込み。リスクは SQLite バージョンが OS ビルド依存であること（FTS5 可否の実機確認が必要）
+  - **ルート A（フォールバック）**: `bundle_e_sqlite3` — 単一EXEは維持できるが初回起動時に `%TEMP%\.net\` へ `e_sqlite3.dll` の自己展開が発生。閉域端末・DLL 実行制御下では運用懸念あり
+- **JSON 正本 + 再生成可能インデックス方式として設計案を整理した。** 正本は常に既存 JSON、インデックスは使い捨て（破損・不一致時は削除して全再生成、マイグレーション不作成）、保存場所は `%APPDATA%\NoteNest\index\`、本番の保存・読込・起動経路には接続しない方針を明記した。インデックスに本文全文が入るため機微度は正本と同等である旨も記録した。
+- **効果の境界を整理した。** 効くのは「開いていないファイルを横断する」全文検索・バックリンク解析・マーカー集計（LT-6 / LT-7 の基盤）。開いている単一プロジェクト内の処理は現行インメモリで十分であり、**LT-2 単体では着手せず LT-6 の実要件が動く時点で着手する**とした。
+- **保留とした理由を誠実に記録した。** 本検証環境には dotnet ツールチェーンがなく、Windows 実機での publish 成果物検証（単一EXE 1個の確認）と winsqlite3 の FTS5 可否確認が未実施。再現可能な実機検証手順（package 参照・publish コマンド・FTS5 確認コード）を feasibility 文書 §7 に記載した。isolated spike code はビルド未確認コードになるため追加しなかった。
+- **ライセンス（MIT / Apache-2.0 / Public Domain）・閉域方針（実行時ネットワーク通信ゼロ）に支障がないことを確認した。**
+- **本番アプリへの変更なし。UI 変更なし。外部依存の恒久追加なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。**
+
+---
+
+## v2.13.6 — TD-45: IdeaNest / ChatNest 保存フロー共通化の安全設計・最小実装
+
+- **TD-45: TD-34（v2.11.2）で保留としていた IdeaNest / ChatNest 保存フローの重複を、TD-34 設計文書 §4-1「private helper による最小共通化（低リスク）」の方針で解消した。** descriptor / registry / 新しい保存フレームワークは作っていない。
+- **保存フローの差分を棚卸しした。** 上書き保存（Ctrl+S）・名前を付けて保存・別ウィンドウからの TabId 指定保存・SaveAll（Ctrl+Shift+S）・タブ閉鎖/終了確認・保存成功/キャンセル/失敗時の状態遷移を全経路確認した。結果は `docs/development/save-flow-duplication.md` §0 に記録した。
+- **最大のドリフトリスクだった SaveAll の手書き複製を解消した。** 従来 `SaveAll.cs` の `TrySaveIdeaNestForSaveAll` / `TrySaveChatNestForSaveAll` は `FileService.Save + MarkSaved + 状態更新` を `FileSave.cs` からインライン複製しており、二重管理だった。`TrySaveXxxToPath(showNotification: false)` への委譲に変更し、**シリアライズ + MarkSaved は各 Workspace につき 1 箇所**になった。
+- **共通コア `TrySaveWorkspaceToPath` を追加した（`FileSave.cs`）。** パス正規化 → Workspace 固有シリアライズ + MarkSaved（クロージャ注入）→ 保存後状態更新 → 例外時 `LogAndShowSaveError`。シリアライズが例外を投げた場合は MarkSaved と状態更新が実行されず、未保存状態が構造的に維持される。
+- **保存先パス解決を `ResolveSaveTargetPath` に共通化した（`WorkspaceFileHelper.cs`）。** SaveForTabId / SaveAll に 4 回インライン複製されていた「FilePath あり→正規化 / なし→ダイアログ→重複タブチェック」を 1 本化した。キャンセル・重複検出時は null（保存中止）。
+- **`isModifiedAfterSave` の差異は `FileSaveStateSync.cs` の `UpdateXxxTabPath` に集約した。** IdeaNest は常に false、ChatNest は MarkSaved 後の `vm.HasUnsavedChanges`（`InputText` 残留時は true のまま）。この差異の定義点を 1 箇所にし、他の場所に書かないことを docs に明記した。
+- **共通化しなかった範囲**: NoteNest 全保存経路（`vm.SaveToPath` という別インターフェース）、SaveAs（ダイアログ常時表示の別セマンティクス、ただし末端は共通の `TrySaveXxxToPath` を使用）、各 FileService のシリアライズ詳細、タブ閉鎖確認フロー。理由は `save-flow-duplication.md` §0-3 に記録した。
+- **保存回帰テストを補強した。** `NestSuiteShellWorkspaceLaunchTests` に共通ヘルパーの構造固定テスト（リフレクション）を追加。`IdeaNestFileServiceTests` / `ChatNestFileServiceTests` に「保存失敗が例外として通知される」契約テスト（`Save_ThrowsWhenParentPathIsAFile`）を追加。ChatNest の `InputText` 残留セマンティクスは既存の `ChatNestWorkspaceViewModelTests.MarkSaved_WhenInputTextRemains_HasUnsavedChangesIsTrue` が引き続き固定している。
+- **既存の 2 引数シグネチャ（`TrySaveChatNestToPath` / `UpdateChatNestTabPath`）はリフレクションテストで固定されているため維持し、3 引数オーバーロードを追加する形にした。** 既存テストの削除・期待値変更はない。
+- **保存挙動の外部仕様変更なし。** 保存成功時の未保存解除・キャンセル/失敗時の未保存維持・タブ表示名/ファイルパス/最近ファイル/session 状態の更新順序はすべて従来どおり。UI 変更なし。
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。`.ideanest` / `.chatnest` 形式変更なし。外部依存追加なし。**
+
+---
+
+## v2.13.5 — M16 フォローアップ: タスク欄が空の場合の右ペイン領域縮小
+
+- **レビュー指摘対応: v2.13.4 で「タスクがない場合は大きく表示しない」方針にしたが、右ペイン下段の `RowDefinition` は `Height="2*" MinHeight="100"` のまま固定されており、タスクが0件でも一定の面積を占有し続けていた。**
+- **`HasNoTasksToRowHeightConverter` / `HasNoTasksToRowMinHeightConverter`（新規）を追加した。** `MainViewModel.HasNoTasks` に応じて、右ペイン下段の `Height` を `2*` ⇄ `Auto`、`MinHeight` を `100` ⇄ `0` に切り替える。
+- **既存タスクが1件もない場合、下段はヒント文（「作業ポイントは本文の TODO / FIXME で管理できます。」）の高さだけに縮み、上段のマーカー / リンク領域（3\*）が残りの領域を引き継ぐ。**
+- **既存タスクが1件でもある場合は、従来どおり `2* / MinHeight=100` を維持する。** タスク（互換）表示・既存操作（完了切替・コメント編集・関連ノート・削除・移動）は変更していない。
+- **右ペイン開閉ロジック・GridSplitter の挙動・マーカー抽出ロジック・ノート間リンクロジックは変更していない。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.4 — M16: NoteNest タスク管理UIの互換表示化
+
+- **M16: v2.13.0 / TD-52・v2.13.1 / L18 に続くタスク縮退の第3段階として、NoteNest 右ペインのタスク管理UIを既存データ互換の表示へ縮退した。**
+- **タスク新規作成導線を通常UIから外した。** 右ペイン上部の「タスクを追加」ボタン（`AddTaskMenu_Click`）と各グループの「+」ボタン（`AddTaskCommand`）を XAML から削除した。ViewModel 側の `AddTaskCommand` / コマンド実装自体は削除していない。
+- **既存タスクがない場合、タスク欄を大きく表示しないようにした。** `TaskBoardViewModel.HasAnyTasks` / `MainViewModel.HasAnyTasks` / `HasNoTasks` を新設し、タスクが1件もない場合は「作業ポイントは本文の TODO / FIXME で管理できます。」の一言のみを表示する。
+- **既存タスクが1件でもある場合は「タスク（互換）」として引き続き確認できるようにした。** `TaskGroupViewModel.HasTasks` を新設し、タスクが存在しないグループ（今日／今週／バックログ）は右ペインに表示しないようにした。
+- **既存タスクの完了切替・コメント編集・関連ノート付け替え・削除・移動・並び替えは変更していない。** タスクデータの読込・保存、右ペインでの参照・操作は従来どおり動作する。
+- **`WorkspaceChangeCoordinator` の Publish 対象に `HasAnyTasks` / `HasNoTasks` を追加した。** タスク追加・削除時にこれらの facade プロパティの変更が MainViewModel まで正しく通知されるようにした（TD-53 で整理した Coordinator パターンに沿って実装）。
+- **`docs/development/notenest-task-reduction-policy.md` の第3段階を「完了 v2.13.4」に更新し、実装内容を追記した。**
+- **回帰テストを追加した。** `TaskGroupViewModelTests`（`HasTasks`）、`TaskBoardViewModelTests`（`HasAnyTasks`）、`WorkspaceChangeCoordinatorTests`（Publish 内容）、`MainViewModelFacadeTests`（MainViewModel までの通知）。
+- **右ペインの主役はマーカー / リンクのまま変更していない（L18 を維持）。**
+- **タスクデータ構造・マーカー抽出ロジック・ノート間リンクロジック・ノート本文エディタ・保存処理・読込処理・session処理は変更していない。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.3 — SH-30: Shell ステータスバーの未保存表示・ファイル表示同期修正
+
+- **SH-30: NestSuite Shell のステータスバーが、アクティブでないタブの状態を表示し続ける不具合を修正した。**
+- **不具合内容**: ステータスバーの `ProjectDisplayName` / `UnsavedIndicatorText` / `IsModified` は Window の `DataContext`（NoteNest タブ選択時のみ NoteNest の `MainViewModel` に差し替え）へ直接 Binding していた。ChatNest / IdeaNest / TempNest タブへ切り替えても Window の `DataContext` は更新されないため、以下の事象が発生していた。
+  1. 未保存の新規 NoteNest プロジェクトを閉じたあとも、ステータスバーに未保存アラートが残る
+  2. NoteNest タブがない状態でも、ステータスバーに閉じたタブのファイル名が残り続ける
+  3. NoteNest タブが一度もアクティブ化されていない場合、`DataContext` が `null` のままとなりファイル名欄が空になり、モード表示の `/` のみが目立つ不自然な表示になる
+- **修正方針**: ステータスバーの表示元を Window の `DataContext` から、常に正しく同期される **現在アクティブな `NestSuiteDocumentTab`（`_selectedTab`）** へ変更した。`NestSuiteDocumentTab.DisplayName` / `IsModified` は Workspace 種別を問わず既に正しく同期されているフィールドであり、この基準に統一することで DataContext の不整合クラスの不具合を構造的に解消した。
+- **`RefreshShellStatusBar()`（新規）を `RefreshWorkspaceStatus()` から呼び出す形で追加した。** タブ切替（`ActivateTab`）・タブクローズ後の再アクティブ化・NoteNest/ChatNest/IdeaNest の未保存状態変化のたびに、既存の `RefreshWorkspaceStatus()` 呼び出し経路を通じて自動的に再計算されるようにした（新しい呼び出し箇所は最小限、NoteNest の `IsModified`/`CurrentFilePath` 変化時に1箇所追加）。
+- **ファイル名表示**: `_selectedTab.DisplayName`（NoteNest/IdeaNest/ChatNest はファイル名または「無題.拡張子」、TempNest は空）を使用する。未保存表示は NoteNest の場合のみ既存の経過時間つき表示（`⚠ 未保存（N分）`）を引き継ぎ、それ以外は `● 未保存` の既定表示にした。
+- **「`/` だけの不自然な表示」を修正した。** TempNest 選択時はファイル名欄が空になるため、モード表示 `NestSuiteModeSuffix` から `/` 区切りを外し `"TempNest"` のみを表示するようにした（NoteNest/ChatNest/IdeaNest はファイル名が必ず存在するため `"  /  {ツール名}"` の形式を維持）。
+- **保存処理・読込処理・session 復元処理・未保存確認ダイアログの表示条件は変更していない。**
+- **回帰テストを `NestSuiteShellTabTests.cs` に追加した。** `RefreshShellStatusBar` メソッドおよび新しい `ShellStatusFileText` / `ShellStatusUnsavedText` フィールドの存在を確認する。
+- **UI 変更あり（ステータスバーの表示元・表示内容）。AutomationId `Shell.StatusBar` は維持（付与先要素名を `ShellStatusFileText` に変更のみ）。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.2 — L17・L19: NoteNest 右ペイン開閉ツールチップ連動・編集エリアへのノートブック名表示
+
+- **L17: 右ペイン開閉ボタンのツールチップを開閉状態に連動させた。** `CollapseRightPane` で `"右ペインを表示"`、`ExpandRightPane` で `"右ペインを閉じる"` に切り替える。従来は常に `"右ペインを表示"` のままだった。
+- **L19: NoteNest 編集エリアに現在のノートブック名を表示した。** `MainViewModel` に `CurrentNotebookName`（選択中ノートの所属ノートブック名）を追加し、編集ヘッダーのノートタイトル左側に控えめなフォントサイズで表示する。ノート未選択時は非表示。長いノートブック名は `MaxWidth="140"` と `TextTrimming` で省略表示し、Tooltip でフル名称を確認できる。
+- **編集ヘッダーのタイトル表示部を Grid（Auto / \*）に変更した。** ノートブック名列を Auto、ノートタイトル列を `*` とし、DockPanel の Fill 領域内でノートタイトルの `TextTrimming` が正しく機能するようにした。
+- **どちらも v2.13.0 / TD-52・v2.13.1 / L18 の流れで、NoteNest をマーカー / リンク中心の Workspace に寄せつつ、利用者が「今どういう状態か」「どこを見ているか」を見失いにくくする補助 UI として位置づけた。**
+- **レビュー指摘対応: `CurrentNotebookName` がノートブックリネーム・ノート移動に追従しない不具合を修正した。** `EditorChangeCoordinator` は `SelectedNote` 自体の変更時のみ通知するため、選択中ノートのノートブック名変更（`RenameNotebook`）やノートの別ノートブックへの移動（`MoveNoteToNotebook`）では `SelectedNote` が変わらず表示が古いまま残っていた。`NoteChangeCoordinator` の通知プロパティ一覧（`_notes.Changed` 経由、ノートブック Title 変更・ノート移動・コレクション変更で発火）に `nameof(MainViewModel.CurrentNotebookName)` を追加し、両ケースで表示が追従するようにした。回帰テストを `NoteChangeCoordinatorTests` と `MainViewModelFacadeTests` に追加した。
+- **右ペイン開閉ロジック・ノートブック選択ロジック・マーカー抽出ロジック・リンク解析ロジックは変更なし。**
+- **UI 変更あり。XAML binding 名変更なし（新規プロパティ `CurrentNotebookName` を追加のみ）。AutomationId 変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.1 — L18: NoteNest 右ペインのマーカー / リンク中心化
+
+- **L18: v2.13.0 / TD-52 縮退方針の第2段階として、NoteNest 右ペインの主役をマーカー / リンクへ寄せた。**
+- **変更前**: 右ペインは上部にタスク管理セクション（3\*）、下部にマーカー / リンク TabControl（2\*）の配置だった。タスクが右ペインの大部分を占め、先頭に表示されていた。
+- **変更後**: マーカー / リンク TabControl が上部（3\*）に移動し、タスク管理セクションが下部（2\*）の補助セクションへ下がった。右ペインを開いたとき、まずマーカーとリンクが見える。
+- **タスク機能は削除していない。** タスク一覧・グループ・完了管理・コメント・関連ノートは引き続き右ペイン下部で参照・操作できる。既存タスクデータは変更なし。
+- **マーカー / リンクの TabControl は「マーカー」タブが初期選択のまま。** タブ順・Tab の内容・マーカー抽出ロジック・リンク解析ロジックは変更なし。
+- **`docs/development/notenest-task-reduction-policy.md` の第2段階欄を「完了 v2.13.1」に更新した。**
+- **UI 変更あり（右ペインのセクション順序）。XAML binding 名変更なし。AutomationId 変更なし。ViewModel 変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.13.0 — TD-52: NoteNest タスク管理縮退方針の整理
+
+- **TD-52: NoteNest の今後の役割と、タスク管理機能の縮退方針を整理した。**
+- **NoteNest の主目的をプロジェクトノート Workspace へ明確化した。** 「プロジェクト単位でノートを整理し、本文中のマーカーとノート間リンクから作業ポイントを見つける Workspace」と定め、本格的なタスク管理は主目的にしない方針とした。
+- **`docs/development/notenest-task-reduction-policy.md` を新規作成した。** 残す主機能（ノートブック・ノート・マーカー抽出・ノート間リンク等）・縮退候補（タスク手動作成・完了管理等）・本文マーカー管理への寄せ方・既存データ互換方針・今後の段階案（第1〜第4段階）を整理した。
+- **今回はタスク機能を削除しない。** 現時点は第1段階（方針整理）のみ。タスク UI の変更・タスクデータの削除・保存形式の変更はいずれも実施しない。
+- **既存タスクデータ互換を明記した。** 既存の `.notenest` タスク情報は削除せず、読めなくしない。NoteNest schema `1.4.1` を維持する。
+- **backlog に L18・M16 を追加した。** 縮退方針の第2・第3段階に対応する今後の実装候補として整理した。
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.9 — TD-51: プロンプト共通規約への定型項目移行
+
+- **TD-51: 最近のプロンプトで繰り返していた定型ルールを `docs/development/nestsuite-development-guidelines.md` へ整理・移行した。**
+- **通常制約（§17）** を 7 カテゴリに再編成し、個別プロンプトで毎回書かなくてよい前提を明確にした: 通常制約・バージョン/スキーマ更新・release notes/backlog 運用・テスト方針・UI 変更方針・共通基盤化抑制・docs 長文化抑制。
+- **§6（UI/UX）** に「XAML binding 名・public property/command 名を不用意に変更しない」「ショートカットキー追加・変更は個別プロンプトで明示」を追加した。
+- **§7（バージョン更新）** に「テスト整合性の原則」を追加した（既存テストを削除しない・スキップ化しない・期待値を目的外の理由で変更しない）。
+- **§14-1（変更範囲の原則）** に「Workspace の独立性を壊さない」「統一しない判断も理由を明記すれば有効」を追加した。
+- **§19「docs 長文化抑制」を新設した。** 経緯の羅列ではなく判断軸を書くこと・同じ内容の重複を避けること・詳細履歴は別ファイルへ分離することを明記した。
+- **今後の個別プロンプト** は共通項目（禁止事項・受入条件・報告形式）を毎回書かず、変更固有の内容（バージョン・backlog ID・目的・対象ファイル・Done 条件）に集中できる。
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.8 — TD-50・SH-26・SH-27: 確認ダイアログ文言統一・ツールチップ/コンテキストメニューショートカット規約化
+
+- **TD-50: 確認ダイアログの文言パターンを統一した。**
+- `TempNestWorkspaceView.xaml.cs`: スロットクリア確認ダイアログのタイトルを汎用 `"確認"` から `"スロットのクリア"` に変更した。
+- `NestSuiteShellWindow.TabClose.cs` (NoteNest タブクローズ) / `NestSuiteShellWindow.xaml.cs` (NoteNest 終了・ChatNest 終了): YesNoCancel 型の 3 択確認ダイアログに `「いいえ」と「キャンセル」` の意味を示す補足行を追加した。
+  - `\n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）` / `...で終了します。...で終了しません。`
+- 他の確認ダイアログ（削除確認・IdeaNest 終了・ChatNest 未保存テキスト・IdeaConfirmWindow）は変更なし（既存文言が明確なため）。
+- **SH-26: ツールチップへのショートカットキー表記の形式を文書化した。** 既存実装はすでに `"操作説明 (Ctrl+X)"` 形式に準拠していたため、コード変更は不要。
+- **SH-27: コンテキストメニューへの `InputGestureText` 追記を確認した。** `IdeaNestWorkspaceView.xaml` / `NoteEditorHost.xaml` はすでに必要な `InputGestureText` を持っていたため、追加なし。ショートカットが存在しないメニュー項目への追記もなし。
+- **`docs/development/nestsuite-development-guidelines.md` に §16「UI テキスト規約」を追加した。** ツールチップ形式・`InputGestureText` 付与基準・確認ダイアログ文言方針を明記した。旧 §16（プロンプト標準契約）→ §17、旧 §17（今後の通常プロンプト形式）→ §18 に繰り上げた。
+- **UI 挙動変更なし。ダイアログ表示条件変更なし。保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.7 — L11: NoteNest 右ペイン開閉ボタンの位置統一・初期状態変更・背景色追加
+
+- **L11: NoteNest 右ペインの開閉ボタンを常時同一位置に表示するよう変更した。**
+- **変更前**: 閉じた状態では Column 3（RightSplitterColumn 20px 幅）に「»」ボタンを表示し、開いた状態では右ペインヘッダー内 DockPanel に別ボタン「«」を配置していた。操作対象が異なる位置にあり導線が一貫しなかった。
+- **変更後**: Column 3 を常時 24px に固定し、単一の `RightPaneExpandButton` が常にその位置に表示される。内容（`»` / `«`）は開閉状態に応じて切り替わる。右ペインヘッダーの「«」ボタンは削除した。
+- **初期表示を閉じた状態に変更した。** コンストラクタで `CollapseRightPane()` を呼ぶようにした。従来は開いた状態で起動していた。
+- **開閉ボタンに `GroupHeaderBg` を背景色として設定した。** テーマ対応済みの既存リソースを使用し、ボタンの視認性を向上させた。過度に目立ちすぎない色選択とした。
+- **`Panel.ZIndex="1"` を設定し、GridSplitter より前面に配置した。** 開いた状態でも GridSplitter と重ならず確実にクリックできる。
+- **public API（`CollapseRightPane` / `ExpandRightPane` / `ToggleRightPane` / `InitRightPane` / `IsRightPaneCollapsed` / `ActualRightPaneWidth`）は変更なし。**
+- **XAML binding 名変更なし。AutomationId 変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.6 — TD-42: RelayCommand 実装の統一検討
+
+- **TD-42: `RelayCommand`・`IdeaNestRelayCommand`・`ChatNestRelayCommand` の 3 実装を棚卸しし、統一可否を判断した。**
+- **統一しない方針を採用した。** 各実装は意図的に分かれており、統合すると Workspace 独立性または設計意図を損なうため。
+- **`ChatNestRelayCommand` は手動 event 方式（CommandManager 非使用）。** ChatNest ViewModel が状態変化のタイミングで明示的に `RaiseCanExecuteChanged()` を呼ぶ設計であり、CommandManager 連動型と統合しない。
+- **`IdeaNestRelayCommand` を共通 `RelayCommand` に統合しない。** IdeaNest が `NestSuite.ViewModels` 名前空間に依存することになり、Workspace 独立性（§12 方針）が損なわれる。
+- **`docs/development/nestsuite-development-guidelines.md` に §15「RelayCommand 実装方針」を追加した。** 3 実装の用途区分・統一しない理由・新規コマンド追加時の判断基準を明記した。
+- **TD-45（IdeaNest / ChatNest 保存フロー共通化）は保留扱いとした。** 保存クリティカルパスに触れるため現時点では実施しない。`docs/backlog.md` の TD-45 概要に保留理由を追記した。
+- **public command 名変更なし。XAML binding 名変更なし。ViewModel の変更なし。UI 変更なし。**
+- **アプリ本体の挙動変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.5 — TD-46: 大型 XAML の領域別分割・索引化
+
+- **TD-46: `NoteNestWorkspaceView.xaml`（896 行）・`IdeaNestWorkspaceView.xaml`（564 行）・`ChatNestWorkspaceView.xaml`（693 行）に領域コメント（`═══` 形式）を追加し、各ファイルの主要ブロックを即座に特定できるようにした。**
+- **NoteNestWorkspaceView.xaml**: `UserControl.Resources` 先頭に `<!-- ═══ Resources: DataTemplates ═══ -->` を追加した。
+- **IdeaNestWorkspaceView.xaml**: Menu / Search+Filter Toolbar / Color Filter+Sort+Size Toolbar / Status Bar / Body の 5 領域に `═══` 形式のセクションヘッダーを付与した。
+- **ChatNestWorkspaceView.xaml**: Resources ブロック先頭に `<!-- ═══ Resources: Converters / Styles / DataTemplates ═══ -->` を追加し、Main layout 開始点に `<!-- ═══ MAIN LAYOUT ═══ -->` を付与した。
+- **`docs/development/workspace-xaml-structure.md` を新規作成。** 3 Workspace XAML ファイルの領域一覧・コメント目印・概要を索引化した。
+- **ResourceDictionary 分割は実施しなかった。** StyleやDataTemplateが互いに参照し合う構造のため、誤操作リスクを避けるため領域コメントと索引ドキュメントのみで対応した。
+- **UI 変更なし。XAML binding 名変更なし。public property / command 名変更なし。ViewModel の変更なし。**
+- **アプリ本体の挙動変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.4 — TD-41: ChatNestWorkspaceView コードビハインドのロジック抽出
+
+- **TD-41: `ChatNestWorkspaceView.xaml.cs` の責務を棚卸しし、開発者向け認知負荷を低減した。**
+- **エクスポートダイアログの選択結果から出力形式を判断する処理を private static helper `BuildExportContent(int filterIndex, IEnumerable<Message>)` として抽出し、`FilterIndex == 2` (Markdown) の暗黙マッピングを明示した。**
+- **初期化・DataContext 管理セクションのコメントを追加し、既存の CH-5 / CH-9 / CH-13 / 入力欄セクションと並んだ一貫した構造にした。**
+- **`docs/development/workspace-view-responsibilities.md` を新規作成。View に残す処理・外へ出せる処理・今回あえて抽出しなかった処理・大きな Behavior / Service を作らない理由を記録した。**
+- **大きな Behavior / Service / Coordinator は追加していない。ドラッグ＆ドロップ・エクスポート・ダイアログの汎用基盤は作成していない。**
+- **UI 変更なし。XAML binding 名変更なし。public property / command 名変更なし。ChatNestWorkspaceViewModel の大きな変更なし。**
+- **アプリ本体の挙動変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.3 — TD-39・TD-40: IdeaNest / ChatNest ViewModel 責務整理
+
+- **TD-39: `FilterViewModel` に `Apply(IEnumerable<IdeaCardViewModel>)` を追加し、`IdeaNestWorkspaceViewModel.RefreshVisible()` のフィルタリングロジックを移動した。**
+- **`RefreshVisible()` は `Filter.Apply(AllCards)` を呼び出した後、ピン留め優先ソートと SortMode による並べ替えのみを担う形に簡略化した。**
+- **`IdeaNestWorkspaceViewModel` にカード操作・状態管理・ステータス表示・タグ管理・クリップボード/ファイルインポートの区分コメントを追加した。**
+- **TD-40: `ChatNestExportFormatter` に `BuildNestSuiteGrouped` / `BuildMarkdownGrouped` を追加し、`ChatNestWorkspaceViewModel.BuildNestSuiteText()` / `BuildMarkdownText()` の実装を委譲に簡略化した。**
+- **公開 API（プロパティ名・コマンド名・メソッドシグネチャ・XAML バインディング名）は変更していない。テストコードへの影響なし。**
+- **`docs/development/workspace-viewmodel-responsibilities.md` を新規作成。両 ViewModel の責務分担・抽出の経緯・共通化しない理由を記録した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.2 — TD-38: NestSuiteShellWindow partial class の見通し整理
+
+- **TD-38: `NestSuiteShellWindow` partial class 群（19 ファイル・計 2,741 行）の責務コメントを整備し、開発者の認知負荷を低減した。**
+- **各 partial ファイル冒頭に、担当責務と注意点を示す短いコメントを追加した（FileOpen.cs / FileSaveAs.cs / FileSaveStateSync.cs / FileCommands.cs / SaveAll.cs / WorkspaceFileHelper.cs / WorkspaceTabHelper.cs / TabLifecycle.cs / TabClose.cs）。**
+- **`NestSuiteShellWindow.FileOperations.cs` の索引コメントに `SaveAll.cs` を追記した。**
+- **`docs/development/nestsuite-shell-partials.md` を新規作成。タブ管理・ファイル操作・その他の 3 グループに分けた partial 構成索引と関連テストクラス一覧を記載した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・読込処理・session 処理の変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.12.1 — TD-48: 保存形式回帰テストの対象別分割
+
+- **TD-48: `NestSuite.Tests/FormatSchemaRegressionTests.cs`（833 行）を保存形式の対象別に 5 ファイルへ分割し、開発者の認知負荷を低減した。**
+- **`NoteNestFormatSchemaRegressionTests.cs` を新規作成。NoteNest (.notenest) 保存形式・round-trip・バックアップ・タイムスタンプ・エクスポート・自動保存・最近使ったファイルに関する 37 テストを移動した。**
+- **`IdeaNestFormatSchemaRegressionTests.cs` を新規作成。IdeaNest (.ideanest) 保存形式に関する 7 テストを移動した。**
+- **`ChatNestFormatSchemaRegressionTests.cs` を新規作成。ChatNest (.chatnest) 保存形式に関する 6 テストを移動した。**
+- **`TempNestFormatSchemaRegressionTests.cs` を新規作成。TempNest 保存形式に関する 3 テストを移動した。**
+- **`SessionFormatSchemaRegressionTests.cs` を新規作成。セッション形式 (session.json) に関する 4 テストを移動した。**
+- **`FormatSchemaRegressionTests.cs` を削除した。**
+- **テストの意味・仕様・アサーション内容は一切変更していない。アプリ本体コードの変更なし。テストの削除・スキップ化なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+- **`docs/backlog.md` の TD-47・TD-49 残存行（main ブランチ由来）を削除した。**
+
+---
+
+## v2.12.0 — TD-47: NestSuiteShellTests の責務別再編
+
+- **TD-47: `NestSuite.Tests/NestSuiteShellTests.cs`（1618 行）を責務別ファイルに分割し、開発者の認知負荷を低減した。**
+- **`NestSuiteShellTests.cs` は Shell 型境界・NestSuiteToolRegistry・NestSuiteWindowPositionGuard・UiSettings に特化した 37 テストに整理した。**
+- **`NestSuiteShellTabTests.cs` を新規作成。タブ管理・WorkspaceSession・SessionManager・最近使ったファイル・セッション復元に関する 29 テストを移動した。**
+- **`NestSuiteShellWorkspaceLaunchTests.cs` を新規作成。ファイル操作・StartupTabPolicy・StartupArgParser・NestSuiteTabFactory・DialogService・Ctrl+S 保存に関する 52 テストを移動した。**
+- **`NestSuiteDocsContractTests.cs` を新規作成。docs/release-notes.md の内容確認テスト 6 件を移動した。**
+- **`NestSuiteSmokeSupportTests.cs` を新規作成。NestSuite.UiSmoke/Program.cs の構造確認テスト 10 件を移動した。**
+- **`NestSuiteShellXamlTests.cs` を新規作成。Shell・NoteNestWorkspaceView・PreviewIdeaWindow の XAML 構造確認テスト 5 件を移動した。**
+- **テストの意味・仕様・アサーション内容は一切変更していない。アプリ本体コードの変更なし。テストの削除・スキップ化なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.11.9 — TD-49: 現行 docs と完了済み計画 docs の判別性向上
+
+- **TD-49: docs 全体の入口および各文書について、現行開発で参照する文書と履歴・完了済み計画文書の判別性を高めた。**
+- **`docs/README.md` を全面更新。「現行開発でまず見る文書」セクションを追加し、ディレクトリ別に現行/履歴の分類を一覧化した。**
+- **`docs/design/README.md` を新規作成。現行参照文書（design-decisions.md / nestsuite-known-limitations.md）と履歴文書（notenest-editor-*.md 4件 / review-gemini.md）を分類した。**
+- **`docs/design/` の履歴文書 5 件（notenest-editor-textbox-dependencies.md / notenest-editor-adapter-design.md / notenest-editor-host-design.md / notenest-editor-h0-reassessment.md / review-gemini.md）に `[履歴文書]` 冒頭注記を追加した。**
+- **`docs/operations/repository-rename.md` に `[完了済み]` 注記を追加した（v2.0.1 で完了済みのリポジトリ名変更手順）。**
+- **`docs/operations/operation-note.md` に `[履歴文書]` 注記を追加した（NoteNest v1.5.4 時代の運用メモ）。**
+- **`docs/planning/expert-proposals-2026-06.md` に `[参照メモ]` 注記を追加した（採用済み提案は backlog に移転済み）。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.11.8 — TD-44: docs/integration・docs/migration の棚卸し
+
+- **TD-44: `docs/integration/` および `docs/migration/` 配下の文書を棚卸しし、すべての文書を「履歴文書」として分類した。**
+- **各文書の冒頭に `[履歴文書]` 注記を追加し、記載された実装が完了済みであることを明示した（5 ファイル）。**
+- **`docs/integration/README.md` を新規作成し、4 文書の分類・状態・保持理由を一覧化した。**
+- **`docs/migration/README.md` を新規作成し、1 文書の分類・状態・保持理由を記録した。**
+- **現行開発で参照すべき文書はいずれのディレクトリにも含まれないことを明示した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
+## v2.11.7 — TD-43: Workspace ディレクトリ構成の非対称性の整理
+
+- **TD-43: NoteNest 関連ファイルを `NestSuite/NestSuite/NoteNest/` 配下へ移動し、IdeaNest / ChatNest / TempNest と同じ階層に揃えた。**
+- **移動した区分: Editor（6 ファイル）・Views（10 ファイル）・ViewModels（10 ファイル）・Models（7 ファイル）・Services（15 ファイル）。計 48 ファイル。**
+- **旧配置の `NestSuite/NoteNest/Editor/` と `NestSuite/Views/` を廃止した。**
+- **`ChatNestExportFormatter.cs` を `Services/` から `ChatNest/` 配下へ移動した（ChatNest 専用サービス）。**
+- **namespace / x:Class / ResourceDictionary Source はすべて変更なし。コード変更なし。**
+- **Shell 共通の ViewModels（MainViewModel / ProjectSessionViewModel / RecentFileViewModel / BaseViewModel / RelayCommand）・Models（AppSettings / AppTheme）・Services は `NestSuite/ViewModels/`・`Models/`・`Services/` に維持した。**
+- **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
+- **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
+
+---
+
 ## v2.11.6 — TD-37: 開発者向けdocsの旧記述・重複記述棚卸し
 
 - **TD-37: `docs/development/nestsuite-development-guidelines.md` の重複記述・旧記述を整理した。**

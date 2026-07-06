@@ -63,6 +63,63 @@ public class WorkspaceFileOperationHelperTests
         Assert.NotEmpty(FileErrorMessages.ForLoad(new InvalidOperationException("unknown")));
     }
 
+    // ── v2.14.4 FM-4: SchemaVersionTooNewException 専用文言 ────────────────
+
+    [Fact]
+    public void ForLoad_SchemaVersionTooNewException_ReturnsNewerVersionMessage_NotCorruptionMessage()
+    {
+        var message = FileErrorMessages.ForLoad(new SchemaVersionTooNewException("x"));
+        Assert.Contains("より新しいバージョン", message);
+        Assert.DoesNotContain("破損", message);
+    }
+
+    // ── v2.14.7 SH-31: ForKindDetectionFailure 文言 ────────────────────────
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFound_ContainsNotFoundWording()
+    {
+        Assert.Contains(
+            "見つかりません",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound));
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_InvalidFormat_ContainsFormatWording_AndDoesNotAssertCorruption()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat);
+
+        Assert.Contains("形式", message);
+        Assert.Contains("とは限りません", message);
+        Assert.DoesNotContain("破損", message);
+        Assert.DoesNotContain("壊れています。", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_SchemaVersionTooNew_ContainsNewerVersionWording_NotCorruption()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew);
+
+        Assert.Contains("より新しいバージョン", message);
+        Assert.DoesNotContain("破損", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFoundAndInvalidFormat_HaveDifferentWording()
+    {
+        var fileNotFound = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound);
+        var invalidFormat = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat);
+
+        Assert.NotEqual(fileNotFound, invalidFormat);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_UnsupportedExtension_ListsSupportedFormats()
+    {
+        Assert.Contains(
+            ".nestsuite",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension));
+    }
+
     [Fact]
     public void ForSave_IOException_ReturnsIoMessage()
     {
@@ -129,5 +186,58 @@ public class WorkspaceFileOperationHelperTests
         Assert.True(NestSuiteOpenFilePolicy.IsSameFile(
             @"C:\Projects\notes.notenest",
             @"C:\Projects\notes.notenest"));
+    }
+
+    // ── v2.14.2: IsDuplicateForSave（.nestsuite の WorkspaceKind 横断重複検出）回帰 ─
+
+    [Fact]
+    public void IsDuplicateForSave_LegacyExtension_DifferentKind_ReturnsFalse()
+    {
+        // legacy 拡張子は拡張子自体が WorkspaceKind を確定するため、異なる kind は重複扱いしない
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_LegacyExtension_SameKind_ReturnsTrue()
+    {
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.chatnest", NestSuiteWorkspaceKind.ChatNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_ChatNestTabOpen_NoteNestSaveAs_ReturnsTrue()
+    {
+        // .nestsuite で ChatNest タブが開いている状態で NoteNest として同じパスへ Save As した場合、
+        // 拡張子だけでは WorkspaceKind が定まらないため kind に関係なく重複検出する
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\meeting.nestsuite", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\meeting.nestsuite", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_IdeaNestTabOpen_ChatNestSaveAs_ReturnsTrue()
+    {
+        Assert.True(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\plan.nestsuite", NestSuiteWorkspaceKind.IdeaNest,
+            @"C:\Projects\plan.nestsuite", NestSuiteWorkspaceKind.ChatNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NestSuitePath_DifferentPaths_ReturnsFalse()
+    {
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            @"C:\Projects\a.nestsuite", NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\b.nestsuite", NestSuiteWorkspaceKind.NoteNest));
+    }
+
+    [Fact]
+    public void IsDuplicateForSave_NullExistingTabPath_ReturnsFalse()
+    {
+        Assert.False(NestSuiteOpenFilePolicy.IsDuplicateForSave(
+            null, NestSuiteWorkspaceKind.ChatNest,
+            @"C:\Projects\a.nestsuite", NestSuiteWorkspaceKind.NoteNest));
     }
 }

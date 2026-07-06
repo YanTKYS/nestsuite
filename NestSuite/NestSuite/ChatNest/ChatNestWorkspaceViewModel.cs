@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -40,6 +39,9 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
     // CH-8: タイムスタンプ表示切替（起動中のみ保持。既定 false）
     private bool _showTimestamps = false;
+
+    // L22: Workspace 共通のメッセージ本文・入力欄フォント種類（既定 "Yu Gothic UI"）
+    private string _contentFontFamily = "Yu Gothic UI";
 
     // CH-5 search state
     private string _searchText = string.Empty;
@@ -184,6 +186,18 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         set { _showTimestamps = value; OnPropertyChanged(); }
     }
 
+    /// <summary>
+    /// L22: メッセージ本文・入力欄に適用する Workspace 共通フォント種類。
+    /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
+    /// 発言者ラベル・ボタン・ツールバーなどの UI フォントには適用しない。
+    /// .chatnest（<see cref="MessageModels"/>）へは保存しないため、変更しても <see cref="IsDirty"/> は立たない。
+    /// </summary>
+    public string ContentFontFamily
+    {
+        get => _contentFontFamily;
+        set { _contentFontFamily = value; OnPropertyChanged(); }
+    }
+
     public event EventHandler? WorkspaceModified;
 
     public ChatNestWorkspaceViewModel()
@@ -252,60 +266,21 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         IsDirty = false;
     }
 
+    // ── エクスポートテキスト生成（NoteNest 転記・Markdown） ──────────────────
+
     /// <summary>
     /// v1.16.7: NoteNest への貼り付けに適した形式を生成する。
     /// 連続する同一発言者のメッセージは 1 ブロックに集約する。
     /// </summary>
-    public string BuildNestSuiteText()
-    {
-        if (Messages.Count == 0) return string.Empty;
-        var sb = new StringBuilder();
-        sb.AppendLine($"[NOTE] ChatNestからの転記: {DateTime.Now:yyyy-MM-dd HH:mm}");
-        int i = 0;
-        while (i < Messages.Count)
-        {
-            var speaker = Messages[i].Speaker;
-            var groupTexts = new List<string>();
-            while (i < Messages.Count && Messages[i].Speaker == speaker)
-            {
-                groupTexts.Add(Messages[i].Text);
-                i++;
-            }
-            sb.AppendLine();
-            sb.AppendLine($"## {speaker}");
-            sb.AppendLine();
-            sb.Append(string.Join(Environment.NewLine, groupTexts));
-            sb.AppendLine();
-        }
-        return sb.ToString().TrimEnd();
-    }
+    public string BuildNestSuiteText() =>
+        ChatNestExportFormatter.BuildNestSuiteGrouped(MessageModels);
 
     /// <summary>
     /// v1.16.5: Markdown 形式のエクスポートテキストを生成する。
     /// 連続する同一発言者のメッセージは 1 ブロックに集約する。
     /// </summary>
-    public string BuildMarkdownText()
-    {
-        if (Messages.Count == 0) return string.Empty;
-        var sb = new StringBuilder();
-        sb.AppendLine("# ChatNest Export");
-        int i = 0;
-        while (i < Messages.Count)
-        {
-            var speaker = Messages[i].Speaker;
-            var groupTexts = new List<string>();
-            while (i < Messages.Count && Messages[i].Speaker == speaker)
-            {
-                groupTexts.Add(Messages[i].Text);
-                i++;
-            }
-            sb.AppendLine();
-            sb.AppendLine($"## {speaker}");
-            sb.Append(string.Join(Environment.NewLine, groupTexts));
-            sb.AppendLine();
-        }
-        return sb.ToString().TrimEnd();
-    }
+    public string BuildMarkdownText() =>
+        ChatNestExportFormatter.BuildMarkdownGrouped(MessageModels);
 
     // ── CH-5: 検索 ────────────────────────────────────────────────────────
 

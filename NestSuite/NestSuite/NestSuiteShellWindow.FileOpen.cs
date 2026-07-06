@@ -3,12 +3,16 @@ using System.Windows;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Services;
 using NestSuite.ViewModels;
 
 namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // ファイルを開く処理（ダイアログ選択・重複チェック・起動時読込）を扱う partial。
+    // 読込成功後の後処理は WorkspaceFileHelper.cs の RegisterLoadedTab に委譲する。
+
     /// <summary>
     /// v1.9.7: .ideanest ファイルを開き、新しい IdeaNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
@@ -71,6 +75,7 @@ public partial class NestSuiteShellWindow
         try
         {
             var newVm = new ChatNestWorkspaceViewModel();
+            newVm.ContentFontFamily = _workspaceEditorFontFamily;
             var messages = ChatNestFileService.Load(path);
             newVm.LoadMessages(messages);
             var tab = NestSuiteTabFactory.FromFilePath(path);
@@ -159,11 +164,14 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind))
+        if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
         {
+            // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
             _dialogs.ShowError(
-                $"NestSuite では開けないファイル形式です。\n対応形式: .notenest / .chatnest / .ideanest\n\n{path}",
-                "未対応のファイル形式");
+                $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                failure == WorkspaceKindDetectionFailure.UnsupportedExtension
+                    ? "未対応のファイル形式"
+                    : "ファイルを開けません");
             EnsureDefaultTab();
             return;
         }
@@ -219,6 +227,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) return;
             vm.EditorFontSize = _noteNestEditorFontSize;
+            vm.EditorFontFamily = _workspaceEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -249,6 +258,7 @@ public partial class NestSuiteShellWindow
             finally { _suppressFontSizePropagation = false; }
             if (!opened) { EnsureDefaultTab(); return; }
             vm.EditorFontSize = _noteNestEditorFontSize;
+            vm.EditorFontFamily = _workspaceEditorFontFamily;
             var tab = NestSuiteTabFactory.FromFilePath(path);
             var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
             RegisterLoadedTab(tab, session, path);
@@ -294,6 +304,7 @@ public partial class NestSuiteShellWindow
         try
         {
             var newVm = new ChatNestWorkspaceViewModel();
+            newVm.ContentFontFamily = _workspaceEditorFontFamily;
             var messages = ChatNestFileService.Load(path);
             newVm.LoadMessages(messages);
 

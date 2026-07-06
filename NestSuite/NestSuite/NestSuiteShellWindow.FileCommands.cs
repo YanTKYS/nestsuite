@@ -5,6 +5,8 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // 新規タブ作成コマンド（NoteNest / IdeaNest / ChatNest）と「＋」ボタンメニューを扱う partial。
+
     /// <summary>v1.9.7: 新規 IdeaNest タブを作成する。既存の IdeaNest タブには影響しない。</summary>
     private void NewIdeaNestSession() => NewWorkspaceSession(NestSuiteWorkspaceKind.IdeaNest);
 

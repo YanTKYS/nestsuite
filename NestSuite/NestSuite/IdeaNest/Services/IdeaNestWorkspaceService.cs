@@ -34,9 +34,15 @@ public static class IdeaNestWorkspaceService
             .ToList();
     }
 
-    public static Workspace Load(string path)
+    public static Workspace Load(string path) =>
+        DeserializeFromJson(File.ReadAllText(path, Encoding.UTF8));
+
+    /// <summary>
+    /// v2.14.1 FM-1: JSON 文字列から Workspace を復元する（正規化含む）。
+    /// .nestsuite wrapper の payload を読む経路と legacy ファイル読込で同じ正規化を共有する。
+    /// </summary>
+    internal static Workspace DeserializeFromJson(string json)
     {
-        var json = File.ReadAllText(path, Encoding.UTF8);
         var workspace = JsonSerializer.Deserialize<Workspace>(json, JsonOptions)
             ?? throw new InvalidDataException("Invalid .ideanest file");
         workspace.Ideas ??= new();
@@ -72,16 +78,19 @@ public static class IdeaNestWorkspaceService
         }
     }
 
-    public static void Save(string path, Workspace workspace)
-    {
-        if (File.Exists(path))
-        {
-            var bakPath = path + ".bak";
-            try { File.Copy(path, bakPath, overwrite: true); }
-            catch { }
-        }
+    public static void Save(string path, Workspace workspace) =>
+        WriteJson(path, SerializeToJson(workspace));
 
-        var json = JsonSerializer.Serialize(workspace, JsonOptions);
-        AtomicFileWriter.WriteAllText(path, json, new UTF8Encoding(false));
-    }
+    /// <summary>v2.14.1 FM-1: Workspace を保存 JSON へ直列化する（wrapper の payload 生成と legacy 保存で共有）。</summary>
+    internal static string SerializeToJson(Workspace workspace) =>
+        JsonSerializer.Serialize(workspace, JsonOptions);
+
+    /// <summary>
+    /// v2.14.1 FM-1: .bak バックアップ + atomic write（wrapper 保存と legacy 保存で共有）。
+    /// v2.14.5 FM-5: 保存前 File.Copy（失敗を silent catch）方式をやめ、NoteNest と同じ
+    /// AtomicFileWriter の File.Replace 統合 .bak 方式へ統一。既存ファイルがあり .bak を
+    /// 作れない場合は File.Replace が例外で失敗し、旧ファイルを壊さず保存失敗として扱われる。
+    /// </summary>
+    internal static void WriteJson(string path, string json) =>
+        AtomicFileWriter.WriteAllTextWithBackup(path, json, new UTF8Encoding(false));
 }

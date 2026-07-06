@@ -6,6 +6,8 @@
              AutomationProperties.Name="ChatNest.WorkspaceRoot">
 
     <UserControl.Resources>
+        <!-- ═══ Resources: Converters / Styles / DataTemplates ═══ -->
+
         <!-- Converters（参照ソース ChatNest v0.4.1。Workspace で実際に使う 4 種のみ取り込み） -->
         <cn:RadioConverter x:Key="RadioConverter"/>
         <cn:SpeakerBackgroundConverter x:Key="SpeakerBg"/>
@@ -307,6 +309,7 @@
                         <!-- 通常表示: 本文テキスト -->
                         <TextBlock Text="{Binding Text}"
                                    TextWrapping="Wrap"
+                                   FontFamily="{Binding DataContext.ContentFontFamily, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                    FontSize="13"
                                    LineHeight="20"
                                    Foreground="{DynamicResource ChatBubbleTextBrush}">
@@ -330,6 +333,7 @@
                                      MinHeight="52"
                                      MaxHeight="120"
                                      VerticalScrollBarVisibility="Auto"
+                                     FontFamily="{Binding DataContext.ContentFontFamily, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                      FontSize="13"
                                      Padding="4,4"
                                      BorderThickness="1"
@@ -360,6 +364,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
+    <!-- ═══ MAIN LAYOUT ═══ -->
     <!-- v2.7.11: Row 0 = CH-5 検索バー（非表示時は高さゼロ）、Row 1 = チャットログ、Row 2 = 入力エリア -->
     <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
@@ -616,6 +621,7 @@
                                  MinHeight="52"
                                  MaxHeight="120"
                                  VerticalScrollBarVisibility="Auto"
+                                 FontFamily="{Binding ContentFontFamily}"
                                  FontSize="13"
                                  Padding="10,8"
                                  BorderThickness="0"
@@ -626,7 +632,6 @@
                                  PreviewKeyDown="InputBox_PreviewKeyDown">
                             <TextBox.Style>
                                 <Style TargetType="TextBox">
-                                    <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="TextBox">

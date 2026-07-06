@@ -29,68 +29,121 @@ public class MarkerLineDetectorTests
         Assert.Empty(MarkerLineDetector.Detect("Some plain text\nNo markers here\n"));
     }
 
+    // v2.14.19 バグ修正: マーカーは角括弧付き（[TODO] 等）かつ行頭（または行頭の空白後）の
+    // 場合のみ検出する。単語単体・文中の角括弧・部分一致は検出しない。
+
     [Fact]
-    public void Detect_TodoUppercase_Detected()
+    public void Detect_TodoBracketed_Detected()
     {
-        var result = MarkerLineDetector.Detect("TODO: fix this");
+        var result = MarkerLineDetector.Detect("[TODO] fix this");
         Assert.Single(result);
         Assert.Equal(0, result[0].LogicalIndex);
     }
 
     [Fact]
-    public void Detect_FixmeUppercase_Detected()
+    public void Detect_FixmeBracketed_Detected()
     {
-        var result = MarkerLineDetector.Detect("line one\nFIXME: broken");
+        var result = MarkerLineDetector.Detect("line one\n[FIXME] broken");
         Assert.Single(result);
         Assert.Equal(1, result[0].LogicalIndex);
     }
 
     [Fact]
-    public void Detect_NoteUppercase_Detected()
+    public void Detect_NoteBracketed_Detected()
     {
-        var result = MarkerLineDetector.Detect("NOTE: important detail");
+        var result = MarkerLineDetector.Detect("[NOTE] important detail");
         Assert.Single(result);
         Assert.Equal(0, result[0].LogicalIndex);
     }
 
     [Fact]
-    public void Detect_HackUppercase_NotDetected()
+    public void Detect_IndentedBracketedTodo_Detected()
     {
-        Assert.Empty(MarkerLineDetector.Detect("HACK workaround here"));
+        // 行頭の空白後にある [TODO] も行頭扱いで検出する。
+        var result = MarkerLineDetector.Detect("    [TODO] インデント付きでも行頭扱い");
+        Assert.Single(result);
+        Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
     }
 
     [Fact]
-    public void Detect_TodoLowercase_Detected()
+    public void Detect_HackBracketed_NotDetected()
     {
-        var result = MarkerLineDetector.Detect("todo: lowercase");
-        Assert.Single(result);
+        // HACK は既存マーカー種別に含まれないため、角括弧付きでも検出しない。
+        Assert.Empty(MarkerLineDetector.Detect("[HACK] workaround here"));
     }
 
     [Fact]
-    public void Detect_FixmeLowercase_Detected()
+    public void Detect_TodoWordAlone_NotDetected()
     {
-        var result = MarkerLineDetector.Detect("fixme: lowercase");
-        Assert.Single(result);
+        Assert.Empty(MarkerLineDetector.Detect("TODO 対応する"));
     }
 
     [Fact]
-    public void Detect_NoteLowercase_Detected()
+    public void Detect_NoteWordAlone_NotDetected()
     {
-        var result = MarkerLineDetector.Detect("note: lowercase");
-        Assert.Single(result);
+        Assert.Empty(MarkerLineDetector.Detect("NOTE メモ"));
     }
 
     [Fact]
-    public void Detect_MixedCase_Detected()
+    public void Detect_TodoWordMidSentence_NotDetected()
     {
-        var result = MarkerLineDetector.Detect("Todo mixed case");
-        Assert.Single(result);
+        Assert.Empty(MarkerLineDetector.Detect("これは TODO です"));
+    }
+
+    [Fact]
+    public void Detect_BracketedMarkerMidSentence_NotDetected()
+    {
+        // [TODO] であっても行頭でなければ対象外。
+        Assert.Empty(MarkerLineDetector.Detect("これは [TODO] です"));
+    }
+
+    [Fact]
+    public void Detect_BracketedMarkerImmediatelyAfterText_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("abc[TODO] 対応する"));
+    }
+
+    [Fact]
+    public void Detect_PartialMatchInsideBrackets_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("[TODOではない] 対応しない"));
+    }
+
+    [Fact]
+    public void Detect_NotebookPartialMatch_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("[NOTEBOOK] 対応しない"));
+    }
+
+    [Fact]
+    public void Detect_TodoLowercase_NotDetected()
+    {
+        // v2.14.19: MarkerExtractorService と同じ大文字小文字区別ルールに揃えた。
+        Assert.Empty(MarkerLineDetector.Detect("[todo] lowercase"));
+    }
+
+    [Fact]
+    public void Detect_FixmeLowercase_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("[fixme] lowercase"));
+    }
+
+    [Fact]
+    public void Detect_NoteLowercase_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("[note] lowercase"));
+    }
+
+    [Fact]
+    public void Detect_MixedCase_NotDetected()
+    {
+        Assert.Empty(MarkerLineDetector.Detect("[Todo] mixed case"));
     }
 
     [Fact]
     public void Detect_MultipleMarkerLines_AllDetected()
     {
-        var text = "TODO: first\nnormal line\nFIXME: second\nanother\nNOTE: third";
+        var text = "[TODO] first\nnormal line\n[FIXME] second\nanother\n[NOTE] third";
         var result = MarkerLineDetector.Detect(text);
 
         Assert.Equal(3, result.Count);
@@ -100,24 +153,25 @@ public class MarkerLineDetectorTests
     }
 
     [Fact]
-    public void Detect_LineWithMultipleMarkers_ReturnedOnce()
+    public void Detect_LineStartMarker_TrailingUnbracketedKeywordsIgnored()
     {
-        var result = MarkerLineDetector.Detect("TODO FIXME on same line");
+        // 行頭の角括弧マーカーのみが判定対象。行中の裸の単語は無視される（複数マーカー検出ではない）。
+        var result = MarkerLineDetector.Detect("[TODO] FIXME NOTE all trailing");
         Assert.Single(result);
         Assert.Equal(0, result[0].LogicalIndex);
+        Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
     }
 
     [Fact]
-    public void Detect_MarkerInMiddleOfLine_Detected()
+    public void Detect_MarkerInMiddleOfLine_NotDetected()
     {
-        var result = MarkerLineDetector.Detect("some text TODO more text");
-        Assert.Single(result);
+        Assert.Empty(MarkerLineDetector.Detect("some text TODO more text"));
     }
 
     [Fact]
     public void Detect_NonMarkerLineNotReturned()
     {
-        var text = "line one\nTODO: marker\nline three";
+        var text = "line one\n[TODO] marker\nline three";
         var result = MarkerLineDetector.Detect(text);
 
         Assert.DoesNotContain(result, h => h.LogicalIndex == 0);
@@ -127,7 +181,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_LineNumbers_AreZeroBased()
     {
-        var text = "plain\nTODO: second line";
+        var text = "plain\n[TODO] second line";
         var result = MarkerLineDetector.Detect(text);
 
         Assert.Single(result);
@@ -137,7 +191,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_SingleLineNoNewline_Correct()
     {
-        var result = MarkerLineDetector.Detect("FIXME no newline at end");
+        var result = MarkerLineDetector.Detect("[FIXME] no newline at end");
         Assert.Single(result);
         Assert.Equal(0, result[0].LogicalIndex);
     }
@@ -145,8 +199,8 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_TrailingNewline_NoExtraLine()
     {
-        // "TODO\n" has one logical line containing "TODO", last line is empty.
-        var result = MarkerLineDetector.Detect("TODO\n");
+        // "[TODO]\n" has one logical line containing "[TODO]", last line is empty.
+        var result = MarkerLineDetector.Detect("[TODO]\n");
         Assert.Single(result);
         Assert.Equal(0, result[0].LogicalIndex);
     }
@@ -156,7 +210,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_TodoLine_KindIsTodo()
     {
-        var result = MarkerLineDetector.Detect("TODO: do something");
+        var result = MarkerLineDetector.Detect("[TODO] do something");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
     }
@@ -164,7 +218,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_FixmeLine_KindIsFixme()
     {
-        var result = MarkerLineDetector.Detect("FIXME: broken");
+        var result = MarkerLineDetector.Detect("[FIXME] broken");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
     }
@@ -172,7 +226,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_NoteLine_KindIsNote()
     {
-        var result = MarkerLineDetector.Detect("NOTE: remember this");
+        var result = MarkerLineDetector.Detect("[NOTE] remember this");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Note, result[0].Kind);
     }
@@ -215,36 +269,40 @@ public class MarkerLineDetectorTests
         Assert.Equal(LineHighlightKind.NoteLink, result[0].Kind);
     }
 
-    // ── Priority (FIXME > TODO > NOTE > NoteLink) ─────────────────────────────
+    // ── Priority: 行頭マーカー vs NoteLink ────────────────────────────────────
+    // v2.14.19: TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の
+    // 「優先順位」という概念自体が成立しなくなった（同時に複数を行頭に置けないため）。
+    // 引き続き意味を持つのは「行頭マーカーは、行内のどこかにある [[NoteLink]] より優先される」
+    // という関係のみで、これを固定する。
 
     [Fact]
-    public void Detect_FixmeAndTodoOnSameLine_KindIsFixme()
+    public void Detect_NoteBeatsNoteLinkOnSameLine()
     {
-        var result = MarkerLineDetector.Detect("TODO and FIXME here");
-        Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
-    }
-
-    [Fact]
-    public void Detect_TodoAndNoteOnSameLine_KindIsTodo()
-    {
-        var result = MarkerLineDetector.Detect("NOTE: see TODO");
-        Assert.Single(result);
-        Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
-    }
-
-    [Fact]
-    public void Detect_NoteAndNoteLinkOnSameLine_KindIsNote()
-    {
-        var result = MarkerLineDetector.Detect("NOTE: see [[My Note]]");
+        var result = MarkerLineDetector.Detect("[NOTE] see [[My Note]]");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Note, result[0].Kind);
     }
 
     [Fact]
-    public void Detect_FixmeBeatsAllOthersOnSameLine()
+    public void Detect_TodoBeatsNoteLinkOnSameLine()
     {
-        var result = MarkerLineDetector.Detect("TODO NOTE [[link]] FIXME all on one line");
+        var result = MarkerLineDetector.Detect("[TODO] check [[My Note]]");
+        Assert.Single(result);
+        Assert.Equal(LineHighlightKind.Todo, result[0].Kind);
+    }
+
+    [Fact]
+    public void Detect_FixmeBeatsNoteLinkOnSameLine()
+    {
+        var result = MarkerLineDetector.Detect("[FIXME] broken [[ref link]]");
+        Assert.Single(result);
+        Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
+    }
+
+    [Fact]
+    public void Detect_LineStartMarker_BeatsNoteLinkEvenWithTrailingKeywords()
+    {
+        var result = MarkerLineDetector.Detect("[FIXME] TODO NOTE [[link]] all mixed");
         Assert.Single(result);
         Assert.Equal(LineHighlightKind.Fixme, result[0].Kind);
     }
@@ -252,9 +310,17 @@ public class MarkerLineDetectorTests
     // ── Schema / format guard ─────────────────────────────────────────────────
 
     [Fact]
-    public void NoteNestSchema_Remains_141()
+    public void NoteNestSchema_IsNotChangedByMarkerFeatures()
     {
-        Assert.Equal("1.4.1", Project.CurrentSchemaVersion);
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".notenest");
+        try
+        {
+            var project = new Project { ProjectName = "SchemaGuard", Version = Project.CurrentSchemaVersion };
+            new ProjectFileService().Save(path, project);
+            var loaded = new ProjectFileService().Load(path);
+            Assert.Equal(Project.CurrentSchemaVersion, loaded.Version);
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
     }
 
     [Fact]

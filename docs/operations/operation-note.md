@@ -1,5 +1,7 @@
 # 運用メモ — NoteNest v1.5.4
 
+> **[履歴文書]** この文書は NoteNest v1.5.4 時代に作成された運用メモです。NestSuite 移行後に一部内容が更新されていますが、文書自体は NoteNest 時代の構成を前提としています。現行の運用については `docs/guide/nestsuite-user-guide.md` を参照してください。
+
 ## 利用時の注意
 
 ### データの保全

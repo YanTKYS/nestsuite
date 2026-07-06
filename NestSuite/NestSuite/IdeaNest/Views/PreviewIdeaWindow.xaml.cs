@@ -15,6 +15,7 @@ public partial class PreviewIdeaWindow : Window
     private readonly Action<IdeaCardViewModel> _onCommitEdit;
     private readonly Func<EditIdeaViewModel, IdeaCardViewModel?>? _onCommitAdd;
     private readonly bool _isNew;
+    private readonly string _contentFontFamily;
     private int _currentIndex;
     private EditIdeaViewModel _editVm = null!;
     private bool _hasEdits;
@@ -26,7 +27,8 @@ public partial class PreviewIdeaWindow : Window
     public PreviewIdeaWindow(
         IReadOnlyList<IdeaCardViewModel> cards,
         int initialIndex,
-        Action<IdeaCardViewModel> onCommitEdit)
+        Action<IdeaCardViewModel> onCommitEdit,
+        string contentFontFamily = "Yu Gothic UI")
     {
         InitializeComponent();
         ApplyWindowSettings();
@@ -34,6 +36,7 @@ public partial class PreviewIdeaWindow : Window
         _onCommitEdit = onCommitEdit;
         _currentIndex = initialIndex;
         _isNew = false;
+        _contentFontFamily = contentFontFamily;
         LoadCard();
         UpdateButtonStates();
         PreviewKeyDown += OnPreviewKeyDown;
@@ -43,7 +46,8 @@ public partial class PreviewIdeaWindow : Window
     // New-card mode
     public PreviewIdeaWindow(
         Func<EditIdeaViewModel, IdeaCardViewModel?> onCommitAdd,
-        Action<IdeaCardViewModel> onCommitEdit)
+        Action<IdeaCardViewModel> onCommitEdit,
+        string contentFontFamily = "Yu Gothic UI")
     {
         InitializeComponent();
         ApplyWindowSettings();
@@ -52,6 +56,7 @@ public partial class PreviewIdeaWindow : Window
         _onCommitEdit = onCommitEdit;
         _currentIndex = 0;
         _isNew = true;
+        _contentFontFamily = contentFontFamily;
         LoadCard(new Idea());
         UpdateButtonStates();
         Title = "新規アイデア";
@@ -59,11 +64,17 @@ public partial class PreviewIdeaWindow : Window
         Closed += OnWindowClosed;
     }
 
+    /// <summary>
+    /// L22: カード本文編集欄（BodyBox）に適用する Workspace 共通フォント種類。
+    /// コンストラクタ引数（<see cref="_contentFontFamily"/>）で受け取り、カード切替のたびに
+    /// 再生成される <see cref="_editVm"/> へ都度反映する。
+    /// </summary>
     private void LoadCard(Idea? freshIdea = null)
     {
         _hasEdits = false;
         var idea = freshIdea ?? CurrentCard.Model;
         _editVm = new EditIdeaViewModel(idea, isExistingCard: freshIdea == null);
+        _editVm.ContentFontFamily = _contentFontFamily;
         _editVm.PropertyChanged += OnEditVmPropertyChanged;
         DataContext = _editVm;
     }

@@ -47,6 +47,22 @@ public class MainViewModelCompositionTests
     }
 
     [Fact]
+    public void EditorFontFamilyChange_DoesNotMarkProjectModified()
+    {
+        // v2.14.16 BUG: NoteNest エディタフォント種類は NestSuite の UI 設定
+        // （NoteNestEditorFontFamily）駆動の表示専用値であり、Workspace を
+        // dirty にしない。FontSize（EditorFacadePropagatesContentAndPersistentSettings
+        // で確認済み・引き続き dirty になる）とは異なる扱いであることを固定する。
+        var main = new MainViewModel();
+        main.IsModified = false;
+
+        main.EditorFontFamily = "Consolas";
+
+        Assert.Equal("Consolas", main.EditorFontFamily);
+        Assert.False(main.IsModified);
+    }
+
+    [Fact]
     public void EditorFacadePropagatesTaskComment()
     {
         var main = new MainViewModel();

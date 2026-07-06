@@ -16,9 +16,9 @@ namespace NestSuite;
 /// <c>NestSuiteDocumentTab</c> は「何が開いているか」（どのファイルが・どのツールで・変更済みか）を表す。<br/>
 /// 1 つのツールから複数タブが生まれる（例：NoteNest で A.notenest と B.notenest を同時に開く）。</para>
 ///
-/// <para><b>v1.7.2 の位置づけ</b><br/>
-/// 設計レベルのモデル定義として導入する。本格的な TabControl・複数 Workspace のライフサイクル管理・
-/// ファイル保存の共通化は v1.7.3 以降で行う。</para>
+/// <para><b>現在の役割</b><br/>
+/// TabControl のタブ 1 枚・複数 Workspace のライフサイクル管理・ファイル保存の共通化を支える
+/// 不変モデルとして機能する。</para>
 /// </summary>
 public sealed record NestSuiteDocumentTab
 {

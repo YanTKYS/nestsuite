@@ -8,6 +8,8 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // タブクローズ確認・Workspace 破棄・タブ 0 件時の空タブ自動生成を扱う partial。
+
     /// <summary>
     /// v1.9.7: IdeaNest タブを閉じる前の確認と PropertyChanged 購読解除。
     /// ViewModel はタブごとの独立インスタンスのため LoadFromWorkspace リセットは不要。
@@ -114,7 +116,7 @@ public partial class NestSuiteShellWindow
             tab.IsModified,
             () => MessageBox.Show(
                 this,
-                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？",
+                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？\n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）",
                 "未保存の NoteNest",
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Warning) switch

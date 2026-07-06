@@ -1,4 +1,6 @@
 using NestSuite;
+using NestSuite.Models;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -403,5 +405,162 @@ public class NestSuiteDocumentTabTests
         // v1.9.9: ツールチップにツール種別が正しく含まれることを3ツール横断で確認
         var tab = NestSuiteTabFactory.CreateUntitled(kind);
         Assert.Contains(expectedKindLabel, tab.TooltipText);
+    }
+
+    // ── v2.14.1 FM-1: .nestsuite 種別判定 ──────────────────────────────
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_ResolvesKindFromEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "1.0", "{}"));
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out var kind);
+
+            Assert.True(result);
+            Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_Missing_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteTabFactory.TryGetKind(path, out _);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void TryGetKind_NestSuiteFile_BrokenEnvelope_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, "not json");
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out _);
+
+            Assert.False(result);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void FromFilePath_NestSuiteFile_ResolvesKindAndKeepsDisplayName()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+
+            var tab = NestSuiteTabFactory.FromFilePath(path);
+
+            Assert.Equal(NestSuiteWorkspaceKind.ChatNest, tab.WorkspaceKind);
+            Assert.Equal(Path.GetFileName(path), tab.DisplayName);
+        }
+        finally { File.Delete(path); }
+    }
+
+    // ── v2.14.7 SH-31: TryGetKind 理由つきオーバーロード ──────────────
+
+    [Fact]
+    public void TryGetKind_WithFailure_LegacyExtension_ReturnsTrue_AndNoneFailure()
+    {
+        var result = NestSuiteTabFactory.TryGetKind("project.notenest", out var kind, out var failure);
+
+        Assert.True(result);
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, kind);
+        Assert.Equal(WorkspaceKindDetectionFailure.None, failure);
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_NestSuiteFile_Missing_ReturnsFalse_AndFileNotFound()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteTabFactory.TryGetKind(path, out _, out var failure);
+
+        Assert.False(result);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, failure);
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_NestSuiteFile_BrokenJson_ReturnsFalse_AndInvalidFormat()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, "not json");
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out _, out var failure);
+
+            Assert.False(result);
+            Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, failure);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_NestSuiteFile_UnknownWorkspaceKind_ReturnsFalse_AndUnknownWorkspaceKind()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("FutureNest", "1.0", "{}"));
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out _, out var failure);
+
+            Assert.False(result);
+            Assert.Equal(WorkspaceKindDetectionFailure.UnknownWorkspaceKind, failure);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_NestSuiteFile_SchemaVersionTooNew_ReturnsFalse_AndSchemaVersionTooNew()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "9.9.9", "{}"));
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out _, out var failure);
+
+            Assert.False(result);
+            Assert.Equal(WorkspaceKindDetectionFailure.SchemaVersionTooNew, failure);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_UnsupportedExtension_ReturnsFalse_AndUnsupportedExtension()
+    {
+        var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.txt", out _, out var failure);
+
+        Assert.False(result);
+        Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);
+    }
+
+    [Fact]
+    public void TryGetKind_WithFailure_NestSuiteFile_CurrentSchemaVersion_ReturnsTrue_AndNoneFailure()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(
+                path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", Project.CurrentSchemaVersion, "{}"));
+
+            var result = NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure);
+
+            Assert.True(result);
+            Assert.Equal(NestSuiteWorkspaceKind.NoteNest, kind);
+            Assert.Equal(WorkspaceKindDetectionFailure.None, failure);
+        }
+        finally { File.Delete(path); }
     }
 }

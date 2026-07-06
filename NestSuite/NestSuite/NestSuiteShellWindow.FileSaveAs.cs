@@ -6,6 +6,9 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // 名前を付けて保存ダイアログと保存処理を扱う partial。
+    // 保存成功後の同期は FileSaveStateSync.cs の UpdateXxxTabPath に委譲する。
+
     /// <summary>v1.9.7: 選択中 IdeaNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
     private void SaveIdeaNestFileAs()
     {

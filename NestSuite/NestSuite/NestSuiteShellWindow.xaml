@@ -15,15 +15,35 @@
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandSave_Executed"/>
         <!-- v2.10.4 SH-20: Ctrl+Shift+S ですべて保存を実行する -->
         <CommandBinding Command="{x:Static local:NestSuiteShellWindow.SaveAllCommand}" Executed="CommandSaveAll_Executed"/>
+        <!-- v2.15.0 SH: Ctrl+Shift+F で Shell 横断検索パネルを開閉する -->
+        <CommandBinding Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}" Executed="CommandCrossSearch_Executed"/>
     </Window.CommandBindings>
-    <DockPanel>
+    <!-- v2.14.11 SH-32: ルートに Background 未指定だと、子要素で覆われない隙間が
+         Window既定の白色で透けて見える（ダークテーマ時に右ペイン折り畳みボタン周辺が
+         白いバーになる不具合の原因）。AppBg を明示指定して背景を統一する。 -->
+    <DockPanel Background="{DynamicResource AppBg}">
         <!-- ファイルメニュー: 新規/開くはツール横断、保存系は選択中タブの WorkspaceKind に応じて処理する -->
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="ファイル(_F)">
-                <MenuItem Header="新規(_N)">
-                    <MenuItem Header="新規 NoteNest(_N)" Click="MenuNewNoteNest_Click"/>
-                    <MenuItem Header="新規 ChatNest(_C)"  Click="MenuNewChatNest_Click"/>
-                    <MenuItem Header="新規 IdeaNest(_I)"  Click="MenuNewIdeaNest_Click"/>
+            <MenuItem Header="ファイル(_F)"
+                      AutomationProperties.AutomationId="Shell.FileMenu"
+                      AutomationProperties.Name="Shell.FileMenu">
+                <!-- v2.15.1 SH: 各 Nest の新規作成導線はここ（ファイル > 新規作成）とタブバーの
+                     ＋ ボタンへ集約する。ツールメニューからは各 Nest の起動・新規作成項目を削除した。 -->
+                <MenuItem Header="新規作成(_N)"
+                          AutomationProperties.AutomationId="Shell.NewMenu"
+                          AutomationProperties.Name="Shell.NewMenu">
+                    <MenuItem Header="新規 NoteNest — ノートをプロジェクト単位で管理(_N)"
+                              AutomationProperties.AutomationId="Shell.MenuNewNoteNest"
+                              AutomationProperties.Name="Shell.MenuNewNoteNest"
+                              Click="MenuNewNoteNest_Click"/>
+                    <MenuItem Header="新規 IdeaNest — アイデアをカード形式で整理(_I)"
+                              AutomationProperties.AutomationId="Shell.MenuNewIdeaNest"
+                              AutomationProperties.Name="Shell.MenuNewIdeaNest"
+                              Click="MenuNewIdeaNest_Click"/>
+                    <MenuItem Header="新規 ChatNest — チャット形式でブレスト記録(_C)"
+                              AutomationProperties.AutomationId="Shell.MenuNewChatNest"
+                              AutomationProperties.Name="Shell.MenuNewChatNest"
+                              Click="MenuNewChatNest_Click"/>
                 </MenuItem>
                 <MenuItem Header="開く(_O)..." Click="MenuOpen_Click"/>
                 <MenuItem x:Name="RecentFilesMenu" Header="最近使ったファイル(_R)">
@@ -37,28 +57,28 @@
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
             </MenuItem>
+            <!-- v2.15.1 SH: ツールメニューは各 Nest の起動・新規作成導線ではなく、Shell の補助機能
+                 （横断検索、将来的な横断タスクビュー・関連管理・振り返りダッシュボードなど）を置く場所とする。
+                 各 Nest の新規作成は ファイル > 新規作成 とタブバーの ＋ ボタンに集約した。 -->
             <MenuItem Header="ツール(_T)"
                       AutomationProperties.AutomationId="Shell.ToolMenu"
                       AutomationProperties.Name="Shell.ToolMenu">
-                <!-- v1.7.3: ツール選択はタブランチャーとして機能する。既存タブがあれば移動、なければ新規作成 -->
-                <MenuItem x:Name="ToolMenuNoteNest" Header="NoteNest — ノートをプロジェクト単位で管理"
-                          AutomationProperties.AutomationId="Shell.MenuToolNoteNest"
-                          AutomationProperties.Name="Shell.MenuToolNoteNest"
-                          Tag="NoteNest"
-                          IsCheckable="True" IsChecked="True"
-                          Click="MenuTool_Click"/>
-                <MenuItem x:Name="ToolMenuIdeaNest" Header="IdeaNest — アイデアをカード形式で整理"
-                          AutomationProperties.AutomationId="Shell.MenuToolIdeaNest"
-                          AutomationProperties.Name="Shell.MenuToolIdeaNest"
-                          Tag="IdeaNest"
-                          IsCheckable="True"
-                          Click="MenuTool_Click"/>
-                <MenuItem x:Name="ToolMenuChatNest" Header="ChatNest — チャット形式でブレスト記録"
-                          AutomationProperties.AutomationId="Shell.MenuToolChatNest"
-                          AutomationProperties.Name="Shell.MenuToolChatNest"
-                          Tag="ChatNest"
-                          IsCheckable="True"
-                          Click="MenuTool_Click"/>
+                <!-- v2.15.0 SH: Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能） -->
+                <!-- v2.15.1 SH: 表示メニューから移動した。「表示切替」ではなく「作業補助ツール」であるため。 -->
+                <MenuItem Header="横断検索(_S)"
+                          AutomationProperties.AutomationId="Shell.CrossSearchMenuItem"
+                          AutomationProperties.Name="Shell.CrossSearchMenuItem"
+                          Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}"
+                          InputGestureText="Ctrl+Shift+F"/>
+                <Separator/>
+                <MenuItem Header="デバイス移行パックをエクスポート(_E)..."
+                          AutomationProperties.AutomationId="Shell.ExportMigrationPackMenuItem"
+                          AutomationProperties.Name="Shell.ExportMigrationPackMenuItem"
+                          Click="MenuExportMigrationPack_Click"/>
+                <MenuItem Header="デバイス移行パックをインポート(_I)..."
+                          AutomationProperties.AutomationId="Shell.ImportMigrationPackMenuItem"
+                          AutomationProperties.Name="Shell.ImportMigrationPackMenuItem"
+                          Click="MenuImportMigrationPack_Click"/>
             </MenuItem>
             <MenuItem Header="表示(_V)">
                 <MenuItem Header="テーマ(_T)">
@@ -70,6 +90,47 @@
                               Header="Dark"
                               IsCheckable="True"
                               Click="MenuThemeDark_Click"/>
+                </MenuItem>
+                <!-- v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類。
+                     NoteNest を開いていなくても変更できるよう、Workspace 内 ComboBox からメニューバーへ移動した。 -->
+                <MenuItem Header="本文フォント(_F)"
+                          AutomationProperties.AutomationId="Shell.WorkspaceFontMenu"
+                          AutomationProperties.Name="Shell.WorkspaceFontMenu">
+                    <MenuItem x:Name="WorkspaceFontYuGothicUiMenuItem"
+                              Header="Yu Gothic UI"
+                              Tag="Yu Gothic UI"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontMeiryoUiMenuItem"
+                              Header="Meiryo UI"
+                              Tag="Meiryo UI"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontMsGothicMenuItem"
+                              Header="MS Gothic"
+                              Tag="MS Gothic"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontBizUdGothicMenuItem"
+                              Header="BIZ UDGothic"
+                              Tag="BIZ UDGothic"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontBizUdMinchoMenuItem"
+                              Header="BIZ UDMincho"
+                              Tag="BIZ UDMincho"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontUdDigiKyokashoMenuItem"
+                              Header="UD Digi Kyokasho N-R"
+                              Tag="UD Digi Kyokasho N-R"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
+                    <MenuItem x:Name="WorkspaceFontConsolasMenuItem"
+                              Header="Consolas"
+                              Tag="Consolas"
+                              IsCheckable="True"
+                              Click="MenuWorkspaceFont_Click"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
@@ -85,19 +146,86 @@
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-                <TextBlock Text="{Binding ProjectDisplayName}"
+                <!-- v2.13.3 SH-30: アクティブタブ（_selectedTab）を基準に RefreshWorkspaceStatus で更新する。
+                     Window.DataContext（NoteNest 固有）への直接 Binding は行わない -->
+                <TextBlock x:Name="ShellStatusFileText"
                            AutomationProperties.AutomationId="Shell.StatusBar"
                            AutomationProperties.Name="Shell.StatusBar"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
-                <TextBlock Text="{Binding UnsavedIndicatorText}"
-                           FontSize="11" Foreground="{DynamicResource UnsavedBrush}"
-                           Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock x:Name="ShellStatusUnsavedText"
+                           FontSize="11" Foreground="{DynamicResource UnsavedBrush}"/>
                 <TextBlock x:Name="NestSuiteModeSuffix"
                            Text="  /  NoteNest"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
                 <TextBlock x:Name="WorkspaceStatusText"
                            FontSize="11" Foreground="{DynamicResource MutedFg}"/>
             </StackPanel>
+        </Border>
+
+        <!-- v2.15.0 SH: Shell横断検索パネル（開いているタブのみが対象。表示状態・検索語・結果はどこにも永続化しない） -->
+        <Border x:Name="CrossSearchPanel"
+                DockPanel.Dock="Right"
+                Width="300"
+                Visibility="Collapsed"
+                Background="{DynamicResource SidebarBg}"
+                BorderBrush="{DynamicResource PaneBorder}"
+                BorderThickness="1,0,0,0">
+            <DockPanel Margin="10">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <!-- v2.15.1 SH: 閉じるボタンが中央寄りに見える不具合を修正。
+                         旧実装は内側 DockPanel の最後の子（× ボタン）が LastChildFill により
+                         Dock="Right" を無視して残り領域いっぱいに広がっていたため、Grid 化して
+                         タイトル列（*）と閉じるボタン列（Auto）を明示的に分離し、右端に固定する。 -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="横断検索" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                Content="×" FontSize="12"
+                                Width="22" Height="22"
+                                Background="Transparent" BorderThickness="0"
+                                ToolTip="横断検索パネルを閉じる"
+                                Click="CrossSearchCloseButton_Click"/>
+                    </Grid>
+                    <TextBox x:Name="CrossSearchBox"
+                             AutomationProperties.AutomationId="Shell.CrossSearchBox"
+                             AutomationProperties.Name="Shell.CrossSearchBox"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Padding="4"/>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource MutedFg}"
+                               FontSize="11" Margin="0,4,0,0"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
+                </StackPanel>
+                <ListBox x:Name="CrossSearchResultsList"
+                         AutomationProperties.AutomationId="Shell.CrossSearchResultsList"
+                         AutomationProperties.Name="Shell.CrossSearchResultsList"
+                         ItemsSource="{Binding Results}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="CrossSearchResultsList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,5">
+                                <TextBlock Text="{Binding HeaderText}" FontSize="11"
+                                           Foreground="{DynamicResource MutedFg}"/>
+                                <TextBlock Text="{Binding PreviewText}" FontSize="12"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Border>
 
         <!-- メインエリア: Workspace 領域（v1.16.2: 左ツール選択カラムを廃止し全幅化） -->
@@ -117,37 +245,45 @@
                     BorderThickness="0,0,0,1">
                 <DockPanel>
                     <!-- v2.2.0 SH-5: 新規タブ追加ボタン。クリックで NoteNest/IdeaNest/ChatNest 選択メニューを表示 -->
+                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabAddButton"
                             AutomationProperties.Name="Shell.TabAddButton"
                             Content="＋"
+                            Style="{StaticResource IconButton}"
                             FontSize="14"
                             Width="36"
                             VerticalAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
                             ToolTip="新規タブを追加"
                             Click="TabAddButton_Click">
                         <Button.ContextMenu>
+                            <!-- v2.15.1 SH: ファイル > 新規作成 と同じ説明的表記を用いる -->
                             <ContextMenu>
-                                <MenuItem Header="新規 NoteNest(_N)" Click="MenuNewNoteNest_Click"/>
-                                <MenuItem Header="新規 IdeaNest(_I)"  Click="MenuNewIdeaNest_Click"/>
-                                <MenuItem Header="新規 ChatNest(_C)"  Click="MenuNewChatNest_Click"/>
+                                <MenuItem Header="新規 NoteNest — ノートをプロジェクト単位で管理(_N)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuNoteNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuNoteNest"
+                                          Click="MenuNewNoteNest_Click"/>
+                                <MenuItem Header="新規 IdeaNest — アイデアをカード形式で整理(_I)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuIdeaNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuIdeaNest"
+                                          Click="MenuNewIdeaNest_Click"/>
+                                <MenuItem Header="新規 ChatNest — チャット形式でブレスト記録(_C)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuChatNest"
+                                          AutomationProperties.Name="Shell.TabAddMenuChatNest"
+                                          Click="MenuNewChatNest_Click"/>
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
                     <!-- v2.7.9 SH-6: タブ一覧ボタン。クリックで開いているタブをドロップダウン一覧表示 -->
+                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabListButton"
                             AutomationProperties.Name="Shell.TabListButton"
                             Content="▾"
+                            Style="{StaticResource IconButton}"
                             FontSize="12"
                             Width="28"
                             VerticalAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
                             ToolTip="タブ一覧"
                             Click="TabListButton_Click"/>
                     <ListBox x:Name="TabStrip"

@@ -58,19 +58,34 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _currentTheme = UiSettingsService.NormalizeTheme(uiSettings.Theme);
         _themeService.Apply(_currentTheme);
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
+        // L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定。
+        // 新設 WorkspaceEditorFontFamily があればそれを使い、なければ L21 の旧設定
+        // NoteNestEditorFontFamily を移行元として使う（ResolveWorkspaceEditorFontFamily 参照）。
+        _workspaceEditorFontFamily = UiSettingsService.ValidateWorkspaceEditorFontFamily(
+            UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));
 
         InitializeComponent();
+        // v2.14.11 SH-32: ウィンドウハンドル生成後にタイトルバーのダークモードを適用する
+        // （SourceInitialized 以前は HWND が存在せず DwmSetWindowAttribute を呼べないため）
+        SourceInitialized += (_, _) => ApplyTitleBarTheme(_currentTheme);
         UpdateThemeMenuChecks();
+
+        // v2.14.18 SH: Workspace 共通フォント種類メニュー（表示 > 本文フォント）の選択状態初期化。
+        _workspaceFontMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
+        {
+            { "Yu Gothic UI", WorkspaceFontYuGothicUiMenuItem },
+            { "Meiryo UI", WorkspaceFontMeiryoUiMenuItem },
+            { "MS Gothic", WorkspaceFontMsGothicMenuItem },
+            { "BIZ UDGothic", WorkspaceFontBizUdGothicMenuItem },
+            { "BIZ UDMincho", WorkspaceFontBizUdMinchoMenuItem },
+            { "UD Digi Kyokasho N-R", WorkspaceFontUdDigiKyokashoMenuItem },
+            { "Consolas", WorkspaceFontConsolasMenuItem },
+        };
+        UpdateWorkspaceFontMenuChecks();
+
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
         UpdateRecentFilesMenu();
-
-        _toolMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
-        {
-            { NestSuiteToolRegistry.NoteNestToolId, ToolMenuNoteNest },
-            { NestSuiteToolRegistry.IdeaNestToolId, ToolMenuIdeaNest },
-            { NestSuiteToolRegistry.ChatNestToolId, ToolMenuChatNest },
-        };
 
         WorkspaceView.DialogHost = this;
 
@@ -97,6 +112,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）
             ActivateTab(tempTab);
         }
+
+        StartAutoSaveTimer(); // v2.14.12 SH-33
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -110,7 +127,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                 noteTab?.IsModified == true,
                 () => MessageBox.Show(
                     this,
-                    $"NoteNest「{noteTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                    $"NoteNest「{noteTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？\n（「いいえ」で保存せずに終了します。「キャンセル」で終了しません。）",
                     "未保存の NoteNest",
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Warning) switch
@@ -153,7 +170,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                     chatVm.HasUnsavedChanges,
                     () => MessageBox.Show(
                             this,
-                            $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？",
+                            $"ChatNest「{chatTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？\n（「いいえ」で保存せずに終了します。「キャンセル」で終了しません。）",
                             "未保存の ChatNest",
                             MessageBoxButton.YesNoCancel,
                             MessageBoxImage.Warning) switch
@@ -213,6 +230,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosed(EventArgs e)
     {
+        StopAutoSaveTimer(); // v2.14.12 SH-33
         StopNotificationTimer();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
@@ -276,6 +294,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         _currentTheme = UiSettingsService.NormalizeTheme(theme);
         _themeService.Apply(_currentTheme);
+        ApplyTitleBarTheme(_currentTheme); // v2.14.11 SH-32
         var settings = _uiSettingsService.Load();
         settings.Theme = _currentTheme;
         _uiSettingsService.Save(settings);
@@ -286,6 +305,31 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     {
         ThemeLightMenuItem.IsChecked = _currentTheme == AppTheme.Light;
         ThemeDarkMenuItem.IsChecked = _currentTheme == AppTheme.Dark;
+    }
+
+    /// <summary>
+    /// v2.14.18 SH: 表示 > 本文フォント メニューの選択項目。Tag→MenuItem 辞書。
+    /// <see cref="InitializeComponent"/> 後に構築する。
+    /// </summary>
+    private Dictionary<string, MenuItem> _workspaceFontMenuItems = null!;
+
+    /// <summary>
+    /// v2.14.18 SH: 表示 > 本文フォント メニューのクリックハンドラ。NoteNest を開いていない状態でも
+    /// 呼び出せる（Workspace 選択に依存しない Shell メニュー操作のため）。
+    /// 変更元 Workspace が存在しないため、<see cref="PropagateWorkspaceEditorFontFamily"/> は
+    /// 除外なし（全セッション対象）で呼ぶ。
+    /// </summary>
+    private void MenuWorkspaceFont_Click(object sender, RoutedEventArgs e)
+    {
+        var family = UiSettingsService.ValidateWorkspaceEditorFontFamily((string)((FrameworkElement)sender).Tag);
+        PropagateWorkspaceEditorFontFamily(family, exclude: null);
+    }
+
+    /// <summary>v2.14.18 SH: 現在の Workspace 共通フォント種類をメニューのチェック状態へ反映する。</summary>
+    private void UpdateWorkspaceFontMenuChecks()
+    {
+        foreach (var (family, menuItem) in _workspaceFontMenuItems)
+            menuItem.IsChecked = family == _workspaceEditorFontFamily;
     }
 
     // ── v1.7.3: ファイル単位タブ管理 ─────────────────────────────────────
@@ -300,6 +344,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;
+    // L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定（旧 _noteNestEditorFontFamily）。
+    private string _workspaceEditorFontFamily = UiSettingsService.DefaultWorkspaceEditorFontFamily;
     private bool _suppressFontSizePropagation;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
@@ -308,8 +354,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     /// <summary>現在選択中のタブのツール ID。タブ未選択時は <see cref="DefaultToolId"/>。</summary>
     public string SelectedToolId => _selectedTab?.ToolId ?? DefaultToolId;
-
-    private Dictionary<string, MenuItem> _toolMenuItems = null!;
 
     /// <summary>
     /// v1.9.1: タブに対応する WorkspaceSession を生成する。
@@ -323,7 +367,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             NestSuiteWorkspaceKind.NoteNest => CreateNoteNestViewModel(),
             NestSuiteWorkspaceKind.ChatNest => CreateChatNestViewModel(),
             NestSuiteWorkspaceKind.IdeaNest => CreateIdeaNestViewModel(),
-            NestSuiteWorkspaceKind.Temp     => new TempNestWorkspaceViewModel(),
+            NestSuiteWorkspaceKind.Temp     => CreateTempNestViewModel(),
             _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
         };
         return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
@@ -345,6 +389,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.RequestClose = Close;
         WireNoteNestViewCallbacks(vm, WorkspaceView);
         vm.EditorFontSize = _noteNestEditorFontSize;
+        vm.EditorFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }
@@ -356,6 +401,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private ChatNestWorkspaceViewModel CreateChatNestViewModel()
     {
         var vm = new ChatNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnChatNestPropertyChanged;
         return vm;
     }
@@ -368,7 +414,21 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private IdeaNestWorkspaceViewModel CreateIdeaNestViewModel()
     {
         var vm = new IdeaNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnIdeaNestPropertyChanged;
+        return vm;
+    }
+
+    /// <summary>
+    /// L22: TempNest タブ用の独立 ViewModel を生成し、PropertyChanged を購読する。
+    /// ChatNest/IdeaNest の Create*ViewModel と対称な実装。TempNest はファイル型 Workspace ではないため
+    /// ダイアログ・コールバックの配線は不要。
+    /// </summary>
+    private TempNestWorkspaceViewModel CreateTempNestViewModel()
+    {
+        var vm = new TempNestWorkspaceViewModel();
+        vm.ContentFontFamily = _workspaceEditorFontFamily;
+        vm.PropertyChanged += OnTempNestPropertyChanged;
         return vm;
     }
 

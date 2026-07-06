@@ -31,6 +31,7 @@ public class MainViewModelFacadeTests
         Assert.Equal(main.Notes.AllNotes.ToArray(), main.AllNotes.ToArray());
         Assert.Equal(main.Editor.SelectedNote?.Title, main.CurrentNoteTitle);
         Assert.Equal(main.Session.LastSavedAt, main.LastSavedAt);
+        Assert.Equal("NB", main.CurrentNotebookName);
     }
 
     [Fact]
@@ -64,6 +65,46 @@ public class MainViewModelFacadeTests
         Assert.Equal(
             main.Notes.AllNotes.Sum(remaining => extractor.Extract(remaining.Content, remaining.Title).Count),
             main.MarkerPanel.MarkerCount);
+    }
+
+    // v2.13.2 L19 回帰: ノートブックのリネームは SelectedNote 自体を変えないため、
+    // MainViewModel まで CurrentNotebookName の PropertyChanged が届くことを確認する。
+    [Fact]
+    public void RenamingSelectedNotesNotebookUpdatesCurrentNotebookName()
+    {
+        var main = new MainViewModel();
+        var notebook = main.Notes.AddNotebook("旧名");
+        var note = main.Notes.AddNote(notebook, "Note")!;
+        main.SelectNote(note);
+        var changed = new List<string?>();
+        main.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        main.Notes.RenameNotebook(notebook, "新名");
+
+        Assert.Contains(nameof(MainViewModel.CurrentNotebookName), changed);
+        Assert.Equal("新名", main.CurrentNotebookName);
+    }
+
+    // v2.13.4 M16: タスク欄の互換表示切替（HasAnyTasks/HasNoTasks）が MainViewModel まで届くことを確認する。
+    // 新規 MainViewModel はサンプルプロジェクト（既存タスクあり）を読み込むため、
+    // まず既存タスクをすべて削除して HasAnyTasks == false の状態を作ってから検証する。
+    [Fact]
+    public void AddingTaskUpdatesHasAnyTasksAndHasNoTasksOnMainViewModel()
+    {
+        var main = new MainViewModel();
+        foreach (var task in main.TaskGroups.SelectMany(g => g.Tasks).ToList())
+            main.Tasks.DeleteTask(task);
+        Assert.False(main.HasAnyTasks);
+        Assert.True(main.HasNoTasks);
+        var changed = new List<string?>();
+        main.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        main.Tasks.AddTask("today", "Task");
+
+        Assert.Contains(nameof(MainViewModel.HasAnyTasks), changed);
+        Assert.Contains(nameof(MainViewModel.HasNoTasks), changed);
+        Assert.True(main.HasAnyTasks);
+        Assert.False(main.HasNoTasks);
     }
 
     [Fact]

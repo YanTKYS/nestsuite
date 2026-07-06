@@ -7,6 +7,8 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // ステータスバー通知・フォーカス復元・タブ閉じる確認・新規タブ作成・未保存状態同期の共通ヘルパーを扱う partial。
+
     private DispatcherTimer? _notificationTimer;
     private bool _isShowingNotification;
 

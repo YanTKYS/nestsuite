@@ -5,6 +5,9 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
+    // ファイル読込後の共通後処理（RegisterLoadedTab）・保存後の共通更新（ApplySavedWorkspaceState）・
+    // エラー表示・重複チェック・WorkspaceKind 別ファイル開くルーティングを扱う partial。
+
     /// <summary>
     /// ファイル読込成功後にタブ・セッション登録・アクティブ化・最近ファイル更新を一括処理する。
     /// ChatNest など PropertyChanged 購読が必要な場合は afterRegister に登録処理を渡す。
@@ -93,14 +96,33 @@ public partial class NestSuiteShellWindow
         if (effectiveExcludeId == null) return false;
         var duplicate = _tabs.FirstOrDefault(t =>
             t.Id != effectiveExcludeId &&
-            t.WorkspaceKind == kind &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+            NestSuiteOpenFilePolicy.IsDuplicateForSave(t.FilePath, t.WorkspaceKind, path, kind));
         if (duplicate == null) return false;
         _dialogs.ShowError(
             $"「{Path.GetFileName(path)}」は既に別のタブで開かれています。\n既存のタブを表示します。",
             "保存できません");
         ActivateTab(duplicate);
         return true;
+    }
+
+    /// <summary>
+    /// v2.13.6 TD-45: 保存先パスを解決する（SaveForTabId / SaveAll 共通）。
+    /// タブに FilePath があれば正規化して返す（重複チェックなし＝上書き保存）。
+    /// なければ selectSavePath で選択させ、キャンセル時・重複タブ検出時は null を返す。
+    /// 呼び出し側は null を「保存中止（キャンセル扱い）」として処理する。
+    /// </summary>
+    private string? ResolveSaveTargetPath(
+        NestSuiteDocumentTab tab,
+        NestSuiteWorkspaceKind kind,
+        Func<string, string?> selectSavePath,
+        string defaultFileName)
+    {
+        if (tab.FilePath != null) return NormalizeFilePath(tab.FilePath);
+        var rawPath = selectSavePath(defaultFileName);
+        if (rawPath == null) return null;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        if (CheckAndActivateDuplicateTabForSave(kind, normalizedPath, tab.Id)) return null;
+        return normalizedPath;
     }
 
     /// <summary>

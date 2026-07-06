@@ -51,4 +51,15 @@ public class TaskBoardViewModelTests
         Assert.Equal(1, changeCount);
         Assert.Null(task.LinkedNoteId);
     }
+
+    // v2.13.4 M16: 既存タスクが1件もない場合に右ペインのタスク欄を互換表示しないための判定
+    [Fact]
+    public void HasAnyTasks_FalseWhenAllGroupsEmpty_TrueAfterAddingToAnyGroup()
+    {
+        var board = new TaskBoardViewModel();
+        Assert.False(board.HasAnyTasks);
+
+        board.AddTask("backlog", "Task");
+        Assert.True(board.HasAnyTasks);
+    }
 }

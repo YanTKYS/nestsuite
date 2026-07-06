@@ -8,4 +8,5 @@ public partial class NestSuiteShellWindow
     // - FileSaveAs: 名前を付けて保存
     // - FileSaveStateSync: 保存成功後のタブ・Session 同期
     // - FileCommands: 新規作成・ファイルメニュー入口
+    // - SaveAll: Ctrl+Shift+S 全タブ一括保存（SH-20）
 }

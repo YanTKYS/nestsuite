@@ -36,6 +36,45 @@ public class EditorStateViewModelTests
         Assert.Equal(18, editor.FontSize);
     }
 
+    // v2.14.16 BUG: FontFamily は NestSuite UI 設定駆動の表示専用値。
+    // SavedFontFamily（Workspace ファイルへ書き戻す値）とは独立して扱われることを固定する。
+
+    [Fact]
+    public void LoadSettings_SetsBothFontFamilyAndSavedFontFamily()
+    {
+        var editor = new EditorStateViewModel();
+
+        editor.LoadSettings("MS Gothic", 16);
+
+        Assert.Equal("MS Gothic", editor.FontFamily);
+        Assert.Equal("MS Gothic", editor.SavedFontFamily);
+    }
+
+    [Fact]
+    public void DirectFontFamilyChange_DoesNotAffectSavedFontFamily()
+    {
+        var editor = new EditorStateViewModel();
+        editor.LoadSettings("MS Gothic", 16);
+
+        // UI 設定（NoteNestEditorFontFamily）駆動の表示変更を模擬する。
+        editor.FontFamily = "Consolas";
+
+        Assert.Equal("Consolas", editor.FontFamily);
+        Assert.Equal("MS Gothic", editor.SavedFontFamily);
+    }
+
+    [Fact]
+    public void DirectFontFamilyChange_DoesNotRaiseSettingsChanged()
+    {
+        var editor = new EditorStateViewModel();
+        var changed = false;
+        editor.SettingsChanged += (_, _) => changed = true;
+
+        editor.FontFamily = "Consolas";
+
+        Assert.False(changed);
+    }
+
     [Fact]
     public void DirectRelatedNoteChangeRaisesEventButSelectionDoesNot()
     {

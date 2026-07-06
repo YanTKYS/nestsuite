@@ -3,39 +3,17 @@ using System.Windows.Controls;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.Services;
+using NestSuite.TempNest;
 using NestSuite.ViewModels;
 
 namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    /// <summary>
-    /// 指定ツール ID に対応するタブを開く。既存タブがあればそれをアクティブ化し、
-    /// なければ無題タブを新規作成してアクティブ化する。
-    /// v1.7.3: サイドバー・ツールメニューのクリックから呼ばれるタブランチャーエントリポイント。
-    /// </summary>
-    private void EnsureTabForToolId(string toolId)
-    {
-        var existing = _tabs.FirstOrDefault(t => t.ToolId == toolId);
-        if (existing != null)
-        {
-            ActivateTab(existing);
-            return;
-        }
-
-        var kind = toolId switch
-        {
-            NestSuiteToolRegistry.NoteNestToolId => NestSuiteWorkspaceKind.NoteNest,
-            NestSuiteToolRegistry.ChatNestToolId => NestSuiteWorkspaceKind.ChatNest,
-            NestSuiteToolRegistry.IdeaNestToolId => NestSuiteWorkspaceKind.IdeaNest,
-            _ => throw new ArgumentException($"未知のツール ID: {toolId}", nameof(toolId))
-        };
-
-        var tab = NestSuiteTabFactory.CreateUntitled(kind);
-        _tabs.Add(tab);
-        _sessionManager.Add(CreateSessionForTab(tab));
-        ActivateTab(tab);
-    }
+    // タブ生成・ViewModel 置換・PropertyChanged 購読を扱う partial。
+    // v2.15.1 SH: 各 Nest の新規作成はファイル > 新規作成・タブバー ＋ ボタン（NewWorkspaceSession）に
+    // 一本化した。かつてのツールメニュー由来の「既存タブがあれば切替、なければ新規作成」という
+    // タブランチャー（EnsureTabForToolId）はツールメニューの Nest 項目撤去に伴い削除した。
 
     private void TabStrip_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -109,7 +87,13 @@ public partial class NestSuiteShellWindow
 
         if (e.PropertyName is nameof(MainViewModel.CurrentFilePath) or nameof(MainViewModel.IsModified) &&
             sender is MainViewModel vm)
+        {
             SyncNoteNestTabForViewModel(vm);
+            // v2.13.3 SH-30: タブ同期後にステータスバー（ファイル名・未保存表示）を再計算する。
+            // 従来は Window.DataContext への直接 Binding が自動更新していたが、
+            // アクティブタブ基準の表示に変更したため明示的な再計算が必要になった。
+            if (IsActiveVm(vm)) RefreshWorkspaceStatus();
+        }
 
         // v1.14.0: CurrentFilePath 変化時にセッションがすでに存在する場合は保存先として最近ファイルに追加する
         // （セッション登録前の OpenFileAtStartup による変化は session == null で除外される）
@@ -144,9 +128,48 @@ public partial class NestSuiteShellWindow
             uiSvc.Save(ui);
         }
 
+        // L22: NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
+        // _suppressFontSizePropagation は「ファイル読込中の自前設定適用」を示す既存フラグを
+        // フォント種類にも共用する（ファイル自身の AppSettings.FontFamily 読込時の再伝播を防ぐ）。
+        if (e.PropertyName == nameof(MainViewModel.EditorFontFamily) &&
+            sender is MainViewModel familyVm &&
+            !_suppressFontSizePropagation &&
+            familyVm.EditorFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.EditorFontFamily, familyVm);
+
         if (e.PropertyName is nameof(MainViewModel.MarkerCount) or nameof(MainViewModel.TotalIncompleteTaskCountText) &&
             sender is MainViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+    }
+
+    /// <summary>
+    /// L22/v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、
+    /// 変更元以外の全セッションへ伝播し ui-settings.json（WorkspaceEditorFontFamily）へ永続化する。
+    /// Workspace ファイル本体（.notenest/.nestsuite/.ideanest/.chatnest/tempnest.json）には
+    /// 一切保存しない（各 ViewModel の ContentFontFamily/EditorFontFamily は保存モデルに含まれない）。
+    /// <paramref name="exclude"/> は変更元 Workspace の ViewModel（既にその場で新しい値を持っている）を
+    /// 二重適用しないためのもの。表示 > 本文フォント メニューのように変更元 Workspace が存在しない
+    /// 呼び出しでは <c>null</c> を渡し、開いている全セッションへ適用する。
+    /// </summary>
+    private void PropagateWorkspaceEditorFontFamily(string family, object? exclude)
+    {
+        _workspaceEditorFontFamily = family;
+        foreach (var s in _sessionManager.Sessions)
+        {
+            if (exclude != null && ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
+            switch (s.WorkspaceViewModel)
+            {
+                case MainViewModel otherNoteVm: otherNoteVm.EditorFontFamily = family; break;
+                case IdeaNestWorkspaceViewModel otherIdeaVm: otherIdeaVm.ContentFontFamily = family; break;
+                case ChatNestWorkspaceViewModel otherChatVm: otherChatVm.ContentFontFamily = family; break;
+                case TempNestWorkspaceViewModel otherTempVm: otherTempVm.ContentFontFamily = family; break;
+            }
+        }
+        var uiSvc = new UiSettingsService();
+        var ui = uiSvc.Load();
+        ui.WorkspaceEditorFontFamily = family;
+        uiSvc.Save(ui);
+        UpdateWorkspaceFontMenuChecks();
     }
 
     private void OnChatNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -159,6 +182,12 @@ public partial class NestSuiteShellWindow
                            or nameof(ChatNestWorkspaceViewModel.SelectedSpeaker) &&
             sender is ChatNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+
+        // L22: ChatNest メッセージ本文・入力欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is ChatNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
     }
 
     private void OnIdeaNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -172,5 +201,23 @@ public partial class NestSuiteShellWindow
                            or nameof(IdeaNestWorkspaceViewModel.HasActiveFilter) &&
             sender is IdeaNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
+
+        // L22: IdeaNest カード本文・カード編集欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        if (e.PropertyName == nameof(IdeaNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is IdeaNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
+    }
+
+    /// <summary>
+    /// L22: TempNest 各スロットのタイトル欄・本文欄のフォント種類。Workspace 共通設定への伝播・永続化。
+    /// TempNest は保存対象の変化を検知する必要がないため、フォント種類変更以外は扱わない。
+    /// </summary>
+    private void OnTempNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TempNestWorkspaceViewModel.ContentFontFamily) &&
+            sender is TempNestWorkspaceViewModel familyVm &&
+            familyVm.ContentFontFamily != _workspaceEditorFontFamily)
+            PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
     }
 }

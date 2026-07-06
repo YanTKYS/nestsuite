@@ -57,7 +57,10 @@ public class IdeaNestFileServiceTests
         {
             File.WriteAllText(path, "{broken");
             Assert.ThrowsAny<JsonException>(() => IdeaNestFileService.Load(path));
-            File.WriteAllText(path, """{"version":"99.0","ideas":[],"settings":{}}""");
+            // v2.14.4 FM-4: 数値として解釈できる「より新しい」version は SchemaVersionTooNewException の
+            // 対象になるため、ここでは数値比較の対象外（解釈不能）な garbage version で
+            // 従来どおりの NotSupportedException 経路を確認する。
+            File.WriteAllText(path, """{"version":"unsupported-version","ideas":[],"settings":{}}""");
             Assert.Throws<NotSupportedException>(() => IdeaNestFileService.Load(path));
             File.WriteAllText(path, """{"ideas":[],"settings":{}}""");
             Assert.Throws<InvalidDataException>(() => IdeaNestFileService.Load(path));
@@ -123,6 +126,34 @@ public class IdeaNestFileServiceTests
         Assert.Equal(expectedJsonName, attr!.Name);
     }
 
+    // ── v2.13.6 TD-45: 保存失敗の契約確認 ────────────────────────────────
+
+    [Fact]
+    public void Save_ThrowsWhenParentPathIsAFile()
+    {
+        // v2.13.6 TD-45: 保存失敗が例外として通知されることを固定する（Shell 共通保存コアの catch がこの契約に依存する）。
+        // AtomicFileWriter.WriteAllText は保存先ディレクトリを自動作成するため、
+        // 単に「存在しないディレクトリ」を指定しただけでは失敗しない。
+        // 既存の「ファイル」を親ディレクトリとして使うことで Directory.CreateDirectory を確実に失敗させる。
+        var workspace = new Workspace
+        {
+            Ideas = new()
+            {
+                new Idea { Id = "first", Title = "A", Body = "本文", Tags = new() { "tag-a" } },
+            }
+        };
+        var blockingFile = Path.GetTempFileName();
+        try
+        {
+            var path = Path.Combine(blockingFile, "sub", "x.ideanest");
+            Assert.ThrowsAny<Exception>(() => IdeaNestFileService.Save(path, workspace));
+        }
+        finally
+        {
+            File.Delete(blockingFile);
+        }
+    }
+
     // ── WorkspaceSettings モデルの [JsonPropertyName] 属性確認 ───────────
 
     [Theory]
@@ -143,5 +174,113 @@ public class IdeaNestFileServiceTests
         var attr = prop!.GetCustomAttribute<JsonPropertyNameAttribute>();
         Assert.NotNull(attr);
         Assert.Equal(expectedJsonName, attr!.Name);
+    }
+
+    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+
+    [Fact]
+    public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            var workspace = new Workspace
+            {
+                Ideas = new()
+                {
+                    new Idea { Id = "first", Title = "A", Body = "本文", Tags = new() { "tag-a" } },
+                    new Idea { Id = "second", Body = "B", Tags = new() { "tag-b" } },
+                }
+            };
+            IdeaNestFileService.Save(path, workspace);
+
+            var loaded = IdeaNestFileService.Load(path);
+            Assert.Equal(2, loaded.Ideas.Count);
+            Assert.Equal("first", loaded.Ideas[0].Id);
+            Assert.Equal("A", loaded.Ideas[0].Title);
+            Assert.Equal(IdeaNestFileService.SchemaVersion, loaded.Version);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+
+    [Fact]
+    public void Load_NewerSchemaVersion_ThrowsSchemaVersionTooNewException()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            File.WriteAllText(path, """{"version":"9.9.9","ideas":[],"settings":{}}""");
+            Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => IdeaNestFileService.Load(path));
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Load_NestSuiteWithWrongKind_Throws()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuite.Services.NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
+
+            Assert.Throws<InvalidDataException>(() => IdeaNestFileService.Load(path));
+        }
+        finally { File.Delete(path); }
+    }
+
+    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+
+    [Fact]
+    public void Save_ExistingFile_CreatesBakWithPreviousContent()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            var first  = new Workspace { WorkspaceName = "FirstName", Ideas = new() };
+            var second = new Workspace { WorkspaceName = "SecondName", Ideas = new() };
+            IdeaNestFileService.Save(path, first);
+            IdeaNestFileService.Save(path, second);
+
+            var bakPath = path + ".bak";
+            Assert.True(File.Exists(bakPath));
+            Assert.Contains("FirstName", File.ReadAllText(bakPath));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_NestSuitePath_ExistingFile_CreatesBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            var first  = new Workspace { WorkspaceName = "FirstName", Ideas = new() };
+            var second = new Workspace { WorkspaceName = "SecondName", Ideas = new() };
+            IdeaNestFileService.Save(path, first);
+            IdeaNestFileService.Save(path, second);
+
+            var bakPath = path + ".bak";
+            Assert.True(File.Exists(bakPath));
+            var bakContent = File.ReadAllText(bakPath);
+            Assert.Contains("FirstName", bakContent);
+            Assert.Contains("NestSuiteWorkspace", bakContent);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_NewFile_DoesNotCreateBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            var workspace = new Workspace { WorkspaceName = "OnlyOne", Ideas = new() };
+            IdeaNestFileService.Save(path, workspace);
+
+            Assert.False(File.Exists(path + ".bak"));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
     }
 }
