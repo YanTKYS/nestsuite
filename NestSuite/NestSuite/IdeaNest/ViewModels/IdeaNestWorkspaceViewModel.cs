@@ -197,6 +197,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
                 return "アーカイブ済みカードはありません。";
             if (HasActiveFilter)
                 return "検索語やタグを変更してください。";
+            if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
+                return "アーカイブ済みカードはありません。";
             return "アーカイブを含める表示に切り替えると、アーカイブ済みカードが見られます。";
         }
     }

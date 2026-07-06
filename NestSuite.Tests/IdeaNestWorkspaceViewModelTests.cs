@@ -100,6 +100,23 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Equal("アーカイブ済みカードはありません。", vm.EmptyStateMessage);
     }
 
+
+    [Fact]
+    public void ArchiveFilterMode_ArchivedOnly_WithActiveFilterEmptyStatePrioritizesFilterMessage()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Title = "保管", IsArchived = true, Tags = ["A"] }],
+        });
+
+        vm.ArchiveFilterMode = ArchiveFilterMode.ArchivedOnly;
+        vm.SearchText = "一致しない検索語";
+
+        Assert.True(vm.ShowEmptyState);
+        Assert.Equal("検索語やタグを変更してください。", vm.EmptyStateMessage);
+    }
+
     [Fact]
     public void MarkDirtyAndMarkSaved_UpdateHasChanges()
     {
