@@ -172,6 +172,21 @@ public class NestSuiteShellXamlTests
     }
 
     [Fact]
+    public void ShellXaml_ToolMenu_ContainsMigrationPackMenuItems()
+    {
+        // v2.15.3 SH: デバイス移行パックは新 Workspace ではなく Shell 補助機能としてツールメニューへ配置する。
+        var src = ReadShellXaml();
+        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
+        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
+        Assert.True(toolMenuStart >= 0 && viewMenuStart > toolMenuStart);
+        var toolMenuSection = src.Substring(toolMenuStart, viewMenuStart - toolMenuStart);
+        Assert.Contains("Shell.ExportMigrationPackMenuItem", toolMenuSection);
+        Assert.Contains("Shell.ImportMigrationPackMenuItem", toolMenuSection);
+        Assert.Contains("デバイス移行パックをエクスポート", toolMenuSection);
+        Assert.Contains("デバイス移行パックをインポート", toolMenuSection);
+    }
+
+    [Fact]
     public void ShellXaml_ToolMenu_NoLongerContainsPerNestLaunchItems()
     {
         // v2.15.1 SH: 各 Nest の新規作成・起動項目はツールメニューから削除し、

@@ -7,6 +7,18 @@
 
 ---
 
+## v2.15.3 — SH: デバイス移行パックのエクスポート・インポート
+
+- **ツールメニューに「デバイス移行パックをエクスポート...」「デバイス移行パックをインポート...」を追加した。** 横断検索と同じ Shell 補助機能であり、新しい Workspace は追加していない。
+- **デバイス移行パックのエクスポートを追加した。** 現在開いている保存済み Workspace ファイル（`.nestsuite` / `.notenest` / `.ideanest` / `.chatnest`）と、存在する `ui-settings.json` / `tempnest.json` / `nestsuite-session.json` を .NET 標準の `System.IO.Compression` で ZIP 化できる。ZIP には `manifest.json` を含め、Workspace は `workspaces/`、環境ファイルは `environment/` 配下に格納する。
+- **デバイス移行パックをインポートして安全に展開できるようにした。** `manifest.json` の存在、`format`、`formatVersion`、参照 entry の存在、想定拡張子を検証し、不正な ZIP は拒否する。
+- **ZIP Slip / パストラバーサル対策を追加した。** `../`、バックスラッシュ、ドライブレター、絶対パスなどを含む危険な entry を拒否し、展開先が選択フォルダ配下に収まることを確認してから展開する。
+- **元の絶対パスへ自動復元しない。** manifest の `originalPath` は参考情報として保持するだけで、インポート時は利用者が選んだ展開先配下へ展開する。
+- **既存ファイルを無確認で上書きしない。** 同名ファイルが存在する場合は ` (1)`、` (2)` のような連番名で保存する。環境ファイルも既存の `ui-settings.json` / `tempnest.json` / `session.json` を自動上書きせず、展開のみ行う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、`.notenest` / `.ideanest` / `.chatnest` / `tempnest.json` の保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
 ## v2.15.2 — IdeaNest アーカイブ表示フィルタ追加・視認性改善
 
 - **IdeaNest に「アーカイブだけ表示」を追加した。** 既存の「アーカイブを含まず表示（通常）」と「アーカイブを含めて表示」を維持しつつ、通常 / アーカイブ含む / アーカイブのみ の 3 状態を明確に選べるようにした。
