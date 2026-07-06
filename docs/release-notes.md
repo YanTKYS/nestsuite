@@ -7,6 +7,24 @@
 
 ---
 
+## v2.15.5 — BUG: NoteNest 本文折り返しと行番号表示の不整合修正
+
+- **NoteNest エディタの本文折り返しと行番号表示の不整合による現在行ハイライトずれを修正した。** 本文側だけが長い論理行を複数の表示行へ折り返し、行番号側との Y 位置差が行数に応じて累積する問題を防ぐため、本文と行番号の表示行構造を `1論理行 = 1表示行` に揃えた。
+- **本文エディタを折り返しなしにし、長い行は横スクロールで扱うようにした。** `EditorBox` を `TextWrapping=NoWrap`、`HorizontalScrollBarVisibility=Auto` に変更し、Markdown 表・長い URL・長い見出しなどは水平スクロールで読む動作にした。縦スクロールの行番号同期は維持し、横スクロールは行番号側へ同期しない。
+- **行番号表示、現在行ハイライト、マーカー行ハイライトを維持している。** v2.15.4 で追加した `EditorBox.GetRectFromCharacterIndex` による現在行ハイライトの実描画位置基準も維持している。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
+## v2.15.4 — BUG: NoteNest 現在行ハイライトの行位置ずれ修正
+
+- **NoteNest エディタで現在行ハイライトがカーソル行からずれる問題を修正した。** 行番号ガターの現在行強調を、行番号 TextBox 側の描画位置ではなく本文 `EditorBox` の `CaretIndex` → `GetLineIndexFromCharacterIndex` → `GetCharacterIndexFromLineIndex` → `GetRectFromCharacterIndex` で得た実描画位置に合わせるようにした。
+- **行が進むほどずれが大きくなる累積ずれを解消した。** 行番号側と本文側の微小な行高差が 100 行以上の本文で蓄積しないよう、現在行ハイライトの Top / Height は本文 TextBox の実表示矩形を基準にしている。
+- **行番号表示は維持している。** 行番号ガター、スクロール同期、マーカー行ハイライト、通常のテキスト選択操作は維持している。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
 ## v2.15.3 — SH: デバイス移行パックのエクスポート・インポート
 
 - **ツールメニューに「デバイス移行パックをエクスポート...」「デバイス移行パックをインポート...」を追加した。** 横断検索と同じ Shell 補助機能であり、新しい Workspace は追加していない。
