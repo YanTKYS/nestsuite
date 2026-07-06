@@ -86,10 +86,12 @@ public class MigrationPackServiceTests : IDisposable
         var zip = Path.Combine(_dir, Guid.NewGuid().ToString("N") + ".zip");
         var manifest = new MigrationPackManifest();
         manifest.Workspaces.Add(new MigrationPackWorkspaceEntry(entry, "NoteNest", "C:/old", "evil.nestsuite"));
-        using var archive = ZipFile.Open(zip, ZipArchiveMode.Create);
-        var manifestEntry = archive.CreateEntry("manifest.json");
-        using (var stream = manifestEntry.Open()) JsonSerializer.Serialize(stream, manifest);
-        archive.CreateEntry(entry.Replace('\\', '/'));
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            var manifestEntry = archive.CreateEntry("manifest.json");
+            using (var stream = manifestEntry.Open()) JsonSerializer.Serialize(stream, manifest);
+            archive.CreateEntry(entry.Replace('\\', '/'));
+        }
 
         Assert.Throws<InvalidDataException>(() => new MigrationPackService().Import(zip, Path.Combine(_dir, "out")));
     }
