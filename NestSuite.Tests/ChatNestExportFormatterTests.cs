@@ -158,6 +158,37 @@ public class ChatNestExportFormatterTests
         Assert.Contains("**補足**: 補足テキスト", result);
     }
 
+
+    [Fact]
+    public void BuildMarkdownGrouped_CombinesOnlyConsecutiveSameSpeakerMessages()
+    {
+        var messages = new[]
+        {
+            new Message { Speaker = Speaker.自分, Text = "A" },
+            new Message { Speaker = Speaker.自分, Text = "B" },
+            new Message { Speaker = Speaker.補足, Text = "C" },
+            new Message { Speaker = Speaker.自分, Text = "D" },
+        };
+
+        var result = ChatNestExportFormatter.BuildMarkdownGrouped(messages);
+
+        Assert.Equal("# ChatNest Export\n\n## 自分\nA\nB\n\n## 補足\nC\n\n## 自分\nD", result);
+    }
+
+    [Fact]
+    public void BuildNestSuiteGrouped_PreservesBlankLineBetweenHeadingAndGroupedText()
+    {
+        var messages = new[]
+        {
+            new Message { Speaker = Speaker.自分, Text = "A" },
+            new Message { Speaker = Speaker.自分, Text = "B" },
+        };
+
+        var result = ChatNestExportFormatter.BuildNestSuiteGrouped(messages);
+
+        Assert.Contains("\n\n## 自分\n\nA\nB", result);
+    }
+
     // ── backlog / release-notes ───────────────────────────────────────────
 
     // CH-14: 会話全体の整形コピー（プレーンテキスト）(TD-33: 完了済み項目は release-notes.md で管理)
