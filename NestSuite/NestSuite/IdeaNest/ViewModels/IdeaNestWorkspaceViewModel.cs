@@ -191,15 +191,14 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         get
         {
-            if (TotalCount == 0)
-                return "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。";
-            if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
-                return "アーカイブ済みカードはありません。";
-            if (HasActiveFilter)
-                return "検索語やタグを変更してください。";
-            if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
-                return "アーカイブ済みカードはありません。";
-            return "アーカイブを含める表示に切り替えると、アーカイブ済みカードが見られます。";
+            var hasActiveFilter = HasActiveFilter;
+            return (TotalCount, hasActiveFilter, ArchiveFilterMode) switch
+            {
+                (0, _, _) => "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。",
+                (_, true, _) => "検索語やタグを変更してください。",
+                (_, _, ArchiveFilterMode.ArchivedOnly) => "アーカイブ済みカードはありません。",
+                _ => "アーカイブを含める表示に切り替えると、アーカイブ済みカードが見られます。",
+            };
         }
     }
 

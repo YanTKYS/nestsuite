@@ -114,6 +114,7 @@ public class IdeaNestWorkspaceViewModelTests
         vm.SearchText = "一致しない検索語";
 
         Assert.True(vm.ShowEmptyState);
+        Assert.True(vm.HasActiveFilter);
         Assert.Equal("検索語やタグを変更してください。", vm.EmptyStateMessage);
     }
 
