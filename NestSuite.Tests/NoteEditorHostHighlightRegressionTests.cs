@@ -374,4 +374,99 @@ public class NoteEditorHostHighlightRegressionTests
         }
         return relativePath;
     }
+    // ── 5. Current-line gutter highlight anchoring ───────────────────────────
+
+    [Fact]
+    public void EditorBox_DisablesWrappingAndUsesHorizontalScroll()
+    {
+        var editorBox = ReadNoteEditorHostTextBox("EditorBox");
+
+        Assert.Equal("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.Equal("Auto", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("Auto", editorBox.Attribute("VerticalScrollBarVisibility")?.Value);
+    }
+
+    [Fact]
+    public void LineNumberGutter_ReplacesLineNumberTextBox()
+    {
+        var xaml = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
+
+        Assert.Null(FindNamedElement(xaml, "LineNumberBox"));
+        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutter"));
+        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutterCanvas"));
+    }
+
+    [Fact]
+    public void LineNumberGutter_UsesEditorVisibleLinesAndRenderedRectangles()
+    {
+        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateLineNumberGutter");
+
+        Assert.Contains("EditorBox.GetFirstVisibleLineIndex()", method);
+        Assert.Contains("EditorBox.GetLastVisibleLineIndex()", method);
+        Assert.Contains("EditorBox.GetRectFromCharacterIndex(charIndex)", method);
+        Assert.Contains("LineNumberGutterCanvas.Children.Add(highlight)", method);
+        Assert.Contains("LineNumberGutterCanvas.Children.Add(number)", method);
+    }
+
+    [Fact]
+    public void LineNumberGutter_DoesNotUseLegacyLineNumberTextBoxOrFixedLineHeight()
+    {
+        var source = ReadNoteEditorHostSource();
+
+        Assert.DoesNotContain("LineNumberBox", source);
+        Assert.DoesNotContain("_lineNumberScrollViewer", source);
+        Assert.DoesNotContain("ScrollToVerticalOffset", source);
+        Assert.DoesNotContain("FontSize +", source);
+        Assert.DoesNotContain("UpdateCurrentLineHighlight", source);
+    }
+
+    private static XElement ReadNoteEditorHostTextBox(string name)
+    {
+        var xaml = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
+        var textBox = FindNamedElement(xaml, name);
+
+        Assert.NotNull(textBox);
+        Assert.Equal("TextBox", textBox.Name.LocalName);
+        return textBox;
+    }
+
+    private static XElement? FindNamedElement(XContainer document, string name)
+    {
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        return document
+            .Descendants()
+            .SingleOrDefault(element => element.Attribute(x + "Name")?.Value == name);
+    }
+
+    private static string ReadNoteEditorHostSource()
+    {
+        var path = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
+                "NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml.cs"));
+        return File.ReadAllText(path);
+    }
+
+    private static string ExtractMethod(string source, string methodName)
+    {
+        var start = source.IndexOf($"private void {methodName}()", StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Method {methodName} was not found.");
+
+        var openBrace = source.IndexOf('{', start);
+        Assert.True(openBrace >= 0, $"Method {methodName} has no opening brace.");
+
+        var depth = 0;
+        for (var i = openBrace; i < source.Length; i++)
+        {
+            if (source[i] == '{') depth++;
+            else if (source[i] == '}')
+            {
+                depth--;
+                if (depth == 0)
+                    return source[start..(i + 1)];
+            }
+        }
+
+        throw new InvalidOperationException($"Method {methodName} has no closing brace.");
+    }
+
 }

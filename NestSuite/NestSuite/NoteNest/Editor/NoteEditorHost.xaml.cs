@@ -12,7 +12,6 @@ namespace NestSuite.NoteNest.Editor;
 public partial class NoteEditorHost : UserControl
 {
     private ScrollViewer? _editorScrollViewer;
-    private ScrollViewer? _lineNumberScrollViewer;
     private int  _completionLinkStart     = -1;
     private bool _suppressCompletionUpdate;
     private bool _editorEventsAttached;
@@ -38,6 +37,8 @@ public partial class NoteEditorHost : UserControl
         DataContextChanged  += NoteEditorHost_DataContextChanged;
         MarkerHighlightCanvas.SizeChanged += (_, _) =>
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
+        LineNumberGutterCanvas.SizeChanged += (_, _) =>
+            Dispatcher.InvokeAsync(UpdateLineNumberGutter, DispatcherPriority.Render);
     }
 
     // ── Initialisation ────────────────────────────────────────────────────
@@ -47,8 +48,7 @@ public partial class NoteEditorHost : UserControl
         if (_editorEventsAttached) return;
         _editorEventsAttached = true;
 
-        _editorScrollViewer     = GetDescendant<ScrollViewer>(EditorBox);
-        _lineNumberScrollViewer = GetDescendant<ScrollViewer>(LineNumberBox);
+        _editorScrollViewer = GetDescendant<ScrollViewer>(EditorBox);
         if (_editorScrollViewer != null)
             _editorScrollViewer.ScrollChanged += EditorScrollViewer_ScrollChanged;
 
@@ -59,11 +59,12 @@ public partial class NoteEditorHost : UserControl
 
         EditorBox.PreviewKeyDown += EditorBox_PreviewKeyDown;
         EditorBox.LostFocus      += EditorBox_LostFocus;
+        EditorBox.SizeChanged    += EditorBox_SizeChanged;
 
         _lineLayout = new TextBoxLineLayoutAdapter(EditorBox);
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         ThemeService.ThemeChanged += OnThemeServiceThemeChanged;
-        UpdateCurrentLineHighlight();
+        UpdateLineNumberGutter();
         UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
@@ -73,7 +74,7 @@ public partial class NoteEditorHost : UserControl
     {
         if (IsVisible)
         {
-            UpdateCurrentLineHighlight();
+            UpdateLineNumberGutter();
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         }
         else
@@ -84,7 +85,7 @@ public partial class NoteEditorHost : UserControl
 
     private void Editor_SelectionChanged(object? sender, EventArgs e)
     {
-        UpdateCurrentLineHighlight();
+        UpdateLineNumberGutter();
         UpdateStatusBar();
         if (!_suppressCompletionUpdate) UpdateCompletion();
     }
@@ -104,13 +105,14 @@ public partial class NoteEditorHost : UserControl
         }
         EditorBox.PreviewKeyDown -= EditorBox_PreviewKeyDown;
         EditorBox.LostFocus      -= EditorBox_LostFocus;
+        EditorBox.SizeChanged    -= EditorBox_SizeChanged;
         if (DataContext is INotifyPropertyChanged vm)
             vm.PropertyChanged -= OnViewModelPropertyChanged;
         ThemeService.ThemeChanged -= OnThemeServiceThemeChanged;
         CloseCompletion();
         MarkerHighlightCanvas.Children.Clear();
+        LineNumberGutterCanvas.Children.Clear();
         _editorScrollViewer = null;
-        _lineNumberScrollViewer = null;
     }
 
     private void EditorBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -121,7 +123,7 @@ public partial class NoteEditorHost : UserControl
         // 起こりうる。_editorEventsAttached = false は NoteEditorHost_Unloaded で設定される。
         if (!_editorEventsAttached) return;
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
-        UpdateCurrentLineHighlight();
+        UpdateLineNumberGutter();
         UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         if (!_suppressCompletionUpdate) UpdateCompletion();
@@ -129,67 +131,81 @@ public partial class NoteEditorHost : UserControl
 
     private void EditorScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
     {
-        _lineNumberScrollViewer?.ScrollToVerticalOffset(e.VerticalOffset);
-        Dispatcher.InvokeAsync(UpdateCurrentLineHighlight, DispatcherPriority.Render);
-        Dispatcher.InvokeAsync(UpdateMarkerHighlights,     DispatcherPriority.Render);
+        Dispatcher.InvokeAsync(UpdateLineNumberGutter, DispatcherPriority.Render);
+        Dispatcher.InvokeAsync(UpdateMarkerHighlights,   DispatcherPriority.Render);
     }
 
     // ── Layout-dependent UI (line numbers + marker highlights) ────────────
 
     private void UpdateLayoutDependentUI()
     {
-        UpdateLineNumbersFromLayout();
-        UpdateCurrentLineHighlight();
+        UpdateLineNumberGutter();
         UpdateMarkerHighlights();
     }
 
-    private void UpdateLineNumbersFromLayout()
-    {
-        var text = EditorBox.Text;
-        LineNumberBox.Text = _lineLayout != null
-            ? _lineLayout.BuildLineNumberText(text)
-            : string.Join("\n", Enumerable.Range(1, text.Count(c => c == '\n') + 1));
-    }
+    private void EditorBox_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
 
-    private void UpdateCurrentLineHighlight()
+    private void UpdateLineNumberGutter()
     {
-        if (Editor == null || LineNumberBox.LineCount == 0)
+        LineNumberGutterCanvas.Children.Clear();
+        if (Editor == null || !EditorBox.IsLoaded || EditorBox.ActualHeight <= 0) return;
+
+        int firstLine;
+        int lastLine;
+        try
         {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
+            firstLine = EditorBox.GetFirstVisibleLineIndex();
+            lastLine  = EditorBox.GetLastVisibleLineIndex();
+        }
+        catch
+        {
             return;
         }
-        var lineIndex = Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex);
-        if (lineIndex < 0) lineIndex = 0;
-        if (lineIndex >= LineNumberBox.LineCount)
+        if (firstLine < 0 || lastLine < firstLine) return;
+
+        var currentLine = Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex);
+        var gutterWidth = Math.Max(LineNumberGutterCanvas.ActualWidth, LineNumberGutter.ActualWidth);
+        if (gutterWidth <= 0) return;
+
+        for (var line = firstLine; line <= lastLine; line++)
         {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
-            return;
+            var charIndex = Editor.GetCharacterIndexFromLineIndex(line);
+            if (charIndex < 0) continue;
+
+            Rect rect;
+            try   { rect = EditorBox.GetRectFromCharacterIndex(charIndex); }
+            catch { continue; }
+            if (rect.IsEmpty || rect.Height <= 0) continue;
+            if (rect.Bottom <= 0 || rect.Top >= EditorBox.ActualHeight) continue;
+
+            if (line == currentLine)
+            {
+                var highlight = new Rectangle
+                {
+                    Width  = gutterWidth,
+                    Height = rect.Height,
+                };
+                highlight.SetResourceReference(Shape.FillProperty, "LineNumberCurrentLineBg");
+                Canvas.SetTop(highlight, rect.Top);
+                LineNumberGutterCanvas.Children.Add(highlight);
+            }
+
+            var number = new TextBlock
+            {
+                Text          = (line + 1).ToString(),
+                Width         = Math.Max(0, gutterWidth - 6),
+                Height        = rect.Height,
+                Padding       = new Thickness(8, 0, 0, 0),
+                TextAlignment = TextAlignment.Right,
+                FontFamily    = EditorBox.FontFamily,
+                FontSize      = EditorBox.FontSize,
+            };
+            number.SetResourceReference(TextBlock.ForegroundProperty, "LineNumberFg");
+            Canvas.SetLeft(number, 0);
+            Canvas.SetTop(number, rect.Top);
+            LineNumberGutterCanvas.Children.Add(number);
         }
-        var charIdx = LineNumberBox.GetCharacterIndexFromLineIndex(lineIndex);
-        if (charIdx < 0)
-        {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
-            return;
-        }
-        Rect rect;
-        try   { rect = LineNumberBox.GetRectFromCharacterIndex(charIdx); }
-        catch { CurrentLineHighlight.Visibility = Visibility.Collapsed; return; }
-        if (rect.IsEmpty || rect.Height <= 0)
-        {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
-            return;
-        }
-        if (rect.Bottom <= 0 || rect.Top >= LineNumberBox.ActualHeight)
-        {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
-            return;
-        }
-        Canvas.SetTop(CurrentLineHighlight, rect.Top);
-        CurrentLineHighlight.Height = rect.Height;
-        CurrentLineHighlight.Width  = LineHighlightCanvas.ActualWidth > 0
-            ? LineHighlightCanvas.ActualWidth
-            : LineNumberBox.ActualWidth;
-        CurrentLineHighlight.Visibility = Visibility.Visible;
     }
 
     // ── L14 / L15: Status bar — caret position, char count, line count ───
@@ -223,7 +239,7 @@ public partial class NoteEditorHost : UserControl
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == "EditorFontSize")
+        if (e.PropertyName == "EditorFontSize" || e.PropertyName == "EditorFontFamily")
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
     }
 

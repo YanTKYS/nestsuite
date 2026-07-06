@@ -40,7 +40,7 @@ public static class AutomationIds
     public static class Editor
     {
         public const string EditorBox      = "Editor.EditorBox";
-        public const string LineNumberBox  = "Editor.LineNumberBox";
+        public const string LineNumberGutterCanvas = "Editor.LineNumberGutterCanvas";
         public const string CompletionList = "Editor.CompletionList";
     }
 

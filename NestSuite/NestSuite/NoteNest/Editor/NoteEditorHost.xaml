@@ -14,34 +14,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Line number gutter with current-line highlight (always visible in NoteNest Workspace) -->
-            <Grid Grid.Column="0">
-                <!-- Gutter background -->
-                <Rectangle Fill="{DynamicResource LineNumberBg}"/>
-                <!-- Current line highlight layer (behind the text) -->
-                <Canvas x:Name="LineHighlightCanvas" IsHitTestVisible="False">
-                    <Rectangle x:Name="CurrentLineHighlight"
-                               Fill="{DynamicResource LineNumberCurrentLineBg}"
-                               Visibility="Collapsed"/>
-                </Canvas>
-                <!-- Line number text: Background=Transparent so the canvas layers show through -->
-                <TextBox x:Name="LineNumberBox"
-                         AutomationProperties.AutomationId="Editor.LineNumberBox"
-                         AutomationProperties.Name="Editor.LineNumberBox"
-                         IsReadOnly="True" IsTabStop="False"
-                         FontFamily="{Binding EditorFontFamily}"
-                         FontSize="{Binding EditorFontSize}"
-                         TextWrapping="NoWrap"
-                         VerticalScrollBarVisibility="Hidden"
-                         HorizontalScrollBarVisibility="Hidden"
-                         BorderThickness="0,0,1,0"
-                         BorderBrush="{DynamicResource PaneBorder}"
-                         Padding="8,12,6,12"
-                         Background="Transparent"
-                         Foreground="{DynamicResource LineNumberFg}"
-                         TextAlignment="Right"
-                         Text="1"
-                         MinWidth="36"/>
+            <!-- Line number gutter: drawn from EditorBox rendered line rectangles. -->
+            <Grid Grid.Column="0"
+                  x:Name="LineNumberGutter"
+                  MinWidth="48"
+                  Background="{DynamicResource LineNumberBg}">
+                <Border BorderBrush="{DynamicResource PaneBorder}"
+                        BorderThickness="0,0,1,0"/>
+                <Canvas x:Name="LineNumberGutterCanvas"
+                        AutomationProperties.AutomationId="Editor.LineNumberGutterCanvas"
+                        AutomationProperties.Name="Editor.LineNumberGutterCanvas"
+                        IsHitTestVisible="False"/>
             </Grid>
 
             <!-- Editor area: background layer (ZIndex 0), marker highlight layer (ZIndex 1),
@@ -83,9 +66,9 @@
                      Foreground="{DynamicResource AppFg}"
                      AcceptsReturn="True"
                      AcceptsTab="True"
-                     TextWrapping="Wrap"
+                     TextWrapping="NoWrap"
                      VerticalScrollBarVisibility="Auto"
-                     HorizontalScrollBarVisibility="Disabled"
+                     HorizontalScrollBarVisibility="Auto"
                      BorderThickness="0"
                      Padding="16,12"
                      VerticalContentAlignment="Top"
