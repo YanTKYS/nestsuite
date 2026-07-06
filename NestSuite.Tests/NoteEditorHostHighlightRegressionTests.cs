@@ -387,45 +387,55 @@ public class NoteEditorHostHighlightRegressionTests
     }
 
     [Fact]
-    public void LineNumberBoxAndEditorBox_DoNotHaveWrappingMismatch()
+    public void LineNumberGutter_ReplacesLineNumberTextBox()
     {
-        var lineNumberBox = ReadNoteEditorHostTextBox("LineNumberBox");
-        var editorBox     = ReadNoteEditorHostTextBox("EditorBox");
+        var xaml = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
 
-        Assert.Equal("NoWrap", lineNumberBox.Attribute("TextWrapping")?.Value);
-        Assert.Equal(lineNumberBox.Attribute("TextWrapping")?.Value, editorBox.Attribute("TextWrapping")?.Value);
+        Assert.Null(FindNamedElement(xaml, "LineNumberBox"));
+        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutter"));
+        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutterCanvas"));
     }
 
     [Fact]
-    public void CurrentLineHighlight_UsesEditorRenderedCaretLineCoordinates()
+    public void LineNumberGutter_UsesEditorVisibleLinesAndRenderedRectangles()
+    {
+        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateLineNumberGutter");
+
+        Assert.Contains("EditorBox.GetFirstVisibleLineIndex()", method);
+        Assert.Contains("EditorBox.GetLastVisibleLineIndex()", method);
+        Assert.Contains("EditorBox.GetRectFromCharacterIndex(charIndex)", method);
+        Assert.Contains("LineNumberGutterCanvas.Children.Add(highlight)", method);
+        Assert.Contains("LineNumberGutterCanvas.Children.Add(number)", method);
+    }
+
+    [Fact]
+    public void LineNumberGutter_DoesNotUseLegacyLineNumberTextBoxOrFixedLineHeight()
     {
         var source = ReadNoteEditorHostSource();
 
-        Assert.Contains("Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex)", source);
-        Assert.Contains("Editor.GetCharacterIndexFromLineIndex(lineIndex)", source);
-        Assert.Contains("EditorBox.GetRectFromCharacterIndex(lineStartIndex)", source);
-    }
-
-    [Fact]
-    public void CurrentLineHighlight_DoesNotUseLineNumberBoxCoordinatesForTopCalculation()
-    {
-        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateCurrentLineHighlight");
-
-        Assert.DoesNotContain("LineNumberBox.GetCharacterIndexFromLineIndex", method);
-        Assert.DoesNotContain("LineNumberBox.GetRectFromCharacterIndex", method);
-        Assert.DoesNotContain("FontSize +", method);
+        Assert.DoesNotContain("LineNumberBox", source);
+        Assert.DoesNotContain("_lineNumberScrollViewer", source);
+        Assert.DoesNotContain("ScrollToVerticalOffset", source);
+        Assert.DoesNotContain("FontSize +", source);
+        Assert.DoesNotContain("UpdateCurrentLineHighlight", source);
     }
 
     private static XElement ReadNoteEditorHostTextBox(string name)
     {
-        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-        var document = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
-        var textBox = document
-            .Descendants()
-            .SingleOrDefault(element => element.Name.LocalName == "TextBox" && element.Attribute(x + "Name")?.Value == name);
+        var xaml = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
+        var textBox = FindNamedElement(xaml, name);
 
         Assert.NotNull(textBox);
+        Assert.Equal("TextBox", textBox.Name.LocalName);
         return textBox;
+    }
+
+    private static XElement? FindNamedElement(XContainer document, string name)
+    {
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        return document
+            .Descendants()
+            .SingleOrDefault(element => element.Attribute(x + "Name")?.Value == name);
     }
 
     private static string ReadNoteEditorHostSource()

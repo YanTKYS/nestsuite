@@ -7,6 +7,15 @@
 
 ---
 
+## v2.15.6 — BUG: NoteNest 行番号ガターを本文描画基準へ再構成
+
+- **NoteNest の行番号ガターを別 TextBox 方式から本文 `EditorBox` の描画位置基準へ再構成した。** `LineNumberBox` TextBox とその内部 ScrollViewer 同期を廃止し、表示中の本文行を `EditorBox.GetFirstVisibleLineIndex()` / `GetLastVisibleLineIndex()` で列挙して、各行の `EditorBox.GetRectFromCharacterIndex(...)` の Y 座標へ行番号を Canvas 描画する方式へ変更した。
+- **現在行ハイライトがカーソル行から大きくずれる問題を根本修正した。** 行番号テキストと現在行背景を同じ `UpdateLineNumberGutter()` 内で同じ `EditorBox` 実描画矩形から描画するため、500 行以上の長文位置でも別 TextBox 由来の座標差が蓄積しない。
+- **行番号表示、現在行ハイライト、マーカー行ハイライトを維持している。** 本文側の TODO / FIXME / NOTE マーカーハイライトは既存の `MarkerHighlightCanvas` と `EditorBox` 実描画位置基準を維持し、本文は引き続き `TextWrapping=NoWrap` / 横スクロールで扱う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
 ## v2.15.5 — BUG: NoteNest 本文折り返しと行番号表示の不整合修正
 
 - **NoteNest エディタの本文折り返しと行番号表示の不整合による現在行ハイライトずれを修正した。** 本文側だけが長い論理行を複数の表示行へ折り返し、行番号側との Y 位置差が行数に応じて累積する問題を防ぐため、本文と行番号の表示行構造を `1論理行 = 1表示行` に揃えた。
