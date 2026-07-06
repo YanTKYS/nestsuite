@@ -138,6 +138,22 @@ public sealed class DialogService
     public string? SelectMarkdownExportPath(string defaultFileName) =>
         SelectSaveFilePath("Markdown (*.md)|*.md|テキスト (*.txt)|*.txt|すべてのファイル (*.*)|*.*", ".md", defaultFileName);
 
+    public string? SelectMigrationPackExportPath(string defaultFileName) =>
+        SelectSaveFilePath("デバイス移行パック (*.zip)|*.zip", ".zip", defaultFileName);
+
+    public string? SelectMigrationPackOpenPath()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "デバイス移行パック (*.zip)|*.zip|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".zip"
+        };
+        return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
+    }
+
+    public string? SelectMigrationPackImportFolder() =>
+        SelectFolderPath("デバイス移行パックの展開先フォルダを選択してください");
+
     public void ShowProjectInfo(string information) =>
         new ProjectInfoDialog(information) { Owner = _owner }.ShowDialog();
 
