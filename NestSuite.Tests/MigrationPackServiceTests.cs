@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using NestSuite;
 using NestSuite.Services;
+using Xunit;
 
 namespace NestSuite.Tests;
 
