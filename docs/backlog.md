@@ -67,6 +67,7 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 | SH-15 | タブのピン留め | コンテキストメニューから任意の通常タブを「ピン留め」し Temp タブの直後に固定配置する。`NestSuiteDocumentTab` に `IsPinned` フラグを追加。`session.json` への `IsPinned` 追加を伴うため実装前に `docs/architecture/schema-versioning-policy.md`（FM-1）の `session.json` 節を確認すること | C |
 | SH-19 | ヘルプメニューにキーボードショートカット一覧 | 「ヘルプ > キーボードショートカット」から Shell 共通と各 Workspace 固有のショートカットをダイアログまたはポップアップで一覧表示する | B |
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
+| SH-26 | Workspace 使い分けガイドのアプリ内導線 | Shell のメニューは「新規 NoteNest / IdeaNest / ChatNest」「ツール」など統合後の入口が増えている一方、用途別にどの Workspace を選ぶべきかは README / ユーザーガイド参照が前提になりやすい。ヘルプメニューまたは初回案内に、各 Workspace の用途・保存拡張子・代表操作への短い導線を置き、利用者の選択負荷を下げる | B |
 
 ---
 
@@ -92,6 +93,7 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 | L4 | エディタのワードラップ切替 | 編集メニューにトグルを追加しテキスト折り返し ON/OFF を切り替える。長い 1 行コンテンツを横スクロールで確認したい場合に有用 | B |
 | L8 | `.bak` 復元ガイドへの導線 | ヘルプメニュー等から `.bak` ファイルの復元方法を確認できるようにする。自動復元ではなく案内のみ | B |
 | L10 | 右ペイン（タスク・マーカー）内の絞り込み | タスク一覧・マーカー一覧が増えた時のフィルタ用 TextBox を設置する。L1（左ペイン絞り込み）と同系の体験を右ペインにも広げる | B |
+| L17 | NoteNest コンテキストメニューの整理 | ノートツリー・タスク・マーカーの右クリックメニューに移動、リンク挿入、Markdown コピー/保存、関連ノート操作などが蓄積している。機能削除ではなく、区切り・表示順・文言・ToolTip の見直しで「何をすればよいか」を把握しやすくする | B |
 
 ### 中難易度
 
@@ -127,6 +129,7 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 | ID-10 | カードのエクスポート（Markdown / CSV） | 表示中のカード一覧（フィルタ適用済み）をタイトル・本文・タグ・色・ピン留め状態を含む Markdown リストまたは CSV として出力する | B |
 | ID-12 | タグフィルタの複数選択（AND 絞り込み） | 現在は 1 タグのみ絞り込み可能。タグを複数選択して AND 絞り込みができるようにする | B |
 | ID-13 | IdeaNest 簡易統計 | 表示中カード数・ピン留め数・タグ数などをステータスバーまたはフッターに表示する。グラフ化しない。保存形式変更なし | C |
+| ID-15 | IdeaNest 操作導線の段階的な簡素化 | メニュー、検索・フィルタバー、色フィルタ、並び順、カードサイズ、高さ、ランダムプレビューなどの操作が 1 画面に集約されている。既存機能は維持しつつ、主要操作と補助操作の視覚的な強弱、説明文、メニュー配置を整理して初見時の判断負荷を下げる | B |
 
 ---
 
@@ -138,6 +141,7 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 |----|------|------|--------|
 | CH-11 | 長い会話の日付区切りヘッダー | タイムスタンプを参照し日付が変わる境目に薄い区切りラインとタイムスタンプヘッダーを挿入する。`.chatnest` の既存 `timestamp` フィールドを利用するためスキーマ変更不要 | B |
 | CH-12 | 発言者の追加・カスタマイズ | 現在の 4 発言者に加えユーザー定義の発言者を追加できるようにする。`.chatnest` スキーマへの影響を伴うため慎重に検討する | C |
+| CH-16 | ChatNest 操作の発見性整理 | 発言者選択、検索、コピー、タイムスタンプ表示、ドラッグ並び替え、コンテキストメニュー操作が追加されている。常時表示する操作・右クリックに寄せる操作・ヘルプで説明する操作を整理し、会話入力に集中しやすい導線にする | B |
 
 ---
 
@@ -178,6 +182,12 @@ TD-1〜TD-37 はすべて完了済み。詳細は `docs/release-notes.md` 参照
 | TD-43 | Workspace ディレクトリ構成の非対称性の整理 | NoteNest は `NestSuite/NoteNest/` に、他 3 Workspace は `NestSuite/NestSuite/{Name}/` に配置されている。統合経緯による非対称だが、開発者が構造を把握しにくい。ディレクトリ移動または配置理由の文書化で対応する | C |
 | TD-44 | docs/integration・docs/migration の棚卸し | 統合完了済みの計画文書（5 ファイル）が現行構成と乖離したまま残っている。「完了済み計画」の注記追加またはアーカイブディレクトリへの移動で、現行ドキュメントとの混同を防ぐ | A |
 | TD-45 | IdeaNest / ChatNest 保存フローの共通化 | Shell 側の `TrySaveXxxToPath` / `SaveXxxForTabId` が Workspace ごとに同構造で重複している（TD-34 設計文書で整理済み）。ジェネリックまたはヘルパーメソッドへの段階的統合を検討する。TD-34 の設計文書を前提とする | C |
+| TD-46 | 大型 XAML の領域別分割・索引化 | `NoteNestWorkspaceView.xaml`（896 行）、`ChatNestWorkspaceView.xaml`（693 行）、`IdeaNestWorkspaceView.xaml`（564 行）が、テンプレート・レイアウト・スタイルを 1 ファイルに抱えている。主要領域の責務コメント、ResourceDictionary 分割、または XAML 構成索引を整備し、UI 変更時の探索コストと誤編集リスクを下げる | B |
+| TD-47 | NestSuiteShellTests の責務別再編 | `NestSuiteShellTests.cs` が 1,618 行に達し、Shell 型境界・タブ管理・UI smoke 補助・backlog/release-notes 確認など複数責務が混在している。テスト分類ルール（backlog ID 名のクラスを作らない）を守りつつ、Shell 機能単位の既存/新規クラスへ段階的に移す | A |
+| TD-48 | 保存形式回帰テストの対象別分割 | `FormatSchemaRegressionTests.cs` が 833 行で NoteNest / IdeaNest / ChatNest / TempNest の保存形式確認を横断的に抱えている。スキーマ固定テストとサンプル JSON 回帰テストの所在を整理し、保存形式変更時に確認すべき範囲を短時間で把握できるようにする | B |
+| TD-49 | 現行 docs と完了済み計画 docs の判別性向上 | `docs/` 配下に guide / operations / development / integration / migration / design が混在し、統合経緯の文書と現行手順の文書を初見で判別しにくい。`docs/README.md` に「現行参照」「履歴・計画」「保留」の区分を追加し、必要に応じて各文書冒頭へ状態ラベルを付与する。TD-44 と関連 | A |
+| TD-50 | release-notes / test-scenarios の検索入口整備 | `docs/release-notes.md`（4,358 行）と `docs/testing/test-scenarios.md`（3,375 行）が長大化している。本文を履歴として維持しつつ、バージョン別・Workspace 別・backlog ID 別の索引または分割方針を追加し、過去経緯を調べる時間を短縮する | B |
+| TD-51 | NoteEditorHost 周辺の責務境界整理 | `NoteEditorHost.xaml.cs`（496 行）にエディタ UI、マーカー検出、ハイライト、スクロール/選択連携などが集まり、NoteNest 本体側の View / ViewModel との境界を把握しにくい。EditorAdapter 方針文書との対応表や小さな内部サービス抽出で、今後のエディタ変更時の認知負荷を下げる | B |
 
 ---
 
