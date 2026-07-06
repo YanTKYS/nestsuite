@@ -193,6 +193,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         {
             if (TotalCount == 0)
                 return "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。";
+            if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
+                return "アーカイブ済みカードはありません。";
             if (HasActiveFilter)
                 return "検索語やタグを変更してください。";
             if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
