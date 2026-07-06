@@ -158,7 +158,6 @@ public class ChatNestExportFormatterTests
         Assert.Contains("**補足**: 補足テキスト", result);
     }
 
-
     [Fact]
     public void BuildMarkdownGrouped_CombinesOnlyConsecutiveSameSpeakerMessages()
     {
@@ -170,7 +169,7 @@ public class ChatNestExportFormatterTests
             new Message { Speaker = Speaker.自分, Text = "D" },
         };
 
-        var result = ChatNestExportFormatter.BuildMarkdownGrouped(messages);
+        var result = NormalizeLineEndings(ChatNestExportFormatter.BuildMarkdownGrouped(messages));
 
         Assert.Equal("# ChatNest Export\n\n## 自分\nA\nB\n\n## 補足\nC\n\n## 自分\nD", result);
     }
@@ -184,7 +183,7 @@ public class ChatNestExportFormatterTests
             new Message { Speaker = Speaker.自分, Text = "B" },
         };
 
-        var result = ChatNestExportFormatter.BuildNestSuiteGrouped(messages);
+        var result = NormalizeLineEndings(ChatNestExportFormatter.BuildNestSuiteGrouped(messages));
 
         Assert.Contains("\n\n## 自分\n\nA\nB", result);
     }
@@ -222,6 +221,8 @@ public class ChatNestExportFormatterTests
     }
 
     // ── helpers ──────────────────────────────────────────────────────────
+
+    private static string NormalizeLineEndings(string value) => value.Replace("\r\n", "\n");
 
     private string ReadBacklog() => TestPaths.ReadBacklog();
 }
