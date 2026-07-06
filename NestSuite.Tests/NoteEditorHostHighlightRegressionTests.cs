@@ -377,6 +377,26 @@ public class NoteEditorHostHighlightRegressionTests
     // ── 5. Current-line gutter highlight anchoring ───────────────────────────
 
     [Fact]
+    public void EditorBox_DisablesWrappingAndUsesHorizontalScroll()
+    {
+        var editorBox = ReadNoteEditorHostTextBox("EditorBox");
+
+        Assert.Equal("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.Equal("Auto", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("Auto", editorBox.Attribute("VerticalScrollBarVisibility")?.Value);
+    }
+
+    [Fact]
+    public void LineNumberBoxAndEditorBox_DoNotHaveWrappingMismatch()
+    {
+        var lineNumberBox = ReadNoteEditorHostTextBox("LineNumberBox");
+        var editorBox     = ReadNoteEditorHostTextBox("EditorBox");
+
+        Assert.Equal("NoWrap", lineNumberBox.Attribute("TextWrapping")?.Value);
+        Assert.Equal(lineNumberBox.Attribute("TextWrapping")?.Value, editorBox.Attribute("TextWrapping")?.Value);
+    }
+
+    [Fact]
     public void CurrentLineHighlight_UsesEditorRenderedCaretLineCoordinates()
     {
         var source = ReadNoteEditorHostSource();
@@ -394,6 +414,18 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.DoesNotContain("LineNumberBox.GetCharacterIndexFromLineIndex", method);
         Assert.DoesNotContain("LineNumberBox.GetRectFromCharacterIndex", method);
         Assert.DoesNotContain("FontSize +", method);
+    }
+
+    private static XElement ReadNoteEditorHostTextBox(string name)
+    {
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        var document = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
+        var textBox = document
+            .Descendants()
+            .SingleOrDefault(element => element.Name.LocalName == "TextBox" && element.Attribute(x + "Name")?.Value == name);
+
+        Assert.NotNull(textBox);
+        return textBox;
     }
 
     private static string ReadNoteEditorHostSource()
