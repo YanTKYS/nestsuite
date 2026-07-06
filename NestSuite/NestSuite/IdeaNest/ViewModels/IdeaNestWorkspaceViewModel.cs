@@ -69,7 +69,11 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public string SearchText      { get => Filter.SearchText;    set => Filter.SearchText = value; }
     public string SelectedTag     { get => Filter.SelectedTag;   set => Filter.SelectedTag = value; }
     public string SelectedColor   { get => Filter.SelectedColor; set => Filter.SelectedColor = value; }
+    public ArchiveFilterMode ArchiveFilterMode { get => Filter.ArchiveFilterMode; set => Filter.ArchiveFilterMode = value; }
     public bool   ShowArchived    { get => Filter.ShowArchived;  set => Filter.ShowArchived = value; }
+    public bool   IsArchiveActiveOnly => Filter.IsArchiveActiveOnly;
+    public bool   IsArchiveIncludeArchived => Filter.IsArchiveIncludeArchived;
+    public bool   IsArchiveArchivedOnly => Filter.IsArchiveArchivedOnly;
     public bool   HasActiveFilter => Filter.HasActiveFilter;
 
     // ── Tag panel: forward to TagPanel sub-ViewModel ─────────────────────────
@@ -131,6 +135,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public ICommand DeleteIdeaCommand { get; }
     public ICommand TogglePinCommand { get; }
     public ICommand ToggleArchiveCommand { get; }
+    public ICommand SetArchiveFilterModeCommand { get; }
     public ICommand SelectTagCommand { get; }
     public ICommand ClearTagCommand { get; }
     public ICommand ClearSearchCommand { get; }
@@ -190,7 +195,9 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
                 return "右下の「＋」ボタン (または Ctrl+Shift+N) から最初のアイデアを追加できます。";
             if (HasActiveFilter)
                 return "検索語やタグを変更してください。";
-            return "「アーカイブを表示」を有効にすると、アーカイブ済みカードが見られます。";
+            if (ArchiveFilterMode == ArchiveFilterMode.ArchivedOnly)
+                return "アーカイブ済みカードはありません。";
+            return "アーカイブを含める表示に切り替えると、アーカイブ済みカードが見られます。";
         }
     }
 
@@ -222,6 +229,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         DeleteIdeaCommand      = new IdeaNestRelayCommand(p => DeleteIdea(p as IdeaCardViewModel));
         TogglePinCommand       = new IdeaNestRelayCommand(p => TogglePin(p as IdeaCardViewModel));
         ToggleArchiveCommand   = new IdeaNestRelayCommand(p => ToggleArchive(p as IdeaCardViewModel));
+        SetArchiveFilterModeCommand = new IdeaNestRelayCommand(p => SetArchiveFilterMode(p));
         SelectTagCommand       = new IdeaNestRelayCommand(p => TagPanel.SelectTag(p as string ?? string.Empty));
         ClearTagCommand        = new IdeaNestRelayCommand(_ => SelectedTag = string.Empty);
         ClearSearchCommand     = new IdeaNestRelayCommand(_ => SearchText = string.Empty);
@@ -342,6 +350,20 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         if (card == null) return;
         _cardOps.TogglePin(card);
+    }
+
+    private void SetArchiveFilterMode(object? parameter)
+    {
+        if (parameter is ArchiveFilterMode mode)
+        {
+            ArchiveFilterMode = mode;
+            return;
+        }
+
+        if (parameter is string text && Enum.TryParse(text, ignoreCase: false, out ArchiveFilterMode parsed))
+        {
+            ArchiveFilterMode = parsed;
+        }
     }
 
     private void ToggleArchive(IdeaCardViewModel? card)

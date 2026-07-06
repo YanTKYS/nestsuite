@@ -119,6 +119,25 @@ public class IdeaNestHoverFocusTests
         Assert.Equal(5, vm.BodyPreviewMaxLines);
     }
 
+
+    [Fact]
+    public void WorkspaceXaml_ArchiveFilterModeAndArchivedBadgeAreVisible()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "NestSuite.Tests.csproj")))
+            dir = dir.Parent;
+
+        Assert.NotNull(dir);
+        var xaml = File.ReadAllText(Path.Combine(dir!.Parent!.FullName, "NestSuite", "NestSuite", "IdeaNest", "Views", "IdeaNestWorkspaceView.xaml"));
+
+        Assert.Contains("CommandParameter=\"ActiveOnly\"", xaml);
+        Assert.Contains("CommandParameter=\"IncludeArchived\"", xaml);
+        Assert.Contains("CommandParameter=\"ArchivedOnly\"", xaml);
+        Assert.Contains("アーカイブのみ", xaml);
+        Assert.Contains("Text=\"アーカイブ\"", xaml);
+        Assert.Contains("Binding IsArchived", xaml);
+    }
+
     // ── 既存コマンドの回帰 ────────────────────────────────────────────────────
 
     [Fact]

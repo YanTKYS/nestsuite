@@ -43,6 +43,80 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Empty(saved.Settings.SearchText);
     }
 
+
+    [Fact]
+    public void ArchiveFilterMode_FiltersActiveIncludeAndArchivedOnly()
+    {
+        var cards = new[]
+        {
+            new IdeaCardViewModel(new Idea { Title = "通常", IsArchived = false, Tags = ["A"] }),
+            new IdeaCardViewModel(new Idea { Title = "保管", IsArchived = true, Tags = ["A"] }),
+        };
+        var filter = new FilterViewModel(() => { }, () => { });
+
+        Assert.Equal(["通常"], filter.Apply(cards).Select(c => c.Title));
+
+        filter.ArchiveFilterMode = ArchiveFilterMode.IncludeArchived;
+        Assert.Equal(["通常", "保管"], filter.Apply(cards).Select(c => c.Title));
+
+        filter.ArchiveFilterMode = ArchiveFilterMode.ArchivedOnly;
+        Assert.Equal(["保管"], filter.Apply(cards).Select(c => c.Title));
+    }
+
+    [Fact]
+    public void ArchiveFilterMode_ArchivedOnly_ComposesWithTagAndSearchFilters()
+    {
+        var cards = new[]
+        {
+            new IdeaCardViewModel(new Idea { Title = "通常 alpha", IsArchived = false, Tags = ["A"] }),
+            new IdeaCardViewModel(new Idea { Title = "保管 alpha", IsArchived = true, Tags = ["A"] }),
+            new IdeaCardViewModel(new Idea { Title = "保管 beta", IsArchived = true, Tags = ["B"] }),
+        };
+        var filter = new FilterViewModel(() => { }, () => { })
+        {
+            ArchiveFilterMode = ArchiveFilterMode.ArchivedOnly,
+            SelectedTag = "A",
+            SearchText = "alpha",
+        };
+
+        var visible = filter.Apply(cards).ToList();
+
+        Assert.Single(visible);
+        Assert.Equal("保管 alpha", visible[0].Title);
+    }
+
+    [Fact]
+    public void ArchiveFilterMode_ArchivedOnly_EmptyStateUsesArchiveMessage()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Title = "通常", IsArchived = false }],
+        });
+
+        vm.ArchiveFilterMode = ArchiveFilterMode.ArchivedOnly;
+
+        Assert.True(vm.ShowEmptyState);
+        Assert.Equal("アーカイブ済みカードはありません。", vm.EmptyStateMessage);
+    }
+
+
+    [Fact]
+    public void ArchiveFilterMode_ArchivedOnly_WithActiveFilterEmptyStatePrioritizesFilterMessage()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Title = "保管", IsArchived = true, Tags = ["A"] }],
+        });
+
+        vm.ArchiveFilterMode = ArchiveFilterMode.ArchivedOnly;
+        vm.SearchText = "一致しない検索語";
+
+        Assert.True(vm.ShowEmptyState);
+        Assert.Equal("検索語やタグを変更してください。", vm.EmptyStateMessage);
+    }
+
     [Fact]
     public void MarkDirtyAndMarkSaved_UpdateHasChanges()
     {
