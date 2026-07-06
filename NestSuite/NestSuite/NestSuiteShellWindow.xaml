@@ -70,6 +70,15 @@
                           AutomationProperties.Name="Shell.CrossSearchMenuItem"
                           Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}"
                           InputGestureText="Ctrl+Shift+F"/>
+                <Separator/>
+                <MenuItem Header="デバイス移行パックをエクスポート(_E)..."
+                          AutomationProperties.AutomationId="Shell.ExportMigrationPackMenuItem"
+                          AutomationProperties.Name="Shell.ExportMigrationPackMenuItem"
+                          Click="MenuExportMigrationPack_Click"/>
+                <MenuItem Header="デバイス移行パックをインポート(_I)..."
+                          AutomationProperties.AutomationId="Shell.ImportMigrationPackMenuItem"
+                          AutomationProperties.Name="Shell.ImportMigrationPackMenuItem"
+                          Click="MenuImportMigrationPack_Click"/>
             </MenuItem>
             <MenuItem Header="表示(_V)">
                 <MenuItem Header="テーマ(_T)">
