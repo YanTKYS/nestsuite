@@ -81,27 +81,10 @@ public static class ChatNestExportFormatter
     /// </summary>
     public static string BuildNestSuiteGrouped(IEnumerable<Message> messages)
     {
-        var list = messages.ToList();
-        if (list.Count == 0) return string.Empty;
-        var sb = new StringBuilder();
-        sb.AppendLine($"[NOTE] ChatNestからの転記: {DateTime.Now:yyyy-MM-dd HH:mm}");
-        int i = 0;
-        while (i < list.Count)
-        {
-            var speaker = list[i].Speaker;
-            var groupTexts = new List<string>();
-            while (i < list.Count && list[i].Speaker == speaker)
-            {
-                groupTexts.Add(list[i].Text);
-                i++;
-            }
-            sb.AppendLine();
-            sb.AppendLine($"## {speaker}");
-            sb.AppendLine();
-            sb.Append(string.Join(Environment.NewLine, groupTexts));
-            sb.AppendLine();
-        }
-        return sb.ToString().TrimEnd();
+        return BuildGroupedConversation(
+            messages,
+            header: $"[NOTE] ChatNestからの転記: {DateTime.Now:yyyy-MM-dd HH:mm}",
+            includeBlankLineAfterHeading: true);
     }
 
     /// <summary>
@@ -110,25 +93,58 @@ public static class ChatNestExportFormatter
     /// </summary>
     public static string BuildMarkdownGrouped(IEnumerable<Message> messages)
     {
-        var list = messages.ToList();
-        if (list.Count == 0) return string.Empty;
+        return BuildGroupedConversation(
+            messages,
+            header: "# ChatNest Export",
+            includeBlankLineAfterHeading: false);
+    }
+
+    private static string BuildGroupedConversation(
+        IEnumerable<Message> messages,
+        string header,
+        bool includeBlankLineAfterHeading)
+    {
+        var groups = BuildConsecutiveSpeakerGroups(messages).ToList();
+        if (groups.Count == 0) return string.Empty;
+
         var sb = new StringBuilder();
-        sb.AppendLine("# ChatNest Export");
-        int i = 0;
-        while (i < list.Count)
+        sb.AppendLine(header);
+        foreach (var group in groups)
         {
-            var speaker = list[i].Speaker;
-            var groupTexts = new List<string>();
-            while (i < list.Count && list[i].Speaker == speaker)
-            {
-                groupTexts.Add(list[i].Text);
-                i++;
-            }
             sb.AppendLine();
-            sb.AppendLine($"## {speaker}");
-            sb.Append(string.Join(Environment.NewLine, groupTexts));
+            sb.AppendLine($"## {group.Speaker}");
+            if (includeBlankLineAfterHeading) sb.AppendLine();
+            sb.Append(string.Join(Environment.NewLine, group.Texts));
             sb.AppendLine();
         }
         return sb.ToString().TrimEnd();
+    }
+
+    private static IEnumerable<SpeakerMessageGroup> BuildConsecutiveSpeakerGroups(IEnumerable<Message> messages)
+    {
+        SpeakerMessageGroup? currentGroup = null;
+        foreach (var message in messages)
+        {
+            if (currentGroup == null || currentGroup.Speaker != message.Speaker)
+            {
+                if (currentGroup != null) yield return currentGroup;
+                currentGroup = new SpeakerMessageGroup(message.Speaker);
+            }
+            currentGroup.Texts.Add(message.Text);
+        }
+
+        if (currentGroup != null) yield return currentGroup;
+    }
+
+    private sealed class SpeakerMessageGroup
+    {
+        public SpeakerMessageGroup(Speaker speaker)
+        {
+            Speaker = speaker;
+        }
+
+        public Speaker Speaker { get; }
+
+        public List<string> Texts { get; } = new();
     }
 }
