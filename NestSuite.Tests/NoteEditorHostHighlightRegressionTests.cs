@@ -374,4 +374,57 @@ public class NoteEditorHostHighlightRegressionTests
         }
         return relativePath;
     }
+    // ── 5. Current-line gutter highlight anchoring ───────────────────────────
+
+    [Fact]
+    public void CurrentLineHighlight_UsesEditorRenderedCaretLineCoordinates()
+    {
+        var source = ReadNoteEditorHostSource();
+
+        Assert.Contains("Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex)", source);
+        Assert.Contains("Editor.GetCharacterIndexFromLineIndex(lineIndex)", source);
+        Assert.Contains("EditorBox.GetRectFromCharacterIndex(lineStartIndex)", source);
+    }
+
+    [Fact]
+    public void CurrentLineHighlight_DoesNotUseLineNumberBoxCoordinatesForTopCalculation()
+    {
+        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateCurrentLineHighlight");
+
+        Assert.DoesNotContain("LineNumberBox.GetCharacterIndexFromLineIndex", method);
+        Assert.DoesNotContain("LineNumberBox.GetRectFromCharacterIndex", method);
+        Assert.DoesNotContain("FontSize +", method);
+    }
+
+    private static string ReadNoteEditorHostSource()
+    {
+        var path = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
+                "NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml.cs"));
+        return File.ReadAllText(path);
+    }
+
+    private static string ExtractMethod(string source, string methodName)
+    {
+        var start = source.IndexOf($"private void {methodName}()", StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Method {methodName} was not found.");
+
+        var openBrace = source.IndexOf('{', start);
+        Assert.True(openBrace >= 0, $"Method {methodName} has no opening brace.");
+
+        var depth = 0;
+        for (var i = openBrace; i < source.Length; i++)
+        {
+            if (source[i] == '{') depth++;
+            else if (source[i] == '}')
+            {
+                depth--;
+                if (depth == 0)
+                    return source[start..(i + 1)];
+            }
+        }
+
+        throw new InvalidOperationException($"Method {methodName} has no closing brace.");
+    }
+
 }

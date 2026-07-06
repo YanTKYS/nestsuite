@@ -158,32 +158,35 @@ public partial class NoteEditorHost : UserControl
             CurrentLineHighlight.Visibility = Visibility.Collapsed;
             return;
         }
+
+        // v2.15.4 BUG: The gutter highlight must be anchored to the editor
+        // TextBox's own rendered caret line.  Using LineNumberBox coordinates
+        // makes any small font/layout metric difference accumulate over long
+        // documents (for example line 118 highlighting line 112).
         var lineIndex = Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex);
         if (lineIndex < 0) lineIndex = 0;
-        if (lineIndex >= LineNumberBox.LineCount)
+
+        var lineStartIndex = Editor.GetCharacterIndexFromLineIndex(lineIndex);
+        if (lineStartIndex < 0)
         {
             CurrentLineHighlight.Visibility = Visibility.Collapsed;
             return;
         }
-        var charIdx = LineNumberBox.GetCharacterIndexFromLineIndex(lineIndex);
-        if (charIdx < 0)
-        {
-            CurrentLineHighlight.Visibility = Visibility.Collapsed;
-            return;
-        }
+
         Rect rect;
-        try   { rect = LineNumberBox.GetRectFromCharacterIndex(charIdx); }
+        try   { rect = EditorBox.GetRectFromCharacterIndex(lineStartIndex); }
         catch { CurrentLineHighlight.Visibility = Visibility.Collapsed; return; }
         if (rect.IsEmpty || rect.Height <= 0)
         {
             CurrentLineHighlight.Visibility = Visibility.Collapsed;
             return;
         }
-        if (rect.Bottom <= 0 || rect.Top >= LineNumberBox.ActualHeight)
+        if (rect.Bottom <= 0 || rect.Top >= EditorBox.ActualHeight)
         {
             CurrentLineHighlight.Visibility = Visibility.Collapsed;
             return;
         }
+
         Canvas.SetTop(CurrentLineHighlight, rect.Top);
         CurrentLineHighlight.Height = rect.Height;
         CurrentLineHighlight.Width  = LineHighlightCanvas.ActualWidth > 0
