@@ -38,7 +38,17 @@
                           Command="{Binding RandomPreviewCommand}" />
             </MenuItem>
             <MenuItem Header="表示(_V)">
-                <MenuItem Header="アーカイブを表示" IsCheckable="True" IsChecked="{Binding ShowArchived, Mode=TwoWay}" />
+                <MenuItem Header="アーカイブ表示(_A)">
+                    <MenuItem Header="通常" IsCheckable="True"
+                              IsChecked="{Binding IsArchiveActiveOnly, Mode=OneWay}"
+                              Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="ActiveOnly" />
+                    <MenuItem Header="アーカイブ含む" IsCheckable="True"
+                              IsChecked="{Binding IsArchiveIncludeArchived, Mode=OneWay}"
+                              Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="IncludeArchived" />
+                    <MenuItem Header="アーカイブのみ" IsCheckable="True"
+                              IsChecked="{Binding IsArchiveArchivedOnly, Mode=OneWay}"
+                              Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="ArchivedOnly" />
+                </MenuItem>
                 <MenuItem Header="タグパネル" IsCheckable="True" IsChecked="{Binding IsTagPanelOpen, Mode=TwoWay}" />
                 <Separator />
                 <MenuItem Header="カードサイズ(_Z)">
@@ -133,11 +143,23 @@
                                Foreground="{DynamicResource IdeaChipForegroundBrush}" FontSize="12" />
                 </Border>
 
-                <!-- Archive toggle -->
-                <CheckBox Grid.Column="4" Content="アーカイブを表示"
-                          IsChecked="{Binding ShowArchived, Mode=TwoWay}"
-                          Foreground="{DynamicResource IdeaTextSecondaryBrush}"
-                          VerticalAlignment="Center" Margin="14,0,0,0" />
+                <!-- Archive filter mode -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                    <TextBlock Text="表示:" Foreground="{DynamicResource IdeaTextSecondaryBrush}"
+                               FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <RadioButton Content="通常" GroupName="ArchiveFilterMode"
+                                 IsChecked="{Binding IsArchiveActiveOnly, Mode=OneWay}"
+                                 Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="ActiveOnly"
+                                 Foreground="{DynamicResource IdeaTextSecondaryBrush}" FontSize="12" Margin="4,0,0,0" />
+                    <RadioButton Content="アーカイブ含む" GroupName="ArchiveFilterMode"
+                                 IsChecked="{Binding IsArchiveIncludeArchived, Mode=OneWay}"
+                                 Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="IncludeArchived"
+                                 Foreground="{DynamicResource IdeaTextSecondaryBrush}" FontSize="12" Margin="8,0,0,0" />
+                    <RadioButton Content="アーカイブのみ" GroupName="ArchiveFilterMode"
+                                 IsChecked="{Binding IsArchiveArchivedOnly, Mode=OneWay}"
+                                 Command="{Binding SetArchiveFilterModeCommand}" CommandParameter="ArchivedOnly"
+                                 Foreground="{DynamicResource IdeaTextSecondaryBrush}" FontSize="12" Margin="8,0,0,0" />
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -378,8 +400,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Style="{StaticResource IdeaCardContainerStyle}"
-                                        Focusable="True"
+                                <Border Focusable="True"
                                         FocusVisualStyle="{x:Null}"
                                         Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         Height="{Binding DataContext.CardHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -389,6 +410,15 @@
                                         ClipToBounds="True"
                                         Background="{Binding BackgroundBrush, Converter={StaticResource IdeaHexToBrush}}"
                                         MouseLeftButtonUp="OnCardMouseLeftButtonUp">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource IdeaCardContainerStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsArchived}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.86" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
                                     <Border.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem Header="プレビュー(_V)"
@@ -417,6 +447,7 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="★" Foreground="#E0A800" FontSize="14"
                                                        Margin="0,0,6,0" VerticalAlignment="Center"
@@ -425,6 +456,14 @@
                                                        Foreground="{DynamicResource IdeaCardTextPrimaryBrush}"
                                                        FontWeight="SemiBold" FontSize="14"
                                                        TextTrimming="CharacterEllipsis" />
+                                            <Border Grid.Column="2" Visibility="{Binding IsArchived, Converter={StaticResource IdeaBoolToVis}}"
+                                                    Background="{DynamicResource IdeaChipBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource IdeaCardTextSecondaryBrush}"
+                                                    BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="8,0,0,0"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="アーカイブ" Foreground="{DynamicResource IdeaCardTextSecondaryBrush}"
+                                                           FontSize="10" FontWeight="SemiBold" />
+                                            </Border>
                                         </Grid>
 
                                         <!-- Footer: action buttons (visible & interactive on hover only) -->
