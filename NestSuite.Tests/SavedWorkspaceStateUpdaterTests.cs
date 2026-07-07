@@ -117,7 +117,7 @@ public class SavedWorkspaceStateUpdaterTests
     }
 
     [Fact]
-    public void SessionFormat_RemainsFilePathsAndActiveFilePathOnly_AfterSaveStateUpdate()
+    public void SessionFormat_IncludesPinnedTabStateButNotModifiedState_AfterSaveStateUpdate()
     {
         var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
         Assert.True(SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\chat\saved.chatnest", false, out var state));
@@ -127,7 +127,9 @@ public class SavedWorkspaceStateUpdaterTests
 
         Assert.Contains("\"FilePaths\"", json);
         Assert.Contains("\"ActiveFilePath\"", json);
-        Assert.DoesNotContain("WorkspaceKind", json);
+        Assert.Contains("\"Tabs\"", json);
+        Assert.Contains("WorkspaceKind", json);
+        Assert.Contains("IsPinned", json);
         Assert.DoesNotContain("IsModified", json);
     }
 
