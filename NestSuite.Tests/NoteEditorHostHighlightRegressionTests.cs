@@ -377,12 +377,13 @@ public class NoteEditorHostHighlightRegressionTests
     // ── 5. Current position status and no line-number gutter ─────────────────
 
     [Fact]
-    public void EditorBox_DisablesWrappingAndUsesHorizontalScroll()
+    public void EditorBox_EnablesWrappingAndDoesNotUseHorizontalScrollByDefault()
     {
         var editorBox = ReadNoteEditorHostTextBox("EditorBox");
 
-        Assert.Equal("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
-        Assert.Equal("Auto", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("Wrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.NotEqual("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.Equal("Disabled", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
         Assert.Equal("Auto", editorBox.Attribute("VerticalScrollBarVisibility")?.Value);
     }
 
