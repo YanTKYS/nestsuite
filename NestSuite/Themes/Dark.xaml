@@ -33,10 +33,6 @@
     <SolidColorBrush x:Key="SampleBannerBorder" Color="#A08800"/>
     <SolidColorBrush x:Key="SampleBannerFg"     Color="#FFD740"/>
 
-    <!-- line number gutter -->
-    <SolidColorBrush x:Key="LineNumberBg"            Color="#1E1E1E"/>
-    <SolidColorBrush x:Key="LineNumberFg"            Color="#555555"/>
-    <SolidColorBrush x:Key="LineNumberCurrentLineBg" Color="#252D3E"/>
 
     <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
     <!-- v2.9.6: Dark テーマで各マーカー種別が識別しやすいよう色を見直した。

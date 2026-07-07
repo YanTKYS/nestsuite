@@ -33,10 +33,6 @@
     <SolidColorBrush x:Key="SampleBannerBorder" Color="#D4B800"/>
     <SolidColorBrush x:Key="SampleBannerFg"     Color="#7A6000"/>
 
-    <!-- line number gutter -->
-    <SolidColorBrush x:Key="LineNumberBg"            Color="#F8F8F8"/>
-    <SolidColorBrush x:Key="LineNumberFg"            Color="#AAAAAA"/>
-    <SolidColorBrush x:Key="LineNumberCurrentLineBg" Color="#DDE8F5"/>
 
     <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
     <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#FFF2CC"/>

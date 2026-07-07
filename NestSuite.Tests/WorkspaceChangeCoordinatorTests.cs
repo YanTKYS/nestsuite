@@ -80,17 +80,14 @@ public class WorkspaceChangeCoordinatorTests
     }
 
     [Fact]
-    public void PersistentEditorSettingsAreDataChangesButViewSettingsAreNot()
+    public void PersistentEditorSettingsAreDataChanges()
     {
         var coordinator = CreateCoordinator();
         var changes = new List<WorkspaceChangeEventArgs>();
         coordinator.Changed += (_, change) => changes.Add(change);
 
-        _editor.ShowLineNumbers = true;
-        Assert.DoesNotContain(changes, change => change.IsDataChanged);
-        changes.Clear();
-
         _editor.FontSize = 18;
+
         Assert.Contains(changes, change => change.IsDataChanged);
     }
 

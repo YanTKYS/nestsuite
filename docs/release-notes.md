@@ -7,6 +7,26 @@
 
 ---
 
+## v2.16.1 — UX: NoteNest 本文折り返し表示の復元
+
+- **v2.16.0 で行番号表示を撤去したため、行番号同期対策として導入していた折り返しなし設定を解除した。** 行番号ガターとの同期崩れを避ける目的だった `NoWrap` 前提をやめ、本文表示を通常の文章入力向けに戻した。
+- **NoteNest 本文エディタを折り返しありに戻した。** `EditorBox` は `TextWrapping=Wrap` とし、長い行を本文エリア内で折り返して表示する。
+- **長い行を横スクロール前提にしない通常の文章入力へ戻した。** 水平スクロールバーは無効化し、縦スクロールを中心に読む動作へ戻した。
+- **行番号表示 / 行番号ガター / 行番号ハイライトは復活させていない。** v2.16.0 の行番号撤去方針は維持し、現在位置表示「現在位置: n行目 / m列目」も維持している。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
+## v2.16.0 — UX: NoteNest 行番号表示撤去・現在位置表示へ切替
+
+- **NoteNest の行番号表示を撤去した。** 本文エディタ左側の行番号ガター、行番号 Canvas、個別行番号 TextBlock 描画、現在行の行番号ハイライトを廃止し、行番号用の不自然な左余白が残らない構成にした。
+- **行番号の描画同期方式は継続しない判断とした。** 行番号の重なり・欠番・本文行との同期崩れが複数回発生し、修正方針が高さ・座標・実描画矩形・Clip 調整へ依存していたため、v2.16.0 では再修正ではなく安定した代替表示へ切り替えた。
+- **代替として現在位置表示（行 / 列）を追加した。** `CaretIndex` を基準に `GetLineIndexFromCharacterIndex` / `GetCharacterIndexFromLineIndex` で 1 始まりの行・列を算出し、エディタ下部ステータスバーに「現在位置: n行目 / m列目」と表示する。
+- **本文編集、マーカーハイライト、NoteLink、保存形式には影響しない。** 本文 TextBox、TODO / FIXME / NOTE / NoteLink の行ハイライト、Markdown 関連機能、フォントサイズ・フォント種類変更、保存・読込の既存動作は維持している。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
 ## v2.15.2 — BUG: NoteNest 行番号描画の重なり・同期崩れ修正
 
 - **NoteNest 行番号表示で行番号が重なる問題を修正した。** 本文 `EditorBox` の実描画矩形から得た行高さを行番号 `TextBlock` の `LineHeight` / `LineStackingStrategy` / `ClipToBounds` に反映し、隣接する 12 行目・13 行目などの番号描画が行枠外へはみ出して重ならないようにした。

@@ -374,50 +374,54 @@ public class NoteEditorHostHighlightRegressionTests
         }
         return relativePath;
     }
-    // ── 5. Current-line gutter highlight anchoring ───────────────────────────
+    // ── 5. Current position status and no line-number gutter ─────────────────
 
     [Fact]
-    public void EditorBox_DisablesWrappingAndUsesHorizontalScroll()
+    public void EditorBox_EnablesWrappingAndDoesNotUseHorizontalScrollByDefault()
     {
         var editorBox = ReadNoteEditorHostTextBox("EditorBox");
 
-        Assert.Equal("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
-        Assert.Equal("Auto", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("Wrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.NotEqual("NoWrap", editorBox.Attribute("TextWrapping")?.Value);
+        Assert.Equal("Disabled", editorBox.Attribute("HorizontalScrollBarVisibility")?.Value);
         Assert.Equal("Auto", editorBox.Attribute("VerticalScrollBarVisibility")?.Value);
     }
 
     [Fact]
-    public void LineNumberGutter_ReplacesLineNumberTextBox()
+    public void LineNumberGutter_IsRemovedAndStatusBarRemains()
     {
         var xaml = XDocument.Load(FindRepoFile(Path.Combine("NestSuite", "NestSuite", "NoteNest", "Editor", "NoteEditorHost.xaml")));
 
         Assert.Null(FindNamedElement(xaml, "LineNumberBox"));
-        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutter"));
-        Assert.NotNull(FindNamedElement(xaml, "LineNumberGutterCanvas"));
+        Assert.Null(FindNamedElement(xaml, "LineNumberGutter"));
+        Assert.Null(FindNamedElement(xaml, "LineNumberGutterCanvas"));
+        Assert.NotNull(FindNamedElement(xaml, "EditorStatusBar"));
+        Assert.Contains("現在位置: 1行目 / 1列目", xaml.ToString());
     }
 
     [Fact]
-    public void LineNumberGutter_UsesEditorVisibleLinesAndRenderedRectangles()
-    {
-        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateLineNumberGutter");
-
-        Assert.Contains("EditorBox.GetFirstVisibleLineIndex()", method);
-        Assert.Contains("EditorBox.GetLastVisibleLineIndex()", method);
-        Assert.Contains("EditorBox.GetRectFromCharacterIndex(charIndex)", method);
-        Assert.Contains("LineNumberGutterCanvas.Children.Add(highlight)", method);
-        Assert.Contains("LineNumberGutterCanvas.Children.Add(number)", method);
-    }
-
-    [Fact]
-    public void LineNumberGutter_DoesNotUseLegacyLineNumberTextBoxOrFixedLineHeight()
+    public void LineNumberDrawingSynchronization_IsRemoved()
     {
         var source = ReadNoteEditorHostSource();
 
-        Assert.DoesNotContain("LineNumberBox", source);
-        Assert.DoesNotContain("_lineNumberScrollViewer", source);
-        Assert.DoesNotContain("ScrollToVerticalOffset", source);
-        Assert.DoesNotContain("FontSize +", source);
-        Assert.DoesNotContain("UpdateCurrentLineHighlight", source);
+        Assert.DoesNotContain("UpdateLineNumberGutter", source);
+        Assert.DoesNotContain("GetFirstVisibleLineIndex", source);
+        Assert.DoesNotContain("GetLastVisibleLineIndex", source);
+        Assert.DoesNotContain("LineNumberGutterCanvas.Children.Add", source);
+        Assert.DoesNotContain("LineNumberCurrentLineBg", source);
+    }
+
+    [Fact]
+    public void CurrentPositionStatus_UsesCaretLineAndColumn()
+    {
+        var method = ExtractMethod(ReadNoteEditorHostSource(), "UpdateStatusBar");
+
+        Assert.Contains("Editor.CaretIndex", method);
+        Assert.Contains("Editor.GetLineIndexFromCharacterIndex(caretIndex)", method);
+        Assert.Contains("Editor.GetCharacterIndexFromLineIndex(lineIndex)", method);
+        Assert.Contains("現在位置:", method);
+        Assert.Contains("行目 /", method);
+        Assert.Contains("列目", method);
     }
 
     private static XElement ReadNoteEditorHostTextBox(string name)
