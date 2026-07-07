@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.2 — TD-62: Shell ファイルオープン経路の責務分割再点検
+
+- **TD-62 として Shell のファイルオープン経路を再点検した。** Open ダイアログ、起動引数、pipe、最近ファイル、session 復元で近接していたパス正規化・存在確認・WorkspaceKind 判定・既存タブ判定の責務を整理した。
+- **共通判定を `ShellFileOpenPlanner` に切り出した。** パス正規化、ファイル存在確認、WorkspaceKind 判定、既に開いている同一 WorkspaceKind タブの検出を UI 非依存の小さな helper に集約し、Shell 側は入口処理、通知、タブ追加、タブ選択を担当する構成にした。
+- **Open ダイアログ、起動引数、pipe、最近ファイルの入口で共通判定を利用するようにした。** 入口ごとのエラー文言や最近ファイル削除方針などの差分は Shell 側に残し、読込成功後のタブ登録・最近ファイル更新は既存の `RegisterLoadedTab` 経路を維持した。
+- **重複タブ判定と WorkspaceKind 判定の仕様を維持した。** 同じ WorkspaceKind かつ同じパスの既存タブは再利用し、WorkspaceKind が異なる同一パスは従来どおり別判定として扱う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.1 — UX: NoteNest 本文折り返し表示の復元
 
 - **v2.16.0 で行番号表示を撤去したため、行番号同期対策として導入していた折り返しなし設定を解除した。** 行番号ガターとの同期崩れを避ける目的だった `NoWrap` 前提をやめ、本文表示を通常の文章入力向けに戻した。
