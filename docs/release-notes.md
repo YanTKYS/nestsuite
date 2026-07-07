@@ -7,6 +7,14 @@
 
 ---
 
+## v2.15.2 — BUG: NoteNest 行番号描画の重なり・同期崩れ修正
+
+- **NoteNest 行番号表示で行番号が重なる問題を修正した。** 本文 `EditorBox` の実描画矩形から得た行高さを行番号 `TextBlock` の `LineHeight` / `LineStackingStrategy` / `ClipToBounds` に反映し、隣接する 12 行目・13 行目などの番号描画が行枠外へはみ出して重ならないようにした。
+- **行番号と本文行の同期を改善した。** 行番号は引き続き `EditorBox.GetFirstVisibleLineIndex()` / `GetLastVisibleLineIndex()` と `GetRectFromCharacterIndex(...)` による本文 TextBox の実レイアウト位置を基準に Canvas 描画し、本文側とは別の固定行高推定を使わない。
+- **スクロール・空行・フォントサイズ変更時の表示崩れを抑制した。** スクロール、本文サイズ変更、フォントサイズ / フォント種類変更時に行番号ガターを再描画し、空行・見出し・通常行・日本語本文が混在しても行番号の縦位置が本文行に追従する状態を維持した。
+- **行番号ハイライトは維持している。** 現在行の行番号背景は行番号テキストと同じ本文実描画矩形から描画し、ハイライトだけが別座標計算で行番号表示を崩さないようにした。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.15.6 — BUG: NoteNest 行番号ガターを本文描画基準へ再構成
 
 - **NoteNest の行番号ガターを別 TextBox 方式から本文 `EditorBox` の描画位置基準へ再構成した。** `LineNumberBox` TextBox とその内部 ScrollViewer 同期を廃止し、表示中の本文行を `EditorBox.GetFirstVisibleLineIndex()` / `GetLastVisibleLineIndex()` で列挙して、各行の `EditorBox.GetRectFromCharacterIndex(...)` の Y 座標へ行番号を Canvas 描画する方式へ変更した。
