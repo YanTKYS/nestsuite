@@ -39,6 +39,23 @@ public class SavedWorkspaceStateUpdaterTests
         Assert.Equal("💡 saved", state.UpdatedTab.TabHeaderText);
     }
 
+
+    [Fact]
+    public void TryCreate_SaveSuccess_PreservesPinnedState()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with
+        {
+            IsModified = true,
+            IsPinned = true
+        };
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\work\saved.notenest", false, out var state);
+
+        Assert.True(ok);
+        Assert.True(state.UpdatedTab.IsPinned);
+        Assert.StartsWith("📌 ", state.UpdatedTab.TabHeaderText);
+    }
+
     [Fact]
     public void TryCreate_SaveSuccess_ProvidesRecentFilePath()
     {

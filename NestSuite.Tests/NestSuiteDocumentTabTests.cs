@@ -143,6 +143,31 @@ public class NestSuiteDocumentTabTests
         Assert.NotEqual(tabA.Id, tabB.Id); // 別タブとして区別できる
     }
 
+
+    [Fact]
+    public void DocumentTab_PinnedTab_ShowsPinMarkAndMenuState()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\project.notenest") with { IsPinned = true };
+
+        Assert.True(tab.IsPinned);
+        Assert.True(tab.CanPin);
+        Assert.False(tab.ShowPinMenuItem);
+        Assert.True(tab.ShowUnpinMenuItem);
+        Assert.StartsWith("📌 ", tab.TabHeaderText);
+        Assert.Contains("ピン留め: 済み", tab.TooltipText);
+    }
+
+    [Fact]
+    public void DocumentTab_TempTab_CannotBePinnedFromUi()
+    {
+        var tab = NestSuiteTabFactory.CreateTempTab();
+
+        Assert.False(tab.IsPinned);
+        Assert.False(tab.CanPin);
+        Assert.False(tab.ShowPinMenuItem);
+        Assert.False(tab.ShowUnpinMenuItem);
+    }
+
     // ── NestSuiteTabFactory ─────────────────────────────────────────────
 
     [Fact]

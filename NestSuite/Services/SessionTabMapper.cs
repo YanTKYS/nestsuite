@@ -1,10 +1,10 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// セッション復元時に開く対象ファイルと Workspace 種別を表す。
-/// セッションファイル自体には従来どおり FilePath のみ保存する。
+/// セッション復元時に開く対象ファイル、Workspace 種別、ピン留め状態を表す。
+/// v2.16.3 SH-15: 新 session の Tabs[].IsPinned と旧 session の FilePaths を同じ復元対象へ写像する。
 /// </summary>
-public sealed record SessionRestoreTarget(string FilePath, NestSuiteWorkspaceKind WorkspaceKind);
+public sealed record SessionRestoreTarget(string FilePath, NestSuiteWorkspaceKind WorkspaceKind, bool IsPinned = false);
 
 /// <summary>
 /// v2.14.7 SH-31: セッション復元で復元対象にできなかったファイルとその理由。
@@ -27,6 +27,20 @@ public static class SessionTabMapper
         return true;
     }
 
+    public static bool TryCreateSessionTabState(NestSuiteDocumentTab tab, out NestSuiteSessionTabState state)
+    {
+        state = default!;
+        if (!IsSessionPersistable(tab)) return false;
+
+        state = new NestSuiteSessionTabState
+        {
+            FilePath = tab.FilePath!,
+            WorkspaceKind = tab.WorkspaceKind.ToString(),
+            IsPinned = tab.IsPinned,
+        };
+        return true;
+    }
+
     public static NestSuiteSessionState CreateSessionState(
         IEnumerable<NestSuiteDocumentTab> tabs,
         NestSuiteDocumentTab? selectedTab)
@@ -41,10 +55,17 @@ public static class SessionTabMapper
             ? selectedFilePath
             : null;
 
+        var tabStates = tabs
+            .Select(tab => TryCreateSessionTabState(tab, out var state) ? state : null)
+            .Where(state => state != null)
+            .Select(state => state!)
+            .ToList();
+
         return new NestSuiteSessionState
         {
             FilePaths = filePaths,
-            ActiveFilePath = activeFilePath
+            ActiveFilePath = activeFilePath,
+            Tabs = tabStates
         };
     }
 
@@ -52,7 +73,7 @@ public static class SessionTabMapper
         string filePath,
         out SessionRestoreTarget target,
         Func<string, bool>? fileExists = null) =>
-        TryCreateRestoreTarget(filePath, out target, out _, fileExists);
+        TryCreateRestoreTarget(filePath, isPinned: false, out target, out _, fileExists);
 
     /// <summary>
     /// v2.14.7 SH-31: 失敗理由つきの復元対象生成。
@@ -63,6 +84,14 @@ public static class SessionTabMapper
     /// </summary>
     public static bool TryCreateRestoreTarget(
         string filePath,
+        out SessionRestoreTarget target,
+        out WorkspaceKindDetectionFailure failure,
+        Func<string, bool>? fileExists = null) =>
+        TryCreateRestoreTarget(filePath, isPinned: false, out target, out failure, fileExists);
+
+    private static bool TryCreateRestoreTarget(
+        string filePath,
+        bool isPinned,
         out SessionRestoreTarget target,
         out WorkspaceKindDetectionFailure failure,
         Func<string, bool>? fileExists = null)
@@ -80,7 +109,7 @@ public static class SessionTabMapper
         }
         if (kind == NestSuiteWorkspaceKind.Temp) return false;
 
-        target = new SessionRestoreTarget(filePath, kind);
+        target = new SessionRestoreTarget(filePath, kind, isPinned);
         return true;
     }
 
@@ -100,12 +129,25 @@ public static class SessionTabMapper
     {
         var targets = new List<SessionRestoreTarget>();
         var failed = new List<SessionRestoreFailure>();
-        foreach (var filePath in state.FilePaths)
+        if (state.Tabs?.Count > 0)
         {
-            if (TryCreateRestoreTarget(filePath, out var target, out var failure, fileExists))
-                targets.Add(target);
-            else if (failure != WorkspaceKindDetectionFailure.None)
-                failed.Add(new SessionRestoreFailure(filePath, failure));
+            foreach (var tab in state.Tabs)
+            {
+                if (TryCreateRestoreTarget(tab.FilePath, tab.IsPinned, out var target, out var failure, fileExists))
+                    targets.Add(target);
+                else if (failure != WorkspaceKindDetectionFailure.None)
+                    failed.Add(new SessionRestoreFailure(tab.FilePath, failure));
+            }
+        }
+        else
+        {
+            foreach (var filePath in state.FilePaths)
+            {
+                if (TryCreateRestoreTarget(filePath, out var target, out var failure, fileExists))
+                    targets.Add(target);
+                else if (failure != WorkspaceKindDetectionFailure.None)
+                    failed.Add(new SessionRestoreFailure(filePath, failure));
+            }
         }
         failures = failed;
         return targets;

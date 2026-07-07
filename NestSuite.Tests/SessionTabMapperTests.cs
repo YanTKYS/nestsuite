@@ -135,7 +135,7 @@ public class SessionTabMapperTests
     }
 
     [Fact]
-    public void CreateSessionState_SessionJsonShape_RemainsFilePathsAndActiveFilePathOnly()
+    public void CreateSessionState_SessionJsonShape_IncludesTabsForPinnedState()
     {
         var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
         var state = SessionTabMapper.CreateSessionState([note], note);
@@ -144,7 +144,9 @@ public class SessionTabMapperTests
 
         Assert.Contains("\"FilePaths\"", json);
         Assert.Contains("\"ActiveFilePath\"", json);
-        Assert.DoesNotContain("WorkspaceKind", json);
+        Assert.Contains("\"Tabs\"", json);
+        Assert.Contains("\"WorkspaceKind\"", json);
+        Assert.Contains("\"IsPinned\"", json);
         Assert.DoesNotContain("IsModified", json);
     }
 
@@ -166,7 +168,7 @@ public class SessionTabMapperTests
     // ── session.json 形式不変 ─────────────────────────────────────────────
 
     [Fact]
-    public void SessionJson_HasOnlyFilePathsAndActiveFilePath()
+    public void SessionJson_AddsTabsButDoesNotPersistDetachedOrModifiedState()
     {
         var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
         var state = SessionTabMapper.CreateSessionState([note], note);
@@ -175,10 +177,11 @@ public class SessionTabMapperTests
 
         Assert.Contains("\"FilePaths\"", json);
         Assert.Contains("\"ActiveFilePath\"", json);
-        Assert.DoesNotContain("WorkspaceKind", json);
+        Assert.Contains("\"Tabs\"", json);
+        Assert.Contains("\"WorkspaceKind\"", json);
+        Assert.Contains("\"IsPinned\"", json);
         Assert.DoesNotContain("IsModified", json);
         Assert.DoesNotContain("IsDetached", json);
-        Assert.DoesNotContain("IsPinned", json);
     }
 
     [Fact]
@@ -195,6 +198,7 @@ public class SessionTabMapperTests
 
         Assert.Equal(state.FilePaths, restored.FilePaths);
         Assert.Equal(state.ActiveFilePath, restored.ActiveFilePath);
+        Assert.Empty(restored.Tabs);
     }
 
     // ── TempNest session 対象外 ───────────────────────────────────────────
@@ -331,6 +335,72 @@ public class SessionTabMapperTests
         var ok = SessionTabMapper.TryCreateSessionEntry(untitled, out _);
 
         Assert.False(ok);
+    }
+
+
+    // ── SH-15: タブピン留め session ─────────────────────────────────────
+
+    [Fact]
+    public void CreateSessionState_PersistsPinnedStateInTabs()
+    {
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest") with { IsPinned = true };
+        var chat = NestSuiteTabFactory.FromFilePath(@"C:\work\chat.chatnest");
+
+        var state = SessionTabMapper.CreateSessionState([note, chat], note);
+
+        Assert.Equal(2, state.Tabs.Count);
+        Assert.True(state.Tabs[0].IsPinned);
+        Assert.False(state.Tabs[1].IsPinned);
+        Assert.Equal("NoteNest", state.Tabs[0].WorkspaceKind);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_OldSessionWithoutTabs_TreatsPinnedAsFalse()
+    {
+        var state = new NestSuiteSessionState
+        {
+            FilePaths = [@"C:\work\note.notenest"]
+        };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        Assert.False(target.IsPinned);
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, target.WorkspaceKind);
+    }
+
+
+    [Fact]
+    public void SessionState_OldJsonWithoutTabs_DeserializesWithEmptyTabs()
+    {
+        const string json = """{"FilePaths":["C:\\work\\note.notenest"],"ActiveFilePath":"C:\\work\\note.notenest"}""";
+
+        var restored = JsonSerializer.Deserialize<NestSuiteSessionState>(json)!;
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(restored, _ => true));
+
+        Assert.Empty(restored.Tabs);
+        Assert.False(target.IsPinned);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_NewTabsShape_RestoresPinnedState()
+    {
+        var state = new NestSuiteSessionState
+        {
+            Tabs =
+            [
+                new NestSuiteSessionTabState
+                {
+                    FilePath = @"C:\work\note.notenest",
+                    WorkspaceKind = "NoteNest",
+                    IsPinned = true
+                }
+            ]
+        };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        Assert.True(target.IsPinned);
+        Assert.Equal(@"C:\work\note.notenest", target.FilePath);
     }
 
     // ── backlog / release-notes ───────────────────────────────────────────
