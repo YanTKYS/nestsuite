@@ -71,6 +71,25 @@ public sealed class TextBoxLineLayoutAdapter
         return sb.ToString();
     }
 
+    // Validates that rendered line-number Y positions remain one-to-one and non-overlapping.
+    // The production gutter uses TextBox layout rectangles; this helper keeps the monotonicity
+    // rule unit-testable without depending on a live WPF render pass.
+    public static bool AreLineTopsStrictlyIncreasing(IEnumerable<double> tops)
+    {
+        var hasPrevious = false;
+        var previous = 0.0;
+
+        foreach (var top in tops)
+        {
+            if (double.IsNaN(top) || double.IsInfinity(top)) return false;
+            if (hasPrevious && top <= previous) return false;
+            previous = top;
+            hasPrevious = true;
+        }
+
+        return true;
+    }
+
     // Returns the Y-top and total height spanning all visual lines of a logical line.
     // Requires valid layout.
     public (double Top, double Height) HighlightBounds(string text, int logicalIndex)

@@ -11,6 +11,8 @@
 
 - **NoteNest の行番号ガターを別 TextBox 方式から本文 `EditorBox` の描画位置基準へ再構成した。** `LineNumberBox` TextBox とその内部 ScrollViewer 同期を廃止し、表示中の本文行を `EditorBox.GetFirstVisibleLineIndex()` / `GetLastVisibleLineIndex()` で列挙して、各行の `EditorBox.GetRectFromCharacterIndex(...)` の Y 座標へ行番号を Canvas 描画する方式へ変更した。
 - **現在行ハイライトがカーソル行から大きくずれる問題を根本修正した。** 行番号テキストと現在行背景を同じ `UpdateLineNumberGutter()` 内で同じ `EditorBox` 実描画矩形から描画するため、500 行以上の長文位置でも別 TextBox 由来の座標差が蓄積しない。
+- **行番号が隣接行へ重なって見える問題を抑制した。** 本文 `EditorBox` の実描画矩形から得た行高さを行番号 `TextBlock` の `LineHeight` / `LineStackingStrategy` / `ClipToBounds` に反映し、12 行目・13 行目などの隣接する番号が行枠外へはみ出して重ならないようにした。
+- **スクロール・空行・フォントサイズ変更時の同期崩れを抑制した。** 行番号は `EditorBox.GetFirstVisibleLineIndex()` / `GetLastVisibleLineIndex()` と `GetRectFromCharacterIndex(...)` による本文 TextBox の実レイアウト位置を基準に描画し、本文側とは別の固定行高推定を使わない。
 - **行番号表示、現在行ハイライト、マーカー行ハイライトを維持している。** 本文側の TODO / FIXME / NOTE マーカーハイライトは既存の `MarkerHighlightCanvas` と `EditorBox` 実描画位置基準を維持し、本文は引き続き `TextWrapping=NoWrap` / 横スクロールで扱う。
 - **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
 

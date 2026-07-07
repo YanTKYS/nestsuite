@@ -67,4 +67,34 @@ public class TextBoxLineLayoutAdapterTests
         Assert.Equal(9,  TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 3));
         Assert.Equal(-1, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 4));
     }
+
+    [Fact]
+    public void AreLineTopsStrictlyIncreasing_AllowsEmptySequence()
+    {
+        Assert.True(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(Array.Empty<double>()));
+    }
+
+    [Fact]
+    public void AreLineTopsStrictlyIncreasing_AcceptsVisibleLinePositionsFromMixedJapaneseNote()
+    {
+        var tops = new[] { 12.0, 29.5, 47.0, 64.5, 82.0, 99.5, 117.0, 134.5, 152.0, 169.5, 187.0, 204.5, 222.0 };
+
+        Assert.True(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
+    }
+
+    [Fact]
+    public void AreLineTopsStrictlyIncreasing_RejectsAdjacentDuplicateTops()
+    {
+        var tops = new[] { 187.0, 204.5, 204.5, 222.0 };
+
+        Assert.False(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
+    }
+
+    [Fact]
+    public void AreLineTopsStrictlyIncreasing_RejectsReversedAdjacentTops()
+    {
+        var tops = new[] { 187.0, 222.0, 204.5 };
+
+        Assert.False(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
+    }
 }
