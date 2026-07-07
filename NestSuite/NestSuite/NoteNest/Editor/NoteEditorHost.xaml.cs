@@ -193,13 +193,17 @@ public partial class NoteEditorHost : UserControl
 
             var number = new TextBlock
             {
-                Text          = (line + 1).ToString(),
-                Width         = Math.Max(0, gutterWidth - 6),
-                Height        = rect.Height,
-                Padding       = new Thickness(8, 0, 0, 0),
-                TextAlignment = TextAlignment.Right,
-                FontFamily    = EditorBox.FontFamily,
-                FontSize      = EditorBox.FontSize,
+                Text                 = (line + 1).ToString(),
+                Width                = Math.Max(0, gutterWidth - 6),
+                Height               = rect.Height,
+                MinHeight            = rect.Height,
+                Padding              = new Thickness(8, 0, 0, 0),
+                TextAlignment        = TextAlignment.Right,
+                FontFamily           = EditorBox.FontFamily,
+                FontSize             = EditorBox.FontSize,
+                LineHeight           = rect.Height,
+                LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
+                ClipToBounds         = true,
             };
             number.SetResourceReference(TextBlock.ForegroundProperty, "LineNumberFg");
             Canvas.SetLeft(number, 0);
