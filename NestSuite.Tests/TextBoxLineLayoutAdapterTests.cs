@@ -69,32 +69,23 @@ public class TextBoxLineLayoutAdapterTests
     }
 
     [Fact]
-    public void AreLineTopsStrictlyIncreasing_AllowsEmptySequence()
+    public void LogicalLineStartChar_JapaneseText_ReturnsCharacterOffsets()
     {
-        Assert.True(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(Array.Empty<double>()));
+        var text = "日本語\n本文\n";
+
+        Assert.Equal(0, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 0));
+        Assert.Equal(4, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 1));
+        Assert.Equal(7, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 2));
     }
 
     [Fact]
-    public void AreLineTopsStrictlyIncreasing_AcceptsVisibleLinePositionsFromMixedJapaneseNote()
+    public void LogicalLineStartChar_EmptyLineBetweenText_ReturnsEmptyLineOffset()
     {
-        var tops = new[] { 12.0, 29.5, 47.0, 64.5, 82.0, 99.5, 117.0, 134.5, 152.0, 169.5, 187.0, 204.5, 222.0 };
+        var text = "first\n\nthird";
 
-        Assert.True(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
+        Assert.Equal(0, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 0));
+        Assert.Equal(6, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 1));
+        Assert.Equal(7, TextBoxLineLayoutAdapter.LogicalLineStartChar(text, 2));
     }
 
-    [Fact]
-    public void AreLineTopsStrictlyIncreasing_RejectsAdjacentDuplicateTops()
-    {
-        var tops = new[] { 187.0, 204.5, 204.5, 222.0 };
-
-        Assert.False(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
-    }
-
-    [Fact]
-    public void AreLineTopsStrictlyIncreasing_RejectsReversedAdjacentTops()
-    {
-        var tops = new[] { 187.0, 222.0, 204.5 };
-
-        Assert.False(TextBoxLineLayoutAdapter.AreLineTopsStrictlyIncreasing(tops));
-    }
 }

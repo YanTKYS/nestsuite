@@ -47,7 +47,6 @@ public sealed class EditorChangeCoordinator
             nameof(EditorStateViewModel.FontFamily) => nameof(MainViewModel.EditorFontFamily),
             nameof(EditorStateViewModel.FontSize) => nameof(MainViewModel.EditorFontSize),
             nameof(EditorStateViewModel.CaretPositionText) => nameof(MainViewModel.CaretPositionText),
-            nameof(EditorStateViewModel.ShowLineNumbers) => nameof(MainViewModel.ShowLineNumbers),
             nameof(EditorStateViewModel.SelectedNote) => nameof(MainViewModel.SelectedNote),
             _ => e.PropertyName,
         };

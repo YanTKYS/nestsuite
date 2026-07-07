@@ -31,7 +31,6 @@ public partial class MainViewModel : BaseViewModel, IDisposable
 
         OpenRecentCommand          = new RelayCommand(param => { if (param is string path) OpenRecentFile(path); });
         ClearRecentFilesCommand     = new RelayCommand(_ => ClearRecentFiles());
-        ToggleLineNumbersCommand   = new RelayCommand(_ => ShowLineNumbers = !ShowLineNumbers);
         NewProjectCommand          = new RelayCommand(NewProject);
         OpenProjectCommand         = new RelayCommand(OpenProject);
         SaveProjectCommand         = new RelayCommand(SaveProject);

@@ -37,8 +37,6 @@ public partial class NoteEditorHost : UserControl
         DataContextChanged  += NoteEditorHost_DataContextChanged;
         MarkerHighlightCanvas.SizeChanged += (_, _) =>
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
-        LineNumberGutterCanvas.SizeChanged += (_, _) =>
-            Dispatcher.InvokeAsync(UpdateLineNumberGutter, DispatcherPriority.Render);
     }
 
     // ── Initialisation ────────────────────────────────────────────────────
@@ -64,7 +62,6 @@ public partial class NoteEditorHost : UserControl
         _lineLayout = new TextBoxLineLayoutAdapter(EditorBox);
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         ThemeService.ThemeChanged += OnThemeServiceThemeChanged;
-        UpdateLineNumberGutter();
         UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
@@ -74,7 +71,6 @@ public partial class NoteEditorHost : UserControl
     {
         if (IsVisible)
         {
-            UpdateLineNumberGutter();
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         }
         else
@@ -85,7 +81,6 @@ public partial class NoteEditorHost : UserControl
 
     private void Editor_SelectionChanged(object? sender, EventArgs e)
     {
-        UpdateLineNumberGutter();
         UpdateStatusBar();
         if (!_suppressCompletionUpdate) UpdateCompletion();
     }
@@ -111,7 +106,6 @@ public partial class NoteEditorHost : UserControl
         ThemeService.ThemeChanged -= OnThemeServiceThemeChanged;
         CloseCompletion();
         MarkerHighlightCanvas.Children.Clear();
-        LineNumberGutterCanvas.Children.Clear();
         _editorScrollViewer = null;
     }
 
@@ -123,7 +117,6 @@ public partial class NoteEditorHost : UserControl
         // 起こりうる。_editorEventsAttached = false は NoteEditorHost_Unloaded で設定される。
         if (!_editorEventsAttached) return;
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
-        UpdateLineNumberGutter();
         UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         if (!_suppressCompletionUpdate) UpdateCompletion();
@@ -131,86 +124,18 @@ public partial class NoteEditorHost : UserControl
 
     private void EditorScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
     {
-        Dispatcher.InvokeAsync(UpdateLineNumberGutter, DispatcherPriority.Render);
         Dispatcher.InvokeAsync(UpdateMarkerHighlights,   DispatcherPriority.Render);
     }
 
-    // ── Layout-dependent UI (line numbers + marker highlights) ────────────
+    // ── Layout-dependent UI (marker highlights) ──────────────────────────
 
     private void UpdateLayoutDependentUI()
     {
-        UpdateLineNumberGutter();
         UpdateMarkerHighlights();
     }
 
     private void EditorBox_SizeChanged(object sender, SizeChangedEventArgs e) =>
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
-
-    private void UpdateLineNumberGutter()
-    {
-        LineNumberGutterCanvas.Children.Clear();
-        if (Editor == null || !EditorBox.IsLoaded || EditorBox.ActualHeight <= 0) return;
-
-        int firstLine;
-        int lastLine;
-        try
-        {
-            firstLine = EditorBox.GetFirstVisibleLineIndex();
-            lastLine  = EditorBox.GetLastVisibleLineIndex();
-        }
-        catch
-        {
-            return;
-        }
-        if (firstLine < 0 || lastLine < firstLine) return;
-
-        var currentLine = Editor.GetLineIndexFromCharacterIndex(Editor.CaretIndex);
-        var gutterWidth = Math.Max(LineNumberGutterCanvas.ActualWidth, LineNumberGutter.ActualWidth);
-        if (gutterWidth <= 0) return;
-
-        for (var line = firstLine; line <= lastLine; line++)
-        {
-            var charIndex = Editor.GetCharacterIndexFromLineIndex(line);
-            if (charIndex < 0) continue;
-
-            Rect rect;
-            try   { rect = EditorBox.GetRectFromCharacterIndex(charIndex); }
-            catch { continue; }
-            if (rect.IsEmpty || rect.Height <= 0) continue;
-            if (rect.Bottom <= 0 || rect.Top >= EditorBox.ActualHeight) continue;
-
-            if (line == currentLine)
-            {
-                var highlight = new Rectangle
-                {
-                    Width  = gutterWidth,
-                    Height = rect.Height,
-                };
-                highlight.SetResourceReference(Shape.FillProperty, "LineNumberCurrentLineBg");
-                Canvas.SetTop(highlight, rect.Top);
-                LineNumberGutterCanvas.Children.Add(highlight);
-            }
-
-            var number = new TextBlock
-            {
-                Text                 = (line + 1).ToString(),
-                Width                = Math.Max(0, gutterWidth - 6),
-                Height               = rect.Height,
-                MinHeight            = rect.Height,
-                Padding              = new Thickness(8, 0, 0, 0),
-                TextAlignment        = TextAlignment.Right,
-                FontFamily           = EditorBox.FontFamily,
-                FontSize             = EditorBox.FontSize,
-                LineHeight           = rect.Height,
-                LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
-                ClipToBounds         = true,
-            };
-            number.SetResourceReference(TextBlock.ForegroundProperty, "LineNumberFg");
-            Canvas.SetLeft(number, 0);
-            Canvas.SetTop(number, rect.Top);
-            LineNumberGutterCanvas.Children.Add(number);
-        }
-    }
 
     // ── L14 / L15: Status bar — caret position, char count, line count ───
 
@@ -228,7 +153,7 @@ public partial class NoteEditorHost : UserControl
         var charCount = text.Length;
         var lineCount = string.IsNullOrEmpty(text) ? 1 : text.Count(c => c == '\n') + 1;
 
-        EditorStatusBar.Text = $"行 {lineIndex + 1}, 列 {col + 1}  |  文字数 {charCount}  |  行数 {lineCount}";
+        EditorStatusBar.Text = $"現在位置: {lineIndex + 1}行目 / {col + 1}列目  |  文字数 {charCount}  |  行数 {lineCount}";
     }
 
     // ── H3b: Marker line highlights (TODO / FIXME / NOTE) ────────────────

@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.0 — UX: NoteNest 行番号表示撤去・現在位置表示へ切替
+
+- **NoteNest の行番号表示を撤去した。** 本文エディタ左側の行番号ガター、行番号 Canvas、個別行番号 TextBlock 描画、現在行の行番号ハイライトを廃止し、行番号用の不自然な左余白が残らない構成にした。
+- **行番号の描画同期方式は継続しない判断とした。** 行番号の重なり・欠番・本文行との同期崩れが複数回発生し、修正方針が高さ・座標・実描画矩形・Clip 調整へ依存していたため、v2.16.0 では再修正ではなく安定した代替表示へ切り替えた。
+- **代替として現在位置表示（行 / 列）を追加した。** `CaretIndex` を基準に `GetLineIndexFromCharacterIndex` / `GetCharacterIndexFromLineIndex` で 1 始まりの行・列を算出し、エディタ下部ステータスバーに「現在位置: n行目 / m列目」と表示する。
+- **本文編集、マーカーハイライト、NoteLink、保存形式には影響しない。** 本文 TextBox、TODO / FIXME / NOTE / NoteLink の行ハイライト、Markdown 関連機能、フォントサイズ・フォント種類変更、保存・読込の既存動作は維持している。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+---
+
 ## v2.15.2 — BUG: NoteNest 行番号描画の重なり・同期崩れ修正
 
 - **NoteNest 行番号表示で行番号が重なる問題を修正した。** 本文 `EditorBox` の実描画矩形から得た行高さを行番号 `TextBlock` の `LineHeight` / `LineStackingStrategy` / `ClipToBounds` に反映し、隣接する 12 行目・13 行目などの番号描画が行枠外へはみ出して重ならないようにした。
