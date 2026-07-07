@@ -31,7 +31,8 @@ public static class SavedWorkspaceStateUpdater
         {
             Id = currentTab.Id,
             IsModified = isModifiedAfterSave,
-            IsDetached = currentTab.IsDetached
+            IsDetached = currentTab.IsDetached,
+            IsPinned = currentTab.IsPinned
         };
 
         state = new SavedWorkspaceState(updatedTab, savedPath, isModifiedAfterSave, savedPath);

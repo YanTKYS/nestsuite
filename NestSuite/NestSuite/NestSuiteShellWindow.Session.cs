@@ -97,7 +97,7 @@ public partial class NestSuiteShellWindow
     private bool TryRestoreSession()
     {
         var state = _sessionState.Load();
-        if (state.FilePaths.Count == 0) return false;
+        if (state.FilePaths.Count == 0 && (state.Tabs?.Count ?? 0) == 0) return false;
 
         var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
         int restoredCount = 0;
@@ -117,7 +117,12 @@ public partial class NestSuiteShellWindow
 
             int tabsBefore = _tabs.Count;
             LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
-            if (_tabs.Count > tabsBefore) restoredCount++;
+            if (_tabs.Count > tabsBefore)
+            {
+                restoredCount++;
+                if (target.IsPinned)
+                    SetTabPinned(_tabs[tabsBefore], isPinned: true);
+            }
         }
 
         NotifyRestoreFailures(failures);

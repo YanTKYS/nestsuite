@@ -28,6 +28,18 @@ public partial class NestSuiteShellWindow
             CloseTab(tab);
     }
 
+    private void TabContextPin_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetTabFromContextMenuItem(sender) is { } tab)
+            SetTabPinned(tab, isPinned: true);
+    }
+
+    private void TabContextUnpin_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetTabFromContextMenuItem(sender) is { } tab)
+            SetTabPinned(tab, isPinned: false);
+    }
+
     private void TabContextCloseOthers_Click(object sender, RoutedEventArgs e)
     {
         if (GetTabFromContextMenuItem(sender) is { } keepTab)
