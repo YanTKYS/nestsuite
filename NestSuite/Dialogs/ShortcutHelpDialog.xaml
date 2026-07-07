@@ -1,0 +1,51 @@
+<Window x:Class="NestSuite.Dialogs.ShortcutHelpDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="キーボードショートカット"
+        Width="760" Height="560"
+        MinWidth="560" MinHeight="380"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top"
+                   Text="キーボードショートカット"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,0,0,8"/>
+        <TextBlock DockPanel.Dock="Top"
+                   Text="現在実装されているショートカットのみを表示しています。"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,12"/>
+        <Button DockPanel.Dock="Bottom"
+                Content="閉じる"
+                Width="96"
+                Padding="12,5"
+                HorizontalAlignment="Right"
+                IsCancel="True"
+                Margin="0,12,0,0"
+                Click="Close_Click"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="{Binding Category}"
+                                       FontWeight="Bold"
+                                       FontSize="14"
+                                       Margin="0,0,0,6"/>
+                            <ListView ItemsSource="{Binding Items}"
+                                      BorderThickness="1">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="操作" Width="160" DisplayMemberBinding="{Binding Action}"/>
+                                        <GridViewColumn Header="ショートカット" Width="140" DisplayMemberBinding="{Binding Shortcut}"/>
+                                        <GridViewColumn Header="説明" Width="390" DisplayMemberBinding="{Binding Description}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

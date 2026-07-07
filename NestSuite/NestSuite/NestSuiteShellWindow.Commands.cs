@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using NestSuite.Dialogs;
 using NestSuite.FileAssociation;
 using NestSuite.ViewModels;
 
@@ -40,6 +41,12 @@ public partial class NestSuiteShellWindow
             menu.Items.Add(item);
         }
         menu.IsOpen = true;
+    }
+
+    private void MenuKeyboardShortcuts_Click(object sender, RoutedEventArgs e)
+    {
+        new ShortcutHelpDialog { Owner = this }.ShowDialog();
+        RestoreFocusToWorkspace();
     }
 
     private void MenuAbout_Click(object sender, RoutedEventArgs e)

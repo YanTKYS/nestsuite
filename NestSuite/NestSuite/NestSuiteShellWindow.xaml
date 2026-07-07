@@ -134,6 +134,11 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
+                <MenuItem Header="キーボードショートカット(_K)"
+                          AutomationProperties.AutomationId="Shell.KeyboardShortcutsMenuItem"
+                          AutomationProperties.Name="Shell.KeyboardShortcutsMenuItem"
+                          Click="MenuKeyboardShortcuts_Click"/>
+                <Separator/>
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
                 <Separator/>
                 <MenuItem Header="NestSuite について" Click="MenuAbout_Click"/>

@@ -143,6 +143,12 @@ Temp タブは固定タブのため、ピン留め操作の対象外です。
 
 ---
 
+## ショートカット一覧
+
+ヘルプ > キーボードショートカット から、Shell 共通操作と各 Workspace で利用できるショートカットを確認できます。
+
+---
+
 ## 既知の制約
 
 詳細は [docs/design/nestsuite-known-limitations.md](../design/nestsuite-known-limitations.md) を参照してください。
