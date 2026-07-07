@@ -7,33 +7,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 0: editor area with line number gutter -->
+        <!-- Row 0: editor area without a line-number gutter -->
         <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Line number gutter: drawn from EditorBox rendered line rectangles. -->
-            <Grid Grid.Column="0"
-                  x:Name="LineNumberGutter"
-                  MinWidth="48"
-                  Background="{DynamicResource LineNumberBg}">
-                <Border BorderBrush="{DynamicResource PaneBorder}"
-                        BorderThickness="0,0,1,0"/>
-                <Canvas x:Name="LineNumberGutterCanvas"
-                        AutomationProperties.AutomationId="Editor.LineNumberGutterCanvas"
-                        AutomationProperties.Name="Editor.LineNumberGutterCanvas"
-                        IsHitTestVisible="False"/>
-            </Grid>
-
             <!-- Editor area: background layer (ZIndex 0), marker highlight layer (ZIndex 1),
                  TextBox text layer (ZIndex 2) — explicit ZIndex stabilises compositing. -->
 
             <!-- ZIndex 0: background provides EditorBg / TaskCommentEditorBg.
                  TextBox (ZIndex 2) is Transparent so this layer is always visible. -->
-            <Border Grid.Column="1"
-                    Panel.ZIndex="0">
+            <Border Panel.ZIndex="0">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
@@ -48,14 +29,12 @@
 
             <!-- ZIndex 1: marker line highlight canvas (H3b) — TODO/FIXME/NOTE lines.
                  Above background, below TextBox text. IsHitTestVisible=False preserves input. -->
-            <Canvas Grid.Column="1"
-                    x:Name="MarkerHighlightCanvas"
+            <Canvas x:Name="MarkerHighlightCanvas"
                     Panel.ZIndex="1"
                     IsHitTestVisible="False"/>
 
             <!-- ZIndex 2: editor TextBox — Background=Transparent so canvas layers below show through -->
-            <TextBox Grid.Column="1"
-                     Panel.ZIndex="2"
+            <TextBox Panel.ZIndex="2"
                      x:Name="EditorBox"
                      AutomationProperties.AutomationId="Editor.EditorBox"
                      AutomationProperties.Name="Editor.EditorBox"
@@ -92,7 +71,6 @@
 
             <!-- Note-link autocomplete popup (H1a) -->
             <Popup x:Name="CompletionPopup"
-                   Grid.Column="1"
                    Placement="Relative"
                    IsOpen="False"
                    StaysOpen="True"
@@ -153,7 +131,7 @@
                        AutomationProperties.Name="Editor.StatusBar"
                        Foreground="{DynamicResource MutedFg}"
                        FontSize="11"
-                       Text="行 1, 列 1  |  文字数 0  |  行数 1"/>
+                       Text="現在位置: 1行目 / 1列目  |  文字数 0  |  行数 1"/>
         </Border>
     </Grid>
 </UserControl>

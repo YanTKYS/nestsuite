@@ -200,7 +200,6 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
 
         main.SelectNote(note);
         main.SelectTask(task);
-        main.ShowLineNumbers = !main.ShowLineNumbers;
         main.MarkerSortOrderIndex = 2;
 
         Assert.False(main.IsModified);

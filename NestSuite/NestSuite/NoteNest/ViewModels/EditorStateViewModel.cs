@@ -17,7 +17,6 @@ public sealed class EditorStateViewModel : BaseViewModel
     private string _savedFontFamily = "Yu Gothic UI";
     private double _fontSize = 14;
     private string _caretPositionText = "";
-    private bool _showLineNumbers = true;
     private bool _isLoading;
     private bool _suppressSettingsChanged;
     private EditorMode _mode = EditorMode.NoteEdit;
@@ -75,7 +74,6 @@ public sealed class EditorStateViewModel : BaseViewModel
         set { if (SetProperty(ref _fontSize, value) && !_suppressSettingsChanged) SettingsChanged?.Invoke(this, EventArgs.Empty); }
     }
     public string CaretPositionText { get => _caretPositionText; set => SetProperty(ref _caretPositionText, value); }
-    public bool ShowLineNumbers { get => _showLineNumbers; set => SetProperty(ref _showLineNumbers, value); }
     public bool IsTaskCommentMode => Mode == EditorMode.TaskComment;
     public bool IsNoteEditMode => Mode == EditorMode.NoteEdit;
     public bool HasEditingTaskRelatedNote => EditingTaskRelatedNote != null;

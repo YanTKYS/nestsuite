@@ -44,7 +44,6 @@ public partial class MainViewModel
     public string FixmeCountText => _markers.FixmeCountText;
     public string NoteCountText  => _markers.NoteCountText;
     public bool IsSampleProject => _session.IsSampleProject;
-    public bool ShowLineNumbers { get => _editor.ShowLineNumbers; set => _editor.ShowLineNumbers = value; }
     public bool IsTaskCommentMode => _editor.IsTaskCommentMode;
     public bool IsNoteEditMode => _editor.IsNoteEditMode;
     public string EditorTitle => _editor.EditorTitle;
@@ -139,5 +138,4 @@ public partial class MainViewModel
     public ICommand MarkerClickCommand { get; }
     public ICommand OpenRecentCommand { get; }
     public ICommand ClearRecentFilesCommand { get; }
-    public ICommand ToggleLineNumbersCommand { get; }
 }
