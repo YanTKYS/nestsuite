@@ -22,12 +22,9 @@ public partial class NestSuiteShellWindow
     {
         var rawPath = _dialogs.SelectIdeaNestOpenPath();
         if (rawPath == null) return;
-        var path = NormalizeFilePath(rawPath);
+        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null) { ActivateTab(existingTab); return; }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.IdeaNest, path)) return;
 
         LoadIdeaNestFileAt(path);
     }
@@ -59,12 +56,9 @@ public partial class NestSuiteShellWindow
     {
         var rawPath = _dialogs.SelectChatNestOpenPath();
         if (rawPath == null) return;
-        var path = NormalizeFilePath(rawPath);
+        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null) { ActivateTab(existingTab); return; }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.ChatNest, path)) return;
 
         LoadChatNestFileAt(path);
     }
@@ -106,29 +100,22 @@ public partial class NestSuiteShellWindow
 
         foreach (var rawPath in rawPaths)
         {
-            var path = NormalizeFilePath(rawPath);
-
-            if (!File.Exists(path)) { failedCount++; continue; }
-            if (!NestSuiteTabFactory.TryGetKind(path, out var kind)) { failedCount++; continue; }
-
-            var existingTab = _tabs.FirstOrDefault(t =>
-                t.WorkspaceKind == kind &&
-                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-            if (existingTab != null)
+            var decision = ShellFileOpenPlanner.Plan(rawPath, _tabs);
+            if (decision.DecisionKind is ShellFileOpenDecisionKind.MissingFile or
+                ShellFileOpenDecisionKind.KindDetectionFailed)
             {
-                ActivateTab(existingTab);
-                _recentFiles.Add(path);
-                UpdateRecentFilesMenu();
+                failedCount++;
+                continue;
+            }
+
+            if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+            {
+                ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
                 continue;
             }
 
             int tabsBefore = _tabs.Count;
-            switch (kind)
-            {
-                case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
-                case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
-                case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
-            }
+            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
             if (_tabs.Count == tabsBefore) failedCount++;
         }
 
@@ -157,25 +144,34 @@ public partial class NestSuiteShellWindow
     /// </summary>
     public void LoadInitialFile(string path)
     {
-        if (!File.Exists(path))
+        var decision = ShellFileOpenPlanner.Plan(path, _tabs);
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
         {
-            _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{path}", "ファイルを開けません");
+            _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{decision.Path}", "ファイルを開けません");
             EnsureDefaultTab();
             return;
         }
 
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
             // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
             _dialogs.ShowError(
-                $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
-                failure == WorkspaceKindDetectionFailure.UnsupportedExtension
+                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
+                decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension
                     ? "未対応のファイル形式"
                     : "ファイルを開けません");
             EnsureDefaultTab();
             return;
         }
 
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+        {
+            ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+            return;
+        }
+
+        var kind = decision.WorkspaceKind!.Value;
+        path = decision.Path;
         switch (kind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
@@ -205,12 +201,9 @@ public partial class NestSuiteShellWindow
     {
         var rawPath = _dialogs.SelectProjectOpenPath();
         if (rawPath == null) return;
-        var path = NormalizeFilePath(rawPath);
+        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
-        if (existingTab != null) { ActivateTab(existingTab); return; }
+        if (TryActivateExistingTab(NestSuiteWorkspaceKind.NoteNest, path)) return;
 
         LoadNoteNestFileAt(path);
     }
@@ -245,7 +238,7 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void LoadInitialNoteNestFile(string path)
     {
-        path = NormalizeFilePath(path);
+        path = ShellFileOpenPlanner.NormalizePath(path);
 
         if (TryActivateExistingTab(NestSuiteWorkspaceKind.NoteNest, path)) return;
 
@@ -297,7 +290,7 @@ public partial class NestSuiteShellWindow
     private void LoadInitialChatNestFile(string path)
     {
         // v1.9.2 fix: 起動引数は相対パスで渡される可能性があるためフルパスに正規化する
-        path = NormalizeFilePath(path);
+        path = ShellFileOpenPlanner.NormalizePath(path);
 
         if (TryActivateExistingTab(NestSuiteWorkspaceKind.ChatNest, path)) return;
 
@@ -326,7 +319,7 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void LoadInitialIdeaNestFile(string path)
     {
-        path = NormalizeFilePath(path);
+        path = ShellFileOpenPlanner.NormalizePath(path);
 
         if (TryActivateExistingTab(NestSuiteWorkspaceKind.IdeaNest, path)) return;
 

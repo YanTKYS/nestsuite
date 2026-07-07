@@ -39,36 +39,41 @@ public partial class NestSuiteShellWindow
     private void MenuRecentFile_Click(object sender, RoutedEventArgs e)
     {
         if (((MenuItem)sender).Tag is not string path) return;
-        if (!File.Exists(path))
+        var decision = ShellFileOpenPlanner.Plan(path, _tabs);
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
         {
             _dialogs.ShowError(
-                $"ファイルが見つかりません。最近使ったファイルの一覧から削除します。\n\n{path}",
+                $"ファイルが見つかりません。最近使ったファイルの一覧から削除します。\n\n{decision.Path}",
                 "ファイルを開けません");
-            _recentFiles.Remove(path);
+            _recentFiles.Remove(decision.Path);
             UpdateRecentFilesMenu();
             return;
         }
-        if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
             // v2.14.7 SH-31: 未対応拡張子は従来どおり履歴から削除する。
             // 一方 `.nestsuite` の種別判定失敗は「一時的に読めない」だけの可能性があるため、
             // 理由に応じた文言で通知し、履歴からは削除しない。
-            if (failure == WorkspaceKindDetectionFailure.UnsupportedExtension)
+            if (decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension)
             {
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n最近使ったファイルの一覧から削除しました。\n\n{path}",
+                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n最近使ったファイルの一覧から削除しました。\n\n{decision.Path}",
                     "未対応のファイル形式");
-                _recentFiles.Remove(path);
+                _recentFiles.Remove(decision.Path);
                 UpdateRecentFilesMenu();
                 return;
             }
             _dialogs.ShowError(
-                $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
                 "ファイルを開けません");
             return;
         }
-        if (TryActivateExistingTab(kind, path)) return;
-        LoadWorkspaceFileAt(kind, path);
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+        {
+            ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+            return;
+        }
+        LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
     }
 
     // ── v1.15.0: セッション復元 ──────────────────────────────────────────────
@@ -98,8 +103,20 @@ public partial class NestSuiteShellWindow
         int restoredCount = 0;
         foreach (var target in targets)
         {
+            var decision = ShellFileOpenPlanner.Plan(
+                target.FilePath,
+                _tabs,
+                fileExists: _ => true,
+                detectKind: _ => (true, target.WorkspaceKind, WorkspaceKindDetectionFailure.None));
+
+            if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+            {
+                ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+                continue;
+            }
+
             int tabsBefore = _tabs.Count;
-            LoadWorkspaceFileAt(target.WorkspaceKind, target.FilePath);
+            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
             if (_tabs.Count > tabsBefore) restoredCount++;
         }
 
@@ -148,23 +165,27 @@ public partial class NestSuiteShellWindow
         Dispatcher.Invoke(() =>
         {
             BringWindowToFront();
-            var path = NormalizeFilePath(rawPath);
-            if (!File.Exists(path))
+            var decision = ShellFileOpenPlanner.Plan(rawPath, _tabs);
+            if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
             {
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{path}",
+                    $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{decision.Path}",
                     "ファイルを開けません");
                 return;
             }
-            if (!NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure))
+            if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
             {
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(failure)}\n\n{path}",
+                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
                     "ファイルを開けません");
                 return;
             }
-            if (TryActivateExistingTab(kind, path)) return;
-            LoadWorkspaceFileAt(kind, path);
+            if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+            {
+                ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+                return;
+            }
+            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
         });
     }
 
