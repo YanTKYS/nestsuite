@@ -7,6 +7,30 @@
 
 ---
 
+## v2.16.4 — SH-19: キーボードショートカット一覧
+
+- **SH-19 として、ヘルプメニューに「キーボードショートカット」を追加した。** ヘルプ > キーボードショートカットから、現在実装されているショートカット一覧をダイアログで確認できるようにした。
+- **Shell 共通 / タブ操作 / NoteNest / IdeaNest / ChatNest のショートカットをカテゴリ別に整理した。** `ShortcutHelpProvider` に静的な一覧を集約し、推測ではなく現行コード上の `InputBindings`、`InputGestureText`、KeyDown / PreviewKeyDown 実装に存在する操作だけを掲載した。
+- **新しいショートカットは追加していない。** 今回は案内導線の追加のみで、既存ショートカットの挙動、コマンド設計、Workspace 操作体系は変更していない。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+## v2.16.3 — SH-15: タブのピン留め
+
+- **SH-15 としてタブのピン留めを追加した。** 通常タブの右クリックメニューから「ピン留め」「ピン留めを解除」を実行できるようにした。Temp タブは固定タブのためピン留め対象外のまま維持している。
+- **ピン留めタブを Temp タブ直後に固定配置するようにした。** ピン留め時は Temp → pinned → normal の安定順へ補正し、ピン留めタブにはタブ名先頭の「📌」と tooltip の「ピン留め: 済み」で状態を示す。
+- **既存のタブドラッグ並び替えをピン留め領域に対応させた。** Temp は先頭固定、ピン留めタブはピン留め領域内、通常タブは通常領域内に自動補正し、境界をまたぐドラッグによる暗黙のピン留め/解除は行わない。
+- **session.json に `Tabs[].IsPinned` を保存し、次回起動時に復元するようにした。** 旧 session.json は `Tabs` / `IsPinned` がないため従来の `FilePaths` から復元し、未ピン留め（false）として互換読み込みする。破損 session を安全に無視する既存方針は維持している。
+- **TD-62 のファイルオープン経路を維持した。** ファイルオープンで追加されるタブは未ピン留めで、既に開いているピン留め済みファイルを再度開く場合は既存タブを選択する。
+- **保存形式 / schema / wrapper 変更なし。** session 形式変更は `IsPinned` 追加に限定した。NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
+## v2.16.2 — TD-62: Shell ファイルオープン経路の責務分割再点検
+
+- **TD-62 として Shell のファイルオープン経路を再点検した。** Open ダイアログ、起動引数、pipe、最近ファイル、session 復元で近接していたパス正規化・存在確認・WorkspaceKind 判定・既存タブ判定の責務を整理した。
+- **共通判定を `ShellFileOpenPlanner` に切り出した。** パス正規化、ファイル存在確認、WorkspaceKind 判定、既に開いている同一 WorkspaceKind タブの検出を UI 非依存の小さな helper に集約し、Shell 側は入口処理、通知、タブ追加、タブ選択を担当する構成にした。
+- **Open ダイアログ、起動引数、pipe、最近ファイルの入口で共通判定を利用するようにした。** 入口ごとのエラー文言や最近ファイル削除方針などの差分は Shell 側に残し、読込成功後のタブ登録・最近ファイル更新は既存の `RegisterLoadedTab` 経路を維持した。
+- **重複タブ判定と WorkspaceKind 判定の仕様を維持した。** 同じ WorkspaceKind かつ同じパスの既存タブは再利用し、WorkspaceKind が異なる同一パスは従来どおり別判定として扱う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.1 — UX: NoteNest 本文折り返し表示の復元
 
 - **v2.16.0 で行番号表示を撤去したため、行番号同期対策として導入していた折り返しなし設定を解除した。** 行番号ガターとの同期崩れを避ける目的だった `NoWrap` 前提をやめ、本文表示を通常の文章入力向けに戻した。

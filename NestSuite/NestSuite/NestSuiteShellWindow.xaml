@@ -134,6 +134,11 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
+                <MenuItem Header="キーボードショートカット(_K)"
+                          AutomationProperties.AutomationId="Shell.KeyboardShortcutsMenuItem"
+                          AutomationProperties.Name="Shell.KeyboardShortcutsMenuItem"
+                          Click="MenuKeyboardShortcuts_Click"/>
+                <Separator/>
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
                 <Separator/>
                 <MenuItem Header="NestSuite について" Click="MenuAbout_Click"/>
@@ -327,6 +332,13 @@
                                             <MenuItem Header="このタブを閉じる(_C)"
                                                       IsEnabled="{Binding CanClose}"
                                                       Click="TabContextClose_Click"/>
+                                            <Separator Visibility="{Binding CanPin, Converter={StaticResource BoolToVis}}"/>
+                                            <MenuItem Header="ピン留め(_P)"
+                                                      Visibility="{Binding ShowPinMenuItem, Converter={StaticResource BoolToVis}}"
+                                                      Click="TabContextPin_Click"/>
+                                            <MenuItem Header="ピン留めを解除(_U)"
+                                                      Visibility="{Binding ShowUnpinMenuItem, Converter={StaticResource BoolToVis}}"
+                                                      Click="TabContextUnpin_Click"/>
                                             <!-- v2.9.0 SH-21: NoteNest 未分離タブのみ別ウィンドウ表示を提供する -->
                                             <MenuItem Header="別ウィンドウで表示(_D)"
                                                       Visibility="{Binding IsDetachable, Converter={StaticResource BoolToVis}}"

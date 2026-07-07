@@ -245,6 +245,27 @@ public class NestSuiteShellXamlTests
         Assert.DoesNotContain("DockPanel.Dock=\"Right\"", buttonTag);
     }
 
+
+    // ── v2.16.4 SH-19: キーボードショートカット一覧 ─────────────────────
+
+    [Fact]
+    public void ShellXaml_HelpMenu_ContainsKeyboardShortcutsMenuItem()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("キーボードショートカット(_K)", src);
+        Assert.Contains("Shell.KeyboardShortcutsMenuItem", src);
+        Assert.Contains("MenuKeyboardShortcuts_Click", src);
+    }
+
+    [Fact]
+    public void ShortcutHelpDialog_Title_IsKeyboardShortcuts()
+    {
+        var path = Path.Combine(RepoRoot, "NestSuite", "Dialogs", "ShortcutHelpDialog.xaml");
+        Assert.True(File.Exists(path), $"ShortcutHelpDialog.xaml not found: {path}");
+        var src = File.ReadAllText(path);
+        Assert.Contains("Title=\"キーボードショートカット\"", src);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     private string ReadShellXaml()

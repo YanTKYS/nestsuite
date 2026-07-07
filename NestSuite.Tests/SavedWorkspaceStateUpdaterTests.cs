@@ -39,6 +39,23 @@ public class SavedWorkspaceStateUpdaterTests
         Assert.Equal("💡 saved", state.UpdatedTab.TabHeaderText);
     }
 
+
+    [Fact]
+    public void TryCreate_SaveSuccess_PreservesPinnedState()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with
+        {
+            IsModified = true,
+            IsPinned = true
+        };
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\work\saved.notenest", false, out var state);
+
+        Assert.True(ok);
+        Assert.True(state.UpdatedTab.IsPinned);
+        Assert.StartsWith("📌 ", state.UpdatedTab.TabHeaderText);
+    }
+
     [Fact]
     public void TryCreate_SaveSuccess_ProvidesRecentFilePath()
     {
@@ -100,7 +117,7 @@ public class SavedWorkspaceStateUpdaterTests
     }
 
     [Fact]
-    public void SessionFormat_RemainsFilePathsAndActiveFilePathOnly_AfterSaveStateUpdate()
+    public void SessionFormat_IncludesPinnedTabStateButNotModifiedState_AfterSaveStateUpdate()
     {
         var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
         Assert.True(SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\chat\saved.chatnest", false, out var state));
@@ -110,7 +127,9 @@ public class SavedWorkspaceStateUpdaterTests
 
         Assert.Contains("\"FilePaths\"", json);
         Assert.Contains("\"ActiveFilePath\"", json);
-        Assert.DoesNotContain("WorkspaceKind", json);
+        Assert.Contains("\"Tabs\"", json);
+        Assert.Contains("WorkspaceKind", json);
+        Assert.Contains("IsPinned", json);
         Assert.DoesNotContain("IsModified", json);
     }
 

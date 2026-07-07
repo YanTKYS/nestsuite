@@ -62,6 +62,21 @@ public sealed record NestSuiteDocumentTab
     public bool CanClose { get; init; } = true;
 
     /// <summary>
+    /// v2.16.3 SH-15: Temp タブ直後のピン留め領域に固定表示する通常タブかどうか。
+    /// Temp タブは対象外で、既定値 false のため旧 session.json では未ピン留め扱いになる。
+    /// </summary>
+    public bool IsPinned { get; init; }
+
+    /// <summary>ピン留め/解除操作の対象になる通常タブかどうか。</summary>
+    public bool CanPin => TabPinningPolicy.CanPin(this);
+
+    /// <summary>未ピン留め通常タブ向けコンテキストメニュー表示制御。</summary>
+    public bool ShowPinMenuItem => CanPin && !IsPinned;
+
+    /// <summary>ピン留め済み通常タブ向けコンテキストメニュー表示制御。</summary>
+    public bool ShowUnpinMenuItem => CanPin && IsPinned;
+
+    /// <summary>
     /// ファイルに紐づいていない無題タブかどうか（<c>FilePath is null</c>）。
     /// </summary>
     public bool IsUntitled => FilePath is null;
@@ -127,7 +142,7 @@ public sealed record NestSuiteDocumentTab
     /// v2.6.4: タブ見出しに表示するテキスト。種別プレフィックス＋拡張子なしファイル名。
     /// 例: "📝 業務改善" / "💬 開発メモ" / "💡 ツール改修" / "Temp"
     /// </summary>
-    public string TabHeaderText => $"{KindPrefix}{ShortDisplayName}";
+    public string TabHeaderText => $"{(IsPinned ? "📌 " : "")}{KindPrefix}{ShortDisplayName}";
 
     /// <summary>
     /// v1.9.9 / v2.6.4: タブのツールチップ表示用テキスト。
@@ -149,12 +164,13 @@ public sealed record NestSuiteDocumentTab
             if (WorkspaceKind == NestSuiteWorkspaceKind.Temp)
                 return $"種類: {kindLabel}\n説明: 一時メモ\n保存: 自動保存";
 
+            var pinText = IsPinned ? "\nピン留め: 済み" : "";
             if (FilePath is null)
-                return $"種類: {kindLabel}\nファイル名: 未保存（無題）\n場所: —\n状態: 未保存";
+                return $"種類: {kindLabel}\nファイル名: 未保存（無題）\n場所: —\n状態: 未保存{pinText}";
 
             var fileName  = Path.GetFileName(FilePath);
             var stateText = IsModified ? "未保存の変更あり" : "保存済み";
-            return $"種類: {kindLabel}\nファイル名: {fileName}\n場所: {FilePath}\n状態: {stateText}";
+            return $"種類: {kindLabel}\nファイル名: {fileName}\n場所: {FilePath}\n状態: {stateText}{pinText}";
         }
     }
 }
