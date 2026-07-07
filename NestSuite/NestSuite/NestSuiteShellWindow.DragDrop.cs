@@ -69,8 +69,9 @@ public partial class NestSuiteShellWindow
         if (insertAt == null) return;
         int sourceIdx = _tabs.IndexOf(sourceTab);
         if (sourceIdx < 0) return;
-        // Temp タブ（index 0）の左側には挿入しない。insertAt 有効範囲: 1〜Count
-        int rawInsert = Math.Max(1, Math.Min(insertAt.Value, _tabs.Count));
+        // Temp タブ（index 0）の左側には挿入しない。
+        // v2.16.3 SH-15: pinned/normal の境界をまたぐドラッグは自動補正する。
+        int rawInsert = TabPinningPolicy.ClampInsertionIndexForDrag(_tabs, sourceTab, insertAt.Value);
         // ObservableCollection.Move(from, to) は「from 削除後の配列の to に挿入」する。
         // 右方向移動（sourceIdx < rawInsert）では削除でインデックスが 1 ずれるため補正する。
         int targetIdx = sourceIdx < rawInsert ? rawInsert - 1 : rawInsert;

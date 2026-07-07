@@ -132,14 +132,20 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private bool TryActivateExistingTab(NestSuiteWorkspaceKind kind, string path)
     {
-        var existingTab = _tabs.FirstOrDefault(t =>
-            t.WorkspaceKind == kind &&
-            NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, path));
+        var existingTab = ShellFileOpenPlanner.FindOpenedFileTab(_tabs, kind, path);
         if (existingTab == null) return false;
+        ActivateExistingTabForOpen(existingTab, path);
+        return true;
+    }
+
+    /// <summary>
+    /// 既存タブ再利用時の UI 操作と最近ファイル更新を Shell 側に残す。
+    /// </summary>
+    private void ActivateExistingTabForOpen(NestSuiteDocumentTab existingTab, string path)
+    {
         ActivateTab(existingTab);
         _recentFiles.Add(path);
         UpdateRecentFilesMenu();
-        return true;
     }
 
     /// <summary>

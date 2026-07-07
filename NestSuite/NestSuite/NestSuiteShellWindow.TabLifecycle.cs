@@ -47,6 +47,31 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.16.3 SH-15: 通常タブのピン留め状態を切り替え、Temp 直後のピン留め領域へ並べ直す。
+    /// </summary>
+    private void SetTabPinned(NestSuiteDocumentTab tab, bool isPinned)
+    {
+        if (!tab.CanPin) return;
+        if (tab.IsPinned == isPinned) return;
+        ReplaceTab(tab, tab with { IsPinned = isPinned });
+        ApplyPinnedTabLayout();
+    }
+
+    /// <summary>
+    /// Temp → pinned → normal の安定順に _tabs を補正する。
+    /// </summary>
+    private void ApplyPinnedTabLayout()
+    {
+        var ordered = TabPinningPolicy.OrderForPinnedLayout(_tabs);
+        for (int targetIndex = 0; targetIndex < ordered.Count; targetIndex++)
+        {
+            var currentIndex = _tabs.IndexOf(ordered[targetIndex]);
+            if (currentIndex >= 0 && currentIndex != targetIndex)
+                _tabs.Move(currentIndex, targetIndex);
+        }
+    }
+
+    /// <summary>
     /// v1.9.5: 指定した NoteNest MainViewModel に対応するタブの FilePath・IsModified を同期する。
     /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// ChatNest の <see cref="SyncChatNestTabForViewModel"/> と対称な実装。
@@ -61,9 +86,9 @@ public partial class NestSuiteShellWindow
         if (vm.CurrentFilePath is string path &&
             NestSuiteTabFactory.TryGetKind(path, out var kind) &&
             kind == NestSuiteWorkspaceKind.NoteNest)
-            updatedTab = NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached };
+            updatedTab = NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached, IsPinned = tab.IsPinned };
         else
-            updatedTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached };
+            updatedTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached, IsPinned = tab.IsPinned };
         ReplaceTab(tab, updatedTab);
     }
 
