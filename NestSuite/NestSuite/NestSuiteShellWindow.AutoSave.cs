@@ -67,13 +67,15 @@ public partial class NestSuiteShellWindow
     private bool AutoSaveTab(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
         var path = NormalizeFilePath(tab.FilePath!);
+        // v2.16.6 TD-64: 自動保存は正本を更新するが .bak は更新しない
+        // （createBackup: false。atomic write は維持する。docs/planning/review1-fable5.md R-1）
         var succeeded = tab.WorkspaceKind switch
         {
             NestSuiteWorkspaceKind.NoteNest => AutoSaveNoteNestTab(session, path),
             NestSuiteWorkspaceKind.IdeaNest =>
-                TrySaveIdeaNestToPath(session, path, showNotification: false, notifyOnError: false),
+                TrySaveIdeaNestToPath(session, path, showNotification: false, notifyOnError: false, createBackup: false),
             NestSuiteWorkspaceKind.ChatNest =>
-                TrySaveChatNestToPath(session, path, showNotification: false, notifyOnError: false),
+                TrySaveChatNestToPath(session, path, showNotification: false, notifyOnError: false, createBackup: false),
             _ => false,
         };
 
@@ -95,7 +97,8 @@ public partial class NestSuiteShellWindow
     private bool AutoSaveNoteNestTab(NestSuiteWorkspaceSession session, string path)
     {
         var vm = (MainViewModel)session.WorkspaceViewModel;
-        if (!vm.SaveToPath(path, notifyOnError: false)) return false;
+        // v2.16.6 TD-64: 自動保存では .bak を更新しない
+        if (!vm.SaveToPath(path, notifyOnError: false, createBackup: false)) return false;
         UpdateNoteNestTabPath(session, path, showNotification: false);
         return true;
     }

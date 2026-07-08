@@ -57,9 +57,12 @@ public sealed class ProjectLifecycleService
 
     public void Open(string path) => Load(_files.Load(path), path);
 
-    public void Save(string path)
+    public void Save(string path) => Save(path, createBackup: true);
+
+    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    public void Save(string path, bool createBackup)
     {
-        _files.Save(path, CreateSnapshot());
+        _files.Save(path, CreateSnapshot(), createBackup);
         _session.MarkSaved(path);
         TrackRecentFile(path);
     }

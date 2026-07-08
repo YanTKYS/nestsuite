@@ -65,21 +65,30 @@ public partial class MainViewModel
     }
 
     /// <summary>Shell が重複パス検出後にパス指定で保存するためのエントリポイント。</summary>
-    public bool SaveToPath(string path) => DoSave(path, notifyOnError: true);
+    public bool SaveToPath(string path) => DoSave(path, notifyOnError: true, createBackup: true);
 
     /// <summary>
     /// v2.14.12 SH-33: 自動保存など、失敗をユーザーへ都度ダイアログ通知したくない呼び出し用。
     /// 失敗時も <see cref="ErrorLogService"/> へは記録するが、<see cref="ShowErrorDialog"/> は呼ばない。
     /// </summary>
-    public bool SaveToPath(string path, bool notifyOnError) => DoSave(path, notifyOnError);
+    public bool SaveToPath(string path, bool notifyOnError) => DoSave(path, notifyOnError, createBackup: true);
 
-    private bool DoSave(string path) => DoSave(path, notifyOnError: true);
+    /// <summary>
+    /// v2.16.6 TD-64: 自動保存など、正本は更新するが .bak を更新したくない呼び出し用。
+    /// createBackup=false でも atomic write（tmp 経由の安全な書き込み）は維持する。
+    /// </summary>
+    public bool SaveToPath(string path, bool notifyOnError, bool createBackup) =>
+        DoSave(path, notifyOnError, createBackup);
 
-    private bool DoSave(string path, bool notifyOnError)
+    private bool DoSave(string path) => DoSave(path, notifyOnError: true, createBackup: true);
+
+    private bool DoSave(string path, bool notifyOnError) => DoSave(path, notifyOnError, createBackup: true);
+
+    private bool DoSave(string path, bool notifyOnError, bool createBackup)
     {
         try
         {
-            _lifecycle.Save(path);
+            _lifecycle.Save(path, createBackup);
             StatusMessage = $"保存しました: {System.IO.Path.GetFileName(path)}";
             return true;
         }
