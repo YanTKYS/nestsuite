@@ -133,7 +133,10 @@ public class NestSuiteShellSessionPersistenceTests
         // 復元中に例外が飛んでもフラグが true のまま残らないよう、finally で戻すことを確認する。
         var src = ReadSource("NestSuiteShellWindow.Session.cs");
         var methodStart = src.IndexOf("private bool TryRestoreSession()", StringComparison.Ordinal);
-        var methodBody = src.Substring(methodStart, src.IndexOf("\n    }\n", methodStart, StringComparison.Ordinal) - methodStart);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf("private void NotifyRestoreFailures", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var methodBody = src.Substring(methodStart, methodEnd - methodStart);
         Assert.Contains("finally", methodBody);
         Assert.Contains("_isRestoringSession = false;", methodBody);
         var finallyIdx = methodBody.IndexOf("finally", StringComparison.Ordinal);
