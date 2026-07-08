@@ -90,6 +90,24 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.16.14 TD-66 (review1-fable5.md R-6): タブ追加・タブ閉鎖・ピン留め変更・並び替えなど、
+    /// session に影響する操作の直後に呼び session の鮮度を上げる。従来 session は終了時の
+    /// <see cref="OnClosing"/> でのみ保存されており、クラッシュ・強制終了時にタブ構成が
+    /// 前回正常終了時点へ巻き戻る可能性があった。
+    /// セッション復元処理中（<see cref="_isRestoringSession"/>）は、復元途中の中途半端な
+    /// タブ構成を保存して TD-65 の持ち越し entry（<see cref="_pendingSessionRestoreEntries"/>）を
+    /// 消してしまわないよう、保存を抑止する。復元完了後の保存はコンストラクターが
+    /// <see cref="TryRestoreSession"/> の戻り値を見て別途 1 回だけ行う。
+    /// session.json の形式・OnClosing 時保存は変更しない。atomic write 済みの
+    /// <see cref="NestSuiteSessionStateService"/> をそのまま使うため、随時呼んでも安全。
+    /// </summary>
+    private void SaveSessionAfterTabChange()
+    {
+        if (_isRestoringSession) return;
+        SaveSession();
+    }
+
+    /// <summary>
     /// v1.15.0: 前回セッションのタブを復元する。
     /// 未対応拡張子・空パスのエントリはスキップする。
     /// 1 件以上復元できた場合 true を返す。復元対象がない場合 false を返し、呼び元が無題タブを作成する。
@@ -102,46 +120,57 @@ public partial class NestSuiteShellWindow
         var state = _sessionState.Load();
         if (state.FilePaths.Count == 0 && (state.Tabs?.Count ?? 0) == 0) return false;
 
-        var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
-        _pendingSessionRestoreEntries = failures;
-        int restoredCount = 0;
-        foreach (var target in targets)
+        // v2.16.14 TD-66: 復元の間、タブ追加ごとの随時保存（SaveSessionAfterTabChange）を抑止する。
+        // 復元途中の中途半端なタブ構成を保存して、TD-65 の持ち越し entry（_pendingSessionRestoreEntries）を
+        // 消してしまわないようにするため。復元完了後の保存は呼び出し元（コンストラクター）が担う。
+        _isRestoringSession = true;
+        try
         {
-            var decision = ShellFileOpenPlanner.Plan(
-                target.FilePath,
-                _tabs,
-                fileExists: _ => true,
-                detectKind: _ => (true, target.WorkspaceKind, WorkspaceKindDetectionFailure.None));
-
-            if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+            var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
+            _pendingSessionRestoreEntries = failures;
+            int restoredCount = 0;
+            foreach (var target in targets)
             {
-                ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
-                continue;
+                var decision = ShellFileOpenPlanner.Plan(
+                    target.FilePath,
+                    _tabs,
+                    fileExists: _ => true,
+                    detectKind: _ => (true, target.WorkspaceKind, WorkspaceKindDetectionFailure.None));
+
+                if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+                {
+                    ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+                    continue;
+                }
+
+                int tabsBefore = _tabs.Count;
+                LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
+                if (_tabs.Count > tabsBefore)
+                {
+                    restoredCount++;
+                    if (target.IsPinned)
+                        SetTabPinned(_tabs[tabsBefore], isPinned: true);
+                }
             }
 
-            int tabsBefore = _tabs.Count;
-            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
-            if (_tabs.Count > tabsBefore)
+            NotifyRestoreFailures(failures);
+
+            if (restoredCount == 0) return false;
+
+            // 前回アクティブだったタブを選択する
+            if (state.ActiveFilePath != null)
             {
-                restoredCount++;
-                if (target.IsPinned)
-                    SetTabPinned(_tabs[tabsBefore], isPinned: true);
+                var activeTab = _tabs.FirstOrDefault(t =>
+                    NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, state.ActiveFilePath));
+                if (activeTab != null) ActivateTab(activeTab);
             }
+
+            return true;
         }
-
-        NotifyRestoreFailures(failures);
-
-        if (restoredCount == 0) return false;
-
-        // 前回アクティブだったタブを選択する
-        if (state.ActiveFilePath != null)
+        finally
         {
-            var activeTab = _tabs.FirstOrDefault(t =>
-                NestSuiteOpenFilePolicy.IsSameFile(t.FilePath, state.ActiveFilePath));
-            if (activeTab != null) ActivateTab(activeTab);
+            _isRestoringSession = false;
         }
-
-        return true;
     }
 
     /// <summary>

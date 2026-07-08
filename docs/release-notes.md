@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.14 — TD-66: タブ変更時の session 随時保存
+
+- 初回エキスパートレビュー R-6 への対応として、タブ追加・タブ閉鎖・ピン留め変更・ピン留め解除・タブ並び替えなど session に影響する操作後に session を保存するようにした
+- 従来は終了時 `OnClosing` が主な保存契機であり、クラッシュ・強制終了時にタブ構成が前回正常終了時点へ巻き戻る可能性があった
+- session 保存の鮮度を上げることで、作業状態の巻き戻りを減らした。新設の `SaveSessionAfterTabChange()` helper が実際に状態が変わった経路（タブ追加・閉鎖確定後・ピン留め変更確定後・並び替え確定後）でのみ session を保存する。未保存確認でキャンセルされた場合や、ピン留め・並び替えで実質的な変更がなかった場合は保存しない
+- TD-65 の復元失敗 entry 持ち越しを壊さないよう、セッション復元処理中（`_isRestoringSession`）は随時保存を抑止し、復元完了後に 1 回だけ保存するようにした
+- アクティブタブ変更のみ（タブ追加・閉鎖・ピン留め変更・並び替えを伴わない切替）は今回の対象外とした。頻繁に発生しうるため、随時保存の対象は上記の操作に限定している
+- session 形式・保存形式・schema・wrapper は変更していない。session.json に新しい top-level field は追加していない
+
 ## v2.16.13 — TD-63: 巨大テストクラスのシナリオ単位分割
 
 - **TD-63 として、長大化していたテストクラスをシナリオ単位・責務単位で分割した。** `NoteNestFormatSchemaRegressionTests`（973 行・57 件）を `NoteNestFormatSchemaVersionTests` / `NoteNestFormatStructureTests` / `NoteNestFormatRoundTripTests` / `NoteNestFormatTimestampAndStarTests` / `NoteNestFormatExportTests` へ、`ChatNestWorkspaceViewModelTests`（667 行・55 件）を `ChatNestMessageEditingTests` / `ChatNestExportAndCopyTests` / `ChatNestTimestampAndExportCommandTests` / `ChatNestMessageReorderTests` / `ChatNestWorkspaceFeatureRecordsTests` へ、`NestSuiteShellWorkspaceLaunchTests`（772 行・61 件）を `NestSuiteShellNoteNestLaunchTests` / `NestSuiteShellChatNestLaunchTests` / `NestSuiteShellIdeaNestLaunchTests` / `NestSuiteShellStartupTabPolicyTests` / `NestSuiteShellOpenCommonTests` / `NestSuiteShellSaveFlowTests` へ、それぞれ分割した。

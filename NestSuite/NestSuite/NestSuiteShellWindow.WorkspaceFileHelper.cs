@@ -25,6 +25,9 @@ public partial class NestSuiteShellWindow
         ActivateTab(tab);
         _recentFiles.Add(path);
         UpdateRecentFilesMenu();
+        // v2.16.14 TD-66: ファイルを開いて新規タブが確定した直後に session を保存する。
+        // セッション復元中（TryRestoreSession が同じ経路を使う）は _isRestoringSession により抑止される。
+        SaveSessionAfterTabChange();
     }
 
     /// <summary>

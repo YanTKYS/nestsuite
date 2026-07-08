@@ -310,4 +310,46 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| TD-63 |", backlog);
     }
+
+    // ── TD-66: タブ変更時の session 随時保存 ────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21614()
+    {
+        Assert.Contains("v2.16.14", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD66()
+    {
+        Assert.Contains("TD-66", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD66_MentionsR6AndSessionFormatUnchanged()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td66Section = text.Substring(text.IndexOf("TD-66", StringComparison.Ordinal));
+        var nextSectionIdx = td66Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td66Section = td66Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains("R-6", td66Section);
+        Assert.Contains("session 形式", td66Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD66AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-66 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD66InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-66", backlog);
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
 }

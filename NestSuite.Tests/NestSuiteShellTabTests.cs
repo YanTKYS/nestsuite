@@ -375,6 +375,32 @@ public class NestSuiteShellTabTests
         Assert.Empty(method.GetParameters());
     }
 
+    // ── v2.16.14 TD-66: タブ変更時の session 随時保存 ───────────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasSaveSessionAfterTabChangeMethod()
+    {
+        // v2.16.14 TD-66: タブ追加・閉鎖・ピン留め変更・並び替え後に呼ぶ helper が
+        // void・引数なしで宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("SaveSessionAfterTabChange",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Empty(method.GetParameters());
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_HasIsRestoringSessionField()
+    {
+        // v2.16.14 TD-66: セッション復元中の随時保存抑止に使う bool フィールドが存在することを確認
+        var field = typeof(NestSuiteShellWindow)
+            .GetFields(AllInstance)
+            .FirstOrDefault(f => f.Name == "_isRestoringSession");
+        Assert.NotNull(field);
+        Assert.Equal(typeof(bool), field!.FieldType);
+    }
+
     [Fact]
     public void NestSuiteSessionStateService_DefaultDataPath_ContainsSessionFileName()
     {

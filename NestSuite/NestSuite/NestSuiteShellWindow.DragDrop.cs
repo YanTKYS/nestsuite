@@ -78,6 +78,9 @@ public partial class NestSuiteShellWindow
         targetIdx = Math.Max(1, Math.Min(targetIdx, _tabs.Count - 1));
         if (targetIdx == sourceIdx) return;
         _tabs.Move(sourceIdx, targetIdx);
+        // v2.16.14 TD-66: 挿入位置が実際に変わった場合（上の early return を通過した場合）のみ
+        // session を保存する。並び順は session.json の Tabs[]/FilePaths の順序に反映される。
+        SaveSessionAfterTabChange();
     }
 
     private static NestSuiteDocumentTab? GetTabFromVisualTree(DependencyObject? element)

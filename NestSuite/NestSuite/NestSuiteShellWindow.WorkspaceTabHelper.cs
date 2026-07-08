@@ -68,6 +68,10 @@ public partial class NestSuiteShellWindow
         _tabs.Add(tab);
         _sessionManager.Add(CreateSessionForTab(tab));
         ActivateTab(tab);
+        // v2.16.14 TD-66: タブ追加直後に session を保存する。無題タブ自体は
+        // SessionTabMapper.IsSessionPersistable により session.json には含まれないが、
+        // アクティブタブの切替や既存タブ構成の鮮度を保つため、他の追加箇所と同様に呼ぶ。
+        SaveSessionAfterTabChange();
     }
 
     /// <summary>

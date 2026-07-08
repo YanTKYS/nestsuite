@@ -55,6 +55,10 @@ public partial class NestSuiteShellWindow
         if (tab.IsPinned == isPinned) return;
         ReplaceTab(tab, tab with { IsPinned = isPinned });
         ApplyPinnedTabLayout();
+        // v2.16.14 TD-66: IsPinned が実際に変わった場合のみ（上の 2 つの early return を通過した場合のみ）
+        // session を保存する。セッション復元中（TryRestoreSession 内の SetTabPinned 呼び出し）は
+        // _isRestoringSession により抑止される。
+        SaveSessionAfterTabChange();
     }
 
     /// <summary>
