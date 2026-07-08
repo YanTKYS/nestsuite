@@ -99,6 +99,8 @@ public partial class NestSuiteShellWindow
         // 右隣を優先、なければ左隣（最後のタブなら idx-1）
         var nextIdx = Math.Min(idx, _tabs.Count - 1);
         ActivateTab(_tabs[nextIdx]);
+        // v2.16.14 TD-66: タブが実際に閉じられた（確認キャンセルされていない）場合のみ session を保存する。
+        SaveSessionAfterTabChange();
         return true;
     }
 

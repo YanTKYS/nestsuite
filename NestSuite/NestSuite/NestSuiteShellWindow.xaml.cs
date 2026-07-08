@@ -110,7 +110,14 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _tabs.Add(tempTab);
         _sessionManager.Add(CreateSessionForTab(tempTab));
 
-        if (!TryRestoreSession() && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
+        if (TryRestoreSession())
+        {
+            // v2.16.14 TD-66 (review1-fable5.md R-6): 復元中は _isRestoringSession により
+            // 随時保存を抑止しているため、復元完了後に 1 回だけ保存し session の鮮度を上げる
+            // （成功した pending entry の重複解消などが反映される）。
+            SaveSession();
+        }
+        else if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）
             ActivateTab(tempTab);
@@ -400,6 +407,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// （review1-fable5.md R-2/R-3: 黙って session から消えないようにする）。
     /// </summary>
     private IReadOnlyList<SessionRestoreFailure> _pendingSessionRestoreEntries = [];
+    /// <summary>
+    /// v2.16.14 TD-66 (review1-fable5.md R-6): TryRestoreSession 実行中は true。
+    /// 復元中にタブが 1 枚ずつ追加されるたびの随時保存で、TD-65 の持ち越し entry を
+    /// 中途半端な状態のまま上書きしてしまわないよう、この間は SaveSessionAfterTabChange を抑止する。
+    /// </summary>
+    private bool _isRestoringSession;
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;
