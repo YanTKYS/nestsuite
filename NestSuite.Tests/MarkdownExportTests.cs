@@ -183,6 +183,26 @@ public class MarkdownExportTests
         Assert.True(vm.HasAnyNotes);
     }
 
+    // ── v2.16.10 SH-30: Markdown エクスポートの無効理由ツールチップ ──────
+
+    [Fact]
+    public void MarkdownExportSelectedNoteTooltip_MatchesHasSelectedNote()
+    {
+        var vm = new MainViewModel();
+        Assert.Equal(
+            ShellCommandTooltipProvider.MarkdownExportSelectedNoteTooltip(vm.HasSelectedNote),
+            vm.MarkdownExportSelectedNoteTooltip);
+    }
+
+    [Fact]
+    public void MarkdownExportAllNotesTooltip_MatchesHasAnyNotes()
+    {
+        var vm = new MainViewModel();
+        Assert.Equal(
+            ShellCommandTooltipProvider.MarkdownExportAllNotesTooltip(vm.HasAnyNotes),
+            vm.MarkdownExportAllNotesTooltip);
+    }
+
     // ── backlog / release-notes ───────────────────────────────────────────
 
     // TD-33: 完了済み項目は release-notes.md で管理

@@ -168,6 +168,57 @@ public class NestSuiteDocumentTabTests
         Assert.False(tab.ShowUnpinMenuItem);
     }
 
+    // ── v2.16.10 SH-30: 無効理由ツールチップ ─────────────────────────────
+
+    [Fact]
+    public void DocumentTab_TempTab_PinActionVisible_TrueButDisabled_WithReasonTooltip()
+    {
+        // Temp タブは従来 Pin/Unpin メニューごと非表示だったが、SH-30 で「表示はするが無効」に変更した。
+        // ShowPinMenuItem（既存テスト対象）は false のまま維持する。
+        var tab = NestSuiteTabFactory.CreateTempTab();
+
+        Assert.True(tab.PinActionVisible);
+        Assert.False(tab.CanPin);
+        Assert.Equal("Temp タブはピン留めできません", tab.PinMenuTooltip);
+    }
+
+    [Fact]
+    public void DocumentTab_UnpinnedNormalTab_PinActionVisible_EnabledTooltip()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\project.notenest");
+
+        Assert.True(tab.PinActionVisible);
+        Assert.True(tab.CanPin);
+        Assert.Equal("このタブをピン留めします", tab.PinMenuTooltip);
+    }
+
+    [Fact]
+    public void DocumentTab_PinnedTab_PinActionHidden_UnpinTooltipEnabled()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\project.notenest") with { IsPinned = true };
+
+        Assert.False(tab.PinActionVisible);
+        Assert.Equal("このタブのピン留めを解除します", tab.UnpinMenuTooltip);
+    }
+
+    [Fact]
+    public void DocumentTab_TempTab_CloseMenuTooltip_MentionsNoClosableTab()
+    {
+        var tab = NestSuiteTabFactory.CreateTempTab();
+
+        Assert.False(tab.CanClose);
+        Assert.Equal("閉じられるタブがありません", tab.CloseMenuTooltip);
+    }
+
+    [Fact]
+    public void DocumentTab_ClosableTab_CloseMenuTooltip_DescribesCloseAction()
+    {
+        var tab = NestSuiteTabFactory.FromFilePath(@"C:\work\project.notenest");
+
+        Assert.True(tab.CanClose);
+        Assert.Equal("現在のタブを閉じます", tab.CloseMenuTooltip);
+    }
+
     // ── NestSuiteTabFactory ─────────────────────────────────────────────
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Input;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
@@ -117,6 +118,9 @@ public partial class NestSuiteShellWindow
     }
 
     private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e) => SaveActiveTab();
+
+    /// <summary>v2.16.10 SH-30: ファイルメニュー「上書き保存」の Click ハンドラ。Ctrl+S と同じ SaveActiveTab に委譲する。</summary>
+    private void MenuSave_Click(object sender, RoutedEventArgs e) => SaveActiveTab();
 
     /// <summary>
     /// v2.9.0 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。

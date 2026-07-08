@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Input;
 using NestSuite.ViewModels;
 
@@ -15,6 +16,9 @@ public partial class NestSuiteShellWindow
     private enum SaveAllTabResult { Saved, Cancelled, Failed }
 
     private void CommandSaveAll_Executed(object sender, ExecutedRoutedEventArgs e) => SaveAllTabs();
+
+    /// <summary>v2.16.10 SH-30: ファイルメニュー「すべて保存」の Click ハンドラ。Ctrl+Shift+S と同じ SaveAllTabs に委譲する。</summary>
+    private void MenuSaveAll_Click(object sender, RoutedEventArgs e) => SaveAllTabs();
 
     /// <summary>
     /// v2.10.4 SH-20: 未保存の全タブ（NoteNest/IdeaNest/ChatNest）を順に保存する。

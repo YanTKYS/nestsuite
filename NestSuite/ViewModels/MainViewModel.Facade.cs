@@ -65,6 +65,15 @@ public partial class MainViewModel
     public bool IsNoteListEmpty => !_notes.AllNotes.Any();
     public bool HasSelectedNote => _editor.SelectedNote != null;
     public bool HasAnyNotes => _notes.AllNotes.Any();
+
+    /// <summary>v2.16.10 SH-30: Markdown エクスポート（選択ノート対象）の無効理由ツールチップ。</summary>
+    public string MarkdownExportSelectedNoteTooltip =>
+        NestSuite.Services.ShellCommandTooltipProvider.MarkdownExportSelectedNoteTooltip(HasSelectedNote);
+
+    /// <summary>v2.16.10 SH-30: Markdown エクスポート（全ノート対象）の無効理由ツールチップ。</summary>
+    public string MarkdownExportAllNotesTooltip =>
+        NestSuite.Services.ShellCommandTooltipProvider.MarkdownExportAllNotesTooltip(HasAnyNotes);
+
     public string? CurrentNoteTitle => _editor.SelectedNote?.Title;
     public string? CurrentNotebookName =>
         _editor.SelectedNote == null ? null : FindNotebookOf(_editor.SelectedNote)?.Title;

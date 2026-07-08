@@ -346,18 +346,26 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
+                <!-- v2.16.10 SH-30: 無効理由ツールチップ（MarkdownExportSelectedNoteTooltip / MarkdownExportAllNotesTooltip）を追加。
+                     判定条件（HasSelectedNote / HasAnyNotes）自体は変更していない。 -->
                 <Border.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Markdown としてコピー(_M)"
                                   Click="ExportNoteMarkdownCopy_Click"
-                                  IsEnabled="{Binding HasSelectedNote}"/>
+                                  IsEnabled="{Binding HasSelectedNote}"
+                                  ToolTip="{Binding MarkdownExportSelectedNoteTooltip}"
+                                  ToolTipService.ShowOnDisabled="True"/>
                         <MenuItem Header="Markdown として保存(_S)..."
                                   Click="ExportNoteMarkdownSave_Click"
-                                  IsEnabled="{Binding HasSelectedNote}"/>
+                                  IsEnabled="{Binding HasSelectedNote}"
+                                  ToolTip="{Binding MarkdownExportSelectedNoteTooltip}"
+                                  ToolTipService.ShowOnDisabled="True"/>
                         <Separator/>
                         <MenuItem Header="全ノートを Markdown として保存(_A)..."
                                   Click="ExportAllNotesMarkdownSave_Click"
-                                  IsEnabled="{Binding HasAnyNotes}"/>
+                                  IsEnabled="{Binding HasAnyNotes}"
+                                  ToolTip="{Binding MarkdownExportAllNotesTooltip}"
+                                  ToolTipService.ShowOnDisabled="True"/>
                     </ContextMenu>
                 </Border.ContextMenu>
                 <DockPanel>
