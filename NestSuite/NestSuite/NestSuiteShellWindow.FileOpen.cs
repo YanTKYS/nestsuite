@@ -89,14 +89,16 @@ public partial class NestSuiteShellWindow
     /// 拡張子から自動的に種別を判定してタブを作成する。ツール選択中に関わらず任意の形式を開ける。
     /// v1.16.0: 複数ファイル選択に対応。選択されたファイルを順番に開き、ファイル単位タブとして追加する。
     /// 既に開いているファイルは重複タブを作らず既存タブをアクティブ化する。
-    /// 開けなかったファイルがある場合は最後に概要メッセージを表示する。
+    /// v2.16.15 TD-67 (review1-fable5.md R-7): 開けなかったファイルがある場合、件数・ファイル名・
+    /// 理由を示す（従来は件数のみの汎用メッセージで、decision.Failure を捨てていた）。
+    /// 1 件失敗しても他の成功ファイルは巻き戻さず、loop 全体も止めない。
     /// </summary>
     private void OpenNestSuiteFile()
     {
         var rawPaths = _dialogs.SelectNestSuiteOpenPaths();
         if (rawPaths.Count == 0) return;
 
-        int failedCount = 0;
+        var failures = new List<OpenFileFailure>();
 
         foreach (var rawPath in rawPaths)
         {
@@ -104,7 +106,7 @@ public partial class NestSuiteShellWindow
             if (decision.DecisionKind is ShellFileOpenDecisionKind.MissingFile or
                 ShellFileOpenDecisionKind.KindDetectionFailed)
             {
-                failedCount++;
+                failures.Add(new OpenFileFailure(decision.Path, decision.Failure));
                 continue;
             }
 
@@ -116,13 +118,14 @@ public partial class NestSuiteShellWindow
 
             int tabsBefore = _tabs.Count;
             LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
-            if (_tabs.Count == tabsBefore) failedCount++;
+            // v2.16.15 TD-67: 種別判定後の実読込失敗（例外）は Load*FileAt が既に個別ダイアログを
+            // 出しているため、ここでは具体理由を持たず Unknown（汎用文言）で件数・ファイル名のみ添える。
+            if (_tabs.Count == tabsBefore)
+                failures.Add(new OpenFileFailure(decision.Path, WorkspaceKindDetectionFailure.Unknown));
         }
 
-        if (failedCount > 0)
-            _dialogs.ShowError(
-                "一部のファイルを開けませんでした。\n対応形式またはファイルの存在を確認してください。",
-                "ファイルを開けません");
+        if (failures.Count > 0)
+            _dialogs.ShowError(MultipleOpenFailureMessageBuilder.Build(failures), "ファイルを開けません");
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -347,9 +348,78 @@ public class NestSuiteDocsContractTests
     [Fact]
     public void Backlog_MentionsTD66InCompletedRange()
     {
+        // v2.16.15 TD-67 fix: 「TD-64〜TD-66」が「TD-64〜TD-67」等へ圧縮されると
+        // リテラル "TD-66" が range テキストから消えるため、範囲パースで判定する。
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-66", backlog);
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 66), "TD-66 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
         // TD-59 は今回削除しない open item として残っている想定
         Assert.Contains("| TD-59 |", backlog);
+    }
+
+    // ── TD-67: 複数ファイルオープン失敗通知の改善 ──────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21615()
+    {
+        Assert.Contains("v2.16.15", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD67()
+    {
+        Assert.Contains("TD-67", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD67_MentionsR7AndNoFormatChange()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td67Section = text.Substring(text.IndexOf("TD-67", StringComparison.Ordinal));
+        var nextSectionIdx = td67Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td67Section = td67Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains("R-7", td67Section);
+        Assert.Contains("保存形式", td67Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD67AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-67 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD67InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 67), "TD-67 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// v2.16.15 TD-67 fix: 「TD-1〜TD-58、TD-60〜TD-63、TD-64〜TD-67 は完了済み（欠番）。」
+    /// のような行から "TD-A" / "TD-A〜TD-B" の範囲をすべて抽出し、id がいずれかの範囲に
+    /// 含まれるかを判定する。将来さらに範囲が圧縮されて id の数字がリテラルとして
+    /// 残らなくなっても（例: TD-64〜TD-67 → TD-64〜TD-68）判定が壊れないようにするための helper。
+    /// </summary>
+    private static bool BacklogCompletedRangeCoversTD(string backlog, int id)
+    {
+        var line = backlog
+            .Split('\n')
+            .FirstOrDefault(l => l.Contains("は完了済み（欠番）") && l.Contains("TD-"));
+        if (line == null) return false;
+
+        foreach (Match m in Regex.Matches(line, @"TD-(\d+)(?:〜TD-(\d+))?"))
+        {
+            var start = int.Parse(m.Groups[1].Value);
+            var end = m.Groups[2].Success ? int.Parse(m.Groups[2].Value) : start;
+            if (id >= start && id <= end) return true;
+        }
+
+        return false;
     }
 }
