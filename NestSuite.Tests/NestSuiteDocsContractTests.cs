@@ -398,6 +398,49 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-59 |", backlog);
     }
 
+    // ── TD-68: Tabs[].WorkspaceKind の用途明文化・テスト固定 ─────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21616()
+    {
+        Assert.Contains("v2.16.16", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD68()
+    {
+        Assert.Contains("TD-68", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD68_MentionsR8AndUiHintNotTrustSource()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td68Section = text.Substring(text.IndexOf("TD-68", StringComparison.Ordinal));
+        var nextSectionIdx = td68Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td68Section = td68Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains("R-8", td68Section);
+        Assert.Contains("ヒント", td68Section);
+        Assert.Contains("信頼ソース", td68Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD68AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-68 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD68InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 68), "TD-68 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

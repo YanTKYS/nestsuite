@@ -671,4 +671,117 @@ public class SessionTabMapperTests
         Assert.Equal("NoteNest", state.Tabs[0].WorkspaceKind);
         Assert.Null(state.Tabs[1].WorkspaceKind);
     }
+
+    // ── v2.16.16 TD-68 (review1-fable5.md R-8): Tabs[].WorkspaceKind は UI 表示ヒント ─────
+    // 復元時の最終判定の信頼ソースではないことをテストで固定する。
+
+    [Fact]
+    public void CreateSessionState_WritesWorkspaceKindToTabs_AsUiHint()
+    {
+        // Tabs[].WorkspaceKind は書き込まれる（将来の選択的復元 UI 用のヒント）。
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+
+        var state = SessionTabMapper.CreateSessionState([note], note);
+
+        Assert.Equal("NoteNest", state.Tabs[0].WorkspaceKind);
+    }
+
+    [Fact]
+    public void NestSuiteSessionTabState_WorkspaceKind_RoundTripsThroughJson()
+    {
+        // session 形式（Tabs[].WorkspaceKind フィールド自体）は変更していない。
+        var state = new NestSuiteSessionState
+        {
+            Tabs = [new NestSuiteSessionTabState { FilePath = @"C:\work\note.notenest", WorkspaceKind = "NoteNest", IsPinned = false }]
+        };
+
+        var json = JsonSerializer.Serialize(state);
+        var restored = JsonSerializer.Deserialize<NestSuiteSessionState>(json)!;
+
+        Assert.Equal("NoteNest", restored.Tabs[0].WorkspaceKind);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_IgnoresMismatchedTabsWorkspaceKind_UsesFileExtensionInstead()
+    {
+        // TD-68 の核心: session に書かれた WorkspaceKind（ここでは意図的に実ファイルと矛盾させる）は
+        // 復元時の信頼ソースとして使わない。実際の種別は拡張子・ファイル内容から再判定する。
+        var state = new NestSuiteSessionState
+        {
+            Tabs =
+            [
+                new NestSuiteSessionTabState
+                {
+                    FilePath = @"C:\work\note.notenest",
+                    WorkspaceKind = "ChatNest",
+                    IsPinned = false
+                }
+            ]
+        };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        // 復元対象の種別は拡張子（.notenest → NoteNest）から再判定され、
+        // session に書かれた誤った "ChatNest" 文字列には影響されない。
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, target.WorkspaceKind);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_NullTabsWorkspaceKind_StillRestoresFromFileExtension()
+    {
+        // WorkspaceKind が null（pending entry 由来等）でも、拡張子から復元できる。
+        var state = new NestSuiteSessionState
+        {
+            Tabs =
+            [
+                new NestSuiteSessionTabState { FilePath = @"C:\work\chat.chatnest", WorkspaceKind = null, IsPinned = false }
+            ]
+        };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        Assert.Equal(NestSuiteWorkspaceKind.ChatNest, target.WorkspaceKind);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_OldFilePathsOnlyFormat_StillRestoresWithoutWorkspaceKindField()
+    {
+        // 旧 FilePaths[] 形式（Tabs[] も WorkspaceKind も存在しない）の互換は壊れていない。
+        var state = new NestSuiteSessionState { FilePaths = [@"C:\work\idea.ideanest"] };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, target.WorkspaceKind);
+        Assert.Empty(state.Tabs);
+    }
+
+    [Fact]
+    public void SessionTabMapper_Source_DocumentsWorkspaceKindAsUiHintNotTrustSource()
+    {
+        // R-8: コメントで「UI 表示ヒント」「信頼ソースではない」の趣旨が固定されていることを確認する。
+        // 文言完全一致ではなく重要語句の存在確認に留める（静的テストが脆くなりすぎないように）。
+        var path = Path.Combine(RepoRoot, "NestSuite", "Services", "SessionTabMapper.cs");
+        var src = File.ReadAllText(path);
+
+        Assert.Contains("UI 表示ヒント", src);
+        Assert.Contains("信頼ソース", src);
+    }
+
+    [Fact]
+    public void TryRestoreSession_StillUsesExistingSafeFileOpenPath()
+    {
+        // WorkspaceKind を使って FileService へ直行するような危険な変更になっていないことを、
+        // 既存の ShellFileOpenPlanner.Plan / LoadWorkspaceFileAt 経路が維持されていることで確認する。
+        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.Session.cs");
+        var src = File.ReadAllText(path);
+        var methodStart = src.IndexOf("private bool TryRestoreSession()", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf("private void NotifyRestoreFailures", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("SessionTabMapper.CreateRestoreTargets(", body);
+        Assert.Contains("ShellFileOpenPlanner.Plan(", body);
+        Assert.Contains("LoadWorkspaceFileAt(", body);
+    }
 }
