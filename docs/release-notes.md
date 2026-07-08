@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.7 — TD-65: session 復元失敗 entry の持ち越し・破損 session 診断
+
+- **TD-65 として、session 復元に失敗した entry を黙って消さないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-2/R-3 の指摘どおり、従来は復元できなかったタブが次回終了時の `SaveSession` で `_tabs`（現在開いているタブ）のみから再構築され、session から静かに消えていた。復元失敗 entry（`SessionTabMapper.CreateRestoreTargets` が返す `failures`）を Shell 側で保持し（`_pendingSessionRestoreEntries`）、`SaveSession` で現在開いているタブと重複しない範囲で既存の `Tabs[]` / `FilePaths` 形式のまま持ち越すようにした。
+- **「次回起動時にも再試行します」という通知文言が実挙動と一致するようになった。** 復元失敗の通知（`NotifyRestoreFailures`）は理由ごとの短いメッセージのみを列挙する形にし、実際には持ち越さない失敗を示唆する固定の補足文（「破損とは限りません」等）は外した。
+- **FileNotFound（ファイルが見つからない）も黙殺しないようにした。** 従来は存在しないファイルは通知なし・持ち越しなしで無条件スキップしていたが、ネットワークドライブ未接続・USB 未挿入・移動済みなど恒久的な喪失とは限らないため、他の復元失敗と同様に通知・持ち越し対象にした。メッセージも「移動または削除された可能性があります」から、外部/ネットワークドライブや移動済みファイルの確認を促す文言に変更した。
+- **破損した `session.json` を ErrorLog に記録し、可能であれば `.corrupt` へ退避するようにした。** `NestSuiteSessionStateService.Load()` の読込失敗は従来 `catch { return new(); }` で完全に黙殺されていた。ErrorLog（Error のみ）への記録を追加し、元ファイルを `session.json.corrupt`（既に存在する場合は日時付き名）へ退避する。退避に失敗しても ErrorLog に記録するのみで、アプリ起動は継続する。session は利用者データではなく作業状態のため、破損時に空 session として初期化する既存方針は維持している。
+- **復元 UI・選択的復元 UI・`.bak` 複数世代化には広げていない。** LT-9（選択的復元）・LT-4（複数 Window レイアウト保存）の本体には進まず、今回は黙殺防止と診断性向上のみに限定した。
+- **保存形式 / schema / wrapper / session 変更なし。** `session.json` に新しい top-level field は追加していない（持ち越し entry も既存の `{ FilePath, WorkspaceKind, IsPinned }` 形式のまま）。NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式はいずれも変更していない。旧 `session.json`（`Tabs[]` なし）も引き続き読み込める。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.6 — TD-64: 自動保存では `.bak` を更新しない
 
 - **TD-64 として、自動保存時に `.bak` を更新しないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md`（R-1）の指摘どおり、従来は自動保存（30 秒間隔）も手動保存と同じ `WriteAllTextWithBackup` を通っており、誤操作状態が正本と `.bak` の両方へ短時間で伝播しうる構造だった。自動保存経路のみバックアップなしの atomic write に切り替え、`.bak` を「手動保存時点の復元候補」として扱えるようにした。

@@ -81,18 +81,21 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// v1.15.0: ウィンドウ終了確定時に保存済みファイルタブのパスとアクティブタブを保存する。
     /// 未保存タブ（FilePath == null）はセッションに含めない。
+    /// v2.16.7 TD-65: 前回起動時に復元できなかった entry（<see cref="_pendingSessionRestoreEntries"/>）を、
+    /// 現在開いているタブと重複しない範囲で持ち越す。session.json の形式は変更しない。
     /// </summary>
     private void SaveSession()
     {
-        _sessionState.Save(SessionTabMapper.CreateSessionState(_tabs, _selectedTab));
+        _sessionState.Save(SessionTabMapper.CreateSessionState(_tabs, _selectedTab, _pendingSessionRestoreEntries));
     }
 
     /// <summary>
     /// v1.15.0: 前回セッションのタブを復元する。
-    /// 存在しないファイルや未対応拡張子のエントリはスキップする。
+    /// 未対応拡張子・空パスのエントリはスキップする。
     /// 1 件以上復元できた場合 true を返す。復元対象がない場合 false を返し、呼び元が無題タブを作成する。
     /// v2.14.7 SH-31: 読めない `.nestsuite`（存在するのに種別判定できない）は無言でスキップせず、
     /// まとめて 1 回通知する。session からの削除はしない（次回起動時に再試行される）。
+    /// v2.16.7 TD-65: 存在しないファイルも同様に通知・持ち越し対象にする（<see cref="_pendingSessionRestoreEntries"/>）。
     /// </summary>
     private bool TryRestoreSession()
     {
@@ -100,6 +103,7 @@ public partial class NestSuiteShellWindow
         if (state.FilePaths.Count == 0 && (state.Tabs?.Count ?? 0) == 0) return false;
 
         var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
+        _pendingSessionRestoreEntries = failures;
         int restoredCount = 0;
         foreach (var target in targets)
         {
@@ -143,17 +147,20 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// v2.14.7 SH-31: セッション復元で復元できなかったファイルをまとめて 1 回通知する。
     /// 1 件ずつ MessageBox を出さない。復元可能なタブの復元は既に完了している。
+    /// v2.16.7 TD-65: 「次回起動時にも再試行します」は <see cref="_pendingSessionRestoreEntries"/> 経由で
+    /// 実際に session へ持ち越されるようになったため、文言と実挙動が一致する
+    /// （review1-fable5.md R-2）。理由ごとに文言が変わるため、失敗理由を決めつける
+    /// 固定の補足文（「破損とは限りません」等）は付けず、理由別メッセージのみを列挙する。
     /// </summary>
     private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)
     {
         if (failures.Count == 0) return;
 
         var lines = failures.Select(f =>
-            $"- {Path.GetFileName(f.FilePath)}\n  {FileErrorMessages.ForKindDetectionFailure(f.Failure).Split('\n')[0]}");
+            $"- {Path.GetFileName(f.FilePath)}: {FileErrorMessages.ForKindDetectionFailure(f.Failure).Split('\n')[0]}");
         _dialogs.ShowError(
-            "一部のファイルを復元できませんでした。\n\n" +
-            string.Join("\n", lines) +
-            "\n\nファイルが壊れているとは限りません。\nより新しいバージョンの NestSuite で作成された可能性があります。\n該当ファイルは次回起動時にも再試行されます。",
+            "前回開いていた一部のファイルを復元できませんでした。\n次回起動時にも再試行します。\n\n" +
+            string.Join("\n", lines),
             "セッション復元");
     }
 
