@@ -344,6 +344,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     private readonly NestSuiteWorkspaceSessionManager _sessionManager = new();
     private readonly NestSuiteRecentFilesService _recentFiles = new();
     private readonly NestSuiteSessionStateService _sessionState = new();
+    /// <summary>
+    /// v2.16.7 TD-65: 前回起動時に session 復元できなかった entry。TryRestoreSession で設定し、
+    /// SaveSession で現在開いているタブと重複しない範囲で session へ持ち越す
+    /// （review1-fable5.md R-2/R-3: 黙って session から消えないようにする）。
+    /// </summary>
+    private IReadOnlyList<SessionRestoreFailure> _pendingSessionRestoreEntries = [];
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;

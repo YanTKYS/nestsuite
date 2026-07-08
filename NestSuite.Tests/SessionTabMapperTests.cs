@@ -467,8 +467,10 @@ public class SessionTabMapperTests
         finally { File.Delete(brokenPath); }
     }
 
+    // v2.16.7 TD-65 (review1-fable5.md R-3): 存在しないファイルは無言スキップではなく、
+    // 通知・持ち越し対象の失敗として報告するようになった（旧: SkipsSilently_NoFailureEntry）。
     [Fact]
-    public void CreateRestoreTargets_MissingFile_SkipsSilently_NoFailureEntry()
+    public void CreateRestoreTargets_MissingFile_ReportsFileNotFoundFailure()
     {
         var state = new NestSuiteSessionState
         {
@@ -478,7 +480,10 @@ public class SessionTabMapperTests
         var targets = SessionTabMapper.CreateRestoreTargets(state, _ => false, out var failures);
 
         Assert.Empty(targets);
-        Assert.Empty(failures);
+        var failure = Assert.Single(failures);
+        Assert.Equal(@"C:\work\missing.notenest", failure.FilePath);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, failure.Failure);
+        Assert.False(failure.IsPinned);
     }
 
     [Fact]
@@ -509,5 +514,161 @@ public class SessionTabMapperTests
             Assert.Equal(WorkspaceKindDetectionFailure.SchemaVersionTooNew, failure);
         }
         finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_SchemaVersionTooNew_IsReportedAsFailure()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "9.9.9", "{}"));
+        try
+        {
+            var state = new NestSuiteSessionState { FilePaths = [path] };
+
+            var targets = SessionTabMapper.CreateRestoreTargets(state, File.Exists, out var failures);
+
+            Assert.Empty(targets);
+            var failure = Assert.Single(failures);
+            Assert.Equal(WorkspaceKindDetectionFailure.SchemaVersionTooNew, failure.Failure);
+        }
+        finally { File.Delete(path); }
+    }
+
+    // ── v2.16.7 TD-65: Tabs[] 由来の復元失敗は IsPinned を保持する ─────────
+
+    [Fact]
+    public void CreateRestoreTargets_TabsShape_MissingFile_ReportsFailureWithPinnedState()
+    {
+        var state = new NestSuiteSessionState
+        {
+            Tabs =
+            [
+                new NestSuiteSessionTabState
+                {
+                    FilePath = @"C:\work\missing.notenest",
+                    WorkspaceKind = "NoteNest",
+                    IsPinned = true,
+                }
+            ]
+        };
+
+        var targets = SessionTabMapper.CreateRestoreTargets(state, _ => false, out var failures);
+
+        Assert.Empty(targets);
+        var failure = Assert.Single(failures);
+        Assert.Equal(@"C:\work\missing.notenest", failure.FilePath);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, failure.Failure);
+        Assert.True(failure.IsPinned);
+    }
+
+    // ── v2.16.7 TD-65: 復元失敗 entry の持ち越し（CreateSessionState） ─────
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_AreAddedToFilePathsAndTabs()
+    {
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([], null, pending);
+
+        Assert.Contains(@"C:\work\missing.notenest", state.FilePaths);
+        var tabState = Assert.Single(state.Tabs);
+        Assert.Equal(@"C:\work\missing.notenest", tabState.FilePath);
+        Assert.Null(tabState.WorkspaceKind);
+        Assert.False(tabState.IsPinned);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_PreservesIsPinned()
+    {
+        var pending = new[]
+        {
+            new SessionRestoreFailure(
+                @"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound, IsPinned: true)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([], null, pending);
+
+        Assert.True(Assert.Single(state.Tabs).IsPinned);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_ExcludesEntryMatchingOpenTab()
+    {
+        var openTab = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+        var pending = new[]
+        {
+            // 前回は復元に失敗したが、今回のセッションでは同じファイルが正常に開かれている。
+            new SessionRestoreFailure(@"C:\work\note.notenest", WorkspaceKindDetectionFailure.FileNotFound)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([openTab], openTab, pending);
+
+        Assert.Single(state.FilePaths);
+        Assert.Single(state.Tabs);
+        Assert.Equal(@"C:\work\note.notenest", state.FilePaths[0]);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_ExcludesEntryMatchingOpenTab_CaseInsensitive()
+    {
+        var openTab = NestSuiteTabFactory.FromFilePath(@"C:\work\NOTE.notenest");
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\note.notenest", WorkspaceKindDetectionFailure.FileNotFound)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([openTab], openTab, pending);
+
+        Assert.Single(state.FilePaths);
+        Assert.Single(state.Tabs);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_DeduplicatesRepeatedFilePath()
+    {
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+        };
+
+        var state = SessionTabMapper.CreateSessionState([], null, pending);
+
+        Assert.Single(state.FilePaths);
+        Assert.Single(state.Tabs);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_Null_BehavesLikeNoPendingEntries()
+    {
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+
+        var withNull = SessionTabMapper.CreateSessionState([note], note, null);
+        var withoutArg = SessionTabMapper.CreateSessionState([note], note);
+
+        Assert.Equal(withoutArg.FilePaths, withNull.FilePaths);
+        Assert.Equal(withoutArg.Tabs.Count, withNull.Tabs.Count);
+    }
+
+    [Fact]
+    public void CreateSessionState_PendingRestoreEntries_CombinesWithOpenTabsAndKeepsOrder()
+    {
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.chatnest", WorkspaceKindDetectionFailure.FileNotFound)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([note], note, pending);
+
+        Assert.Equal(
+            new[] { @"C:\work\note.notenest", @"C:\work\missing.chatnest" },
+            state.FilePaths);
+        Assert.Equal(2, state.Tabs.Count);
+        Assert.Equal("NoteNest", state.Tabs[0].WorkspaceKind);
+        Assert.Null(state.Tabs[1].WorkspaceKind);
     }
 }

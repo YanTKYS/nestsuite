@@ -97,4 +97,25 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| TD-64 |", backlog);
     }
+
+    // ── TD-65: session 復元失敗 entry の持ち越し・破損 session 診断 ────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD65()
+    {
+        Assert.Contains("TD-65", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2167()
+    {
+        Assert.Contains("v2.16.7", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD65AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-65 |", backlog);
+    }
 }

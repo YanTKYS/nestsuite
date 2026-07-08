@@ -41,8 +41,10 @@ public static class FileErrorMessages
     /// </summary>
     public static string ForKindDetectionFailure(WorkspaceKindDetectionFailure failure) => failure switch
     {
+        // v2.16.7 TD-65 (review1-fable5.md R-3): 「削除された」と断定せず、
+        // 外部/ネットワークドライブ未接続や移動済みなど、次に確認すべきことを示す。
         WorkspaceKindDetectionFailure.FileNotFound
-            => "ファイルが見つかりません。移動または削除された可能性があります。",
+            => "ファイルが見つかりません。外部ドライブ、ネットワークドライブ、または移動済みのファイルを確認してください。",
         WorkspaceKindDetectionFailure.AccessDenied
             => "ファイルにアクセスできません。権限または他のアプリによる使用状況を確認してください。",
         WorkspaceKindDetectionFailure.InvalidFormat
