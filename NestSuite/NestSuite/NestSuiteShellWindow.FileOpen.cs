@@ -147,7 +147,13 @@ public partial class NestSuiteShellWindow
         var decision = ShellFileOpenPlanner.Plan(path, _tabs);
         if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
         {
-            _dialogs.ShowError($"指定されたファイルが見つかりません。\n\n{decision.Path}", "ファイルを開けません");
+            // v2.16.11 SH-1: 起動引数由来の失敗は pipe/最近ファイルと同じ FileErrorMessages の
+            // 文言（外部/ネットワークドライブ・移動済み確認）に揃える。加えて、起動直後で
+            // ウィンドウがまだ見えていない可能性があるため「NestSuite は起動している」ことを添える。
+            _dialogs.ShowError(
+                ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
+                    $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{decision.Path}"),
+                "ファイルを開けません");
             EnsureDefaultTab();
             return;
         }
@@ -155,8 +161,10 @@ public partial class NestSuiteShellWindow
         if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
             // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
+            // v2.16.11 SH-1: 起動引数由来の失敗のため「NestSuite は起動している」ことを添える。
             _dialogs.ShowError(
-                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
+                ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
+                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}"),
                 decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension
                     ? "未対応のファイル形式"
                     : "ファイルを開けません");

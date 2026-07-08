@@ -220,6 +220,75 @@ public class WorkspaceFileOperationHelperTests
             FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew));
     }
 
+    // ── v2.16.11 SH-1: 起動時エラー時の案内改善 ─────────────────────────────
+    // 既存の文言方針（見つかりません／権限／新しいバージョン等）は維持しつつ、
+    // より具体的な必須ワードを固定する回帰テスト。
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFound_MentionsExternalAndNetworkDriveAndMoved()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound);
+
+        Assert.Contains("外部ドライブ", message);
+        Assert.Contains("ネットワークドライブ", message);
+        Assert.Contains("移動済み", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_AccessDenied_MentionsPermissionOrOtherAppUsage()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.AccessDenied);
+
+        Assert.Contains("権限", message);
+        Assert.Contains("他のアプリ", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_SchemaVersionTooNew_MentionsCreatedByNewerNestSuite()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew);
+
+        Assert.Contains("より新しいバージョンの NestSuite で作成された可能性", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_UnsupportedExtension_ClearlyStatesCannotOpenInNestSuite()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension);
+
+        Assert.Contains("NestSuite では開けません", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_UnsupportedExtension_ListsAllFourSupportedFormats()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension);
+
+        Assert.Contains(".nestsuite", message);
+        Assert.Contains(".notenest", message);
+        Assert.Contains(".ideanest", message);
+        Assert.Contains(".chatnest", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_InvalidFormat_BakHint_StillWorksAfterSH1()
+    {
+        // v2.16.8 L20 の .bak 案内が SH-1 の変更で壊れていないことを固定する回帰テスト。
+        var dir = Path.Combine(Path.GetTempPath(), $"nestsuite-sh1-bakhint-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "plan.nestsuite");
+        try
+        {
+            File.WriteAllText(path + ".bak", "backup content");
+
+            var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat, path);
+
+            Assert.Contains("plan.nestsuite.bak", message);
+            Assert.Contains("バックアップ復元ガイド", message);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
     [Fact]
     public void ForSave_IOException_ReturnsIoMessage()
     {
