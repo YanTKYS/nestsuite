@@ -58,4 +58,10 @@ public interface IWorkspaceDialogHost
 
     /// <summary>Markdown ファイルの保存先ダイアログを表示し、選択パスを返す。キャンセル時は null。</summary>
     string? SelectMarkdownSavePath(string defaultFileName);
+
+    /// <summary>
+    /// v2.16.5 SH-28: 操作完了を伝える一時通知（1〜2 秒程度で自動的に消える）を表示する。
+    /// モーダルダイアログではなく、AppShell 側のステータス表示領域を更新する想定。
+    /// </summary>
+    void ShowTransientStatus(string message);
 }

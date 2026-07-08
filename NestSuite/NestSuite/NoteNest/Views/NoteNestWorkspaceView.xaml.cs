@@ -187,6 +187,7 @@ public partial class NoteNestWorkspaceView : UserControl
         try
         {
             Clipboard.SetText(markdown);
+            Host.ShowTransientStatus("コピーしました");
         }
         catch (Exception ex)
         {
@@ -220,6 +221,7 @@ public partial class NoteNestWorkspaceView : UserControl
         try
         {
             AtomicFileWriter.WriteAllText(path, content, Encoding.UTF8);
+            Host.ShowTransientStatus("Markdown をエクスポートしました");
         }
         catch (Exception ex)
         {

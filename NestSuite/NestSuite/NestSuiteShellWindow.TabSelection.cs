@@ -171,7 +171,7 @@ public partial class NestSuiteShellWindow
     {
         RefreshShellStatusBar();
 
-        if (_isShowingNotification) return;
+        if (_transientStatus.IsActive) return;
         if (!TryGetActiveSession(out var session) || session == null)
         {
             WorkspaceStatusText.Text = "";

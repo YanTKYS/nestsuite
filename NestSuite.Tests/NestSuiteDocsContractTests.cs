@@ -53,4 +53,27 @@ public class NestSuiteDocsContractTests
     {
         Assert.Contains("v2.10.22", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
     }
+
+    // ── SH-28: 直近操作の一時フィードバック統一 ──────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_SH28()
+    {
+        Assert.Contains("SH-28", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2165()
+    {
+        Assert.Contains("v2.16.5", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_SH28AsOpenItem()
+    {
+        // SH-15 / SH-19 と同様、完了済み ID は「実装済み（欠番）」の注記としてのみ残り、
+        // No/概要/優先度を伴う表の行としては残らない（完了済み項目は backlog.md に残さない）。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-28 |", backlog);
+    }
 }

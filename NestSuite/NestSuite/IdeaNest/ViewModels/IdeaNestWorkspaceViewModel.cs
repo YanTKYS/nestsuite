@@ -345,6 +345,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
             cancelText: "キャンセル");
         if (ok != ConfirmResult.Primary) return;
         _cardOps.CommitDelete(card);
+        ShowStatus("削除しました");
     }
 
     private void TogglePin(IdeaCardViewModel? card)
@@ -371,6 +372,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         if (card == null) return;
         _cardOps.ToggleArchive(card);
+        ShowStatus(card.IsArchived ? "アーカイブしました" : "アーカイブを解除しました");
     }
 
     // ── 状態管理・設定同期 ────────────────────────────────────────────────────

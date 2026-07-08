@@ -9,7 +9,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
 {
     private string _title = "";
     private string _body  = "";
-    private bool _showCopyFeedback;
+    private string _feedbackMessage = "";
     private readonly DispatcherTimer _feedbackTimer;
     private bool _disposed;
 
@@ -25,11 +25,10 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
         set { if (SetProperty(ref _body, value)) Changed?.Invoke(); }
     }
 
-    public bool ShowCopyFeedback
-    {
-        get => _showCopyFeedback;
-        private set => SetProperty(ref _showCopyFeedback, value);
-    }
+    /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知の文言。空文字なら非表示。</summary>
+    public string FeedbackMessage => _feedbackMessage;
+
+    public bool HasFeedback => !string.IsNullOrEmpty(_feedbackMessage);
 
     public event Action? Changed;
 
@@ -51,33 +50,47 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
                 if (!string.IsNullOrEmpty(Body))
                 {
                     Clipboard.SetText(Body);
-                    StartFeedback();
+                    ShowFeedback("コピーしました");
                 }
             },
             _ => !string.IsNullOrEmpty(Body));
         ClearCommand = new RelayCommand(
-            _ => { if (ConfirmClear?.Invoke() != false) Clear(); },
+            _ =>
+            {
+                if (ConfirmClear?.Invoke() != false)
+                {
+                    Clear();
+                    ShowFeedback("クリアしました");
+                }
+            },
             _ => !string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Body));
     }
 
-    private void StartFeedback()
+    /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知を表示する。1つ前の通知は上書きする。</summary>
+    private void ShowFeedback(string message)
     {
         if (_disposed) return;
         _feedbackTimer.Stop();
-        ShowCopyFeedback = true;
+        SetFeedbackMessage(message);
         _feedbackTimer.Start();
     }
 
     private void FeedbackTimer_Tick(object? sender, EventArgs e)
     {
         _feedbackTimer.Stop();
-        ShowCopyFeedback = false;
+        SetFeedbackMessage("");
     }
 
     public void StopFeedback()
     {
         _feedbackTimer.Stop();
-        ShowCopyFeedback = false;
+        SetFeedbackMessage("");
+    }
+
+    private void SetFeedbackMessage(string message)
+    {
+        if (!SetProperty(ref _feedbackMessage, message, nameof(FeedbackMessage))) return;
+        OnPropertyChanged(nameof(HasFeedback));
     }
 
     private void Clear()

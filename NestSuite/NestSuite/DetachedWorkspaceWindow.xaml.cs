@@ -17,6 +17,7 @@ namespace NestSuite;
 public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
 {
     private readonly DialogService _dialogs;
+    private readonly ShellTransientStatus _transientStatus;
 
     /// <summary>このウィンドウが管理するタブの ID。</summary>
     public string TabId { get; }
@@ -36,6 +37,8 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
         TabId = tabId;
         _dialogs = new DialogService(this);
         InitializeComponent();
+        // v2.16.5 SH-28: 保存・エクスポート等の完了通知を Shell と同じ方針でこのウィンドウ内に表示する。
+        _transientStatus = new ShellTransientStatus(text => DetachedStatusText.Text = text);
         Title = title;
         WorkspaceHost.Children.Add(workspaceContent);
     }
@@ -49,6 +52,7 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosed(EventArgs e)
     {
+        _transientStatus.Dispose();
         _dialogs.CloseFindReplace();
 
         // v2.9.5 SH-21 hotfix: Children.Clear() を先に行い Unloaded を発火させてから DataContext を
@@ -127,4 +131,6 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
 
     string? IWorkspaceDialogHost.SelectMarkdownSavePath(string defaultFileName)
         => _dialogs.SelectMarkdownExportPath(defaultFileName);
+
+    void IWorkspaceDialogHost.ShowTransientStatus(string message) => _transientStatus.Show(message);
 }

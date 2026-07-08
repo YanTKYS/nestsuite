@@ -20,12 +20,12 @@
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                             HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <TextBlock Text="コピーしました"
+                    <TextBlock Text="{Binding Slot1.FeedbackMessage}"
                                Foreground="{DynamicResource MutedFg}"
                                FontSize="10.5"
                                Margin="0,0,6,0"
                                VerticalAlignment="Center"
-                               Visibility="{Binding Slot1.ShowCopyFeedback, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding Slot1.HasFeedback, Converter={StaticResource BoolToVis}}"/>
                     <Button Content="コピー" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot1.CopyButton"
                             AutomationProperties.Name="TempNest.Slot1.CopyButton"
@@ -99,12 +99,12 @@
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                             HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <TextBlock Text="コピーしました"
+                    <TextBlock Text="{Binding Slot2.FeedbackMessage}"
                                Foreground="{DynamicResource MutedFg}"
                                FontSize="10.5"
                                Margin="0,0,6,0"
                                VerticalAlignment="Center"
-                               Visibility="{Binding Slot2.ShowCopyFeedback, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding Slot2.HasFeedback, Converter={StaticResource BoolToVis}}"/>
                     <Button Content="コピー" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot2.CopyButton"
                             AutomationProperties.Name="TempNest.Slot2.CopyButton"
@@ -178,12 +178,12 @@
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                             HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <TextBlock Text="コピーしました"
+                    <TextBlock Text="{Binding Slot3.FeedbackMessage}"
                                Foreground="{DynamicResource MutedFg}"
                                FontSize="10.5"
                                Margin="0,0,6,0"
                                VerticalAlignment="Center"
-                               Visibility="{Binding Slot3.ShowCopyFeedback, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding Slot3.HasFeedback, Converter={StaticResource BoolToVis}}"/>
                     <Button Content="コピー" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot3.CopyButton"
                             AutomationProperties.Name="TempNest.Slot3.CopyButton"
@@ -257,12 +257,12 @@
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                             HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <TextBlock Text="コピーしました"
+                    <TextBlock Text="{Binding Slot4.FeedbackMessage}"
                                Foreground="{DynamicResource MutedFg}"
                                FontSize="10.5"
                                Margin="0,0,6,0"
                                VerticalAlignment="Center"
-                               Visibility="{Binding Slot4.ShowCopyFeedback, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding Slot4.HasFeedback, Converter={StaticResource BoolToVis}}"/>
                     <Button Content="コピー" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot4.CopyButton"
                             AutomationProperties.Name="TempNest.Slot4.CopyButton"

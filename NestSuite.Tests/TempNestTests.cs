@@ -269,6 +269,48 @@ public class TempNestTests
         Assert.Equal("本文", slot.Body);
     }
 
+    // ── SH-28: TempNest クリア完了の一時フィードバック ────────────────────
+
+    [Fact]
+    public void TempNestSlotViewModel_FeedbackMessage_IsEmpty_ByDefault()
+    {
+        var slot = new TempNestSlotViewModel();
+        Assert.Equal("", slot.FeedbackMessage);
+        Assert.False(slot.HasFeedback);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_ClearCommand_Execute_ShowsClearedFeedback()
+    {
+        var slot = new TempNestSlotViewModel();
+        slot.Title = "タイトル";
+        slot.Body  = "本文";
+        slot.ClearCommand.Execute(null);
+        Assert.Equal("クリアしました", slot.FeedbackMessage);
+        Assert.True(slot.HasFeedback);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_ClearCommand_Execute_DoesNotShowFeedback_WhenConfirmClearReturnsFalse()
+    {
+        var slot = new TempNestSlotViewModel();
+        slot.Title = "タイトル";
+        slot.ConfirmClear = () => false;
+        slot.ClearCommand.Execute(null);
+        Assert.False(slot.HasFeedback);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_StopFeedback_ClearsFeedbackMessage()
+    {
+        var slot = new TempNestSlotViewModel();
+        slot.Title = "タイトル";
+        slot.ClearCommand.Execute(null);
+        slot.StopFeedback();
+        Assert.Equal("", slot.FeedbackMessage);
+        Assert.False(slot.HasFeedback);
+    }
+
     // ── L14 / L15: ステータスバー — docs / backlog 確認 ─────────────────
 
     // TD-33: 完了済み項目は release-notes.md で管理
