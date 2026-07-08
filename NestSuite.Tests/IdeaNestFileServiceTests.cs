@@ -283,4 +283,55 @@ public class IdeaNestFileServiceTests
         }
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
     }
+
+    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotCreateBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "First", Ideas = new() });
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Second", Ideas = new() }, createBackup: false);
+
+            Assert.False(File.Exists(path + ".bak"));
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotOverwriteExistingBak()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "First", Ideas = new() });
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Second", Ideas = new() }); // creates .bak with "First"
+            var bakPath = path + ".bak";
+            Assert.True(File.Exists(bakPath));
+            var bakContentBefore = File.ReadAllText(bakPath);
+
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Third", Ideas = new() }, createBackup: false);
+
+            Assert.Equal(bakContentBefore, File.ReadAllText(bakPath));
+            Assert.Contains("First", bakContentBefore);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_StillUpdatesPrimaryFile()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "First", Ideas = new() });
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Second", Ideas = new() }, createBackup: false);
+
+            var loaded = IdeaNestFileService.Load(path);
+            Assert.Equal("Second", loaded.WorkspaceName);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
 }

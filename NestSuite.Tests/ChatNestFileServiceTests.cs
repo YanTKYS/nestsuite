@@ -327,4 +327,46 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Contains("first-message", bakContent);
         Assert.DoesNotContain("second-message", bakContent);
     }
+
+    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotCreateBak()
+    {
+        var path = TempPath("autosave-nobak.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "first-message" }]);
+
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.反論, Text = "second-message" }], createBackup: false);
+
+        Assert.False(File.Exists(path + ".bak"));
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotOverwriteExistingBak()
+    {
+        var path = TempPath("autosave-preserve-bak.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "first-message" }]);
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.反論, Text = "second-message" }]); // creates .bak with "first-message"
+        var bakPath = path + ".bak";
+        Assert.True(File.Exists(bakPath));
+        var bakContentBefore = File.ReadAllText(bakPath);
+
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.結論, Text = "third-message" }], createBackup: false);
+
+        Assert.Equal(bakContentBefore, File.ReadAllText(bakPath));
+        Assert.Contains("first-message", bakContentBefore);
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_StillUpdatesPrimaryFile()
+    {
+        var path = TempPath("autosave-updates-primary.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "first-message" }]);
+
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.反論, Text = "second-message" }], createBackup: false);
+
+        var loaded = ChatNestFileService.Load(path);
+        Assert.Single(loaded);
+        Assert.Equal("second-message", loaded[0].Text);
+    }
 }

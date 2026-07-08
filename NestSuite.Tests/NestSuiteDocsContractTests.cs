@@ -76,4 +76,25 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| SH-28 |", backlog);
     }
+
+    // ── TD-64: 自動保存では .bak を更新しない ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD64()
+    {
+        Assert.Contains("TD-64", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2166()
+    {
+        Assert.Contains("v2.16.6", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD64AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-64 |", backlog);
+    }
 }

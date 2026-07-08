@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.6 — TD-64: 自動保存では `.bak` を更新しない
+
+- **TD-64 として、自動保存時に `.bak` を更新しないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md`（R-1）の指摘どおり、従来は自動保存（30 秒間隔）も手動保存と同じ `WriteAllTextWithBackup` を通っており、誤操作状態が正本と `.bak` の両方へ短時間で伝播しうる構造だった。自動保存経路のみバックアップなしの atomic write に切り替え、`.bak` を「手動保存時点の復元候補」として扱えるようにした。
+- **手動保存 / 名前を付けて保存 / Save All では従来どおり `.bak` を作成・更新する。** `ProjectFileService.Save` / `IdeaNestFileService.Save` / `ChatNestFileService.Save`（および内部の `IdeaNestWorkspaceService.Save` / `WriteJson`）に `createBackup`（既定 `true`）を追加し、既定値は既存呼び出しをすべて手動保存扱いのまま維持した。自動保存経路（`AutoSaveTab` → `AutoSaveNoteNestTab` / `TrySaveIdeaNestToPath` / `TrySaveChatNestToPath`）だけが `createBackup: false` を明示的に渡す。
+- **自動保存の atomic write（tmp 経由の安全な書き込み・tmp cleanup）は維持している。** 変更したのは「`.bak` を作るかどうか」のみで、書き込み自体の安全性は変えていない。自動保存の実行間隔・dirty 判定・失敗時の挙動も変更していない。
+- **`.bak` の複数世代化・復元 UI・読込失敗メッセージへの `.bak` 言及は今回対象外。** L8 / L20 は別 PR で扱う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.5 — SH-28: 直近操作の一時フィードバック統一
 
 - **SH-28 として、主要操作の完了フィードバックを統一した。** 従来は TempNest のコピーなど一部の操作にしか完了表示がなかったが、保存・すべて保存・NoteNest Markdown エクスポート・コピー系操作・TempNest のクリアでも「保存しました」「コピーしました」等の短い文言をステータスバー（または各 Workspace 内の一時表示領域）に 1〜2 秒程度表示してから自動的に消すようにした。

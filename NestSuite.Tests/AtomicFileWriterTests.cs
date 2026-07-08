@@ -314,6 +314,27 @@ public class AtomicFileWriterTests : IDisposable
         Assert.False(File.Exists(bakPath));
     }
 
+    // ── v2.16.6 TD-64: backupPath なし書き込みは既存 .bak に触れない ──────────
+
+    [Fact]
+    public void WriteAllText_NoBackupPath_DoesNotTouchExistingBakFile()
+    {
+        // 自動保存経路の基礎となる挙動: 呼び出し側が backupPath を渡さなければ、
+        // 同じ場所に既存の .bak ファイルがあってもそれを更新・削除しない。
+        var path    = Path.Combine(_tempDir, "preserve.txt");
+        var bakPath = path + ".bak";
+        File.WriteAllText(path, "original", Encoding.UTF8);
+        AtomicFileWriter.WriteAllTextWithBackup(path, "manual-save", Encoding.UTF8); // creates .bak = "original"
+        Assert.True(File.Exists(bakPath));
+        var bakContentBefore = File.ReadAllText(bakPath, Encoding.UTF8);
+
+        AtomicFileWriter.WriteAllText(path, "autosave-content", Encoding.UTF8); // no backupPath
+
+        Assert.Equal(bakContentBefore, File.ReadAllText(bakPath, Encoding.UTF8));
+        Assert.Equal("original", bakContentBefore);
+        Assert.Equal("autosave-content", File.ReadAllText(path, Encoding.UTF8));
+    }
+
     // ── CloseConfirmationService: Save / Discard / Cancel ─────────────────
 
     [Fact]

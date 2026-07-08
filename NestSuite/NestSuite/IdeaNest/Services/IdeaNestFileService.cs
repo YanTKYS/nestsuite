@@ -14,7 +14,10 @@ public static class IdeaNestFileService
     // that only need the file service namespace.
     public const string SchemaVersion = IdeaNestSchema.CurrentVersion;
 
-    public static void Save(string path, Workspace workspace)
+    public static void Save(string path, Workspace workspace) => Save(path, workspace, createBackup: true);
+
+    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    public static void Save(string path, Workspace workspace, bool createBackup)
     {
         if (workspace == null) throw new ArgumentNullException(nameof(workspace));
 
@@ -25,13 +28,13 @@ public static class IdeaNestFileService
             var json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindIdeaNest, SchemaVersion,
                 IdeaNestWorkspaceService.SerializeToJson(workspace));
-            IdeaNestWorkspaceService.WriteJson(path, json);
+            IdeaNestWorkspaceService.WriteJson(path, json, createBackup);
             return;
         }
 
         ValidateExtension(path);
         workspace.Version = SchemaVersion;
-        IdeaNestWorkspaceService.Save(path, workspace);
+        IdeaNestWorkspaceService.Save(path, workspace, createBackup);
     }
 
     public static Workspace Load(string path)

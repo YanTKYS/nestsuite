@@ -78,8 +78,11 @@ public static class IdeaNestWorkspaceService
         }
     }
 
-    public static void Save(string path, Workspace workspace) =>
-        WriteJson(path, SerializeToJson(workspace));
+    public static void Save(string path, Workspace workspace) => Save(path, workspace, createBackup: true);
+
+    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    public static void Save(string path, Workspace workspace, bool createBackup) =>
+        WriteJson(path, SerializeToJson(workspace), createBackup);
 
     /// <summary>v2.14.1 FM-1: Workspace を保存 JSON へ直列化する（wrapper の payload 生成と legacy 保存で共有）。</summary>
     internal static string SerializeToJson(Workspace workspace) =>
@@ -91,6 +94,17 @@ public static class IdeaNestWorkspaceService
     /// AtomicFileWriter の File.Replace 統合 .bak 方式へ統一。既存ファイルがあり .bak を
     /// 作れない場合は File.Replace が例外で失敗し、旧ファイルを壊さず保存失敗として扱われる。
     /// </summary>
-    internal static void WriteJson(string path, string json) =>
-        AtomicFileWriter.WriteAllTextWithBackup(path, json, new UTF8Encoding(false));
+    internal static void WriteJson(string path, string json) => WriteJson(path, json, createBackup: true);
+
+    /// <summary>
+    /// v2.16.6 TD-64: createBackup=false は .bak を作成・更新せず、atomic write のみ行う
+    /// （自動保存経路向け。手動保存 / Save All は既定の true のまま）。
+    /// </summary>
+    internal static void WriteJson(string path, string json, bool createBackup)
+    {
+        if (createBackup)
+            AtomicFileWriter.WriteAllTextWithBackup(path, json, new UTF8Encoding(false));
+        else
+            AtomicFileWriter.WriteAllText(path, json, new UTF8Encoding(false));
+    }
 }

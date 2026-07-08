@@ -44,13 +44,20 @@ public class ProjectFileService
         return project;
     }
 
-    public void Save(string path, Project project)
+    public void Save(string path, Project project) => Save(path, project, createBackup: true);
+
+    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    public void Save(string path, Project project, bool createBackup)
     {
         var json = JsonSerializer.Serialize(project, Options);
         // v2.14.1 FM-1: .nestsuite の場合は wrapper で包む。payload（既存 NoteNest JSON）の中身は変更しない
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
             json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindNoteNest, Project.CurrentSchemaVersion, json);
-        AtomicFileWriter.WriteAllTextWithBackup(path, json, Encoding.UTF8);
+        // v2.16.6 TD-64: createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
+        if (createBackup)
+            AtomicFileWriter.WriteAllTextWithBackup(path, json, Encoding.UTF8);
+        else
+            AtomicFileWriter.WriteAllText(path, json, Encoding.UTF8);
     }
 }

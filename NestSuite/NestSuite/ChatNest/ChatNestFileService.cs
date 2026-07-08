@@ -23,7 +23,14 @@ public static class ChatNestFileService
 
     /// <summary>.chatnest ファイルにメッセージを保存する（tmp+replace パターン）。</summary>
     /// <exception cref="IOException">ファイル書き込みに失敗した場合。</exception>
-    public static void Save(string path, IEnumerable<Message> messages)
+    public static void Save(string path, IEnumerable<Message> messages) =>
+        Save(path, messages, createBackup: true);
+
+    /// <summary>
+    /// v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。
+    /// </summary>
+    /// <exception cref="IOException">ファイル書き込みに失敗した場合。</exception>
+    public static void Save(string path, IEnumerable<Message> messages, bool createBackup)
     {
         var data = new ChatSessionData
         {
@@ -42,7 +49,11 @@ public static class ChatNestFileService
             json = NestSuiteWorkspaceEnvelope.Wrap(
                 NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, json);
         // v2.14.5 FM-5: 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
-        AtomicFileWriter.WriteAllTextWithBackup(path, json, System.Text.Encoding.UTF8);
+        // v2.16.6 TD-64: createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
+        if (createBackup)
+            AtomicFileWriter.WriteAllTextWithBackup(path, json, System.Text.Encoding.UTF8);
+        else
+            AtomicFileWriter.WriteAllText(path, json, System.Text.Encoding.UTF8);
     }
 
     /// <summary>.chatnest ファイルを読み込み、Message リストを返す。</summary>

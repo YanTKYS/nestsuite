@@ -56,13 +56,18 @@ public partial class NestSuiteShellWindow
     private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveIdeaNestToPath(session, path, showNotification: true);
 
+    /// <summary>
+    /// v2.16.6 TD-64: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// 手動保存 / Save All は既定の true のまま。
+    /// </summary>
     private bool TrySaveIdeaNestToPath(
-        NestSuiteWorkspaceSession session, string path, bool showNotification, bool notifyOnError = true)
+        NestSuiteWorkspaceSession session, string path, bool showNotification,
+        bool notifyOnError = true, bool createBackup = true)
     {
         var vm = (IdeaNestWorkspaceViewModel)session.WorkspaceViewModel;
         return TrySaveWorkspaceToPath(
             session, path,
-            p => { IdeaNestFileService.Save(p, vm.BuildWorkspaceForSave()); vm.MarkSaved(); },
+            p => { IdeaNestFileService.Save(p, vm.BuildWorkspaceForSave(), createBackup); vm.MarkSaved(); },
             UpdateIdeaNestTabPath,
             "IdeaNestSave", "IdeaNest", "IdeaNest ファイルの保存に失敗しました。",
             showNotification, notifyOnError);
@@ -83,13 +88,18 @@ public partial class NestSuiteShellWindow
     private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveChatNestToPath(session, path, showNotification: true);
 
+    /// <summary>
+    /// v2.16.6 TD-64: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// 手動保存 / Save All は既定の true のまま。
+    /// </summary>
     private bool TrySaveChatNestToPath(
-        NestSuiteWorkspaceSession session, string path, bool showNotification, bool notifyOnError = true)
+        NestSuiteWorkspaceSession session, string path, bool showNotification,
+        bool notifyOnError = true, bool createBackup = true)
     {
         var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
         return TrySaveWorkspaceToPath(
             session, path,
-            p => { ChatNestFileService.Save(p, vm.MessageModels); vm.MarkSaved(); },
+            p => { ChatNestFileService.Save(p, vm.MessageModels, createBackup); vm.MarkSaved(); },
             UpdateChatNestTabPath,
             "ChatNestSave", "ChatNest", "ChatNest ファイルの保存に失敗しました。",
             showNotification, notifyOnError);

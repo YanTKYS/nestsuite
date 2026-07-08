@@ -404,6 +404,75 @@ public class NoteNestFormatSchemaRegressionTests : IDisposable
         Assert.True(File.Exists(path + ".bak"));
     }
 
+    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotCreateBak()
+    {
+        var path = Path.Combine(_tempDir, "autosave-nobak.notenest");
+        var svc = new ProjectFileService();
+        svc.Save(path, new Project { ProjectName = "First" });
+
+        svc.Save(path, new Project { ProjectName = "Second" }, createBackup: false);
+
+        Assert.False(File.Exists(path + ".bak"));
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_DoesNotOverwriteExistingBak()
+    {
+        var path = Path.Combine(_tempDir, "autosave-preserve-bak.notenest");
+        var svc = new ProjectFileService();
+        svc.Save(path, new Project { ProjectName = "First" });
+        svc.Save(path, new Project { ProjectName = "Second" }); // creates .bak containing "First"
+        var bakPath = path + ".bak";
+        Assert.True(File.Exists(bakPath));
+        var bakContentBefore = File.ReadAllText(bakPath);
+
+        svc.Save(path, new Project { ProjectName = "Third" }, createBackup: false);
+
+        Assert.Equal(bakContentBefore, File.ReadAllText(bakPath));
+        Assert.Contains("First", bakContentBefore);
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_StillUpdatesPrimaryFile()
+    {
+        var path = Path.Combine(_tempDir, "autosave-updates-primary.notenest");
+        var svc = new ProjectFileService();
+        svc.Save(path, new Project { ProjectName = "First" });
+
+        svc.Save(path, new Project { ProjectName = "Second" }, createBackup: false);
+
+        var loaded = svc.Load(path);
+        Assert.Equal("Second", loaded.ProjectName);
+    }
+
+    [Fact]
+    public void Save_CreateBackupFalse_NoTmpFileRemains()
+    {
+        var path = Path.Combine(_tempDir, "autosave-notmp.notenest");
+        var svc = new ProjectFileService();
+        svc.Save(path, new Project { ProjectName = "First" });
+
+        svc.Save(path, new Project { ProjectName = "Second" }, createBackup: false);
+
+        Assert.False(File.Exists(path + ".tmp"));
+    }
+
+    [Fact]
+    public void Save_DefaultOverload_StillCreatesBak()
+    {
+        // createBackup を省略する既存呼び出し（手動保存 / Save All）は従来どおり .bak を作成する。
+        var path = Path.Combine(_tempDir, "manual-still-bak.notenest");
+        var svc = new ProjectFileService();
+        svc.Save(path, new Project { ProjectName = "First" });
+
+        svc.Save(path, new Project { ProjectName = "Second" });
+
+        Assert.True(File.Exists(path + ".bak"));
+    }
+
     [Fact]
     public void Load_BrokenJson_Throws()
     {
