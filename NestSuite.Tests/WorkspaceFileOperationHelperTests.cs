@@ -120,6 +120,106 @@ public class WorkspaceFileOperationHelperTests
             FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension));
     }
 
+    // ── v2.16.8 L20 (review1-fable5.md R-5): 読込失敗メッセージへの .bak 復元案内 ──
+
+    [Fact]
+    public void ForLoad_JsonException_NoPath_ContainsGenericBackupHint()
+    {
+        var message = FileErrorMessages.ForLoad(new JsonException());
+
+        Assert.Contains(".bak", message);
+        Assert.Contains("最後に手動保存した時点", message);
+    }
+
+    [Fact]
+    public void ForLoad_JsonException_WithPath_BakFileExists_MentionsFileName()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), $"nestsuite-bakhint-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "project.notenest");
+        try
+        {
+            File.WriteAllText(path + ".bak", "backup content");
+
+            var message = FileErrorMessages.ForLoad(new JsonException(), path);
+
+            Assert.Contains("project.notenest.bak", message);
+            Assert.Contains("見つかりました", message);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void ForLoad_JsonException_WithPath_BakFileMissing_UsesGenericWording()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), $"nestsuite-bakhint-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "project.notenest");
+        try
+        {
+            var message = FileErrorMessages.ForLoad(new JsonException(), path);
+
+            Assert.Contains("ファイル名.bak", message);
+            Assert.DoesNotContain("見つかりました", message);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void ForLoad_FileNotFoundException_DoesNotMentionBackup()
+    {
+        // ファイル不存在は R-3 側の案内（外部/ネットワークドライブ確認）で扱う。.bak 案内は付けない。
+        Assert.DoesNotContain(".bak", FileErrorMessages.ForLoad(new FileNotFoundException()));
+    }
+
+    [Fact]
+    public void ForLoad_UnauthorizedAccessException_DoesNotMentionBackup()
+    {
+        Assert.DoesNotContain(".bak", FileErrorMessages.ForLoad(new UnauthorizedAccessException()));
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_InvalidFormat_NoPath_ContainsGenericBackupHint()
+    {
+        var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat);
+
+        Assert.Contains(".bak", message);
+        Assert.Contains("最後に手動保存した時点", message);
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_InvalidFormat_WithPath_BakFileExists_MentionsFileName()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), $"nestsuite-bakhint-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "plan.nestsuite");
+        try
+        {
+            File.WriteAllText(path + ".bak", "backup content");
+
+            var message = FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.InvalidFormat, path);
+
+            Assert.Contains("plan.nestsuite.bak", message);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_FileNotFound_DoesNotMentionBackup()
+    {
+        Assert.DoesNotContain(
+            ".bak",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound));
+    }
+
+    [Fact]
+    public void ForKindDetectionFailure_SchemaVersionTooNew_DoesNotMentionBackup()
+    {
+        Assert.DoesNotContain(
+            ".bak",
+            FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew));
+    }
+
     [Fact]
     public void ForSave_IOException_ReturnsIoMessage()
     {

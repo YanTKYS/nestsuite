@@ -64,7 +64,7 @@ public partial class NestSuiteShellWindow
                 return;
             }
             _dialogs.ShowError(
-                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
+                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
                 "ファイルを開けません");
             return;
         }
@@ -188,7 +188,7 @@ public partial class NestSuiteShellWindow
             if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
             {
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
+                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
                     "ファイルを開けません");
                 return;
             }

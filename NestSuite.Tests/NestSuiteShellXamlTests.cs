@@ -266,6 +266,33 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Title=\"キーボードショートカット\"", src);
     }
 
+    // ── v2.16.8 L8 (review1-fable5.md R-5): バックアップ復元ガイド ─────────
+
+    [Fact]
+    public void ShellXaml_HelpMenu_ContainsBackupRestoreGuideMenuItem()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("バックアップ復元ガイド(_B)", src);
+        Assert.Contains("Shell.BackupRestoreGuideMenuItem", src);
+        Assert.Contains("MenuBackupRestoreGuide_Click", src);
+    }
+
+    [Fact]
+    public void ShellXaml_HelpMenu_BackupRestoreGuideMenuItem_HasAutomationName()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("AutomationProperties.Name=\"Shell.BackupRestoreGuideMenuItem\"", src);
+    }
+
+    [Fact]
+    public void BackupRestoreGuideDialog_Title_IsBackupRestoreGuide()
+    {
+        var path = Path.Combine(RepoRoot, "NestSuite", "Dialogs", "BackupRestoreGuideDialog.xaml");
+        Assert.True(File.Exists(path), $"BackupRestoreGuideDialog.xaml not found: {path}");
+        var src = File.ReadAllText(path);
+        Assert.Contains("Title=\"バックアップ復元ガイド\"", src);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     private string ReadShellXaml()

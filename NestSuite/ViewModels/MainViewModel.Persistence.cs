@@ -136,7 +136,7 @@ public partial class MainViewModel
             bool logged = ErrorLogService.Log("NoteNestLoad", ex, "NoteNest", path);
             var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
             ShowErrorDialog?.Invoke("読込エラー",
-                $"ファイルを開けませんでした。\n{FileErrorMessages.ForLoad(ex)}{logHint}");
+                $"ファイルを開けませんでした。\n{FileErrorMessages.ForLoad(ex, path)}{logHint}");
             return false;
         }
     }
