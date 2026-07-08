@@ -1,4 +1,5 @@
 using System.IO;
+using NestSuite.Services;
 
 namespace NestSuite;
 
@@ -75,6 +76,25 @@ public sealed record NestSuiteDocumentTab
 
     /// <summary>ピン留め済み通常タブ向けコンテキストメニュー表示制御。</summary>
     public bool ShowUnpinMenuItem => CanPin && IsPinned;
+
+    /// <summary>
+    /// v2.16.10 SH-30: 「ピン留め」メニュー項目の表示制御。<see cref="ShowPinMenuItem"/> と異なり、
+    /// ピン留め不可なタブ（Temp）でも項目自体は表示し、IsEnabled は <see cref="CanPin"/> に委ねる
+    /// ことで、無効時ツールチップ（「Temp タブはピン留めできません」）を表示できるようにする。
+    /// ShowPinMenuItem は既存テストが参照する「実際にピン留めできる未ピン留め状態か」を表す値として
+    /// そのまま維持する。
+    /// </summary>
+    public bool PinActionVisible => !IsPinned;
+
+    /// <summary>v2.16.10 SH-30: 「このタブを閉じる」コンテキストメニュー項目の無効理由ツールチップ。</summary>
+    public string CloseMenuTooltip => ShellCommandTooltipProvider.TabCloseTooltip(CanClose);
+
+    /// <summary>v2.16.10 SH-30: 「ピン留め」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
+    public string PinMenuTooltip => ShellCommandTooltipProvider.PinTooltip(
+        CanPin, WorkspaceKind == NestSuiteWorkspaceKind.Temp);
+
+    /// <summary>v2.16.10 SH-30: 「ピン留めを解除」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
+    public string UnpinMenuTooltip => ShellCommandTooltipProvider.UnpinTooltip(CanPin && IsPinned);
 
     /// <summary>
     /// ファイルに紐づいていない無題タブかどうか（<c>FilePath is null</c>）。

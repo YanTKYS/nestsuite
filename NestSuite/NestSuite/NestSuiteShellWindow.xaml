@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:NestSuite"
+        xmlns:svc="clr-namespace:NestSuite.Services"
         xmlns:views="clr-namespace:NestSuite.Views"
         xmlns:chatnest="clr-namespace:NestSuite.ChatNest"
         xmlns:ideanest="clr-namespace:NestSuite.IdeaNest.Views"
@@ -50,10 +51,18 @@
                     <MenuItem Header="（履歴なし）" IsEnabled="False"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="上書き保存(_S)" Command="ApplicationCommands.Save"/>
-                <MenuItem Header="すべて保存(_A)" Command="{x:Static local:NestSuiteShellWindow.SaveAllCommand}"
-                          InputGestureText="Ctrl+Shift+S"/>
-                <MenuItem Header="名前を付けて保存(_N)..." Click="MenuSaveAs_Click"/>
+                <!-- v2.16.10 SH-30: Save / SaveAll は Ctrl+S / Ctrl+Shift+S の CommandBinding.Executed に
+                     引き続き委譲しつつ、MenuItem 自体は Click ハンドラへ切り替えた。Command バインドのままだと
+                     WPF の CanExecute 再照会で IsEnabled を手動制御できない（毎回上書きされる）ため。
+                     ショートカットキーの動作・保存ロジックは変更していない。 -->
+                <MenuItem x:Name="SaveMenuItem" Header="上書き保存(_S)"
+                          Click="MenuSave_Click" InputGestureText="Ctrl+S"
+                          ToolTipService.ShowOnDisabled="True"/>
+                <MenuItem x:Name="SaveAllMenuItem" Header="すべて保存(_A)"
+                          Click="MenuSaveAll_Click" InputGestureText="Ctrl+Shift+S"
+                          ToolTipService.ShowOnDisabled="True"/>
+                <MenuItem x:Name="SaveAsMenuItem" Header="名前を付けて保存(_N)..." Click="MenuSaveAs_Click"
+                          ToolTipService.ShowOnDisabled="True"/>
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
             </MenuItem>
@@ -134,16 +143,21 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
+                <!-- v2.16.10 SH-30: 常時有効なヘルプ項目は「無効理由」ではなく短い説明のみを付ける -->
                 <MenuItem Header="キーボードショートカット(_K)"
                           AutomationProperties.AutomationId="Shell.KeyboardShortcutsMenuItem"
                           AutomationProperties.Name="Shell.KeyboardShortcutsMenuItem"
+                          ToolTip="{x:Static svc:ShellCommandTooltipProvider.KeyboardShortcutsTooltip}"
                           Click="MenuKeyboardShortcuts_Click"/>
                 <MenuItem Header="バックアップ復元ガイド(_B)"
                           AutomationProperties.AutomationId="Shell.BackupRestoreGuideMenuItem"
                           AutomationProperties.Name="Shell.BackupRestoreGuideMenuItem"
+                          ToolTip="{x:Static svc:ShellCommandTooltipProvider.BackupRestoreGuideTooltip}"
                           Click="MenuBackupRestoreGuide_Click"/>
                 <Separator/>
-                <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
+                <MenuItem Header="ファイル関連付けの設定(_A)..."
+                          ToolTip="{x:Static svc:ShellCommandTooltipProvider.FileAssociationTooltip}"
+                          Click="MenuFileAssociation_Click"/>
                 <Separator/>
                 <MenuItem Header="NestSuite について" Click="MenuAbout_Click"/>
             </MenuItem>
@@ -333,15 +347,27 @@
                                 <Grid ToolTip="{Binding TooltipText}">
                                     <Grid.ContextMenu>
                                         <ContextMenu>
+                                            <!-- v2.16.10 SH-30: 無効理由ツールチップを追加。CanClose/CanPin/IsPinned の
+                                                 判定条件は変更していない。ピン留め項目は、従来 Temp タブでは
+                                                 メニューごと非表示にしていたが、無効理由（「Temp タブはピン留めできません」）
+                                                 を表示できるよう、表示条件を PinActionVisible（!IsPinned）に変え、
+                                                 IsEnabled=CanPin で無効表示にする方式へ変更した。 -->
                                             <MenuItem Header="このタブを閉じる(_C)"
                                                       IsEnabled="{Binding CanClose}"
+                                                      ToolTip="{Binding CloseMenuTooltip}"
+                                                      ToolTipService.ShowOnDisabled="True"
                                                       Click="TabContextClose_Click"/>
-                                            <Separator Visibility="{Binding CanPin, Converter={StaticResource BoolToVis}}"/>
+                                            <Separator/>
                                             <MenuItem Header="ピン留め(_P)"
-                                                      Visibility="{Binding ShowPinMenuItem, Converter={StaticResource BoolToVis}}"
+                                                      Visibility="{Binding PinActionVisible, Converter={StaticResource BoolToVis}}"
+                                                      IsEnabled="{Binding CanPin}"
+                                                      ToolTip="{Binding PinMenuTooltip}"
+                                                      ToolTipService.ShowOnDisabled="True"
                                                       Click="TabContextPin_Click"/>
                                             <MenuItem Header="ピン留めを解除(_U)"
                                                       Visibility="{Binding ShowUnpinMenuItem, Converter={StaticResource BoolToVis}}"
+                                                      ToolTip="{Binding UnpinMenuTooltip}"
+                                                      ToolTipService.ShowOnDisabled="True"
                                                       Click="TabContextUnpin_Click"/>
                                             <!-- v2.9.0 SH-21: NoteNest 未分離タブのみ別ウィンドウ表示を提供する -->
                                             <MenuItem Header="別ウィンドウで表示(_D)"

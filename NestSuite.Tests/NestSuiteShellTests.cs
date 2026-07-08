@@ -89,6 +89,37 @@ public class NestSuiteShellTests
         Assert.Equal(typeof(List<UnsavedCloseTarget>), method.ReturnType);
     }
 
+    // ── v2.16.10 SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasRefreshCommandAvailabilityMethod()
+    {
+        // File メニュー保存系コマンドの IsEnabled/ToolTip を再計算する helper が宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("RefreshCommandAvailability",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Empty(method!.GetParameters());
+        Assert.Equal(typeof(void), method.ReturnType);
+    }
+
+    [Theory]
+    [InlineData("MenuSave_Click")]
+    [InlineData("MenuSaveAll_Click")]
+    public void NestSuiteShellWindow_HasSaveMenuClickHandler(string methodName)
+    {
+        // Save / SaveAll の MenuItem は Command バインドから Click ハンドラへ切り替えたため、
+        // 対応するハンドラが存在することを確認する（Ctrl+S 等のキーボードショートカットは
+        // 既存の CommandXxx_Executed が引き続き処理する）。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod(methodName,
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+                null,
+                [typeof(object), typeof(RoutedEventArgs)],
+                null);
+        Assert.NotNull(method);
+    }
+
     // ── ツール選択領域・プレースホルダーの存在確認 ──────────────────────
 
     // Note: ToolSelectorPanel (x:Name) は v1.16.2 でヘッダー移動により廃止。

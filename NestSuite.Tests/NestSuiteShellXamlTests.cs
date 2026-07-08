@@ -293,6 +293,76 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Title=\"バックアップ復元ガイド\"", src);
     }
 
+    // ── v2.16.10 SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
+
+    [Fact]
+    public void ShellXaml_SaveMenuItems_HaveShowOnDisabled()
+    {
+        // 無効な MenuItem でもツールチップが表示されるよう、対象コマンドに限定して
+        // ToolTipService.ShowOnDisabled="True" を設定していることを確認する。
+        var src = ReadShellXaml();
+        Assert.Contains("x:Name=\"SaveMenuItem\"", src);
+        Assert.Contains("x:Name=\"SaveAsMenuItem\"", src);
+        Assert.Contains("x:Name=\"SaveAllMenuItem\"", src);
+
+        var occurrences = System.Text.RegularExpressions.Regex.Matches(
+            src, "ToolTipService.ShowOnDisabled=\"True\"").Count;
+        // Save/SaveAs/SaveAll（File メニュー）+ タブを閉じる/ピン留め/ピン留め解除（タブコンテキストメニュー）
+        Assert.True(occurrences >= 6, $"ToolTipService.ShowOnDisabled が主要項目に不足している（検出数: {occurrences}）");
+    }
+
+    [Fact]
+    public void ShellXaml_SaveMenuItems_UseClickHandlersNotCommandBinding()
+    {
+        // v2.16.10 SH-30: Command バインドのままだと WPF の CanExecute 再照会で
+        // 手動 IsEnabled 制御ができないため、Click ハンドラへ切り替えた。
+        // Ctrl+S / Ctrl+Shift+S は Window.CommandBindings 側で引き続き処理する。
+        var src = ReadShellXaml();
+        Assert.Contains("Click=\"MenuSave_Click\"", src);
+        Assert.Contains("Click=\"MenuSaveAll_Click\"", src);
+        Assert.Contains("CommandBinding Command=\"ApplicationCommands.Save\" Executed=\"CommandSave_Executed\"", src);
+    }
+
+    [Fact]
+    public void ShellXaml_TabContextMenu_CloseAndPinItems_HaveTooltipBindings()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("Binding CloseMenuTooltip", src);
+        Assert.Contains("Binding PinMenuTooltip", src);
+        Assert.Contains("Binding UnpinMenuTooltip", src);
+    }
+
+    [Fact]
+    public void ShellXaml_TabContextMenu_PinItem_UsesPinActionVisibleNotShowPinMenuItem()
+    {
+        // Temp タブでもピン留め項目を表示し、IsEnabled=CanPin で無効理由を出す方式へ変更した。
+        // ShowPinMenuItem は既存テスト（NestSuiteDocumentTabTests）が参照するため維持するが、
+        // XAML の表示制御はもう使わない。
+        var src = ReadShellXaml();
+        Assert.Contains("Binding PinActionVisible", src);
+        Assert.DoesNotContain("Binding ShowPinMenuItem", src);
+    }
+
+    [Fact]
+    public void ShellXaml_HelpMenuItems_HaveShortDescriptiveTooltips()
+    {
+        // 常時有効なヘルプ項目は無効理由ではなく短い説明のみを持つ。
+        var src = ReadShellXaml();
+        Assert.Contains("ShellCommandTooltipProvider.KeyboardShortcutsTooltip", src);
+        Assert.Contains("ShellCommandTooltipProvider.BackupRestoreGuideTooltip", src);
+        Assert.Contains("ShellCommandTooltipProvider.FileAssociationTooltip", src);
+    }
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_MarkdownExportMenuItems_HaveTooltipsAndShowOnDisabled()
+    {
+        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.xaml");
+        var src = File.ReadAllText(path);
+        Assert.Contains("Binding MarkdownExportSelectedNoteTooltip", src);
+        Assert.Contains("Binding MarkdownExportAllNotesTooltip", src);
+        Assert.Contains("ToolTipService.ShowOnDisabled=\"True\"", src);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     private string ReadShellXaml()

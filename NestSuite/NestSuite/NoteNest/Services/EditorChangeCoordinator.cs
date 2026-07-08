@@ -54,7 +54,7 @@ public sealed class EditorChangeCoordinator
             or nameof(EditorStateViewModel.IsTaskCommentMode)
             or nameof(EditorStateViewModel.IsNoteEditMode)
             or nameof(EditorStateViewModel.EditorTitle))
-            Publish(false, facadeProperty, nameof(MainViewModel.CurrentNoteTitle), nameof(MainViewModel.CurrentNoteTimestampSummary), nameof(MainViewModel.HasSelectedNote), nameof(MainViewModel.CurrentNotebookName));
+            Publish(false, facadeProperty, nameof(MainViewModel.CurrentNoteTitle), nameof(MainViewModel.CurrentNoteTimestampSummary), nameof(MainViewModel.HasSelectedNote), nameof(MainViewModel.CurrentNotebookName), nameof(MainViewModel.MarkdownExportSelectedNoteTooltip));
         else
             Publish(false, facadeProperty);
     }

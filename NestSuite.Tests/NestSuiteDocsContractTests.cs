@@ -173,4 +173,28 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| SH-29 |", backlog);
     }
+
+    // ── SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────────────────
+    // 注意: SH-30 という ID は v2.13.3（Shell ステータスバー同期修正）でも使われている。
+    // 単純な "SH-30" だけの Contains では旧エントリと区別できないため、
+    // このバージョンでは新エントリの見出し文字列そのものを確認する。
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21610Header_ForSH30()
+    {
+        Assert.Contains("v2.16.10 — SH-30", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21610()
+    {
+        Assert.Contains("v2.16.10", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_SH30AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-30 |", backlog);
+    }
 }

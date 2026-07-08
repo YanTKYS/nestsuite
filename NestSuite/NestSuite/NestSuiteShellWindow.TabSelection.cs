@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Services;
 using NestSuite.TempNest;
 using NestSuite.ViewModels;
 
@@ -170,6 +171,7 @@ public partial class NestSuiteShellWindow
     private void RefreshWorkspaceStatus()
     {
         RefreshShellStatusBar();
+        RefreshCommandAvailability();
 
         if (_transientStatus.IsActive) return;
         if (!TryGetActiveSession(out var session) || session == null)
@@ -218,6 +220,31 @@ public partial class NestSuiteShellWindow
 
         ShellStatusUnsavedText.Text = unsavedText;
         ShellStatusUnsavedText.Visibility = tab.IsModified ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// v2.16.10 SH-30: File メニューの保存系コマンド（上書き保存・名前を付けて保存・すべて保存）の
+    /// IsEnabled とツールチップ文言を、現在のタブ状態から再計算する。
+    /// RefreshWorkspaceStatus と同じタイミング（タブ切替・タブクローズ・アクティブタブの
+    /// 未保存状態変化）で呼び出す。
+    /// hasSavableTab / hasUnsavedTabs の判定条件は SaveActiveTab・SaveAllTabs が既に使っている
+    /// ものと完全に一致させ、二重管理でズレないようにする
+    /// （hasUnsavedTabs は SaveAllTabs の targets と同じ t.IsModified && t.CanClose）。
+    /// </summary>
+    private void RefreshCommandAvailability()
+    {
+        var hasSavableTab = _selectedTab != null && _selectedTab.WorkspaceKind != NestSuiteWorkspaceKind.Temp;
+        var isModified = _selectedTab?.IsModified == true;
+        var hasUnsavedTabs = _tabs.Any(t => t.IsModified && t.CanClose);
+
+        SaveMenuItem.IsEnabled = hasSavableTab && isModified;
+        SaveMenuItem.ToolTip = ShellCommandTooltipProvider.SaveTooltip(hasSavableTab, isModified);
+
+        SaveAsMenuItem.IsEnabled = hasSavableTab;
+        SaveAsMenuItem.ToolTip = ShellCommandTooltipProvider.SaveAsTooltip(hasSavableTab);
+
+        SaveAllMenuItem.IsEnabled = hasUnsavedTabs;
+        SaveAllMenuItem.ToolTip = ShellCommandTooltipProvider.SaveAllTooltip(hasUnsavedTabs);
     }
 
     private static string BuildNoteNestStatusText(MainViewModel vm)

@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.10 — SH-30: Shell コマンドの有効/無効理由ツールチップ統一
+
+- **SH-30 として、Shell の主要コマンド（上書き保存・名前を付けて保存・すべて保存・タブを閉じる・ピン留め・ピン留め解除・NoteNest Markdown エクスポート）に有効/無効理由のツールチップを追加・整理した。** 無効時に「保存できるタブがありません」「未保存の変更がありません」「未保存のタブがありません」「閉じられるタブがありません」「Temp タブはピン留めできません」など、なぜ押せないかを短く示す。文言は UI 非依存の新設 `ShellCommandTooltipProvider`（`NestSuite/Services/ShellCommandTooltipProvider.cs`）に集約し、同じ理由に対して文言がバラつかないようにした。
+- **無効な MenuItem でもツールチップが表示されるよう、対象コマンドに限り `ToolTipService.ShowOnDisabled="True"` を設定した。** 全体スタイルは変更していない。
+- **上書き保存・名前を付けて保存・すべて保存は、従来 File メニュー上で常時有効だったが、今回 IsEnabled を実際の状態（保存対象タブの有無・未保存の変更の有無）に連動させた。** Ctrl+S / Ctrl+Shift+S のショートカット自体の挙動・保存ロジックは変更していない（引き続き `Window.CommandBindings` の `Executed` ハンドラが処理する）。MenuItem は `Command` バインドから `Click` ハンドラへ切り替えた（Command バインドのままだと WPF の CanExecute 再照会により手動 IsEnabled 制御ができないため）。
+- **タブのピン留めメニュー項目は、Temp タブで従来メニューごと非表示にしていたが、表示はした上で無効化し理由を示す方式に変更した。** ピン留め可否の判定条件（`TabPinningPolicy.CanPin` / `CanClose`）自体は変更していない。
+- **コマンドの `CanExecute` 判定条件や保存フローの大規模な変更、新しい操作機能の追加はしていない。** Save All / Discard All のような一括操作は追加していない。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.9 — SH-29: 未保存タブ終了確認への件数サマリ追加
 
 - **SH-29 として、複数の未保存タブがある状態で終了すると、個別確認前に件数サマリを表示するようにした。** 従来は `NestSuiteShellWindow.OnClosing` が NoteNest → IdeaNest → ChatNest の順に対象タブを 1 件ずつ確認ダイアログで問い合わせており、利用者は「あと何回確認が続くか」を事前に把握できなかった。個別確認ループへ入る前に、これから確認対象になるタブ（既存の個別確認と同じ条件：NoteNest はタブの `IsModified`、IdeaNest は `HasChanges`、ChatNest は `HasUnsavedChanges`）を集計し、2 件以上あるときだけ「未保存のタブが N 件あります。これから順番に保存するか確認します。」というサマリを表示する。0 件・1 件では従来どおり余計な表示を挟まない。
