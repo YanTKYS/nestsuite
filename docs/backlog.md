@@ -169,12 +169,11 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-58、TD-60〜TD-62、TD-64〜TD-65 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-58、TD-60〜TD-63、TD-64〜TD-65 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | TD-59 | `.nestsuite` オープン時の二重読込・二重パース解消 | `.nestsuite` を開く全経路（Open ダイアログ・起動引数・最近ファイル・セッション復元・pipe）で、種別判定（`TryGetKind` → `TryDetectKindFromFile` が `File.ReadAllText` + JSON パース）と本読込（各 FileService の `Load` が再度 `File.ReadAllText` + wrapper パース）の 2 回、同じファイルを読み込み解析している。現状は実害が小さい（判定と読込の間に内容が変わっても `EnsureKind` が明確なエラーで失敗する）が、大きいファイル・遅いストレージでは無駄が倍になる。判定結果（envelope 内容）を読込へ引き渡す形を検討する。注意点: `TryGetKind` の単一集約点という FM-1 の設計利点を壊さないこと。急ぎではない | C |
-| TD-63 | 巨大テストクラスのシナリオ単位分割 | `NoteNestFormatSchemaRegressionTests`、`NestSuiteShellWorkspaceLaunchTests`、`ChatNestWorkspaceViewModelTests` など一部テストクラスが長大化しており、失敗時に該当責務を把握しにくい。既存の test classification 方針に従い、機能単位・回帰シナリオ単位で安全に分割できる箇所を抽出する。テスト内容の削減ではなく、技術的負債としての探索コスト低減を目的とする | B |
 
 ---
 

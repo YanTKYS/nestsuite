@@ -12,7 +12,10 @@ namespace NestSuite.Tests;
 /// <summary>
 /// NestSuiteShellWindow の型境界・ToolRegistry 定義・WindowPositionGuard・UiSettings を確認するテスト。
 /// UI を実際に起動しない、リフレクションベースの静的確認。
-/// タブ管理は NestSuiteShellTabTests、ファイル操作は NestSuiteShellWorkspaceLaunchTests を参照。
+/// タブ管理は NestSuiteShellTabTests、ファイル操作は NestSuiteShellNoteNestLaunchTests /
+/// NestSuiteShellChatNestLaunchTests / NestSuiteShellIdeaNestLaunchTests /
+/// NestSuiteShellStartupTabPolicyTests / NestSuiteShellOpenCommonTests /
+/// NestSuiteShellSaveFlowTests を参照（v2.16.13 TD-63 で分割）。
 /// </summary>
 public class NestSuiteShellTests
 {

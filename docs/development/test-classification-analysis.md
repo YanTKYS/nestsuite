@@ -1585,7 +1585,10 @@ backlog ID はテストクラス名ではなく、移動先クラス内のコメ
    - 例: `SessionTabMapper` の変換仕様は `SessionTabMapperTests`、`ProjectFileService` の保存読込は `ProjectFileServiceTests`。
 2. **対象クラスが複数でも責務が明確な場合**
    - 既存の責務名 / 機能名テストへ追加する。
-   - 例: Shell 構造・静的 UX 確認は `NestSuiteShellTests`、NoteNest 保存形式・schema 非変更確認は `NoteNestFormatSchemaRegressionTests`（IdeaNest は `IdeaNestFormatSchemaRegressionTests`、ChatNest は `ChatNestFormatSchemaRegressionTests`、TempNest は `TempNestFormatSchemaRegressionTests`、Session は `SessionFormatSchemaRegressionTests`）。
+   - 例: Shell 構造・静的 UX 確認は `NestSuiteShellTests`、NoteNest 保存形式・schema 非変更確認は
+     `NoteNestFormatSchemaVersionTests` / `NoteNestFormatStructureTests` / `NoteNestFormatRoundTripTests` /
+     `NoteNestFormatTimestampAndStarTests` / `NoteNestFormatExportTests`（v2.16.13 TD-63 でシナリオ単位に分割。詳細は 12.5 参照）
+     （IdeaNest は `IdeaNestFormatSchemaRegressionTests`、ChatNest は `ChatNestFormatSchemaRegressionTests`、TempNest は `TempNestFormatSchemaRegressionTests`、Session は `SessionFormatSchemaRegressionTests`）。
 3. **複数処理をまたぐ事故防止の場合**
    - 既存の `*RegressionTests` / `*Smoke*` / シナリオ系テストへ追加する。
    - 新規クラスを作る前に、既存の回帰テストで同じ事故領域を扱っていないか確認する。
@@ -1609,14 +1612,22 @@ backlog ID はテストクラス名ではなく、移動先クラス内のコメ
 | FileErrorMessages の例外別メッセージ | `DialogServiceBoundaryTests` または既存の file error 関連受け皿 | 機能単位テスト | 対象クラス単位の受け皿が必要になった場合のみ検討 |
 | Shell 型境界 / Shell static UX / UI smoke program 構造 | `NestSuiteShellTests` | 機能単位テスト / シナリオ | backlog ID 名のクラスは作らない |
 | AutomationId の存在・一意性 | `AutomationIdTests` | クラス単位 / ルール固定 | 新規作成しない |
-| NoteNest `.notenest` 形式 / schema 非変更 / v1.4.x 回帰 | `NoteNestFormatSchemaRegressionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
+| NoteNest `.notenest` 形式 / schema バージョン・前方互換ガード | `NoteNestFormatSchemaVersionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
+| NoteNest `.notenest` / `.nestsuite` JSON トップレベル構造 | `NoteNestFormatStructureTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
+| NoteNest 保存・読込・自動保存・`.bak`・最近使ったファイル回帰 | `NoteNestFormatRoundTripTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
+| NoteNest ノート日時・スター（お気に入り）回帰 | `NoteNestFormatTimestampAndStarTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
+| NoteNest Txt/Markdown/Html エクスポート回帰 | `NoteNestFormatExportTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
 | IdeaNest `.ideanest` 形式 / schema 非変更 | `IdeaNestFormatSchemaRegressionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
 | ChatNest `.chatnest` 形式 / schema 非変更 | `ChatNestFormatSchemaRegressionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
 | TempNest 保存形式 / schema 非変更 | `TempNestFormatSchemaRegressionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
 | session.json 形式 / round-trip | `SessionFormatSchemaRegressionTests` | シナリオ / 回帰テスト | version番号クラスは作らない |
 | NoteNest project lifecycle | `ProjectLifecycleServiceTests` | クラス単位テスト | 新規作成しない |
 | ExportService のファイル名・形式・出力内容 | `ExportServiceTests` | クラス単位テスト | 新規作成しない |
-| ChatNest view model 操作 | `ChatNestWorkspaceViewModelTests` | クラス単位テスト | CH番号クラスは作らない |
+| ChatNest 投稿・発言者切替・未保存状態 | `ChatNestMessageEditingTests` | クラス単位テスト | CH番号クラスは作らない |
+| ChatNest コピー / NestSuite・Markdown テキスト組み立て | `ChatNestExportAndCopyTests` | クラス単位テスト | CH番号クラスは作らない |
+| ChatNest タイムスタンプ表示・ExportConversationCommand | `ChatNestTimestampAndExportCommandTests` | クラス単位テスト | CH番号クラスは作らない |
+| ChatNest 発言ドラッグ並び替え（MoveMessage） | `ChatNestMessageReorderTests` | クラス単位テスト | CH番号クラスは作らない |
+| ChatNest 機能完了記録（backlog / release-notes 確認） | `ChatNestWorkspaceFeatureRecordsTests` | ドキュメント / ルール固定テスト | CH番号クラスは作らない（v2.16.13 TD-63 で `ChatNestWorkspaceViewModelTests` から分割。詳細は 12.5 参照） |
 | ChatNest export formatter | `ChatNestExportFormatterTests` | クラス単位テスト | CH番号クラスは作らない |
 | TempNest slot / store / fixed tab behavior | `TempNestTests` | クラス単位 / 機能単位テスト | TN番号クラスは作らない |
 | IdeaNest workspace VM / card operation | `IdeaNestWorkspaceViewModelTests` | クラス単位テスト | ID番号クラスは作らない |
@@ -1637,5 +1648,20 @@ backlog ID はテストクラス名ではなく、移動先クラス内のコメ
 |----------------------|------|------|
 | `TD33Tests` | backlog ID のみ | 対象クラス名 + Tests または責務名 + Tests |
 | `V21019RegressionTests` | version番号中心 | 既存 `*RegressionTests` または対象責務名 + `RegressionTests` |
-| `ChatNestCH15Tests` | CH番号中心 | `ChatNestWorkspaceViewModelTests` / `ChatNestExportFormatterTests` / `ChatNestFileServiceTests` など |
+| `ChatNestCH15Tests` | CH番号中心 | `ChatNestMessageEditingTests` / `ChatNestExportAndCopyTests` / `ChatNestExportFormatterTests` / `ChatNestFileServiceTests` など |
 | `LightImprovementsVxxxxTests` | 実装時期・まとめ作業中心 | 変更対象ごとの既存受け皿 |
+
+### 12.5 v2.16.13 TD-63: 巨大テストクラスのシナリオ単位分割
+
+巨大テストクラスの失敗時探索コストを下げるため、テスト内容を削減せずシナリオ単位・責務単位で分割した。
+分割は「巨大テストクラスの分割」自体が目的であり、対象仕様やテスト期待値は変更していない。
+
+| 分割前 | テスト件数 | 分割後 |
+|--------|-----------|--------|
+| `NoteNestFormatSchemaRegressionTests` | 57 | `NoteNestFormatSchemaVersionTests`（8）/ `NoteNestFormatStructureTests`（8）/ `NoteNestFormatRoundTripTests`（26）/ `NoteNestFormatTimestampAndStarTests`（11）/ `NoteNestFormatExportTests`（4） |
+| `ChatNestWorkspaceViewModelTests` | 55 | `ChatNestMessageEditingTests`（18）/ `ChatNestExportAndCopyTests`（10）/ `ChatNestTimestampAndExportCommandTests`（7）/ `ChatNestMessageReorderTests`（15）/ `ChatNestWorkspaceFeatureRecordsTests`（5） |
+| `NestSuiteShellWorkspaceLaunchTests` | 61 | `NestSuiteShellNoteNestLaunchTests`（8）/ `NestSuiteShellChatNestLaunchTests`（8）/ `NestSuiteShellIdeaNestLaunchTests`（16）/ `NestSuiteShellStartupTabPolicyTests`（14）/ `NestSuiteShellOpenCommonTests`（6）/ `NestSuiteShellSaveFlowTests`（9） |
+
+`IdeaNestFormatSchemaRegressionTests` / `ChatNestFormatSchemaRegressionTests` / `TempNestFormatSchemaRegressionTests` /
+`SessionFormatSchemaRegressionTests` は、TD-63 時点でまだ巨大化していないため今回の分割対象外とした
+（判断が難しい・優先度が低いものは対象外のままにする、という TD-63 の方針どおり）。
