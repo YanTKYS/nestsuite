@@ -715,11 +715,12 @@ public class NestSuiteShellWorkspaceLaunchTests
     {
         // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
         // v2.14.12 SH-33: 自動保存用の notifyOnError パラメータが追加され 4 引数になった。
+        // v2.16.6 TD-64: 自動保存用の createBackup パラメータが追加され 5 引数になった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("TrySaveIdeaNestToPath",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool)],
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool), typeof(bool)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);
@@ -730,11 +731,12 @@ public class NestSuiteShellWorkspaceLaunchTests
     {
         // v2.13.6 TD-45: SaveAll から showNotification: false で委譲するためのオーバーロード。
         // v2.14.12 SH-33: 自動保存用の notifyOnError パラメータが追加され 4 引数になった。
+        // v2.16.6 TD-64: 自動保存用の createBackup パラメータが追加され 5 引数になった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("TrySaveChatNestToPath",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool)],
+                [typeof(NestSuiteWorkspaceSession), typeof(string), typeof(bool), typeof(bool), typeof(bool)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(bool), method!.ReturnType);
