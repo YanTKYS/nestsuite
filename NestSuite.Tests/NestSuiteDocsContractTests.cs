@@ -69,8 +69,11 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_DoesNotContain_SH28()
+    public void Backlog_DoesNotContain_SH28AsOpenItem()
     {
-        Assert.DoesNotContain("SH-28", File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md")));
+        // SH-15 / SH-19 と同様、完了済み ID は「実装済み（欠番）」の注記としてのみ残り、
+        // No/概要/優先度を伴う表の行としては残らない（完了済み項目は backlog.md に残さない）。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-28 |", backlog);
     }
 }
