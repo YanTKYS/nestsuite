@@ -138,6 +138,10 @@
                           AutomationProperties.AutomationId="Shell.KeyboardShortcutsMenuItem"
                           AutomationProperties.Name="Shell.KeyboardShortcutsMenuItem"
                           Click="MenuKeyboardShortcuts_Click"/>
+                <MenuItem Header="バックアップ復元ガイド(_B)"
+                          AutomationProperties.AutomationId="Shell.BackupRestoreGuideMenuItem"
+                          AutomationProperties.Name="Shell.BackupRestoreGuideMenuItem"
+                          Click="MenuBackupRestoreGuide_Click"/>
                 <Separator/>
                 <MenuItem Header="ファイル関連付けの設定(_A)..." Click="MenuFileAssociation_Click"/>
                 <Separator/>

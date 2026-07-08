@@ -156,7 +156,7 @@ public partial class NestSuiteShellWindow
         {
             // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
             _dialogs.ShowError(
-                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure)}\n\n{decision.Path}",
+                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
                 decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension
                     ? "未対応のファイル形式"
                     : "ファイルを開けません");

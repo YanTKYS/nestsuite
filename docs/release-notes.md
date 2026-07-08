@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.8 — L20 + L8: `.bak` 復元導線の追加
+
+- **L20 として、読込失敗メッセージに `.bak` 復元の可能性を追記した。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-5 の指摘どおり、破損・形式不正・JSON 読込失敗など `.bak` からの手動復元が意味を持つ失敗（`FileErrorMessages.ForLoad` の `JsonException`、`FileErrorMessages.ForKindDetectionFailure` の `InvalidFormat`）に限り、短い案内を追記した。読込対象パスが分かる呼び出し元では、同じ場所に `.bak` が実在するかを確認し、見つかった場合はファイル名を含めて案内する。ファイル不存在・権限エラー・スキーマが新しすぎる等、`.bak` が助けにならない失敗には追記していない。
+- **L8 として、ヘルプメニューに「バックアップ復元ガイド(_B)」を追加した。** `BackupRestoreGuideProvider` に案内文言を集約し、`BackupRestoreGuideDialog`（`ShortcutHelpDialog` と同じ簡易ダイアログ形式）で表示する。手順（対象ファイルを閉じる → 元ファイルを別名へ退避 → `.bak` をコピー → 拡張子を戻す → 開けるか確認）と、`project.notenest` を例にした具体手順、`.bak` が最後の手動保存時点の内容であるという注意書きを含む。
+- **`.bak` は「最後の手動保存時点の復元候補」として案内している。** v2.16.6 TD-64 で自動保存は `.bak` を更新しなくなった前提のうえで、その意味論を利用者向けに言い換えたもの。
+- **自動復元・自動コピー・自動リネーム・複数世代化・復元ウィザードは対象外。** 案内のみで、`.bak` の実ファイル操作はいずれも利用者の明示操作に委ねる。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式、自動保存・`.bak` 作成挙動（v2.16.6 のまま）はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.7 — TD-65: session 復元失敗 entry の持ち越し・破損 session 診断
 
 - **TD-65 として、session 復元に失敗した entry を黙って消さないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-2/R-3 の指摘どおり、従来は復元できなかったタブが次回終了時の `SaveSession` で `_tabs`（現在開いているタブ）のみから再構築され、session から静かに消えていた。復元失敗 entry（`SessionTabMapper.CreateRestoreTargets` が返す `failures`）を Shell 側で保持し（`_pendingSessionRestoreEntries`）、`SaveSession` で現在開いているタブと重複しない範囲で既存の `Tabs[]` / `FilePaths` 形式のまま持ち越すようにした。

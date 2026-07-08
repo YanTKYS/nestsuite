@@ -40,7 +40,7 @@ public partial class NestSuiteShellWindow
         bool logged = ErrorLogService.Log(operation, ex, workspaceKind, path);
         var logHint = logged ? "\n\n詳細はエラーログに記録されました。" : "";
         _dialogs.ShowError(
-            $"{displayLabel}\n{FileErrorMessages.ForLoad(ex)}{logHint}",
+            $"{displayLabel}\n{FileErrorMessages.ForLoad(ex, path)}{logHint}",
             "読込エラー");
     }
 

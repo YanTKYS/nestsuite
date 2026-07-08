@@ -427,4 +427,19 @@ public class NestSuiteShellTabTests
         Assert.NotNull(field);
         Assert.Equal(typeof(TextBlock), field!.FieldType);
     }
+
+    // ── v2.16.8 L8 (review1-fable5.md R-5): バックアップ復元ガイドのクリックハンドラ ──
+
+    [Fact]
+    public void NestSuiteShellWindow_HasMenuBackupRestoreGuideClickHandler()
+    {
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("MenuBackupRestoreGuide_Click",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+        var parameters = method.GetParameters();
+        Assert.Equal(2, parameters.Length);
+        Assert.Equal(typeof(object), parameters[0].ParameterType);
+    }
 }

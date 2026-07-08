@@ -118,4 +118,38 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| TD-65 |", backlog);
     }
+
+    // ── L20 + L8: `.bak` 復元導線の追加 ────────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_L20()
+    {
+        Assert.Contains("L20", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_L8()
+    {
+        Assert.Contains("L8", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2168()
+    {
+        Assert.Contains("v2.16.8", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_L8AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| L8 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_L20AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| L20 |", backlog);
+    }
 }
