@@ -220,4 +220,73 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| SH-1 |", backlog);
     }
+
+    // ── RJ-10: M2 見送り・タスク縮退方針整理 ────────────────────────────────
+
+    [Fact]
+    public void Backlog_DoesNotContain_M2AsOpenItem()
+    {
+        // M2 は完了ではなく見送り。RJ-10 として backlog.md の見送り表へ移した。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| M2 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_Contains_RJ10()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("RJ-10", backlog);
+    }
+
+    [Fact]
+    public void Backlog_RJ10_MentionsMarkerTaskAndDecline()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        var rj10Line = backlog.Split('\n').FirstOrDefault(l => l.Contains("RJ-10"));
+        Assert.NotNull(rj10Line);
+        Assert.Contains("マーカー", rj10Line);
+        Assert.Contains("タスク", rj10Line);
+        Assert.Contains("見送り", rj10Line);
+    }
+
+    [Fact]
+    public void Backlog_RJ10_MentionsExistingTaskFeatureNotRemoved()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        var rj10Line = backlog.Split('\n').FirstOrDefault(l => l.Contains("RJ-10"));
+        Assert.NotNull(rj10Line);
+        Assert.Contains("既存タスク機能を今回削除するわけではない", rj10Line);
+    }
+
+    [Fact]
+    public void Backlog_RJ10_MentionsFutureReconsiderationUsesNewBacklogId()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        var rj10Line = backlog.Split('\n').FirstOrDefault(l => l.Contains("RJ-10"));
+        Assert.NotNull(rj10Line);
+        Assert.Contains("M2 を復活させず", rj10Line);
+        Assert.Contains("新しい backlog ID", rj10Line);
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21612()
+    {
+        Assert.Contains("v2.16.12", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_RJ10()
+    {
+        Assert.Contains("RJ-10", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_MentionsM2AsDeclined()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("M2", text);
+        // 完了ではなく見送り（取り下げ）であることが分かる文言を確認する
+        var m2Mentions = text.Split('\n').Where(l => l.Contains("M2")).ToList();
+        Assert.Contains(m2Mentions, l => l.Contains("取り下げ") || l.Contains("見送り"));
+    }
 }

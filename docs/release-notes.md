@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.12 — RJ-10: M2見送り・タスク縮退方針整理
+
+- **M2「マーカーからタスクを作成」を実装候補から取り下げた。** `docs/backlog.md` の NoteNest Workspace 改善（中難易度）から M2 の行を削除した。M2 は完了ではなく見送りであり、番号は再利用しない。
+- **RJ-10 として、マーカーからタスクを作成する機能、およびマーカーからタスクへの自動・半自動変換を当面採用しない方針を明文化した。** `docs/backlog.md` の「見送り・採用しない方針（RJ-）」に追加した。
+- **理由は、タスク機能を拡張せず、縮退・軽量化する方針と衝突するため。** NoteNest は本文・マーカー・リンクを中心に扱い、タスク管理機能を増やしすぎない方向へ寄せる。
+- **既存タスク機能は今回削除しない。** タスク UI・保存データ・マーカー機能・NoteNest schema はいずれも変更していない。将来タスク機能の拡張を再検討する場合も M2 は復活させず、新しい backlog ID で扱う。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.11 — SH-1: 起動時エラー時の案内改善
 
 - **SH-1 として、起動時・外部オープン時（起動引数・ファイル関連付け・pipe 経由の 2 重起動転送）のファイルオープン失敗案内を改善した。** ファイルを開けなくても NestSuite 自体は起動・利用できることが伝わるよう、`LoadInitialFile` と `OpenFileFromPipe` の失敗ダイアログに「NestSuite は起動しています。別のファイルを開くか、新しいタブで作業を開始できます。」という短い一文を追加した。文言は UI 非依存の新設 `ShellOpenFailureGuidanceProvider`（`NestSuite/Services/ShellOpenFailureGuidanceProvider.cs`）に集約した。Open ダイアログ・最近使ったファイルなど Shell が既に画面表示され操作中の場面には追加していない（自明で冗長なため）。
