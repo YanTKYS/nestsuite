@@ -65,6 +65,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));
 
         InitializeComponent();
+        // v2.16.5 SH-28: 一時通知（保存・エクスポート・コピー等の完了メッセージ）は
+        // ステータスバー（WorkspaceStatusText）へ集約する。満了時は通常表示へ戻す。
+        _transientStatus = new ShellTransientStatus(text => WorkspaceStatusText.Text = text, RefreshWorkspaceStatus);
         // v2.14.11 SH-32: ウィンドウハンドル生成後にタイトルバーのダークモードを適用する
         // （SourceInitialized 以前は HWND が存在せず DwmSetWindowAttribute を呼べないため）
         SourceInitialized += (_, _) => ApplyTitleBarTheme(_currentTheme);
@@ -231,7 +234,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     protected override void OnClosed(EventArgs e)
     {
         StopAutoSaveTimer(); // v2.14.12 SH-33
-        StopNotificationTimer();
+        _transientStatus.Dispose();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
         foreach (var s in _sessionManager.Sessions)
@@ -481,4 +484,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     string? IWorkspaceDialogHost.SelectMarkdownSavePath(string defaultFileName)
         => _dialogs.SelectMarkdownExportPath(defaultFileName);
+
+    void IWorkspaceDialogHost.ShowTransientStatus(string message) => ShowStatusNotification(message);
 }

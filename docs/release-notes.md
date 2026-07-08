@@ -7,6 +7,13 @@
 
 ---
 
+## v2.16.5 — SH-28: 直近操作の一時フィードバック統一
+
+- **SH-28 として、主要操作の完了フィードバックを統一した。** 従来は TempNest のコピーなど一部の操作にしか完了表示がなかったが、保存・すべて保存・NoteNest Markdown エクスポート・コピー系操作・TempNest のクリアでも「保存しました」「コピーしました」等の短い文言をステータスバー（または各 Workspace 内の一時表示領域）に 1〜2 秒程度表示してから自動的に消すようにした。
+- **既存の軽量な仕組みを再利用・共通化した。** Shell のステータスバー通知は新設の `ShellTransientStatus` helper（UI thread 前提、1つ前の通知は新しい通知で上書き、Window Close で timer を停止）に集約し、`IWorkspaceDialogHost.ShowTransientStatus` 経由で NoteNest（AppShell / 別ウィンドウ双方）から呼べるようにした。TempNest のコピー表示は文言付きの `FeedbackMessage` / `HasFeedback` へ拡張し、クリア完了にも同じ仕組みを流用した。IdeaNest の既存 `ShowStatus` はカード削除・アーカイブ切替にも適用した。ChatNest の既存コピー完了表示は変更していない。
+- **モーダル通知やログ基盤は増やしていない。** Toast・OS 通知・通知履歴・ログビューアは追加せず、失敗時は従来どおりエラーダイアログと ErrorLog（Error のみ）を維持している。Info / Warning ログは追加していない。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.4 — SH-19: キーボードショートカット一覧
 
 - **SH-19 として、ヘルプメニューに「キーボードショートカット」を追加した。** ヘルプ > キーボードショートカットから、現在実装されているショートカット一覧をダイアログで確認できるようにした。

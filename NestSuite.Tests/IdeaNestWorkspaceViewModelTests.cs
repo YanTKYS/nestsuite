@@ -118,6 +118,41 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Equal("検索語やタグを変更してください。", vm.EmptyStateMessage);
     }
 
+    // ── SH-28: アーカイブ切替の一時フィードバック ────────────────────────
+
+    [Fact]
+    public void ToggleArchiveCommand_Execute_ShowsArchivedFeedback()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Id = "card1", Title = "通常", IsArchived = false }],
+        });
+        var card = vm.AllCards.Single();
+
+        vm.ToggleArchiveCommand.Execute(card);
+
+        Assert.True(card.IsArchived);
+        Assert.Equal("アーカイブしました", vm.StatusMessage);
+    }
+
+    [Fact]
+    public void ToggleArchiveCommand_Execute_Twice_ShowsUnarchivedFeedback()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Id = "card1", Title = "通常", IsArchived = false }],
+        });
+        var card = vm.AllCards.Single();
+
+        vm.ToggleArchiveCommand.Execute(card);
+        vm.ToggleArchiveCommand.Execute(card);
+
+        Assert.False(card.IsArchived);
+        Assert.Equal("アーカイブを解除しました", vm.StatusMessage);
+    }
+
     [Fact]
     public void MarkDirtyAndMarkSaved_UpdateHasChanges()
     {

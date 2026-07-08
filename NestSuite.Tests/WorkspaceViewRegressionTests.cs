@@ -92,6 +92,7 @@ public class WorkspaceViewRegressionTests
     [InlineData("ShowFindReplace")]
     [InlineData("GetFindReplaceState")]
     [InlineData("CloseFindReplace")]
+    [InlineData("ShowTransientStatus")]
     public void IWorkspaceDialogHost_ContractMembersArePresent(string name)
     {
         var methods = typeof(IWorkspaceDialogHost).GetMethods();

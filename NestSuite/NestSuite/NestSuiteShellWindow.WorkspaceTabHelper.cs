@@ -9,37 +9,15 @@ public partial class NestSuiteShellWindow
 {
     // ステータスバー通知・フォーカス復元・タブ閉じる確認・新規タブ作成・未保存状態同期の共通ヘルパーを扱う partial。
 
-    private DispatcherTimer? _notificationTimer;
-    private bool _isShowingNotification;
+    // v2.16.5 SH-28: 一時通知の実体は ShellTransientStatus（コンストラクタで生成）に集約した。
+    private ShellTransientStatus _transientStatus = null!;
 
     /// <summary>
     /// ステータスバーに一時通知メッセージを表示し、durationMs 後に自動解除する。
-    /// 通知中は RefreshWorkspaceStatus による上書きを抑制する。
+    /// 通知中は RefreshWorkspaceStatus による上書きを抑制する（ShellTransientStatus.IsActive 参照）。
     /// </summary>
-    private void ShowStatusNotification(string message, int durationMs = 2000)
-    {
-        StopNotificationTimer();
-        WorkspaceStatusText.Text = message;
-        _isShowingNotification = true;
-        _notificationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(durationMs) };
-        _notificationTimer.Tick += NotificationTimer_Tick;
-        _notificationTimer.Start();
-    }
-
-    private void NotificationTimer_Tick(object? sender, EventArgs e)
-    {
-        StopNotificationTimer();
-        _isShowingNotification = false;
-        RefreshWorkspaceStatus();
-    }
-
-    private void StopNotificationTimer()
-    {
-        if (_notificationTimer == null) return;
-        _notificationTimer.Stop();
-        _notificationTimer.Tick -= NotificationTimer_Tick;
-        _notificationTimer = null;
-    }
+    private void ShowStatusNotification(string message, int durationMs = 2000) =>
+        _transientStatus.Show(message, TimeSpan.FromMilliseconds(durationMs));
 
     /// <summary>
     /// アクティブな Workspace ビューの最初のフォーカス可能要素にフォーカスを移す。
