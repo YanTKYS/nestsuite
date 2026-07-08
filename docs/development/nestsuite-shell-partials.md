@@ -48,7 +48,7 @@
 | テスト対象 | テストクラス |
 |-----------|------------|
 | タブ管理・WorkspaceSession・最近ファイル | `NestSuiteShellTests` / `NestSuiteShellTabTests` |
-| ファイル操作・ダイアログ・Ctrl+S・StartupTabPolicy | `NestSuiteShellWorkspaceLaunchTests` |
+| ファイル操作・ダイアログ・Ctrl+S・StartupTabPolicy（v2.16.13 TD-63 でシナリオ単位に分割） | `NestSuiteShellNoteNestLaunchTests` / `NestSuiteShellChatNestLaunchTests` / `NestSuiteShellIdeaNestLaunchTests` / `NestSuiteShellStartupTabPolicyTests` / `NestSuiteShellOpenCommonTests` / `NestSuiteShellSaveFlowTests` |
 | セッション保存・復元 | `SessionTabMapperTests` / `SessionNestGuardNestPolicyTests` |
 | タブ閉じる確認 | `CloseConfirmationServiceTests` |
 | 保存 atomicity・バックアップ | `AtomicFileWriterTests` |

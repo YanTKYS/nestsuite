@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.13 — TD-63: 巨大テストクラスのシナリオ単位分割
+
+- **TD-63 として、長大化していたテストクラスをシナリオ単位・責務単位で分割した。** `NoteNestFormatSchemaRegressionTests`（973 行・57 件）を `NoteNestFormatSchemaVersionTests` / `NoteNestFormatStructureTests` / `NoteNestFormatRoundTripTests` / `NoteNestFormatTimestampAndStarTests` / `NoteNestFormatExportTests` へ、`ChatNestWorkspaceViewModelTests`（667 行・55 件）を `ChatNestMessageEditingTests` / `ChatNestExportAndCopyTests` / `ChatNestTimestampAndExportCommandTests` / `ChatNestMessageReorderTests` / `ChatNestWorkspaceFeatureRecordsTests` へ、`NestSuiteShellWorkspaceLaunchTests`（772 行・61 件）を `NestSuiteShellNoteNestLaunchTests` / `NestSuiteShellChatNestLaunchTests` / `NestSuiteShellIdeaNestLaunchTests` / `NestSuiteShellStartupTabPolicyTests` / `NestSuiteShellOpenCommonTests` / `NestSuiteShellSaveFlowTests` へ、それぞれ分割した。
+- **テスト内容の削減ではなく、失敗時の探索コスト低減を目的とした。** 分割前後でテストメソッド数（57 / 55 / 61 件）・テスト名・期待値は変更していない。3 クラスとも分割後の合計件数が分割前と一致することを確認済み。
+- **既存テストの削除・skip 化はしていない。** 分割は using / namespace / private helper の移動のみで、Arrange/Act/Assert の内容は変更していない。
+- **production code の仕様変更はしていない。** テストファイルの再編成のみで、`NestSuite` / `NestSuite.Tests` 以外のプロダクションコードは変更していない。関連する開発者向けドキュメント（`docs/development/test-classification-analysis.md` の新規テスト追加先判定ガイド、`nestsuite-shell-partials.md`、`save-flow-duplication.md`、`classic-code-contraction.md`）のクラス名参照も分割後の名前へ更新した。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.12 — RJ-10: M2見送り・タスク縮退方針整理
 
 - **M2「マーカーからタスクを作成」を実装候補から取り下げた。** `docs/backlog.md` の NoteNest Workspace 改善（中難易度）から M2 の行を削除した。M2 は完了ではなく見送りであり、番号は再利用しない。

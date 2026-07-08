@@ -289,4 +289,25 @@ public class NestSuiteDocsContractTests
         var m2Mentions = text.Split('\n').Where(l => l.Contains("M2")).ToList();
         Assert.Contains(m2Mentions, l => l.Contains("取り下げ") || l.Contains("見送り"));
     }
+
+    // ── TD-63: 巨大テストクラスのシナリオ単位分割 ────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21613()
+    {
+        Assert.Contains("v2.16.13", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD63()
+    {
+        Assert.Contains("TD-63", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD63AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-63 |", backlog);
+    }
 }
