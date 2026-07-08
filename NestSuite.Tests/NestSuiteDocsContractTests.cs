@@ -352,4 +352,46 @@ public class NestSuiteDocsContractTests
         // TD-59 は今回削除しない open item として残っている想定
         Assert.Contains("| TD-59 |", backlog);
     }
+
+    // ── TD-67: 複数ファイルオープン失敗通知の改善 ──────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21615()
+    {
+        Assert.Contains("v2.16.15", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD67()
+    {
+        Assert.Contains("TD-67", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD67_MentionsR7AndNoFormatChange()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td67Section = text.Substring(text.IndexOf("TD-67", StringComparison.Ordinal));
+        var nextSectionIdx = td67Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td67Section = td67Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains("R-7", td67Section);
+        Assert.Contains("保存形式", td67Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD67AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-67 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD67InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-67", backlog);
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
 }
