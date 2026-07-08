@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.9 — SH-29: 未保存タブ終了確認への件数サマリ追加
+
+- **SH-29 として、複数の未保存タブがある状態で終了すると、個別確認前に件数サマリを表示するようにした。** 従来は `NestSuiteShellWindow.OnClosing` が NoteNest → IdeaNest → ChatNest の順に対象タブを 1 件ずつ確認ダイアログで問い合わせており、利用者は「あと何回確認が続くか」を事前に把握できなかった。個別確認ループへ入る前に、これから確認対象になるタブ（既存の個別確認と同じ条件：NoteNest はタブの `IsModified`、IdeaNest は `HasChanges`、ChatNest は `HasUnsavedChanges`）を集計し、2 件以上あるときだけ「未保存のタブが N 件あります。これから順番に保存するか確認します。」というサマリを表示する。0 件・1 件では従来どおり余計な表示を挟まない。
+- **サマリは見通し改善のためであり、一括保存・一括破棄は追加していない。** サマリで「確認を続ける」を選んでも各タブの状態は変更されず、その後は既存どおり NoteNest → IdeaNest → ChatNest の順で保存 / 破棄 / キャンセルを個別に確認する。サマリで終了をキャンセルした場合、個別確認は一切開始せずに終了処理を中止する。
+- **既存の個別確認フローは維持している。** 対象条件・確認順序・各ダイアログの文言はいずれも変更していない。サマリ本文は最大 5 件まで列挙し、超過分は「ほか N 件」とまとめる。
+- **判断ロジックは UI 非依存の `UnsavedCloseSummaryBuilder` に切り出した。** `ShouldShowSummary` / `BuildMessage` / `ConfirmContinue` は WPF に依存せず単体テストできる。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.8 — L20 + L8: `.bak` 復元導線の追加
 
 - **L20 として、読込失敗メッセージに `.bak` 復元の可能性を追記した。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-5 の指摘どおり、破損・形式不正・JSON 読込失敗など `.bak` からの手動復元が意味を持つ失敗（`FileErrorMessages.ForLoad` の `JsonException`、`FileErrorMessages.ForKindDetectionFailure` の `InvalidFormat`）に限り、短い案内を追記した。読込対象パスが分かる呼び出し元では、同じ場所に `.bak` が実在するかを確認し、見つかった場合はファイル名を含めて案内する。ファイル不存在・権限エラー・スキーマが新しすぎる等、`.bak` が助けにならない失敗には追記していない。

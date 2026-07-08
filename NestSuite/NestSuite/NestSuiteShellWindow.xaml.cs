@@ -121,6 +121,16 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosing(CancelEventArgs e)
     {
+        // v2.16.9 SH-29: 個別確認に入る前に、対象が 2 件以上あれば件数サマリを 1 回だけ表示する。
+        // 対象タブの状態は変更せず、一括保存・一括破棄も行わない（既存の個別確認フローに委ねる）。
+        if (!UnsavedCloseSummaryBuilder.ConfirmContinue(
+                GetUnsavedCloseConfirmationTargets(),
+                message => _dialogs.Confirm(message, "未保存タブの確認", MessageBoxImage.Warning)))
+        {
+            e.Cancel = true;
+            return;
+        }
+
         // v2.9.7: NoteNest 未保存確認を Save / Discard / Cancel へ変更する
         foreach (var noteSession in _sessionManager.Sessions
             .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest).ToList())
@@ -229,6 +239,46 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         SaveWindowSize();
 
         base.OnClosing(e);
+    }
+
+    /// <summary>
+    /// v2.16.9 SH-29: OnClosing の個別確認ループと同じ条件（NoteNest: tab.IsModified、
+    /// IdeaNest: vm.HasChanges、ChatNest: vm.HasUnsavedChanges）で、これから個別確認の
+    /// 対象になるタブを事前に集める。判定条件は個別確認側とここでズレさせないこと。
+    /// TempNest は個別確認の対象外のためここにも含めない。表示名は各個別確認ダイアログと
+    /// 同じフォールバック文言（「無題」「IdeaNest」「ChatNest」）に合わせる。
+    /// </summary>
+    private List<UnsavedCloseTarget> GetUnsavedCloseConfirmationTargets()
+    {
+        var targets = new List<UnsavedCloseTarget>();
+
+        foreach (var noteSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest).ToList())
+        {
+            var noteTab = _tabs.FirstOrDefault(t => t.Id == noteSession.TabId);
+            if (noteTab != null && noteTab.IsModified)
+                targets.Add(new UnsavedCloseTarget(NestSuiteWorkspaceKind.NoteNest, noteTab.DisplayName));
+        }
+
+        foreach (var ideaSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest).ToList())
+        {
+            var ideaVm = (IdeaNestWorkspaceViewModel)ideaSession.WorkspaceViewModel;
+            if (!ideaVm.HasChanges) continue;
+            var ideaTab = _tabs.FirstOrDefault(t => t.Id == ideaSession.TabId);
+            targets.Add(new UnsavedCloseTarget(NestSuiteWorkspaceKind.IdeaNest, ideaTab?.DisplayName ?? "IdeaNest"));
+        }
+
+        foreach (var chatSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest).ToList())
+        {
+            var chatVm = (ChatNestWorkspaceViewModel)chatSession.WorkspaceViewModel;
+            if (!chatVm.HasUnsavedChanges) continue;
+            var chatTab = _tabs.FirstOrDefault(t => t.Id == chatSession.TabId);
+            targets.Add(new UnsavedCloseTarget(NestSuiteWorkspaceKind.ChatNest, chatTab?.DisplayName ?? "ChatNest"));
+        }
+
+        return targets;
     }
 
     protected override void OnClosed(EventArgs e)

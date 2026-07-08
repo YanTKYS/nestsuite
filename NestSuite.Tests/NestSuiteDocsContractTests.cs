@@ -152,4 +152,25 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| L20 |", backlog);
     }
+
+    // ── SH-29: 未保存タブ終了確認への件数サマリ追加 ────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_SH29()
+    {
+        Assert.Contains("SH-29", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2169()
+    {
+        Assert.Contains("v2.16.9", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_SH29AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-29 |", backlog);
+    }
 }

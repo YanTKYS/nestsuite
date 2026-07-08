@@ -75,6 +75,20 @@ public class NestSuiteShellTests
         Assert.NotNull(method);
     }
 
+    // ── v2.16.9 SH-29: 未保存タブ終了確認への件数サマリ ─────────────────
+
+    [Fact]
+    public void NestSuiteShellWindow_HasGetUnsavedCloseConfirmationTargetsMethod()
+    {
+        // 個別確認と同じ条件でサマリ対象タブを集める helper が宣言されていることを確認
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("GetUnsavedCloseConfirmationTargets",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Assert.NotNull(method);
+        Assert.Empty(method!.GetParameters());
+        Assert.Equal(typeof(List<UnsavedCloseTarget>), method.ReturnType);
+    }
+
     // ── ツール選択領域・プレースホルダーの存在確認 ──────────────────────
 
     // Note: ToolSelectorPanel (x:Name) は v1.16.2 でヘッダー移動により廃止。
