@@ -197,4 +197,27 @@ public class NestSuiteDocsContractTests
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.DoesNotContain("| SH-30 |", backlog);
     }
+
+    // ── SH-1: 起動時エラー時の案内改善 ───────────────────────────────────
+    // 注意: 単純な "SH-1" の Contains は "SH-15" / "SH-19" 等の部分文字列としても
+    // 一致してしまうため、見出し文字列 "v2.16.11 — SH-1:" で厳密に確認する。
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21611Header_ForSH1()
+    {
+        Assert.Contains("v2.16.11 — SH-1:", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21611()
+    {
+        Assert.Contains("v2.16.11", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_SH1AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-1 |", backlog);
+    }
 }

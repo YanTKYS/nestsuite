@@ -180,15 +180,19 @@ public partial class NestSuiteShellWindow
             var decision = ShellFileOpenPlanner.Plan(rawPath, _tabs);
             if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
             {
+                // v2.16.11 SH-1: ファイル関連付け等からの 2 重起動転送で失敗した場合も、
+                // NestSuite（ウィンドウは既に前面表示済み）が引き続き使えることを添える。
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{decision.Path}",
+                    ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
+                        $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{decision.Path}"),
                     "ファイルを開けません");
                 return;
             }
             if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
             {
                 _dialogs.ShowError(
-                    $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
+                    ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
+                        $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}"),
                     "ファイルを開けません");
                 return;
             }

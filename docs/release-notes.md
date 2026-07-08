@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.11 — SH-1: 起動時エラー時の案内改善
+
+- **SH-1 として、起動時・外部オープン時（起動引数・ファイル関連付け・pipe 経由の 2 重起動転送）のファイルオープン失敗案内を改善した。** ファイルを開けなくても NestSuite 自体は起動・利用できることが伝わるよう、`LoadInitialFile` と `OpenFileFromPipe` の失敗ダイアログに「NestSuite は起動しています。別のファイルを開くか、新しいタブで作業を開始できます。」という短い一文を追加した。文言は UI 非依存の新設 `ShellOpenFailureGuidanceProvider`（`NestSuite/Services/ShellOpenFailureGuidanceProvider.cs`）に集約した。Open ダイアログ・最近使ったファイルなど Shell が既に画面表示され操作中の場面には追加していない（自明で冗長なため）。
+- **起動引数（`LoadInitialFile`）のファイル不存在案内を、pipe・最近使ったファイルと同じ `FileErrorMessages` ベースの文言（外部/ネットワークドライブ・移動済みファイルの確認）に揃えた。** 従来は「指定されたファイルが見つかりません。」という専用の短い文言のみで、他の入口と案内内容が揃っていなかった。
+- **未対応拡張子の案内（`.txt` / `.json` / `.bak` を直接開こうとした場合を含む）は、既存の `FileErrorMessages.ForKindDetectionFailure` の `UnsupportedExtension` 文言（「このファイル形式は NestSuite では開けません」+ 対応形式一覧）がすでに要件を満たしていたため、文言自体は変更していない。回帰確認テストを追加した。**
+- **`.bak` 復元案内（v2.16.8 L20+L8）・session 復元の持ち越し案内（v2.16.7 TD-65）・無効コマンドのツールチップ（v2.16.10 SH-30）とは重複させていない。** 既存の案内をそのまま尊重し、今回は起動時・外部オープン時の失敗ダイアログに次行動の一文を足すことと、入口間の文言の揃え直しに限定した。
+- **自動復元・自動変換・新しいファイル形式の追加はしていない。** ファイル読込ロジック自体（`ShellFileOpenPlanner` の判定・`NestSuiteTabFactory.TryGetKind` の拡張子判定）も変更していない。
+- **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
+
 ## v2.16.10 — SH-30: Shell コマンドの有効/無効理由ツールチップ統一
 
 - **SH-30 として、Shell の主要コマンド（上書き保存・名前を付けて保存・すべて保存・タブを閉じる・ピン留め・ピン留め解除・NoteNest Markdown エクスポート）に有効/無効理由のツールチップを追加・整理した。** 無効時に「保存できるタブがありません」「未保存の変更がありません」「未保存のタブがありません」「閉じられるタブがありません」「Temp タブはピン留めできません」など、なぜ押せないかを短く示す。文言は UI 非依存の新設 `ShellCommandTooltipProvider`（`NestSuite/Services/ShellCommandTooltipProvider.cs`）に集約し、同じ理由に対して文言がバラつかないようにした。
