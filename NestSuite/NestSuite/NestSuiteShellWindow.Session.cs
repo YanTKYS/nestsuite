@@ -184,50 +184,34 @@ public partial class NestSuiteShellWindow
     /// 実際に session へ持ち越されるようになったため、文言と実挙動が一致する
     /// （review1-fable5.md R-2）。理由ごとに文言が変わるため、失敗理由を決めつける
     /// 固定の補足文（「破損とは限りません」等）は付けず、理由別メッセージのみを列挙する。
+    /// v2.16.21 SH-34 (review4-fable5.md LT-9 フェーズ1): FileNotFound を含む場合、従来は本通知
+    /// （ShowError）の後に別ダイアログで再試行解除確認を出しており、起動時に最大 2 枚表示されていた。
+    /// 1 つの Yes/No ダイアログに統合し、認知負荷を下げる。FileNotFound を含まない場合は
+    /// 従来どおり ShowError（OK 通知）のみ。解除対象は FileNotFound のみで、InvalidFormat /
+    /// AccessDenied / SchemaVersionTooNew の解除対象拡張は行わない（TD-70 の方針を維持）。
     /// </summary>
     private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)
     {
         if (failures.Count == 0) return;
 
-        var lines = failures.Select(f =>
-            $"- {Path.GetFileName(f.FilePath)}: {FileErrorMessages.ForKindDetectionFailure(f.Failure).Split('\n')[0]}");
-        var message =
-            "前回開いていた一部のファイルを復元できませんでした。\n次回起動時にも再試行します。\n\n" +
-            string.Join("\n", lines);
+        var message = SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(failures);
 
-        // v2.16.19 TD-71 (review2-fable5.md 新リスク②): InvalidFormat が 1 件でも含まれる場合のみ、
-        // 単体で開き直すと詳しい .bak 復元案内が出ることを末尾に 1 行添える（TD-70 の FileNotFound
-        // 再試行解除確認とは役割を混ぜない）。
-        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.InvalidFormat))
-            message += "\n\n" + FileErrorMessages.MultipleFailuresBakDetailHint;
+        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.FileNotFound))
+        {
+            var confirmed = _dialogs.Confirm(
+                message + "\n\n" + SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion,
+                "セッション復元");
+
+            if (confirmed)
+            {
+                ForgetFileNotFoundRestoreFailures();
+                _forgotFileNotFoundRestoreFailuresDuringStartup = true;
+            }
+
+            return;
+        }
 
         _dialogs.ShowError(message, "セッション復元");
-
-        // v2.16.18 TD-70 (review2-fable5.md 新リスク①): FileNotFound は恒久的な削除・移動の
-        // 可能性が高いため、利用者が明示的に「次回から再試行しない」を選べるようにする。
-        // InvalidFormat / SchemaVersionTooNew 等はアプリ更新で開けるようになる可能性があるため対象外
-        // （TD-65 の持ち越し方針は維持し、自動除外は行わない）。
-        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.FileNotFound))
-            OfferToForgetFileNotFoundRestoreFailures();
-    }
-
-    /// <summary>
-    /// v2.16.18 TD-70 (review2-fable5.md 新リスク①): FileNotFound の pending entry を
-    /// 次回から再試行しないか確認する。外部/ネットワークドライブ未接続の可能性もあるため、
-    /// 利用者が「はい」を明示的に選んだ場合のみ解除する（N 回失敗での自動除外は行わない）。
-    /// </summary>
-    private void OfferToForgetFileNotFoundRestoreFailures()
-    {
-        var confirmed = _dialogs.Confirm(
-            "見つからないファイルを、次回から復元対象から外しますか？\n\n" +
-            "ファイルを移動・削除した場合は「はい」を選んでください。\n" +
-            "外部ドライブやネットワークドライブが一時的に接続されていないだけの場合は「いいえ」を選んでください。",
-            "見つからないファイルの再試行を止める");
-
-        if (!confirmed) return;
-
-        ForgetFileNotFoundRestoreFailures();
-        _forgotFileNotFoundRestoreFailuresDuringStartup = true;
     }
 
     /// <summary>

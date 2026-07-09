@@ -624,13 +624,73 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_RecordsReview3FutureCandidates_AsOpenItems()
+    public void Backlog_RecordsReview3FutureCandidate_SH35_AsOpenItem()
     {
-        // review3 新リスク①②を、実装せず将来候補として backlog に記録したことを確認する。
+        // review3 新リスク②を、実装せず将来候補として backlog に記録したことを確認する。
         // 採番は SH-32/SH-33（既に v2.14.11/v2.14.12 で使用済み）と衝突したため SH-34/SH-35 を使った。
+        // SH-34（新リスク①）は v2.16.21 SH-34 として実装済みのため、この時点では SH-35 のみ open item。
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("| SH-34 |", backlog);
         Assert.Contains("| SH-35 |", backlog);
+    }
+
+    // ── SH-34: 復元失敗通知と FileNotFound 再試行解除確認の1ダイアログ統合 ───────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21621()
+    {
+        Assert.Contains("v2.16.21", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_SH34()
+    {
+        Assert.Contains("SH-34", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_SH34_MentionsOneDialogAndFileNotFound()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var sh34Section = ExtractReleaseNotesSection(text, "SH-34");
+
+        Assert.Contains("1つの", sh34Section);
+        Assert.Contains("FileNotFound", sh34Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_SH34AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| SH-34 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsSH34InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("SH-34", backlog);
+        Assert.Contains("SH-34 は v2.16.21", backlog);
+    }
+
+    [Fact]
+    public void DesignDecisions_RecordsSessionSnapshotAndPreScanPolicy()
+    {
+        // review4 の LT-9 設計判断: session snapshot を持たない・失敗理由は保存しない・
+        // 事前スキャンしない方針。文言完全一致ではなく重要語句の存在確認に留める。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "design", "design-decisions.md"));
+        Assert.Contains("LT-9", text);
+        Assert.Contains("snapshot", text);
+        Assert.Contains("事前スキャン", text);
+    }
+
+    [Fact]
+    public void UserGuide_DoesNotClaimSeparateDialogAfterNotification()
+    {
+        // 旧文言「復元失敗通知のあとに」（別ダイアログを示唆）が残っていないことを確認する。
+        // 1 ダイアログ統合後は「復元失敗通知の画面で」に更新済み。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.DoesNotContain("復元失敗通知のあとに", text);
+        Assert.Contains("再試行", text);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

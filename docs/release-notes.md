@@ -7,6 +7,17 @@
 
 ---
 
+## v2.16.21 — SH-34: 復元失敗通知と FileNotFound 再試行解除確認の1ダイアログ統合
+
+- review4-fable5.md の LT-9 設計レビュー結果に基づき、LT-9 フェーズ1として SH-34 を実装した
+- FileNotFound を含む session 復元失敗時、復元失敗通知と「次回から再試行しない」確認を1つの Yes/No ダイアログに統合した
+- 「はい」を選んだ場合のみ、FileNotFound の pending entry を次回以降の復元対象から外す
+- 「いいえ」を選んだ場合は従来どおり次回も再試行する
+- InvalidFormat が含まれる場合の .bak 詳細案内誘導は維持した
+- FileNotFound を含まない復元失敗通知は従来どおり OK 通知のまま
+- LT-9 フル UI、個別チェックボックス UI、session snapshot、session 形式変更は実装していない
+- 保存形式・schema・wrapper 変更なし
+
 ## v2.16.20 — TD-72: review3 後の docs 整理
 
 - review3-fable5.md の通常エンジニア向け作業として、docs を小さく整理した
