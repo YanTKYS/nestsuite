@@ -606,6 +606,25 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-75 |", backlog);
     }
 
+    // ── TD-75b: 静的確認 2 件の挙動テスト化 ─────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21628_AndTD75b()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.28", text);
+        Assert.Contains("TD-75b", text);
+    }
+
+    [Fact]
+    public void Backlog_TD75_MentionsTD75bCompletion()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-75b", backlog);
+        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
+        Assert.Contains("| TD-75 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

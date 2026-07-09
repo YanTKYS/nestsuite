@@ -1,3 +1,5 @@
+using NestSuite;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -189,12 +191,16 @@ public class NestSuiteShellSessionPersistenceTests
         // 変数に保持して「復元成功、または起動中に FileNotFound の pending entry を
         // 解除した（_forgotFileNotFoundRestoreFailuresDuringStartup）」の広い条件へ変わった。
         // 初期タブ作成（旧 else if）は「復元していない場合のみ」という意味は変えていない。
+        // v2.16.28 TD-75b: 判定条件そのものは StartupRestoreSessionPolicy の単体テスト
+        // （SessionTabMapperTests.cs）で確認する。ここでは、コンストラクターがその判定結果に
+        // 応じて SaveSession() を呼び、それが初期タブ作成より前にある、という配線のみを
+        // 軽く確認する。
         var src = ReadSource("NestSuiteShellWindow.xaml.cs");
         var assignIdx = src.IndexOf("var restoredSession = TryRestoreSession();", StringComparison.Ordinal);
         Assert.True(assignIdx >= 0, "TryRestoreSession の戻り値を保持する変数が見つからない");
         var ifIdx = src.IndexOf(
-            "if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)", assignIdx, StringComparison.Ordinal);
-        Assert.True(ifIdx > assignIdx);
+            "if (StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore(", assignIdx, StringComparison.Ordinal);
+        Assert.True(ifIdx > assignIdx, "SaveSession の呼び出し条件が StartupRestoreSessionPolicy に委譲されている必要がある");
         var saveIdx = src.IndexOf("SaveSession();", ifIdx, StringComparison.Ordinal);
         var nextIfIdx = src.IndexOf(
             "if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))",
@@ -216,14 +222,20 @@ public class NestSuiteShellSessionPersistenceTests
     }
 
     // ── Temp タブが session 対象外の既存仕様（session.json 形式）を変更していないこと ──
+    // v2.16.28 TD-75b: private 実装（IsSessionPersistable）のソース文字列確認から、
+    // 公開 API CreateSessionState の出力確認へ置き換えた。実装の条件式や変数名を
+    // 書き換えても、Temp タブが session 出力から除外されている限り壊れない。
 
     [Fact]
-    public void SessionTabMapper_IsSessionPersistable_StillExcludesTempTabs()
+    public void CreateSessionState_ExcludesTempTab_ButKeepsOrdinaryTabs()
     {
-        var path = Path.Combine(RepoRoot, "NestSuite", "Services", "SessionTabMapper.cs");
-        Assert.True(File.Exists(path), $"SessionTabMapper.cs not found: {path}");
-        var src = File.ReadAllText(path);
-        Assert.Contains("tab.WorkspaceKind != NestSuiteWorkspaceKind.Temp", src);
+        var temp = NestSuiteTabFactory.CreateTempTab();
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+
+        var state = SessionTabMapper.CreateSessionState([temp, note], note);
+
+        Assert.DoesNotContain(state.Tabs, tab => tab.WorkspaceKind == nameof(NestSuiteWorkspaceKind.Temp));
+        Assert.Contains(state.Tabs, tab => tab.WorkspaceKind == nameof(NestSuiteWorkspaceKind.NoteNest));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

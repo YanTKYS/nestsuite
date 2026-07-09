@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.28 — TD-75b: 静的確認 2 件の挙動テスト化
+
+- v2.16.25 TD-74 の棚卸しレビューで挙動テスト化候補とされた 2 件を、ソース文字列の静的確認から公開 API・状態の挙動確認へ置換した
+- `SessionTabMapper_IsSessionPersistable_StillExcludesTempTabs`（private `IsSessionPersistable` のソース文字列確認）を、`SessionTabMapper.CreateSessionState` に Temp タブと通常タブを渡し、Temp タブが出力から除外され通常タブは残ることを確認する挙動テストへ置換した
+- `Constructor_SavesSessionWhenForgotFileNotFoundDuringStartup_EvenIfRestoreReturnedFalse`（コンストラクター内の条件式・文順のソース文字列確認）を、新設した UI 非依存の `StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore` policy helper の単体テスト（復元成功時は保存する／復元失敗でも FileNotFound 再試行解除があれば保存する／復元失敗かつ解除なしなら保存しない、の 4 パターン）へ置換した
+- `NestSuiteShellWindow` のコンストラクターは、この policy helper を呼ぶように最小修正した（判断結果は変えていない）。判定条件に依存していた別の配線確認テスト（`Constructor_CallsSaveSession_OnlyWhenTryRestoreSessionSucceeds`）は、新しい呼び出し形へ追随させた軽い配線確認として維持した
+- 置換前に静的確認が保証していた内容は、置換後の挙動テスト・policy helper 単体テストで引き続き確認できる。既存の保証内容は弱めていない
+- release notes / backlog 存在確認テストの追加整理、削除候補テストの削除判断、`test-classification-analysis.md` の位置づけ整理、LT-9 フェーズ2の実装は今回実施していない
+- session.json 形式・NoteNest schema・`.nestsuite` wrapper `formatVersion`・Workspace 保存形式の変更なし
+
 ## v2.16.27 — TD-75a-2: 散在 docs-contract test の集約
 
 - 他のテストファイル（SchemaVersioningPolicyTests / TempNestTests / ChatNestWorkspaceFeatureRecordsTests / SaveAllCommandTests / MarkdownExportTests / AtomicFileWriterTests / SessionTabMapperTests / SessionNestGuardNestPolicyTests / PromptStandardContractTests / ChatNestExportFormatterTests / ExpertProposalPlanningTests）に散在していた release notes / backlog の機械的な存在確認テスト 35 件を `NestSuiteDocsContractTests.cs` に集約した
