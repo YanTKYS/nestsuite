@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.19 — TD-71: review2 小リスク②③の案内・設計記録
+
+- review2-fable5.md の新リスク②③への対応として、複数件通知と design docs を小さく補強した
+- 複数ファイルオープン失敗通知・session 復元失敗通知で InvalidFormat が含まれる場合、単体で開き直すと詳しい .bak 復元案内が表示される場合がある旨を末尾に追加した
+- TD-66 以降、タブ構成に影響する操作は session 随時保存対象だが、アクティブタブ変更のみは保存頻度抑制のため対象外であることを design docs に記録した
+- そのため、強制終了後の復元ではタブ構成は最新でも ActiveFilePath だけが最後の session 保存時点に戻る場合がある
+- .bak 仕様・ActiveFilePath 保存タイミング・session 形式は変更していない
+- 保存形式・schema・wrapper 変更なし
+
 ## v2.16.18 — TD-70: pending entry の再試行解除手段
 
 - review2-fable5.md の新リスク①への対応として、session 復元失敗 pending entry の再試行を止める手段を追加した

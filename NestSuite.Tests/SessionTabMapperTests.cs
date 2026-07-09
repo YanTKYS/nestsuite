@@ -1044,6 +1044,63 @@ public class SessionTabMapperTests
         Assert.Contains("外部ドライブ", src);
     }
 
+    // ── v2.16.19 TD-71 (review2-fable5.md 新リスク②): 復元失敗通知の .bak 詳細案内 ─────────
+
+    [Fact]
+    public void NotifyRestoreFailures_AppendsBakDetailHint_OnlyWhenInvalidFormatPresent()
+    {
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("f.Failure == WorkspaceKindDetectionFailure.InvalidFormat", body);
+        Assert.Contains("FileErrorMessages.MultipleFailuresBakDetailHint", body);
+    }
+
+    [Fact]
+    public void NotifyRestoreFailures_BakHintCheck_IsSeparateFromFileNotFoundForgetCheck()
+    {
+        // TD-70 の FileNotFound 再試行解除確認と TD-71 の .bak 誘導は別々の条件分岐であり、
+        // 混同していないことを確認する（それぞれ異なる WorkspaceKindDetectionFailure 値を見る）。
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        var bakCheckIdx = body.IndexOf("f.Failure == WorkspaceKindDetectionFailure.InvalidFormat", StringComparison.Ordinal);
+        var forgetCheckIdx = body.IndexOf("f.Failure == WorkspaceKindDetectionFailure.FileNotFound", StringComparison.Ordinal);
+        Assert.True(bakCheckIdx >= 0 && forgetCheckIdx >= 0);
+        Assert.NotEqual(bakCheckIdx, forgetCheckIdx);
+    }
+
+    [Fact]
+    public void FileErrorMessages_MultipleFailuresBakDetailHint_MentionsBakAndReopeningIndividually()
+    {
+        Assert.Contains(".bak", FileErrorMessages.MultipleFailuresBakDetailHint);
+        Assert.Contains("単体で開き直す", FileErrorMessages.MultipleFailuresBakDetailHint);
+    }
+
+    [Fact]
+    public void ActivateTab_StillDoesNotCallSaveSessionAfterTabChange()
+    {
+        // TD-71 は ActiveFilePath の保存タイミングを変更しない。アクティブタブ切替の中心である
+        // ActivateTab（NestSuiteShellWindow.TabSelection.cs）が、TD-66 の随時保存 helper を
+        // 新たに呼ぶようになっていないことを確認する。
+        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.TabSelection.cs");
+        var src = File.ReadAllText(path);
+        var methodStart = src.IndexOf("private void ActivateTab(NestSuiteDocumentTab tab)", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0, "ActivateTab が見つからない");
+        var methodEnd = src.IndexOf("protected override void OnPreviewKeyDown", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.DoesNotContain("SaveSessionAfterTabChange();", body);
+        Assert.DoesNotContain("SaveSession();", body);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     private static string ReadSessionSource() =>

@@ -97,6 +97,16 @@ public static class FileErrorMessages
                "復元方法はヘルプ > バックアップ復元ガイドをご覧ください。";
     }
 
+    /// <summary>
+    /// v2.16.19 TD-71 (review2-fable5.md 新リスク②): 複数件通知（<see cref="MultipleOpenFailureMessageBuilder"/>・
+    /// session 復元失敗通知）では理由の 1 行目のみを列挙するため、InvalidFormat の
+    /// <see cref="BackupRestoreHint"/>（2 行目以降）が届かない。失敗一覧に InvalidFormat が
+    /// 含まれる場合のみ、呼び元がこの 1 行を末尾に添えることで、単体で開き直せば詳しい
+    /// 案内が出ることを伝える。.bak の実在確認や自動復元はここでは行わない（文言のみ）。
+    /// </summary>
+    public const string MultipleFailuresBakDetailHint =
+        "破損が疑われるファイルは、単体で開き直すと詳しい .bak 復元案内が表示される場合があります。";
+
     /// <summary>ファイル保存失敗時のユーザー向けメッセージを返す。</summary>
     public static string ForSave(Exception ex) => ex switch
     {

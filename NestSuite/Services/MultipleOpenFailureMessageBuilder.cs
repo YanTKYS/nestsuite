@@ -31,6 +31,13 @@ public static class MultipleOpenFailureMessageBuilder
         if (remaining > 0)
             body += $"\n- ほか {remaining} 件";
 
-        return $"{failures.Count} 件のファイルを開けませんでした。\n\n{body}";
+        var message = $"{failures.Count} 件のファイルを開けませんでした。\n\n{body}";
+
+        // v2.16.19 TD-71 (review2-fable5.md 新リスク②): InvalidFormat が 1 件でも含まれる場合のみ、
+        // 単体で開き直すと詳しい .bak 復元案内が出ることを末尾に 1 行添える。
+        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.InvalidFormat))
+            message += "\n\n" + FileErrorMessages.MultipleFailuresBakDetailHint;
+
+        return message;
     }
 }

@@ -330,9 +330,7 @@ public class NestSuiteDocsContractTests
     public void ReleaseNotes_TD66_MentionsR6AndSessionFormatUnchanged()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        var td66Section = text.Substring(text.IndexOf("TD-66", StringComparison.Ordinal));
-        var nextSectionIdx = td66Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
-        if (nextSectionIdx > 0) td66Section = td66Section.Substring(0, nextSectionIdx);
+        var td66Section = ExtractReleaseNotesSection(text, "TD-66");
 
         Assert.Contains("R-6", td66Section);
         Assert.Contains("session 形式", td66Section);
@@ -374,9 +372,7 @@ public class NestSuiteDocsContractTests
     public void ReleaseNotes_TD67_MentionsR7AndNoFormatChange()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        var td67Section = text.Substring(text.IndexOf("TD-67", StringComparison.Ordinal));
-        var nextSectionIdx = td67Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
-        if (nextSectionIdx > 0) td67Section = td67Section.Substring(0, nextSectionIdx);
+        var td67Section = ExtractReleaseNotesSection(text, "TD-67");
 
         Assert.Contains("R-7", td67Section);
         Assert.Contains("保存形式", td67Section);
@@ -416,9 +412,7 @@ public class NestSuiteDocsContractTests
     public void ReleaseNotes_TD68_MentionsR8AndUiHintNotTrustSource()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        var td68Section = text.Substring(text.IndexOf("TD-68", StringComparison.Ordinal));
-        var nextSectionIdx = td68Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
-        if (nextSectionIdx > 0) td68Section = td68Section.Substring(0, nextSectionIdx);
+        var td68Section = ExtractReleaseNotesSection(text, "TD-68");
 
         Assert.Contains("R-8", td68Section);
         Assert.Contains("ヒント", td68Section);
@@ -459,9 +453,7 @@ public class NestSuiteDocsContractTests
     public void ReleaseNotes_TD69_MentionsR14AndDerivedFilePaths()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        var td69Section = text.Substring(text.IndexOf("TD-69", StringComparison.Ordinal));
-        var nextSectionIdx = td69Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
-        if (nextSectionIdx > 0) td69Section = td69Section.Substring(0, nextSectionIdx);
+        var td69Section = ExtractReleaseNotesSection(text, "TD-69");
 
         Assert.Contains("R-14", td69Section);
         Assert.Contains("導出", td69Section);
@@ -501,9 +493,7 @@ public class NestSuiteDocsContractTests
     public void ReleaseNotes_TD70_MentionsFileNotFoundAndUserConfirmation()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        var td70Section = text.Substring(text.IndexOf("TD-70", StringComparison.Ordinal));
-        var nextSectionIdx = td70Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
-        if (nextSectionIdx > 0) td70Section = td70Section.Substring(0, nextSectionIdx);
+        var td70Section = ExtractReleaseNotesSection(text, "TD-70");
 
         Assert.Contains("FileNotFound", td70Section);
         Assert.Contains("利用者", td70Section);
@@ -523,6 +513,55 @@ public class NestSuiteDocsContractTests
         Assert.True(BacklogCompletedRangeCoversTD(backlog, 70), "TD-70 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
         // TD-59 は今回削除しない open item として残っている想定
         Assert.Contains("| TD-59 |", backlog);
+    }
+
+    // ── TD-71: review2 小リスク②③の案内・設計記録 ───────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21619()
+    {
+        Assert.Contains("v2.16.19", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD71()
+    {
+        Assert.Contains("TD-71", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD71_MentionsBakHintAndActiveFilePathAsymmetry()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td71Section = ExtractReleaseNotesSection(text, "TD-71");
+
+        Assert.Contains(".bak", td71Section);
+        Assert.Contains("ActiveFilePath", td71Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD71AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-71 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD71InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 71), "TD-71 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DesignDecisions_RecordsActiveFilePathFreshnessAsymmetry()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "design", "design-decisions.md"));
+        Assert.Contains("ActiveFilePath", text);
+        Assert.Contains("鮮度非対称", text);
+        Assert.Contains("TD-71", text);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────
@@ -548,5 +587,25 @@ public class NestSuiteDocsContractTests
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// v2.16.19 TD-71 fix: 個々の release notes セクションを、見出し内の bare "TD-NN" 文字列
+    /// ではなく「— TD-NN:」という見出し専用の並びで探す。後発バージョンの箇条書きが
+    /// 「TD-66 以降、...」のように以前の ID を本文中で言及すると、新しいセクション（ファイル上で
+    /// 手前）の本文が先に IndexOf("TD-66") にヒットしてしまい、対象セクションを誤検出する
+    /// （TD-71 のリリースノート本文が "TD-66" を含んだことで実際に発生した）。
+    /// 見出し行は "## vX.Y.Z — TD-NN: タイトル" の形式に統一されているため、
+    /// "— TD-NN:" は本文中の言及とほぼ衝突しない。
+    /// </summary>
+    private static string ExtractReleaseNotesSection(string releaseNotesText, string id)
+    {
+        var headingAnchor = $"— {id}:";
+        var idx = releaseNotesText.IndexOf(headingAnchor, StringComparison.Ordinal);
+        Assert.True(idx >= 0, $"release notes に見出し '{headingAnchor}' が見つからない");
+
+        var section = releaseNotesText.Substring(idx);
+        var nextSectionIdx = section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        return nextSectionIdx > 0 ? section.Substring(0, nextSectionIdx) : section;
     }
 }
