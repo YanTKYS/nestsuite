@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.22 — SH-35-docs: 復元失敗が続く場合の案内追記
+
+- review4-fable5.md の整理に基づき、SH-35 のうち FAQ / 間接経路の案内部分をユーザーガイドに追記した
+- InvalidFormat / AccessDenied / SchemaVersionTooNew など、FileNotFound 以外の復元失敗が続く場合の考え方を説明した
+- 破損が疑われる場合は単体で開き直すと .bak 復元案内が表示される場合があることを記載した
+- 不要なファイルは、必要な内容が残っていないか確認したうえで移動・削除し、次回 FileNotFound として扱われた場合に「次回から再試行しない」を選べることを記載した
+- SH-35 は解除対象拡張・個別解除の将来候補として backlog に残している
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.21 — SH-34: 復元失敗通知と FileNotFound 再試行解除確認の1ダイアログ統合
 
 - review4-fable5.md の LT-9 設計レビュー結果に基づき、LT-9 フェーズ1として SH-34 を実装した
