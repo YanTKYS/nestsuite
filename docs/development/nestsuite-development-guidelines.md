@@ -125,6 +125,8 @@
 - テストの期待値を、仕様変更でなく「通りやすくするため」だけの理由で変更しない
 - `ApplicationVersion_Is_*` などアプリバージョン確認、および現行 schema version の文字列リテラル確認は
   `ApplicationVersionTests.cs` に集約する（機能テストクラスでは `Project.CurrentSchemaVersion` 定数参照を使う）
+- docs-contract test（`docs/*.md` を検証するテスト）やソーステキスト静的確認テストを追加・変更する場合は、
+  `docs/development/static-test-guidelines.md` の許容基準を確認する（TD-73）
 
 ### テストクラス命名・分類方針
 

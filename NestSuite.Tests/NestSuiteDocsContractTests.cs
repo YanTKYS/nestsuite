@@ -744,6 +744,56 @@ public class NestSuiteDocsContractTests
         Assert.DoesNotContain("SH-35 は v2.16.22", backlog);
     }
 
+    // ── TD-73: 静的テスト持続可能性ガイドライン ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21623()
+    {
+        Assert.Contains("v2.16.23", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD73()
+    {
+        Assert.Contains("TD-73", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD73AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-73 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD73InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 73), "TD-73 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void StaticTestGuidelines_FileExists()
+    {
+        var path = Path.Combine(RepoRoot, "docs", "development", "static-test-guidelines.md");
+        Assert.True(File.Exists(path), $"static-test-guidelines.md not found: {path}");
+    }
+
+    [Fact]
+    public void StaticTestGuidelines_MentionsKeyConcepts()
+    {
+        // 文言完全一致ではなく、重要語句の存在確認に留める（ガイドライン自体が推奨する方針を、
+        // このテスト自身にも適用する）。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "development", "static-test-guidelines.md"));
+        Assert.Contains("docs-contract", text);
+        Assert.Contains("見出しアンカー", text);
+        Assert.Contains("CRLF", text);
+        Assert.Contains("bare", text);
+        Assert.Contains("helper", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
