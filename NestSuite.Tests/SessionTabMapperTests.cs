@@ -1033,18 +1033,26 @@ public class SessionTabMapperTests
         Assert.DoesNotContain("SaveSessionAfterTabChange();", body);
     }
 
-    [Fact]
-    public void Constructor_SavesSessionWhenForgotFileNotFoundDuringStartup_EvenIfRestoreReturnedFalse()
+    // v2.16.28 TD-75b: コンストラクター内の SaveSession 呼び出し条件を、ソース文字列の
+    // 文順固定確認（saveIdx > ifIdx && nextIfIdx > saveIdx）から、UI 非依存の policy helper
+    // StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore の単体テストへ置き換えた。
+    // 「復元成功時は保存する / 復元失敗でも FileNotFound 再試行解除があれば保存する /
+    // 復元失敗かつ解除なしなら保存しない」という判断そのものを、実装の書き換え（条件式の
+    // 順序や変数名の変更）に強い形で確認する。配線（コンストラクターがこの helper を実際に
+    // 使っていること）は NestSuiteShellSessionPersistenceTests 側で軽く確認する。
+    [Theory]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, true)]
+    [InlineData(false, false, false)]
+    public void ShouldSaveSessionAfterStartupRestore_ReturnsExpected(
+        bool restoredSession,
+        bool forgotFileNotFound,
+        bool expected)
     {
-        var src = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
-        var ifIdx = src.IndexOf(
-            "if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)", StringComparison.Ordinal);
-        Assert.True(ifIdx >= 0, "コンストラクターの SaveSession 呼び出し条件に解除フラグが含まれている必要がある");
-        var saveIdx = src.IndexOf("SaveSession();", ifIdx, StringComparison.Ordinal);
-        var nextIfIdx = src.IndexOf(
-            "if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))",
-            ifIdx, StringComparison.Ordinal);
-        Assert.True(saveIdx > ifIdx && nextIfIdx > saveIdx);
+        Assert.Equal(
+            expected,
+            StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore(restoredSession, forgotFileNotFound));
     }
 
     [Fact]

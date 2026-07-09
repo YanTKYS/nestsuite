@@ -111,7 +111,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _sessionManager.Add(CreateSessionForTab(tempTab));
 
         var restoredSession = TryRestoreSession();
-        if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)
+        if (StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore(
+            restoredSession, _forgotFileNotFoundRestoreFailuresDuringStartup))
         {
             // v2.16.14 TD-66 (review1-fable5.md R-6): 復元中は _isRestoringSession により
             // 随時保存を抑止しているため、復元完了後に 1 回だけ保存し session の鮮度を上げる
@@ -119,6 +120,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             // v2.16.18 TD-70 (review2-fable5.md 新リスク①): 復元対象が 0 件で
             // TryRestoreSession が false を返した場合でも、起動中に FileNotFound の
             // pending entry を解除していれば、その決定を保存する（強制終了時に失われないように）。
+            // v2.16.28 TD-75b: 判定条件を StartupRestoreSessionPolicy へ切り出した
+            // （UI 非依存の単体テストで確認できるようにするため）。
             SaveSession();
         }
         if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
