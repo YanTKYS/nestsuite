@@ -185,13 +185,22 @@ public class NestSuiteShellSessionPersistenceTests
     [Fact]
     public void Constructor_CallsSaveSession_OnlyWhenTryRestoreSessionSucceeds()
     {
+        // v2.16.18 TD-70: TryRestoreSession() の戻り値を直接 if で見る形から、
+        // 変数に保持して「復元成功、または起動中に FileNotFound の pending entry を
+        // 解除した（_forgotFileNotFoundRestoreFailuresDuringStartup）」の広い条件へ変わった。
+        // 初期タブ作成（旧 else if）は「復元していない場合のみ」という意味は変えていない。
         var src = ReadSource("NestSuiteShellWindow.xaml.cs");
-        Assert.Contains("if (TryRestoreSession())", src);
-        var ifIdx = src.IndexOf("if (TryRestoreSession())", StringComparison.Ordinal);
+        var assignIdx = src.IndexOf("var restoredSession = TryRestoreSession();", StringComparison.Ordinal);
+        Assert.True(assignIdx >= 0, "TryRestoreSession の戻り値を保持する変数が見つからない");
+        var ifIdx = src.IndexOf(
+            "if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)", assignIdx, StringComparison.Ordinal);
+        Assert.True(ifIdx > assignIdx);
         var saveIdx = src.IndexOf("SaveSession();", ifIdx, StringComparison.Ordinal);
-        var elseIdx = src.IndexOf("else if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))", ifIdx, StringComparison.Ordinal);
+        var nextIfIdx = src.IndexOf(
+            "if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))",
+            ifIdx, StringComparison.Ordinal);
         Assert.True(saveIdx > ifIdx);
-        Assert.True(elseIdx > saveIdx, "SaveSession() は TryRestoreSession() 成功時の分岐内にある必要がある");
+        Assert.True(nextIfIdx > saveIdx, "SaveSession() は TryRestoreSession() 成功（または TD-70 の解除フラグ）時の分岐内にある必要がある");
     }
 
     // ── 既存の OnClosing 保存は維持されている ──────────────────────────────
