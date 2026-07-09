@@ -51,6 +51,9 @@ public static class SessionTabMapper
     /// session.json に新しいフィールドは追加しない（pending 由来の entry も通常の
     /// <see cref="NestSuiteSessionTabState"/> として書かれ、WorkspaceKind は null のまま残す —
     /// 実際の復元判定はファイル内容から再判定するため、ここで無理に推測しない）。
+    /// v2.16.17 TD-69 (review2-fable5.md R-14): Tabs[] を正本とし、互換用の FilePaths[] は
+    /// Tabs[] から導出する。以前は開いているタブ・pending entry の双方を FilePaths[] / Tabs[] へ
+    /// 別々に append しており、条件が食い違うとドリフトしうる二重導出だった。
     /// </summary>
     public static NestSuiteSessionState CreateSessionState(
         IEnumerable<NestSuiteDocumentTab> tabs,
@@ -59,12 +62,7 @@ public static class SessionTabMapper
     {
         var tabList = tabs as IReadOnlyCollection<NestSuiteDocumentTab> ?? tabs.ToList();
 
-        var filePaths = tabList
-            .Select(tab => TryCreateSessionEntry(tab, out var filePath) ? filePath : null)
-            .Where(filePath => filePath != null)
-            .Select(filePath => filePath!)
-            .ToList();
-
+        // ActiveFilePath の導出条件は TD-69 の対象外（現行どおり TryCreateSessionEntry を使う）。
         var activeFilePath = selectedTab != null && TryCreateSessionEntry(selectedTab, out var selectedFilePath)
             ? selectedFilePath
             : null;
@@ -75,9 +73,9 @@ public static class SessionTabMapper
             .Select(state => state!)
             .ToList();
 
-        foreach (var pending in DeduplicatePendingEntries(pendingRestoreEntries, filePaths))
+        var openTabFilePaths = tabStates.Select(state => state.FilePath).ToList();
+        foreach (var pending in DeduplicatePendingEntries(pendingRestoreEntries, openTabFilePaths))
         {
-            filePaths.Add(pending.FilePath);
             tabStates.Add(new NestSuiteSessionTabState
             {
                 FilePath = pending.FilePath,
@@ -85,6 +83,13 @@ public static class SessionTabMapper
                 IsPinned = pending.IsPinned,
             });
         }
+
+        // v2.16.17 TD-69: FilePaths[] は旧形式互換のための出力のみ。Tabs[] から導出し、
+        // 個別に append しない（Tabs[] と同じ順序・同じ内容になる）。
+        var filePaths = tabStates
+            .Select(state => state.FilePath)
+            .Where(filePath => !string.IsNullOrWhiteSpace(filePath))
+            .ToList();
 
         return new NestSuiteSessionState
         {

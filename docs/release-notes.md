@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.17 — TD-69: FilePaths を Tabs から導出する統一
+
+- review2-fable5.md の R-14 対応として、session 保存時の FilePaths[] / Tabs[] の二重導出を解消した
+- session.json の正本は Tabs[] とし、互換用の FilePaths[] は Tabs[].FilePath から導出するようにした
+- TD-65 の pending restore entry 持ち越しは維持し、pending entry も Tabs[] へ統合したうえで FilePaths[] に反映する
+- 旧 FilePaths[] 形式の読み込み互換は維持している
+- session 形式・保存形式・schema・wrapper 変更なし
+- LT-9 選択的 session 復元 UI は実装していない
+
 ## v2.16.16 — TD-68: Tabs[].WorkspaceKind の用途明文化・テスト固定
 
 - 初回エキスパートレビュー R-8 への対応として、session.json の Tabs[].WorkspaceKind の用途を明文化した

@@ -672,6 +672,78 @@ public class SessionTabMapperTests
         Assert.Null(state.Tabs[1].WorkspaceKind);
     }
 
+    // ── v2.16.17 TD-69 (review2-fable5.md R-14): FilePaths[] は Tabs[] から導出 ──────────
+
+    [Fact]
+    public void CreateSessionState_FilePaths_IsDerivedFromTabsFilePath_ForOpenTabsAndPendingEntries()
+    {
+        // FilePaths[] は Tabs[].FilePath と完全に一致する（別ロジックでの二重導出をやめた核心テスト）。
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest") with { IsPinned = true };
+        var chat = NestSuiteTabFactory.FromFilePath(@"C:\work\chat.chatnest");
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.ideanest", WorkspaceKindDetectionFailure.FileNotFound)
+        };
+
+        var state = SessionTabMapper.CreateSessionState([note, chat], note, pending);
+
+        Assert.Equal(state.Tabs.Select(t => t.FilePath), state.FilePaths);
+    }
+
+    [Fact]
+    public void CreateSessionState_OpenPersistableTab_AppearsInBothTabsAndFilePaths()
+    {
+        var note = NestSuiteTabFactory.FromFilePath(@"C:\work\note.notenest");
+
+        var state = SessionTabMapper.CreateSessionState([note], note);
+
+        Assert.Single(state.Tabs);
+        Assert.Single(state.FilePaths);
+        Assert.Equal(@"C:\work\note.notenest", state.Tabs[0].FilePath);
+        Assert.Equal(@"C:\work\note.notenest", state.FilePaths[0]);
+    }
+
+    [Fact]
+    public void CreateSessionState_TempTab_ExcludedFromBothTabsAndFilePaths()
+    {
+        var tempTab = NestSuiteTabFactory.CreateTempTab();
+
+        var state = SessionTabMapper.CreateSessionState([tempTab], tempTab);
+
+        Assert.Empty(state.Tabs);
+        Assert.Empty(state.FilePaths);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_OldFilePathsOnlySession_StillRestoresAfterTD69Refactor()
+    {
+        // TD-69 は CreateSessionState 側の導出のみを変更した。CreateRestoreTargets の
+        // 旧 FilePaths[] のみ session に対する復元互換は影響を受けていないことを確認する。
+        var state = new NestSuiteSessionState { FilePaths = [@"C:\work\note.notenest"] };
+
+        var target = Assert.Single(SessionTabMapper.CreateRestoreTargets(state, _ => true));
+
+        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, target.WorkspaceKind);
+    }
+
+    [Fact]
+    public void SessionTabMapper_Source_DerivesFilePathsFromTabsWithoutSeparateAppend()
+    {
+        // R-14 の核心（二重導出の解消）をソーステキストで固定する。
+        // 文言完全一致ではなく、重要語句の存在確認に留める（脆くなりすぎないように）。
+        var path = Path.Combine(RepoRoot, "NestSuite", "Services", "SessionTabMapper.cs");
+        var src = File.ReadAllText(path);
+        var methodStart = src.IndexOf("public static NestSuiteSessionState CreateSessionState(", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf(
+            "private static IEnumerable<SessionRestoreFailure> DeduplicatePendingEntries", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("tabStates.Select(state => state.FilePath)", body);
+        Assert.DoesNotContain("filePaths.Add(", body);
+    }
+
     // ── v2.16.16 TD-68 (review1-fable5.md R-8): Tabs[].WorkspaceKind は UI 表示ヒント ─────
     // 復元時の最終判定の信頼ソースではないことをテストで固定する。
 
