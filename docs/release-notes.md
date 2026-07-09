@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.29 — TD-75c: test-classification-analysis.md の位置づけ整理
+
+- `docs/development/test-classification-analysis.md` の冒頭に位置づけを追記し、「TD-28 / TD-30 / TD-32 時点のテストクラス分類・棚卸し結果を記録した過去分析スナップショット」であることを明確化した
+- 現在の静的テスト（docs-contract test / ソーステキスト静的確認テスト）の追加・維持・削除判断は `static-test-guidelines.md`（TD-73）を主たる基準とし、既存静的テストの現時点の棚卸しは TD-73 を前提にした後続レビューである `static-test-inventory-review.md`（TD-74）を参照することを明記した
+- 同文書は削除せず、過去の分類・整理の判断経緯を確認する参考資料として残す。§12 の新規テスト追加先判定ガイドは受け皿一覧の参考として引き続き利用できる（テストクラス命名・集約の規範は `nestsuite-development-guidelines.md` 側にあることを明記）
+- `docs/README.md` の development/ 一覧で同文書の分類を「現行」から「履歴（過去分析スナップショット）」へ変更し、未掲載だった `static-test-guidelines.md` を「現行」として追加した
+- `TestClassificationAnalysisTests.cs` に位置づけ文言と参照の存在確認（`AnalysisDocument_StatesPastSnapshotPositioning`）を追加した。既存の文書構成確認は「現役ルールの固定」ではなく「過去分析の記録が失われていないことの確認」として、削除・skip せず維持した
+- TD-74 で「要追加確認」だった `TestClassificationAnalysisTests.cs` 周辺の扱いはこれで確定し、TD-75 の残作業は「削除候補テストの削除判断」のみになった（削除判断は今回実施していない）
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.28 — TD-75b: 静的確認 2 件の挙動テスト化
 
 - v2.16.25 TD-74 の棚卸しレビューで挙動テスト化候補とされた 2 件を、ソース文字列の静的確認から公開 API・状態の挙動確認へ置換した

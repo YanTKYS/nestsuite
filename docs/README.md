@@ -30,7 +30,8 @@
 | `performance-measurement.md` | 大量データ性能計測の開発者向け基盤（TD-56 / LT-11） | **現行** |
 | `save-flow-duplication.md` | IdeaNest / ChatNest 保存フロー重複 設計メモ（TD-34 / TD-45） | 現行 |
 | `sqlite-index-feasibility.md` | LT-2 SQLite 補助インデックス feasibility spike（TD-54） | 現行 |
-| `test-classification-analysis.md` | テストクラス分類・整理方針の一次分析 | 現行 |
+| `static-test-guidelines.md` | 静的テスト（docs-contract / ソーステキスト確認）の持続可能性ガイドライン（TD-73） | **現行** |
+| `test-classification-analysis.md` | テストクラス分類・棚卸しの過去分析スナップショット（TD-28 / TD-30 / TD-32。現在の静的テスト判断は `static-test-guidelines.md` を優先） | 履歴 |
 | `workspace-file-extension-unification.md` | Workspace ファイル拡張子 `.nestsuite` 統一（FM-1） | **現行** |
 
 ### testing/（テスト・リリース確認）

@@ -625,6 +625,25 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-75 |", backlog);
     }
 
+    // ── TD-75c: test-classification-analysis.md の位置づけ整理 ──────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21629_AndTD75c()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.29", text);
+        Assert.Contains("TD-75c", text);
+    }
+
+    [Fact]
+    public void Backlog_TD75_MentionsTD75cCompletion()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-75c", backlog);
+        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
+        Assert.Contains("| TD-75 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
