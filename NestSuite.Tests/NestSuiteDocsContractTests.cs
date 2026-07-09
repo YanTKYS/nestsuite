@@ -60,6 +60,31 @@ public class NestSuiteDocsContractTests
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
+
+        // ── TD-75a-2 (v2.16.27): 他ファイルに散在していた同形テストの移設分 ──
+        // 移設元は各テストファイルの docs-contract 節（削除済み）。
+        yield return new object[] { "v2.10.2", "FM-1", "FM-1" };
+        yield return new object[] { "v2.10.3", "TN-2", "TN-2" };
+        yield return new object[] { "v2.10.3", "L14", "L14" };
+        yield return new object[] { "v2.10.3", "L15", "L15" };
+        yield return new object[] { "v2.10.4", "SH-20", "SH-20" };
+        yield return new object[] { "v2.10.5", "M10", "M10" };
+        yield return new object[] { "v2.10.6", "CH-8", "CH-8" };
+        yield return new object[] { "v2.10.6", "CH-14", "CH-14" };
+        yield return new object[] { "v2.10.7", "CH-9", "CH-9" };
+        yield return new object[] { "v2.10.9", "CH-13", "CH-13" };
+        yield return new object[] { "v2.10.13", "TD-26", "TD-26" };
+        yield return new object[] { "v2.10.20", "CH-15", "CH-15" };
+        // 移設元テストは "SH-19" が backlog に残っていることを確認していたが、
+        // SH-19 は v2.16.4 で完了済み（backlog.md には完了済み欠番の要約行にのみ残る）。
+        // TD-33 の運用方針（完了済み項目は release-notes.md 側で管理）に合わせて
+        // release notes 側の (version, id) 確認へ修正のうえ移設した。
+        yield return new object[] { "v2.16.4", "SH-19", "SH-19" };
+        // 移設元テストは "TD-24" / "TD-25" の release notes バージョンとして
+        // "v2.10.13"（TD-26 のバージョン）を誤って確認していた（コピー&ペースト由来と見られる）。
+        // 実際の見出しは「v2.10.11 — TD-24」「v2.10.12 — TD-25」のため、移設にあわせて修正した。
+        yield return new object[] { "v2.10.11", "TD-24", "TD-24" };
+        yield return new object[] { "v2.10.12", "TD-25", "TD-25" };
     }
 
     [Theory]
@@ -151,6 +176,54 @@ public class NestSuiteDocsContractTests
         // 確認を独立させた（TD-75a でここへ集約）。TD-75 自体は本タスクでも完了扱いにしない。
         var backlog = TestPaths.ReadBacklog();
         Assert.Contains("| TD-75 |", backlog);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TD-75a-2 (v2.16.27): 移設したが (version, id) の組にならない単独確認
+    // 対象の version に backlog ID が付いていない、または backlog 側で
+    // 現在も open item のままの確認など、既存の 3 データ群に自然に収まらないもの。
+    // ═══════════════════════════════════════════════════════════════════
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2101()
+    {
+        // 移設元: ExpertProposalPlanningTests。v2.10.1 は backlog ID を持たないエントリ。
+        Assert.Contains("v2.10.1", TestPaths.ReadReleaseNotes());
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21019()
+    {
+        // 移設元: ExpertProposalPlanningTests。見出しは TD-33 だが、元テストは version のみ確認していた。
+        Assert.Contains("v2.10.19", TestPaths.ReadReleaseNotes());
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_V2108()
+    {
+        // 移設元: PromptStandardContractTests。v2.10.8 は backlog ID を持たないエントリ。
+        Assert.Contains("v2.10.8", TestPaths.ReadReleaseNotes());
+    }
+
+    [Fact]
+    public void Backlog_M15_RemainsOpenItem()
+    {
+        // 移設元: ExpertProposalPlanningTests。M15 は完了済みではなく現在も open item。
+        Assert.Contains("| M15 |", TestPaths.ReadBacklog());
+    }
+
+    [Fact]
+    public void Backlog_TN7_RemainsOpenItem()
+    {
+        // 移設元: ExpertProposalPlanningTests。TN-7 は完了済みではなく現在も open item。
+        Assert.Contains("| TN-7 |", TestPaths.ReadBacklog());
+    }
+
+    [Fact]
+    public void Backlog_LK5_RemainsOpenItem()
+    {
+        // 移設元: ExpertProposalPlanningTests。LK-5 は完了済みではなく現在も open item。
+        Assert.Contains("| LK-5 |", TestPaths.ReadBacklog());
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -512,6 +585,25 @@ public class NestSuiteDocsContractTests
         Assert.Contains("維持", text);
         Assert.Contains("挙動テスト化", text);
         Assert.Contains("削除候補", text);
+    }
+
+    // ── TD-75a-2: 散在 docs-contract test の集約 ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21627_AndTD75a2()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.27", text);
+        Assert.Contains("TD-75a-2", text);
+    }
+
+    [Fact]
+    public void Backlog_TD75_MentionsTD75a2Completion()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-75a-2", backlog);
+        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
+        Assert.Contains("| TD-75 |", backlog);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

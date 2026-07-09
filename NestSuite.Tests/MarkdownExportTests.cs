@@ -203,22 +203,9 @@ public class MarkdownExportTests
             vm.MarkdownExportAllNotesTooltip);
     }
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_M10_IsMarkedComplete()
-    {
-        Assert.Contains("M10", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2105()
-    {
-        var releaseNotes = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(releaseNotes));
-        Assert.Contains("v2.10.5", File.ReadAllText(releaseNotes));
-    }
+    // TD-75a-2 (v2.16.27): M10 の backlog 完了確認・v2.10.5 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.5, M10) のデータ行）。検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 

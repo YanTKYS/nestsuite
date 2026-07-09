@@ -403,24 +403,12 @@ public class SessionTabMapperTests
         Assert.Equal(@"C:\work\note.notenest", target.FilePath);
     }
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_TD25_IsMarkedComplete()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path), $"release-notes.md not found: {path}");
-        Assert.Contains("TD-25", File.ReadAllText(path));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2_10_12()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.13", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): TD-25 の backlog 完了確認・v2.10.12 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.12, TD-25) のデータ行）。移設元の ReleaseNotes_Contains_V2_10_12 は
+    // 実際には "v2.10.13"（TD-26 のバージョン）を確認しており、TD-25 の実際の見出しである
+    // "v2.10.12" とは一致していなかった（コピー&ペースト由来と見られる誤り）。
+    // 移設にあわせて正しいバージョンで確認するよう修正した。
 
     // ── v2.14.1 FM-1: .nestsuite セッション復元の種別判定 ──────────────
 

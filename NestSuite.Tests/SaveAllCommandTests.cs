@@ -12,26 +12,11 @@ public class SaveAllCommandTests
 {
     private static readonly string RepoRoot = TestPaths.RepoRoot;
 
-    // ── バージョン ────────────────────────────────────────────────────────
-
-    // ── backlog SH-20 完了マーク ─────────────────────────────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_SH20_IsMarkedComplete()
-    {
-        Assert.Contains("SH-20", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    // ── release-notes.md v2.10.4 エントリ ────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2104()
-    {
-        var releaseNotes = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(releaseNotes));
-        Assert.Contains("v2.10.4", File.ReadAllText(releaseNotes));
-    }
+    // TD-75a-2 (v2.16.27): SH-20 の backlog 完了確認・v2.10.4 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.4, SH-20) のデータ行）。検証内容は変えていない。
+    // 下の ReleaseNotes_V2104_MentionsSH20（"すべて保存" の本文確認を含む
+    // 個別意図の強いテスト）は維持する。
 
     [Fact]
     public void ReleaseNotes_V2104_MentionsSH20()
@@ -40,8 +25,4 @@ public class SaveAllCommandTests
         Assert.Contains("SH-20", text);
         Assert.Contains("すべて保存", text);
     }
-
-    // ── helpers ──────────────────────────────────────────────────────────
-
-    private string ReadBacklog() => TestPaths.ReadBacklog();
 }

@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.10.13 TD-24: SessionNest / GuardNest 導入方針整理の回帰テスト。
+/// v2.10.11 TD-24: SessionNest / GuardNest 導入方針整理の回帰テスト。
 /// </summary>
 public class SessionNestGuardNestPolicyTests
 {
@@ -54,24 +54,12 @@ public class SessionNestGuardNestPolicyTests
         Assert.Contains("schema-versioning-policy.md", text);
     }
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_TD24_IsMarkedComplete()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path), $"release-notes.md not found: {path}");
-        Assert.Contains("TD-24", File.ReadAllText(path));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2_10_11()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.13", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): TD-24 の backlog 完了確認・v2.10.11 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.11, TD-24) のデータ行）。移設元の ReleaseNotes_Contains_V2_10_11 は
+    // 実際には "v2.10.13"（TD-26 のバージョン）を確認しており、TD-24 の実際の見出しである
+    // "v2.10.11" とは一致していなかった（コピー&ペースト由来と見られる誤り）。
+    // 移設にあわせて正しいバージョンで確認するよう修正した。
 
     // ── helpers ──────────────────────────────────────────────────────────
 

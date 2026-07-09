@@ -83,13 +83,6 @@ public class SchemaVersioningPolicyTests
 
     // ── backlog.md の FM-1 更新確認 ──────────────────────────────────────
 
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_FM1_IsMarkedComplete()
-    {
-        Assert.Contains("FM-1", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
     [Fact]
     public void Backlog_FM1_ReferencesSchemaVersioningPolicy()
     {
@@ -97,15 +90,9 @@ public class SchemaVersioningPolicyTests
         Assert.Contains("schema-versioning-policy", backlog);
     }
 
-    // ── release-notes.md の v2.10.2 確認 ────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2102()
-    {
-        var releaseNotes = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(releaseNotes));
-        Assert.Contains("v2.10.2", File.ReadAllText(releaseNotes));
-    }
+    // TD-75a-2 (v2.16.27): FM-1 の release notes 存在確認・v2.10.2 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(version: "v2.10.2", id: "FM-1") のデータ行）。検証内容は変えていない。
 
     // ── helpers ─────────────────────────────────────────────────────────
 

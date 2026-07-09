@@ -60,70 +60,24 @@ public class ExpertProposalPlanningTests
         Assert.Contains("当面対象外", text);
     }
 
-    // ── backlog.md の未完了候補確認 ───────────────────────────────────────
-
-    // TD-33: SH-20 は完了済みのため backlog に存在しない。release-notes.md で確認する。
-    [Fact]
-    public void ReleaseNotes_Contains_SH20_SaveAll()
-    {
-        var text = ReadReleaseNotes();
-        Assert.Contains("SH-20", text);
-    }
-
-    [Fact]
-    public void Backlog_Contains_SH19_ShortcutHelp()
-    {
-        var text = ReadBacklog();
-        Assert.Contains("SH-19", text);
-    }
-
-    // TD-33: L15 は完了済みのため backlog に存在しない。release-notes.md で確認する。
-    [Fact]
-    public void ReleaseNotes_Contains_L15_CharCount()
-    {
-        var text = ReadReleaseNotes();
-        Assert.Contains("L15", text);
-    }
-
-    [Fact]
-    public void Backlog_Contains_M15_MarkerCopy()
-    {
-        var text = ReadBacklog();
-        Assert.Contains("M15", text);
-    }
-
-    // TD-33: CH-14 は完了済みのため backlog に存在しない。release-notes.md で確認する。
-    [Fact]
-    public void ReleaseNotes_Contains_CH14_FormattedCopy()
-    {
-        var text = ReadReleaseNotes();
-        Assert.Contains("CH-14", text);
-    }
-
-    [Fact]
-    public void Backlog_Contains_TN7_SlotToWorkspace()
-    {
-        var text = ReadBacklog();
-        Assert.Contains("TN-7", text);
-    }
-
-    [Fact]
-    public void Backlog_Contains_LK5_CrossInput()
-    {
-        var text = ReadBacklog();
-        Assert.Contains("LK-5", text);
-    }
-
-    // ── release-notes.md の v2.10.1 エントリ確認 ─────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2101()
-    {
-        var releaseNotes = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(releaseNotes), $"release-notes.md not found: {releaseNotes}");
-        var text = File.ReadAllText(releaseNotes);
-        Assert.Contains("v2.10.1", text);
-    }
+    // TD-75a-2 (v2.16.27): この節にあった機械的な存在確認は
+    // NestSuiteDocsContractTests.cs へ移設した。検証内容は変えていない。
+    // - SH-20 の release notes 存在確認 → ReleaseNoteVersionAndIdRecords の (v2.10.4, SH-20)
+    //   （SaveAllCommandTests 側の同一チェックと重複していたため統合した）
+    // - SH-19 の backlog 存在確認 → SH-19 は v2.16.4 で完了済みのため、backlog.md には
+    //   完了済み欠番の要約行にしか残っていない（open item ではない）。TD-33 の運用方針
+    //   （完了済み項目は release-notes.md 側で管理）に合わせ、release notes 側の
+    //   (v2.16.4, SH-19) として修正のうえ移設した
+    // - L15 の release notes 存在確認 → (v2.10.3, L15)（TempNestTests 側の同一チェックと
+    //   重複していたため統合した）
+    // - M15 の backlog 存在確認 → M15 は現在も open item のため、
+    //   NestSuiteDocsContractTests.Backlog_M15_RemainsOpenItem として移設した
+    // - CH-14 の release notes 存在確認 → (v2.10.6, CH-14)（ChatNestExportFormatterTests 側の
+    //   同一チェックと重複していたため統合した）
+    // - TN-7 の backlog 存在確認 → NestSuiteDocsContractTests.Backlog_TN7_RemainsOpenItem
+    // - LK-5 の backlog 存在確認 → NestSuiteDocsContractTests.Backlog_LK5_RemainsOpenItem
+    // - v2.10.1 の release notes 存在確認 → NestSuiteDocsContractTests.ReleaseNotes_Contains_V2101
+    //   （v2.10.1 は backlog ID を持たないため単独の Fact として移設）
 
     // ── TD-33: backlog.md 構成ルール確認 ─────────────────────────────────
 
@@ -222,12 +176,10 @@ public class ExpertProposalPlanningTests
         Assert.Contains("release notes の役割", text);
     }
 
-    [Fact]
-    public void ReleaseNotes_ContainsV21019()
-    {
-        var text = ReadReleaseNotes();
-        Assert.Contains("v2.10.19", text);
-    }
+    // TD-75a-2 (v2.16.27): v2.10.19 の release notes 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNotes_Contains_V21019 へ移設した
+    // （v2.10.19 単体のチェックだったため単独の Fact として移設）。
+    // 検証内容は変えていない。
 
     // ── TD-33: development guidelines 運用ルール確認 ──────────────────────
 
