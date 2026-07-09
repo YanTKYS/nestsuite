@@ -859,6 +859,37 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| SH-35 |", backlog);
     }
 
+    // ── TD-74: 既存静的テスト棚卸しレビュー ─────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21625_AndTD74()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.25", text);
+        Assert.Contains("TD-74", text);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD74InCompletedRange_AndTD75AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 74), "TD-74 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // 棚卸しのフォローアップ（TD-75）は open item として追加されている想定
+        Assert.Contains("| TD-75 |", backlog);
+    }
+
+    [Fact]
+    public void StaticTestInventoryReview_ExistsAndMentionsClassifications()
+    {
+        // 文言完全一致ではなく、5 分類の重要語句の存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "static-test-inventory-review.md");
+        Assert.True(File.Exists(path), $"static-test-inventory-review.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("維持", text);
+        Assert.Contains("挙動テスト化", text);
+        Assert.Contains("削除候補", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
