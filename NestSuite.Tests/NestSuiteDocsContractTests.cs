@@ -794,6 +794,71 @@ public class NestSuiteDocsContractTests
         Assert.Contains("helper", text);
     }
 
+    // ── LT-9: フェーズ2設計判断の backlog 反映 ────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21624()
+    {
+        Assert.Contains("v2.16.24", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_LT9Phase2()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("LT-9", text);
+        Assert.Contains("フェーズ2", text);
+    }
+
+    [Fact]
+    public void ReleaseNotesSection_LT9_MentionsDesignHeldNotImplemented()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "LT-9");
+        Assert.Contains("フェーズ2", section);
+        Assert.Contains("着手トリガー", section);
+        Assert.Contains("実装しない", section);
+    }
+
+    [Fact]
+    public void Backlog_LT9_MentionsPhase2LaunchTriggers()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("着手トリガー", backlog);
+        Assert.Contains("all-or-nothing", backlog);
+    }
+
+    [Fact]
+    public void Backlog_LT9_MentionsTwoOrMoreFailuresCondition()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("2 件以上の場合のみ", backlog);
+    }
+
+    [Fact]
+    public void Backlog_LT9_MentionsSingleFailureKeepsSH34Behavior()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("1 件の場合は現行 SH-34 の挙動を維持", backlog);
+    }
+
+    [Fact]
+    public void Backlog_LT9_ConfirmsSessionJsonFormatChangeNotNeeded()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("session.json", backlog);
+        Assert.Contains("形式変更は不要", backlog);
+    }
+
+    [Fact]
+    public void Backlog_SH35_StillRemainsOpenItem()
+    {
+        // LT-9 フェーズ2に解除対象拡張・個別解除を吸収する方針を記録したが、
+        // SH-35 自体は完了扱いにせず open item として残す。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("| SH-35 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
