@@ -218,4 +218,18 @@ public static class SessionTabMapper
     private static bool IsSessionPersistable(NestSuiteDocumentTab tab) =>
         tab.WorkspaceKind != NestSuiteWorkspaceKind.Temp &&
         !string.IsNullOrWhiteSpace(tab.FilePath);
+
+    /// <summary>
+    /// v2.16.18 TD-70 (review2-fable5.md 新リスク①): pendingRestoreEntries から
+    /// <see cref="WorkspaceKindDetectionFailure.FileNotFound"/> の entry のみを除外して返す。
+    /// FileNotFound は恒久的な削除・移動の可能性が高く、呼び元（Shell）が利用者の明示的な
+    /// 「次回から再試行しない」確認を得た場合にのみ呼ぶ（N 回失敗での自動除外は行わない）。
+    /// InvalidFormat / SchemaVersionTooNew / AccessDenied / Unknown はアプリ更新や環境変化で
+    /// 開けるようになる可能性があるため、常に維持する。順序は保つ。
+    /// </summary>
+    public static IReadOnlyList<SessionRestoreFailure> RemoveFileNotFoundEntries(
+        IReadOnlyList<SessionRestoreFailure> pendingRestoreEntries) =>
+        pendingRestoreEntries
+            .Where(f => f.Failure != WorkspaceKindDetectionFailure.FileNotFound)
+            .ToList();
 }

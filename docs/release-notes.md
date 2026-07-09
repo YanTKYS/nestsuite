@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.18 — TD-70: pending entry の再試行解除手段
+
+- review2-fable5.md の新リスク①への対応として、session 復元失敗 pending entry の再試行を止める手段を追加した
+- FileNotFound の pending entry がある場合、利用者が明示的に「次回から再試行しない」を選べるようにした
+- 解除を選んだ場合、該当する FileNotFound entry は次回以降の session 復元対象から外れる
+- 外部ドライブ・ネットワークドライブ未接続など一時的な FileNotFound もあり得るため、自動除外ではなく利用者確認方式にした
+- InvalidFormat / AccessDenied / SchemaVersionTooNew などは今回の解除対象外
+- session 形式・保存形式・schema・wrapper 変更なし
+- LT-9 選択的 session 復元 UI は実装していない
+
 ## v2.16.17 — TD-69: FilePaths を Tabs から導出する統一
 
 - review2-fable5.md の R-14 対応として、session 保存時の FilePaths[] / Tabs[] の二重導出を解消した

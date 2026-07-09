@@ -110,14 +110,18 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _tabs.Add(tempTab);
         _sessionManager.Add(CreateSessionForTab(tempTab));
 
-        if (TryRestoreSession())
+        var restoredSession = TryRestoreSession();
+        if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)
         {
             // v2.16.14 TD-66 (review1-fable5.md R-6): 復元中は _isRestoringSession により
             // 随時保存を抑止しているため、復元完了後に 1 回だけ保存し session の鮮度を上げる
             // （成功した pending entry の重複解消などが反映される）。
+            // v2.16.18 TD-70 (review2-fable5.md 新リスク①): 復元対象が 0 件で
+            // TryRestoreSession が false を返した場合でも、起動中に FileNotFound の
+            // pending entry を解除していれば、その決定を保存する（強制終了時に失われないように）。
             SaveSession();
         }
-        else if (NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
+        if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）
             ActivateTab(tempTab);
@@ -413,6 +417,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     /// 中途半端な状態のまま上書きしてしまわないよう、この間は SaveSessionAfterTabChange を抑止する。
     /// </summary>
     private bool _isRestoringSession;
+    /// <summary>
+    /// v2.16.18 TD-70 (review2-fable5.md 新リスク①): 今回の起動中に FileNotFound の
+    /// pending restore entry を利用者確認で解除したら true。TryRestoreSession が復元対象 0 件で
+    /// false を返した場合でも、この決定を保存するため、コンストラクターの SaveSession 呼び出し条件を広げる。
+    /// </summary>
+    private bool _forgotFileNotFoundRestoreFailuresDuringStartup;
     private NestSuiteDocumentTab? _selectedTab;
     private bool _isActivatingTab;
     private double _noteNestEditorFontSize = 14;

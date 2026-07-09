@@ -195,6 +195,42 @@ public partial class NestSuiteShellWindow
             "前回開いていた一部のファイルを復元できませんでした。\n次回起動時にも再試行します。\n\n" +
             string.Join("\n", lines),
             "セッション復元");
+
+        // v2.16.18 TD-70 (review2-fable5.md 新リスク①): FileNotFound は恒久的な削除・移動の
+        // 可能性が高いため、利用者が明示的に「次回から再試行しない」を選べるようにする。
+        // InvalidFormat / SchemaVersionTooNew 等はアプリ更新で開けるようになる可能性があるため対象外
+        // （TD-65 の持ち越し方針は維持し、自動除外は行わない）。
+        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.FileNotFound))
+            OfferToForgetFileNotFoundRestoreFailures();
+    }
+
+    /// <summary>
+    /// v2.16.18 TD-70 (review2-fable5.md 新リスク①): FileNotFound の pending entry を
+    /// 次回から再試行しないか確認する。外部/ネットワークドライブ未接続の可能性もあるため、
+    /// 利用者が「はい」を明示的に選んだ場合のみ解除する（N 回失敗での自動除外は行わない）。
+    /// </summary>
+    private void OfferToForgetFileNotFoundRestoreFailures()
+    {
+        var confirmed = _dialogs.Confirm(
+            "見つからないファイルを、次回から復元対象から外しますか？\n\n" +
+            "ファイルを移動・削除した場合は「はい」を選んでください。\n" +
+            "外部ドライブやネットワークドライブが一時的に接続されていないだけの場合は「いいえ」を選んでください。",
+            "見つからないファイルの再試行を止める");
+
+        if (!confirmed) return;
+
+        ForgetFileNotFoundRestoreFailures();
+        _forgotFileNotFoundRestoreFailuresDuringStartup = true;
+    }
+
+    /// <summary>
+    /// v2.16.18 TD-70: _pendingSessionRestoreEntries から FileNotFound の entry のみを除外する。
+    /// 実際の除外ロジックは UI 非依存の <see cref="SessionTabMapper.RemoveFileNotFoundEntries"/> に委ねる。
+    /// session.json の形式・重複排除ロジック（TD-65/TD-69）は変更しない。
+    /// </summary>
+    private void ForgetFileNotFoundRestoreFailures()
+    {
+        _pendingSessionRestoreEntries = SessionTabMapper.RemoveFileNotFoundEntries(_pendingSessionRestoreEntries);
     }
 
     // ── v1.18.1: パイプ経由ファイルオープン（シングルインスタンス） ──────────
