@@ -693,6 +693,57 @@ public class NestSuiteDocsContractTests
         Assert.Contains("再試行", text);
     }
 
+    // ── SH-35-docs: 復元失敗が続く場合の案内追記 ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21622()
+    {
+        Assert.Contains("v2.16.22", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_SH35Docs()
+    {
+        Assert.Contains("SH-35", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void UserGuide_ExplainsNonFileNotFoundRestoreFailures()
+    {
+        // FileNotFound 以外（形式判定不能・アクセス不可等）の復元失敗は現時点で解除対象外であることの説明。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.Contains("ファイル形式を判定できない", text);
+        Assert.Contains("アクセス", text);
+    }
+
+    [Fact]
+    public void UserGuide_MentionsBakRestoreGuidanceForCorruptedFiles()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.Contains(".bak", text);
+        Assert.Contains("破損が疑われる", text);
+    }
+
+    [Fact]
+    public void UserGuide_MentionsMovingOrDeletingToBecomeFileNotFound()
+    {
+        // 不要なファイルを移動・削除すれば次回 FileNotFound として扱われ、
+        // SH-34 の「次回から再試行しない」で解除できるという間接経路の記載。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.Contains("移動または削除", text);
+        Assert.Contains("ファイルが見つからない", text);
+    }
+
+    [Fact]
+    public void Backlog_SH35_RemainsOpenItem_AndIsNotMarkedComplete()
+    {
+        // SH-35 は今回 docs 対応のみで、解除対象拡張・個別解除の実装は行っていない。
+        // open item のまま残し、完了済み欠番リストへは追加しない。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("| SH-35 |", backlog);
+        Assert.DoesNotContain("SH-35 は v2.16.22", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
