@@ -483,6 +483,48 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-59 |", backlog);
     }
 
+    // ── TD-70: pending entry の再試行解除手段 ───────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21618()
+    {
+        Assert.Contains("v2.16.18", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD70()
+    {
+        Assert.Contains("TD-70", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD70_MentionsFileNotFoundAndUserConfirmation()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td70Section = text.Substring(text.IndexOf("TD-70", StringComparison.Ordinal));
+        var nextSectionIdx = td70Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td70Section = td70Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains("FileNotFound", td70Section);
+        Assert.Contains("利用者", td70Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD70AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-70 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD70InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 70), "TD-70 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

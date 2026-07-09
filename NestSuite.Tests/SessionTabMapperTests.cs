@@ -856,4 +856,196 @@ public class SessionTabMapperTests
         Assert.Contains("ShellFileOpenPlanner.Plan(", body);
         Assert.Contains("LoadWorkspaceFileAt(", body);
     }
+
+    // ── v2.16.18 TD-70 (review2-fable5.md 新リスク①): pending entry の再試行解除 ─────────
+
+    [Fact]
+    public void RemoveFileNotFoundEntries_RemovesOnlyFileNotFound_KeepsOthersAndOrder()
+    {
+        var entries = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\a.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\b.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+            new SessionRestoreFailure(@"C:\work\c.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\d.nestsuite", WorkspaceKindDetectionFailure.SchemaVersionTooNew),
+            new SessionRestoreFailure(@"C:\work\e.nestsuite", WorkspaceKindDetectionFailure.AccessDenied),
+        };
+
+        var result = SessionTabMapper.RemoveFileNotFoundEntries(entries);
+
+        Assert.Equal(
+            new[] { @"C:\work\b.nestsuite", @"C:\work\d.nestsuite", @"C:\work\e.nestsuite" },
+            result.Select(f => f.FilePath));
+        Assert.DoesNotContain(result, f => f.Failure == WorkspaceKindDetectionFailure.FileNotFound);
+    }
+
+    [Fact]
+    public void RemoveFileNotFoundEntries_NoFileNotFoundEntries_ReturnsAllUnchanged()
+    {
+        var entries = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\b.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+            new SessionRestoreFailure(@"C:\work\e.nestsuite", WorkspaceKindDetectionFailure.AccessDenied),
+        };
+
+        var result = SessionTabMapper.RemoveFileNotFoundEntries(entries);
+
+        Assert.Equal(entries, result);
+    }
+
+    [Fact]
+    public void RemoveFileNotFoundEntries_AllFileNotFound_ReturnsEmpty()
+    {
+        var entries = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\a.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\c.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+        };
+
+        var result = SessionTabMapper.RemoveFileNotFoundEntries(entries);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void RemoveFileNotFoundEntries_EmptyInput_ReturnsEmpty()
+    {
+        var result = SessionTabMapper.RemoveFileNotFoundEntries([]);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void CreateSessionState_AfterRemovingFileNotFoundEntries_ExcludesThemFromTabsAndFilePaths()
+    {
+        // TD-70 解除後の CreateSessionState 出力から、解除済み FileNotFound entry が
+        // Tabs[] / FilePaths[] のどちらにも残らないこと、かつ TD-69 の
+        // 「FilePaths[] は Tabs[].FilePath から導出」不変条件が引き続き成立することを確認する。
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\broken.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+        };
+
+        var afterForget = SessionTabMapper.RemoveFileNotFoundEntries(pending);
+        var state = SessionTabMapper.CreateSessionState([], null, afterForget);
+
+        Assert.DoesNotContain(@"C:\work\missing.notenest", state.FilePaths);
+        Assert.DoesNotContain(state.Tabs, t => t.FilePath == @"C:\work\missing.notenest");
+
+        var remaining = Assert.Single(state.Tabs);
+        Assert.Equal(@"C:\work\broken.nestsuite", remaining.FilePath);
+        Assert.Null(remaining.WorkspaceKind);
+        Assert.Equal(state.Tabs.Select(t => t.FilePath), state.FilePaths);
+    }
+
+    [Fact]
+    public void CreateSessionState_WithoutForgetting_StillCarriesFileNotFoundEntryForward()
+    {
+        // 「いいえ」を選んだ場合（＝ RemoveFileNotFoundEntries を呼ばない場合）は、
+        // TD-65 どおり FileNotFound entry も次回へ持ち越される。
+        var pending = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+        };
+
+        var state = SessionTabMapper.CreateSessionState([], null, pending);
+
+        Assert.Contains(@"C:\work\missing.notenest", state.FilePaths);
+        Assert.Contains(state.Tabs, t => t.FilePath == @"C:\work\missing.notenest");
+    }
+
+    [Fact]
+    public void NotifyRestoreFailures_OffersToForgetFileNotFound_OnlyWhenFileNotFoundPresent()
+    {
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("f.Failure == WorkspaceKindDetectionFailure.FileNotFound", body);
+        Assert.Contains("OfferToForgetFileNotFoundRestoreFailures();", body);
+    }
+
+    [Fact]
+    public void OfferToForgetFileNotFoundRestoreFailures_OnlyForgetsWhenUserConfirms()
+    {
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures()", methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        var confirmIdx = body.IndexOf("_dialogs.Confirm(", StringComparison.Ordinal);
+        var guardIdx = body.IndexOf("if (!confirmed) return;", StringComparison.Ordinal);
+        var forgetCallIdx = body.IndexOf("ForgetFileNotFoundRestoreFailures();", StringComparison.Ordinal);
+        var flagSetIdx = body.IndexOf("_forgotFileNotFoundRestoreFailuresDuringStartup = true;", StringComparison.Ordinal);
+
+        Assert.True(confirmIdx >= 0 && guardIdx > confirmIdx, "確認ダイアログの後に early-return ガードが必要");
+        Assert.True(forgetCallIdx > guardIdx, "ForgetFileNotFoundRestoreFailures は confirmed ガードより後で呼ぶ必要がある");
+        Assert.True(flagSetIdx > forgetCallIdx);
+    }
+
+    [Fact]
+    public void ForgetFileNotFoundRestoreFailures_DelegatesToSessionTabMapperHelper()
+    {
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void ForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var body = src.Substring(methodStart, Math.Min(300, src.Length - methodStart));
+
+        Assert.Contains("SessionTabMapper.RemoveFileNotFoundEntries(_pendingSessionRestoreEntries)", body);
+    }
+
+    [Fact]
+    public void ForgetFileNotFoundRestoreFailures_DoesNotCallSaveSessionDirectly()
+    {
+        // TD-66 の _isRestoringSession ガード下で、復元中に中途半端な session 保存をしないことを
+        // 静的に裏付ける。保存はコンストラクターが復元完了後にまとめて行う。
+        var src = ReadSessionSource();
+        var offerStart = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
+        var forgetStart = src.IndexOf("private void ForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
+        Assert.True(offerStart >= 0 && forgetStart > offerStart);
+        var body = src.Substring(offerStart, forgetStart - offerStart);
+
+        Assert.DoesNotContain("SaveSession();", body);
+        Assert.DoesNotContain("SaveSessionAfterTabChange();", body);
+    }
+
+    [Fact]
+    public void Constructor_SavesSessionWhenForgotFileNotFoundDuringStartup_EvenIfRestoreReturnedFalse()
+    {
+        var src = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
+        var ifIdx = src.IndexOf(
+            "if (restoredSession || _forgotFileNotFoundRestoreFailuresDuringStartup)", StringComparison.Ordinal);
+        Assert.True(ifIdx >= 0, "コンストラクターの SaveSession 呼び出し条件に解除フラグが含まれている必要がある");
+        var saveIdx = src.IndexOf("SaveSession();", ifIdx, StringComparison.Ordinal);
+        var nextIfIdx = src.IndexOf(
+            "if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))",
+            ifIdx, StringComparison.Ordinal);
+        Assert.True(saveIdx > ifIdx && nextIfIdx > saveIdx);
+    }
+
+    [Fact]
+    public void NotifyRestoreFailuresDialog_MentionsStopRetryingIntent()
+    {
+        var src = ReadSessionSource();
+        Assert.Contains("次回から復元対象から外しますか", src);
+    }
+
+    [Fact]
+    public void NotifyRestoreFailuresDialog_MentionsNetworkOrExternalDriveCaution()
+    {
+        var src = ReadSessionSource();
+        Assert.Contains("ネットワークドライブ", src);
+        Assert.Contains("外部ドライブ", src);
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────
+
+    private static string ReadSessionSource() =>
+        File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.Session.cs"));
 }
