@@ -197,8 +197,6 @@ public class TempNestTests
         Assert.Equal(original.Body, restored.Body);
     }
 
-    private static readonly string RepoRoot = TestPaths.RepoRoot;
-
     // ── バージョン ────────────────────────────────────────────────────────
 
     // ── TN-2: TempNest スロットのクリア確認ダイアログ ────────────────────
@@ -311,46 +309,10 @@ public class TempNestTests
         Assert.False(slot.HasFeedback);
     }
 
-    // ── L14 / L15: ステータスバー — docs / backlog 確認 ─────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_TN2_IsMarkedComplete()
-    {
-        Assert.Contains("TN-2", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_L14_IsMarkedComplete()
-    {
-        Assert.Contains("L14", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_L15_IsMarkedComplete()
-    {
-        Assert.Contains("L15", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_CH13_InChatNestSection()
-    {
-        // TD-33: 完了済み項目は release-notes.md で管理
-        Assert.Contains("CH-13", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    // ── release-notes.md ─────────────────────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2103()
-    {
-        var releaseNotes = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(releaseNotes));
-        Assert.Contains("v2.10.3", File.ReadAllText(releaseNotes));
-    }
-
-    // ── helpers ──────────────────────────────────────────────────────────
-
-    private string ReadBacklog() => TestPaths.ReadBacklog();
-
+    // TD-75a-2 (v2.16.27): TN-2 / L14 / L15 / CH-13 の release notes 存在確認・
+    // v2.10.3 存在確認は NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ
+    // 移設した（(v2.10.3, TN-2) / (v2.10.3, L14) / (v2.10.3, L15) のデータ行。
+    // CH-13 は実際の完了バージョンである (v2.10.9, CH-13) として移設し、
+    // ChatNestWorkspaceFeatureRecordsTests 側の同一チェックと重複していたぶんを統合した）。
+    // 検証内容は変えていない。
 }

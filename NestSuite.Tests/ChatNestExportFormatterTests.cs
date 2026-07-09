@@ -188,37 +188,9 @@ public class ChatNestExportFormatterTests
         Assert.Contains("\n\n## 自分\n\nA\nB", result);
     }
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // CH-14: 会話全体の整形コピー（プレーンテキスト）(TD-33: 完了済み項目は release-notes.md で管理)
-    [Fact]
-    public void Backlog_CH14_IsMarkedComplete()
-    {
-        Assert.Contains("CH-14", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    // CH-9: 会話エクスポート（Markdown）(TD-33: 完了済み項目は release-notes.md で管理)
-    [Fact]
-    public void Backlog_CH9_IsMarkedComplete()
-    {
-        Assert.Contains("CH-9", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2106()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.6", File.ReadAllText(path));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2107()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.7", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): CH-14 / CH-9 の backlog 完了確認・v2.10.6 / v2.10.7 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.6, CH-14) / (v2.10.7, CH-9) のデータ行）。検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 

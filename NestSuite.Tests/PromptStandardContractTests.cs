@@ -63,15 +63,10 @@ public class PromptStandardContractTests
         Assert.Contains($"NoteNest schema {Project.CurrentSchemaVersion} 維持", ReadGuideline());
     }
 
-    // ── release-notes ───────────────────────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2108()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.8", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): v2.10.8 の release notes 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNotes_Contains_V2108 へ移設した
+    // （v2.10.8 は backlog ID を持たないため、単独の Fact として移設）。
+    // 検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 

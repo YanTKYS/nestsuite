@@ -525,24 +525,9 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Contains("個人情報", text);
     }
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // TD-33: 完了済み項目は release-notes.md で管理
-    [Fact]
-    public void Backlog_TD26_IsMarkedComplete()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path), $"release-notes.md not found: {path}");
-        Assert.Contains("TD-26", File.ReadAllText(path));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2_10_13()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.13", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): TD-26 の backlog 完了確認・v2.10.13 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.13, TD-26) のデータ行）。検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 

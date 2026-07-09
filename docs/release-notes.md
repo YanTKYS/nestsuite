@@ -7,6 +7,17 @@
 
 ---
 
+## v2.16.27 — TD-75a-2: 散在 docs-contract test の集約
+
+- 他のテストファイル（SchemaVersioningPolicyTests / TempNestTests / ChatNestWorkspaceFeatureRecordsTests / SaveAllCommandTests / MarkdownExportTests / AtomicFileWriterTests / SessionTabMapperTests / SessionNestGuardNestPolicyTests / PromptStandardContractTests / ChatNestExportFormatterTests / ExpertProposalPlanningTests）に散在していた release notes / backlog の機械的な存在確認テスト 35 件を `NestSuiteDocsContractTests.cs` に集約した
+- 移設対象は、既存の `ReleaseNoteVersionAndIdRecords`（15 件追加）に集約できるものはデータ行として追加し、backlog ID を持たない version 単体確認・現在も open item の backlog 確認など、既存の 3 データ群に自然に収まらないもの（6 件）は同等の独立 Fact として移設した
+- 検証内容は弱めていない。個別 Fact の整理はすべて削除ではなく、データ行または独立 Fact への移設として扱った
+- 移設の過程で、2 件の事前からの不整合を発見し、移設にあわせて修正した: (1) TD-24 / TD-25 の release notes バージョン確認が、実際の見出し（v2.10.11 / v2.10.12）ではなく TD-26 のバージョン（v2.10.13）を誤って確認していた（コピー&ペースト由来と見られる誤り）。(2) SH-19 の存在確認が、SH-19 が v2.16.4 で完了済みであるにもかかわらず backlog.md 側を確認していた（TD-33 の運用方針に反する）。いずれも移設にあわせて正しい確認へ修正した
+- 移設元ファイルで release notes 側と backlog 側の両方から同一 ID を確認していた重複（SH-20 / L15 / CH-14 / CH-13）は、移設先で 1 つのデータ行に統合した
+- release notes 本文の設計判断確認（`ExtractReleaseNotesSection` を使うもの等）、user guide / design decisions / schema policy の重要語句確認、CH-15 / SH-20 の機能名を含む個別内容確認、backlog.md の運用規約確認（未着手項目のみ記載・完了済み項番不再利用・LT-/RJ- セクション等）は、無理に統合せず元ファイルに維持した
+- 挙動テスト化 2 件、削除候補の判断、`test-classification-analysis.md` の位置づけ整理は今回も実施していない
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.26 — TD-75a: release notes / backlog 存在確認テストの helper 化・データ駆動化
 
 - v2.16.25 TD-74 の棚卸しレビュー（static-test-inventory-review.md）の P1 に基づき、`NestSuiteDocsContractTests.cs` 内の release notes / backlog 存在確認テストを `[Theory]` + `MemberData` へ集約した

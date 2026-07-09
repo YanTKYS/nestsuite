@@ -11,29 +11,12 @@ public class ChatNestWorkspaceFeatureRecordsTests
 {
     private static readonly string RepoRoot = TestPaths.RepoRoot;
 
-    // ── backlog / release-notes ───────────────────────────────────────────
-
-    // CH-8: タイムスタンプ表示切替 (TD-33: 完了済み項目は release-notes.md で管理)
-    [Fact]
-    public void Backlog_CH8_IsMarkedComplete()
-    {
-        Assert.Contains("CH-8", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    // CH-13: 発言ドラッグ並び替え (TD-33: 完了済み項目は release-notes.md で管理)
-    [Fact]
-    public void Backlog_CH13_IsMarkedComplete()
-    {
-        Assert.Contains("CH-13", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2109()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.9", File.ReadAllText(path));
-    }
+    // TD-75a-2 (v2.16.27): CH-8 / CH-13 の release notes 存在確認・v2.10.9 存在確認は
+    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
+    // （(v2.10.6, CH-8) / (v2.10.9, CH-13) のデータ行）。検証内容は変えていない。
+    // v2.10.20 の存在確認も同様に (v2.10.20, CH-15) として移設し、下の
+    // ReleaseNotes_Contains_CH15（"文脈メニュー" の本文確認を含む個別意図の強いテスト）と
+    // 統合した。
 
     // ── CH-15: release-notes 確認 ─────────────────────────────────────────
 
@@ -44,15 +27,4 @@ public class ChatNestWorkspaceFeatureRecordsTests
         Assert.Contains("CH-15", text);
         Assert.Contains("文脈メニュー", text);
     }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21020()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.10.20", text);
-    }
-
-    // ── helpers ──────────────────────────────────────────────────────────
-
-    private string ReadBacklog() => TestPaths.ReadBacklog();
 }
