@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.20 — TD-72: review3 後の docs 整理
+
+- review3-fable5.md の通常エンジニア向け作業として、docs を小さく整理した
+- LT-4 複数 Window / detached layout 保存について、Tabs[] は非ネストで維持し、将来の Windows[] 別セクションで扱う方針を design docs に記録した
+- detached window の位置・サイズなどの geometry は Workspace 保存形式ではなく session 側に置く方針を記録した
+- ユーザーガイドに、見つからないファイルの復元再試行を確認ダイアログで止められる旨を追記した
+- review3 の新リスク①②を将来候補として backlog に記録した（SH-34: 復元失敗通知と解除確認の 1 ダイアログ統合、SH-35: InvalidFormat 等の恒久 pending entry への案内・解除拡張検討）
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.19 — TD-71: review2 小リスク②③の案内・設計記録
 
 - review2-fable5.md の新リスク②③への対応として、複数件通知と design docs を小さく補強した

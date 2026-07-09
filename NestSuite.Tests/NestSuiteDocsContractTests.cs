@@ -564,6 +564,75 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-71", text);
     }
 
+    // ── TD-72: review3 後の docs 整理 ───────────────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21620()
+    {
+        Assert.Contains("v2.16.20", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD72()
+    {
+        Assert.Contains("TD-72", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD72_MentionsLT4AndUserGuideAndBacklogRecording()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td72Section = ExtractReleaseNotesSection(text, "TD-72");
+
+        Assert.Contains("LT-4", td72Section);
+        Assert.Contains("ユーザーガイド", td72Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD72AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-72 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD72InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 72), "TD-72 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DesignDecisions_RecordsLT4WindowsSectionAndDetachedGeometryPolicy()
+    {
+        // review3 の通常エンジニア向け作業: LT-4 方針メモ。文言完全一致ではなく重要語句の存在確認に留める。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "design", "design-decisions.md"));
+        Assert.Contains("LT-4", text);
+        Assert.Contains("Windows[]", text);
+        Assert.Contains("Tabs[]", text);
+        Assert.Contains("session", text);
+    }
+
+    [Fact]
+    public void UserGuide_MentionsStoppingRetryForMissingFiles()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.Contains("再試行", text);
+        Assert.Contains("止め", text);
+    }
+
+    [Fact]
+    public void Backlog_RecordsReview3FutureCandidates_AsOpenItems()
+    {
+        // review3 新リスク①②を、実装せず将来候補として backlog に記録したことを確認する。
+        // 採番は SH-32/SH-33（既に v2.14.11/v2.14.12 で使用済み）と衝突したため SH-34/SH-35 を使った。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("| SH-34 |", backlog);
+        Assert.Contains("| SH-35 |", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
