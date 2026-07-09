@@ -131,6 +131,10 @@ public partial class NestSuiteShellWindow
             int restoredCount = 0;
             foreach (var target in targets)
             {
+                // v2.16.16 TD-68 (review1-fable5.md R-8): target.WorkspaceKind は session.json の
+                // Tabs[].WorkspaceKind（保存時の文字列ヒント）ではなく、CreateRestoreTargets が
+                // NestSuiteTabFactory.TryGetKind でファイルから再判定した enum 値。ここでファイル
+                // 実読込を省略しているのではない点に注意。
                 var decision = ShellFileOpenPlanner.Plan(
                     target.FilePath,
                     _tabs,

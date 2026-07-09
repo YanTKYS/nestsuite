@@ -37,6 +37,8 @@ public static class SessionTabMapper
         state = new NestSuiteSessionTabState
         {
             FilePath = tab.FilePath!,
+            // v2.16.16 TD-68 (review1-fable5.md R-8): UI 表示ヒント用に保存するのみ。
+            // 復元時はここで書いた値を読み返さず、CreateRestoreTargets が再判定する。
             WorkspaceKind = tab.WorkspaceKind.ToString(),
             IsPinned = tab.IsPinned,
         };
@@ -171,6 +173,10 @@ public static class SessionTabMapper
     /// <summary>
     /// v2.14.7 SH-31: 復元対象と、通知が必要な復元失敗（読めない `.nestsuite` 等）を同時に返す。
     /// 復元可能なファイルの復元は失敗があっても妨げない。
+    /// v2.16.16 TD-68 (review1-fable5.md R-8): <c>state.Tabs[].WorkspaceKind</c>（保存時の UI 表示
+    /// ヒント文字列）はここでは信頼ソースとして使わない。復元対象の種別は下記 TryCreateRestoreTarget
+    /// 内で <see cref="NestSuiteTabFactory.TryGetKind"/> によりファイル内容・拡張子から都度再判定する
+    /// （session の記述と実ファイルが食い違っていても安全側に倒れる）。
     /// </summary>
     public static IReadOnlyList<SessionRestoreTarget> CreateRestoreTargets(
         NestSuiteSessionState state,
@@ -183,6 +189,7 @@ public static class SessionTabMapper
         {
             foreach (var tab in state.Tabs)
             {
+                // tab.WorkspaceKind（保存時の UI 表示ヒント）はここでは参照しない。TryCreateRestoreTarget が再判定する。
                 if (TryCreateRestoreTarget(tab.FilePath, tab.IsPinned, out var target, out var failure, fileExists))
                     targets.Add(target);
                 else if (failure != WorkspaceKindDetectionFailure.None)
