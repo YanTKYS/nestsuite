@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.26 — TD-75a: release notes / backlog 存在確認テストの helper 化・データ駆動化
+
+- v2.16.25 TD-74 の棚卸しレビュー（static-test-inventory-review.md）の P1 に基づき、`NestSuiteDocsContractTests.cs` 内の release notes / backlog 存在確認テストを `[Theory]` + `MemberData` へ集約した
+- 対象は「release notes に version / id がある」「backlog に完了済み id が open item として残っていない」「backlog の完了済み範囲に id が含まれる」の 3 パターン（合計 53 件の同形 Fact）
+- 検証内容は弱めておらず、個別 Fact の整理はすべて削除ではなくデータ行への移設として扱った
+- 完了済み範囲チェックに重複していた「TD-59 は open item のまま残る」確認と、TD-74 の完了済み範囲チェックに付随していた「TD-75 は open item として追加されている」確認は、それぞれ 1 箇所に集約した独立 Fact へ整理した（検証内容自体は維持）
+- release notes 本文の設計判断確認・user guide / design-decisions の重要語句確認など、個別に意図の強いテストは対象外とし、無理に統合していない
+- 挙動テスト化 2 件（`IsSessionPersistable` 出力確認化、SaveSession 条件の policy helper 化）、削除候補の削除判断、`test-classification-analysis.md` の位置づけ整理、他ファイルに散在する docs-contract test の移設は今回実施していない（TD-75 の残作業として backlog に残す）
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.25 — TD-74: 既存静的テスト棚卸しレビュー
 
 - `docs/planning/static-test-inventory-review.md` を追加し、既存静的テスト（22 ファイル・約 250 メソッド）を TD-73 のガイドラインを基準に棚卸しした

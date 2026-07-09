@@ -11,226 +11,155 @@ public class NestSuiteDocsContractTests
 {
     private static readonly string RepoRoot = TestPaths.RepoRoot;
 
-    // ── TD-33: 完了済み項目は release-notes.md で管理 ────────────────────
+    // ═══════════════════════════════════════════════════════════════════
+    // データ駆動: release notes / backlog 存在確認 (TD-75a, v2.16.26)
+    //
+    // v2.16.25 TD-74 の棚卸しレビュー（docs/planning/static-test-inventory-review.md）
+    // で、バージョンごとに同形の [Fact] が増え続ける構造が最大の課題と整理された。
+    // 以下の 3 種類は「機械的な存在確認だけ」のテストであり、[Theory] + MemberData に
+    // 集約した。検証内容（どの version / id を確認していたか）は元の個別 Fact から
+    // 一切削除せず、データ行として移設している。
+    // release notes 本文の設計判断確認・user guide / design-decisions の重要語句確認など、
+    // 個別に意図の強いテストはこの節に含めず、下の「個別内容確認」節に維持する。
+    // ═══════════════════════════════════════════════════════════════════
 
-    [Fact]
-    public void Backlog_TD23_IsMarkedComplete()
+    /// <summary>
+    /// release notes に (version, id) の組が含まれることを確認するレコード。
+    /// id が他 ID の部分文字列と衝突する場合（例: "SH-1" は "SH-15" にも一致する）は
+    /// idSearchText に見出し専用の厳密な文字列を指定する（衝突しない場合は id と同じ）。
+    /// </summary>
+    public static IEnumerable<object[]> ReleaseNoteVersionAndIdRecords()
     {
-        Assert.Contains("TD-23", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+        yield return new object[] { "v2.10.10", "TD-23", "TD-23" };
+        yield return new object[] { "v2.10.21", "SH-25", "SH-25" };
+        yield return new object[] { "v2.10.22", "ID-14", "ID-14" };
+        yield return new object[] { "v2.16.5", "SH-28", "SH-28" };
+        yield return new object[] { "v2.16.6", "TD-64", "TD-64" };
+        yield return new object[] { "v2.16.7", "TD-65", "TD-65" };
+        yield return new object[] { "v2.16.8", "L20", "L20" };
+        yield return new object[] { "v2.16.8", "L8", "L8" };
+        yield return new object[] { "v2.16.9", "SH-29", "SH-29" };
+        // SH-30 は v2.13.3 のエントリでも使われているため、見出し専用の文字列で確認する。
+        yield return new object[] { "v2.16.10", "SH-30", "v2.16.10 — SH-30" };
+        // "SH-1" は "SH-15" 等の部分文字列にも一致するため、見出し専用の文字列で確認する。
+        yield return new object[] { "v2.16.11", "SH-1", "v2.16.11 — SH-1:" };
+        yield return new object[] { "v2.16.12", "RJ-10", "RJ-10" };
+        yield return new object[] { "v2.16.13", "TD-63", "TD-63" };
+        yield return new object[] { "v2.16.14", "TD-66", "TD-66" };
+        yield return new object[] { "v2.16.15", "TD-67", "TD-67" };
+        yield return new object[] { "v2.16.16", "TD-68", "TD-68" };
+        yield return new object[] { "v2.16.17", "TD-69", "TD-69" };
+        yield return new object[] { "v2.16.18", "TD-70", "TD-70" };
+        yield return new object[] { "v2.16.19", "TD-71", "TD-71" };
+        yield return new object[] { "v2.16.20", "TD-72", "TD-72" };
+        yield return new object[] { "v2.16.21", "SH-34", "SH-34" };
+        yield return new object[] { "v2.16.22", "SH-35", "SH-35" };
+        yield return new object[] { "v2.16.23", "TD-73", "TD-73" };
+        yield return new object[] { "v2.16.25", "TD-74", "TD-74" };
+        yield return new object[] { "v2.16.26", "TD-75a", "TD-75a" };
+        // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
+        // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
+        // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
+    }
+
+    [Theory]
+    [MemberData(nameof(ReleaseNoteVersionAndIdRecords))]
+    public void ReleaseNotes_RecordsVersionAndId(string version, string id, string idSearchText)
+    {
+        var text = TestPaths.ReadReleaseNotes();
+        Assert.True(text.Contains(version, StringComparison.Ordinal),
+            $"release notes に version '{version}' が見つからない（対象 id: {id}）");
+        Assert.True(text.Contains(idSearchText, StringComparison.Ordinal),
+            $"release notes に id '{id}' が見つからない（検索文字列: '{idSearchText}'）");
+    }
+
+    /// <summary>
+    /// 完了済み id が backlog.md に open item の表行（"| id |"）として残っていないことを
+    /// 確認するレコード一覧。
+    /// </summary>
+    public static IEnumerable<object[]> BacklogCompletedOpenItemAbsenceRecords()
+    {
+        yield return new object[] { "SH-28" };
+        yield return new object[] { "TD-64" };
+        yield return new object[] { "TD-65" };
+        yield return new object[] { "L8" };
+        yield return new object[] { "L20" };
+        yield return new object[] { "SH-29" };
+        yield return new object[] { "SH-30" };
+        yield return new object[] { "SH-1" };
+        yield return new object[] { "M2" };
+        yield return new object[] { "TD-63" };
+        yield return new object[] { "TD-66" };
+        yield return new object[] { "TD-67" };
+        yield return new object[] { "TD-68" };
+        yield return new object[] { "TD-69" };
+        yield return new object[] { "TD-70" };
+        yield return new object[] { "TD-71" };
+        yield return new object[] { "TD-72" };
+        yield return new object[] { "SH-34" };
+        yield return new object[] { "TD-73" };
+    }
+
+    [Theory]
+    [MemberData(nameof(BacklogCompletedOpenItemAbsenceRecords))]
+    public void Backlog_DoesNotContainCompletedIdAsOpenItem(string id)
+    {
+        var backlog = TestPaths.ReadBacklog();
+        Assert.False(backlog.Contains($"| {id} |", StringComparison.Ordinal),
+            $"backlog.md に完了済み id '{id}' が open item の表行として残っている");
+    }
+
+    /// <summary>
+    /// TD-A〜TD-B の完了済み範囲（backlog.md 冒頭の「は完了済み（欠番）」行）に
+    /// 対象 TD 番号が含まれることを確認するレコード一覧。
+    /// </summary>
+    public static IEnumerable<object[]> BacklogCompletedTDRangeRecords()
+    {
+        yield return new object[] { 66 };
+        yield return new object[] { 67 };
+        yield return new object[] { 68 };
+        yield return new object[] { 69 };
+        yield return new object[] { 70 };
+        yield return new object[] { 71 };
+        yield return new object[] { 72 };
+        yield return new object[] { 73 };
+        yield return new object[] { 74 };
+    }
+
+    [Theory]
+    [MemberData(nameof(BacklogCompletedTDRangeRecords))]
+    public void Backlog_TDCompletedRangeCoversId(int id)
+    {
+        var backlog = TestPaths.ReadBacklog();
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, id),
+            $"TD-{id} が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
     }
 
     [Fact]
-    public void ReleaseNotes_Contains_V2_10_10()
+    public void Backlog_TD59_RemainsOpenItem()
     {
-        var path = Path.Combine(RepoRoot, "docs", "release-notes.md");
-        Assert.True(File.Exists(path));
-        Assert.Contains("v2.10.10", File.ReadAllText(path));
-    }
-
-    // ── SH-25: Shell 上部バー削除・メニュー導線整理 ──────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_SH25()
-    {
-        Assert.Contains("SH-25", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+        // 元は TD-66〜TD-73 の完了済み範囲チェックそれぞれに同一の確認が重複していた
+        // （「TD-59 は今回削除しない open item として残っている想定」）。TD-75a でここへ集約した。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.Contains("| TD-59 |", backlog);
     }
 
     [Fact]
-    public void ReleaseNotes_Contains_V21021()
+    public void Backlog_TD75_RemainsOpenItem()
     {
-        Assert.Contains("v2.10.21", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+        // TD-74 の完了済み範囲チェックに付随していた「TD-75 は open item として追加されている」
+        // 確認を独立させた（TD-75a でここへ集約）。TD-75 自体は本タスクでも完了扱いにしない。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.Contains("| TD-75 |", backlog);
     }
 
-    // ── ID-14: IdeaNest 新規カードのサンプル表示削減 ──────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_ID14()
-    {
-        Assert.Contains("ID-14", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21022()
-    {
-        Assert.Contains("v2.10.22", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    // ── SH-28: 直近操作の一時フィードバック統一 ──────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_SH28()
-    {
-        Assert.Contains("SH-28", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2165()
-    {
-        Assert.Contains("v2.16.5", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_SH28AsOpenItem()
-    {
-        // SH-15 / SH-19 と同様、完了済み ID は「実装済み（欠番）」の注記としてのみ残り、
-        // No/概要/優先度を伴う表の行としては残らない（完了済み項目は backlog.md に残さない）。
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| SH-28 |", backlog);
-    }
-
-    // ── TD-64: 自動保存では .bak を更新しない ─────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD64()
-    {
-        Assert.Contains("TD-64", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2166()
-    {
-        Assert.Contains("v2.16.6", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD64AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-64 |", backlog);
-    }
-
-    // ── TD-65: session 復元失敗 entry の持ち越し・破損 session 診断 ────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD65()
-    {
-        Assert.Contains("TD-65", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2167()
-    {
-        Assert.Contains("v2.16.7", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD65AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-65 |", backlog);
-    }
-
-    // ── L20 + L8: `.bak` 復元導線の追加 ────────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_L20()
-    {
-        Assert.Contains("L20", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_L8()
-    {
-        Assert.Contains("L8", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2168()
-    {
-        Assert.Contains("v2.16.8", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_L8AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| L8 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_L20AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| L20 |", backlog);
-    }
-
-    // ── SH-29: 未保存タブ終了確認への件数サマリ追加 ────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_SH29()
-    {
-        Assert.Contains("SH-29", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V2169()
-    {
-        Assert.Contains("v2.16.9", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_SH29AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| SH-29 |", backlog);
-    }
-
-    // ── SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────────────────
-    // 注意: SH-30 という ID は v2.13.3（Shell ステータスバー同期修正）でも使われている。
-    // 単純な "SH-30" だけの Contains では旧エントリと区別できないため、
-    // このバージョンでは新エントリの見出し文字列そのものを確認する。
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21610Header_ForSH30()
-    {
-        Assert.Contains("v2.16.10 — SH-30", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21610()
-    {
-        Assert.Contains("v2.16.10", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_SH30AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| SH-30 |", backlog);
-    }
-
-    // ── SH-1: 起動時エラー時の案内改善 ───────────────────────────────────
-    // 注意: 単純な "SH-1" の Contains は "SH-15" / "SH-19" 等の部分文字列としても
-    // 一致してしまうため、見出し文字列 "v2.16.11 — SH-1:" で厳密に確認する。
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21611Header_ForSH1()
-    {
-        Assert.Contains("v2.16.11 — SH-1:", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21611()
-    {
-        Assert.Contains("v2.16.11", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_SH1AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| SH-1 |", backlog);
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    // 個別内容確認 (維持) — release notes 本文の設計判断・docs の重要語句など、
+    // 意図が個別に強いテスト。ガイドライン (static-test-guidelines.md) に基づき、
+    // 無理に統合しない。
+    // ═══════════════════════════════════════════════════════════════════
 
     // ── RJ-10: M2 見送り・タスク縮退方針整理 ────────────────────────────────
-
-    [Fact]
-    public void Backlog_DoesNotContain_M2AsOpenItem()
-    {
-        // M2 は完了ではなく見送り。RJ-10 として backlog.md の見送り表へ移した。
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| M2 |", backlog);
-    }
 
     [Fact]
     public void Backlog_Contains_RJ10()
@@ -270,18 +199,6 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void ReleaseNotes_Contains_V21612()
-    {
-        Assert.Contains("v2.16.12", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_RJ10()
-    {
-        Assert.Contains("RJ-10", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
     public void ReleaseNotes_MentionsM2AsDeclined()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
@@ -291,40 +208,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains(m2Mentions, l => l.Contains("取り下げ") || l.Contains("見送り"));
     }
 
-    // ── TD-63: 巨大テストクラスのシナリオ単位分割 ────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21613()
-    {
-        Assert.Contains("v2.16.13", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD63()
-    {
-        Assert.Contains("TD-63", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD63AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-63 |", backlog);
-    }
-
     // ── TD-66: タブ変更時の session 随時保存 ────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21614()
-    {
-        Assert.Contains("v2.16.14", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD66()
-    {
-        Assert.Contains("TD-66", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD66_MentionsR6AndSessionFormatUnchanged()
@@ -336,37 +220,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains("session 形式", td66Section);
     }
 
-    [Fact]
-    public void Backlog_DoesNotContain_TD66AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-66 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD66InCompletedRange()
-    {
-        // v2.16.15 TD-67 fix: 「TD-64〜TD-66」が「TD-64〜TD-67」等へ圧縮されると
-        // リテラル "TD-66" が range テキストから消えるため、範囲パースで判定する。
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 66), "TD-66 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
-
     // ── TD-67: 複数ファイルオープン失敗通知の改善 ──────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21615()
-    {
-        Assert.Contains("v2.16.15", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD67()
-    {
-        Assert.Contains("TD-67", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD67_MentionsR7AndNoFormatChange()
@@ -378,35 +232,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains("保存形式", td67Section);
     }
 
-    [Fact]
-    public void Backlog_DoesNotContain_TD67AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-67 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD67InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 67), "TD-67 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
-
     // ── TD-68: Tabs[].WorkspaceKind の用途明文化・テスト固定 ─────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21616()
-    {
-        Assert.Contains("v2.16.16", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD68()
-    {
-        Assert.Contains("TD-68", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD68_MentionsR8AndUiHintNotTrustSource()
@@ -419,35 +245,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains("信頼ソース", td68Section);
     }
 
-    [Fact]
-    public void Backlog_DoesNotContain_TD68AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-68 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD68InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 68), "TD-68 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
-
     // ── TD-69: FilePaths を Tabs から導出する統一 ───────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21617()
-    {
-        Assert.Contains("v2.16.17", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD69()
-    {
-        Assert.Contains("TD-69", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD69_MentionsR14AndDerivedFilePaths()
@@ -459,35 +257,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains("導出", td69Section);
     }
 
-    [Fact]
-    public void Backlog_DoesNotContain_TD69AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-69 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD69InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 69), "TD-69 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
-
     // ── TD-70: pending entry の再試行解除手段 ───────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21618()
-    {
-        Assert.Contains("v2.16.18", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD70()
-    {
-        Assert.Contains("TD-70", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD70_MentionsFileNotFoundAndUserConfirmation()
@@ -499,35 +269,7 @@ public class NestSuiteDocsContractTests
         Assert.Contains("利用者", td70Section);
     }
 
-    [Fact]
-    public void Backlog_DoesNotContain_TD70AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-70 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD70InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 70), "TD-70 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
-
     // ── TD-71: review2 小リスク②③の案内・設計記録 ───────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21619()
-    {
-        Assert.Contains("v2.16.19", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD71()
-    {
-        Assert.Contains("TD-71", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void ReleaseNotes_TD71_MentionsBakHintAndActiveFilePathAsymmetry()
@@ -537,22 +279,6 @@ public class NestSuiteDocsContractTests
 
         Assert.Contains(".bak", td71Section);
         Assert.Contains("ActiveFilePath", td71Section);
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD71AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-71 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD71InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 71), "TD-71 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
     }
 
     [Fact]
@@ -567,18 +293,6 @@ public class NestSuiteDocsContractTests
     // ── TD-72: review3 後の docs 整理 ───────────────────────────────────────
 
     [Fact]
-    public void ReleaseNotes_Contains_V21620()
-    {
-        Assert.Contains("v2.16.20", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD72()
-    {
-        Assert.Contains("TD-72", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
     public void ReleaseNotes_TD72_MentionsLT4AndUserGuideAndBacklogRecording()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
@@ -586,22 +300,6 @@ public class NestSuiteDocsContractTests
 
         Assert.Contains("LT-4", td72Section);
         Assert.Contains("ユーザーガイド", td72Section);
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD72AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-72 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD72InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 72), "TD-72 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
     }
 
     [Fact]
@@ -636,18 +334,6 @@ public class NestSuiteDocsContractTests
     // ── SH-34: 復元失敗通知と FileNotFound 再試行解除確認の1ダイアログ統合 ───────────
 
     [Fact]
-    public void ReleaseNotes_Contains_V21621()
-    {
-        Assert.Contains("v2.16.21", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_SH34()
-    {
-        Assert.Contains("SH-34", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
     public void ReleaseNotes_SH34_MentionsOneDialogAndFileNotFound()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
@@ -658,15 +344,10 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_DoesNotContain_SH34AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| SH-34 |", backlog);
-    }
-
-    [Fact]
     public void Backlog_MentionsSH34InCompletedRange()
     {
+        // SH の完了済み欠番は TD のような数値範囲表記ではなく個別文で記録されているため、
+        // BacklogCompletedRangeCoversTD の対象には含めず、この専用チェックで維持する。
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
         Assert.Contains("SH-34", backlog);
         Assert.Contains("SH-34 は v2.16.21", backlog);
@@ -694,18 +375,6 @@ public class NestSuiteDocsContractTests
     }
 
     // ── SH-35-docs: 復元失敗が続く場合の案内追記 ─────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21622()
-    {
-        Assert.Contains("v2.16.22", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_SH35Docs()
-    {
-        Assert.Contains("SH-35", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
 
     [Fact]
     public void UserGuide_ExplainsNonFileNotFoundRestoreFailures()
@@ -745,34 +414,6 @@ public class NestSuiteDocsContractTests
     }
 
     // ── TD-73: 静的テスト持続可能性ガイドライン ─────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21623()
-    {
-        Assert.Contains("v2.16.23", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void ReleaseNotes_Contains_TD73()
-    {
-        Assert.Contains("TD-73", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContain_TD73AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.DoesNotContain("| TD-73 |", backlog);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD73InCompletedRange()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 73), "TD-73 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // TD-59 は今回削除しない open item として残っている想定
-        Assert.Contains("| TD-59 |", backlog);
-    }
 
     [Fact]
     public void StaticTestGuidelines_FileExists()
@@ -860,23 +501,6 @@ public class NestSuiteDocsContractTests
     }
 
     // ── TD-74: 既存静的テスト棚卸しレビュー ─────────────────────────────────
-
-    [Fact]
-    public void ReleaseNotes_Contains_V21625_AndTD74()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.25", text);
-        Assert.Contains("TD-74", text);
-    }
-
-    [Fact]
-    public void Backlog_MentionsTD74InCompletedRange_AndTD75AsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 74), "TD-74 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
-        // 棚卸しのフォローアップ（TD-75）は open item として追加されている想定
-        Assert.Contains("| TD-75 |", backlog);
-    }
 
     [Fact]
     public void StaticTestInventoryReview_ExistsAndMentionsClassifications()
