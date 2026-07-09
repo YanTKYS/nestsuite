@@ -170,11 +170,12 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-58、TD-60〜TD-63、TD-64〜TD-73 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-58、TD-60〜TD-63、TD-64〜TD-74 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | TD-59 | `.nestsuite` オープン時の二重読込・二重パース解消 | `.nestsuite` を開く全経路（Open ダイアログ・起動引数・最近ファイル・セッション復元・pipe）で、種別判定（`TryGetKind` → `TryDetectKindFromFile` が `File.ReadAllText` + JSON パース）と本読込（各 FileService の `Load` が再度 `File.ReadAllText` + wrapper パース）の 2 回、同じファイルを読み込み解析している。現状は実害が小さい（判定と読込の間に内容が変わっても `EnsureKind` が明確なエラーで失敗する）が、大きいファイル・遅いストレージでは無駄が倍になる。判定結果（envelope 内容）を読込へ引き渡す形を検討する。注意点: `TryGetKind` の単一集約点という FM-1 の設計利点を壊さないこと。急ぎではない | C |
+| TD-75 | 静的テスト棚卸しレビューのフォローアップ | `docs/planning/static-test-inventory-review.md`（TD-74、v2.16.25）で整理した次工程の実装。(1) **データ駆動化**: release notes / backlog のバージョン・ID 存在確認テスト（`NestSuiteDocsContractTests.cs` の同形 Fact 約 70 件と、挙動テストファイルに散在する約 29〜37 件）を (version, id) ペアの `[Theory]` + `MemberData` + 共通 helper に集約する。検証内容・網羅対象は変えず、失敗時にどの version / id か分かるメッセージにする。(2) **挙動テスト化 2 件**: `SessionTabMapper_IsSessionPersistable_StillExcludesTempTabs` を `CreateSessionState` の出力確認（Temp タブが含まれない）へ置換。`Constructor_SavesSessionWhenForgotFileNotFoundDuringStartup_EvenIfRestoreReturnedFalse` は SaveSession 実行条件を UI 非依存の policy helper に切り出して単体テスト化し、静的確認は配線確認のみへ縮小する。(3) 削除候補（凍結 planning 文書のスナップショット固定テスト等）はユーザー判断の上で対応し、`test-classification-analysis.md` の位置づけ（現役か過去スナップショットか）も明確化する。既存テストの保証内容を弱めないこと | C |
 
 ---
 
