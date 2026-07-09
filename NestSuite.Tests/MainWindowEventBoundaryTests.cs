@@ -10,7 +10,6 @@ namespace NestSuite.Tests;
 /// </summary>
 public class MainWindowEventBoundaryTests
 {
-    private static readonly BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly BindingFlags PrivateStatic = BindingFlags.Static | BindingFlags.NonPublic;
 
     // v1.19.3: MainWindow 削除により SemanticEventEntryPointsRemainAvailable を削除。

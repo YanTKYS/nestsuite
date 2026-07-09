@@ -92,19 +92,21 @@ public class NestSuiteShellMultipleOpenFailureTests
     }
 
     [Fact]
-    public void NotifyRestoreFailures_IsUnchangedByTD67()
+    public void NotifyRestoreFailures_SignatureIsUnchangedByTD67()
     {
-        // TD-65 の session 復元失敗通知（NotifyRestoreFailures）は今回変更しない。
+        // TD-65 の session 復元失敗通知（NotifyRestoreFailures）のシグネチャは TD-67 で変更していない。
+        // v2.16.21 SH-34: 本文の組み立ては SessionRestoreFailuresMessageBuilder へ委譲するようになった
+        // （文言そのものは同 builder のテストで検証する）ため、ここではシグネチャと、
+        // TD-67 の複数ファイルオープン専用の型を誤って混ぜていないことのみ確認する。
         var src = ReadSessionSource();
         var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
         Assert.True(methodStart >= 0, "NotifyRestoreFailures のシグネチャが変わっていないことを確認できない");
 
-        var methodEnd = src.IndexOf("OpenFileFromPipe", methodStart, StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
         Assert.True(methodEnd > methodStart);
         var body = src.Substring(methodStart, methodEnd - methodStart);
 
-        Assert.Contains("前回開いていた一部のファイルを復元できませんでした。", body);
-        Assert.Contains("次回起動時にも再試行します。", body);
+        Assert.Contains("SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(failures)", body);
         Assert.DoesNotContain("MultipleOpenFailureMessageBuilder", body);
         Assert.DoesNotContain("OpenFileFailure", body);
     }

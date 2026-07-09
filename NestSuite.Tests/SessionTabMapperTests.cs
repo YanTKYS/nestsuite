@@ -956,37 +956,68 @@ public class SessionTabMapperTests
     }
 
     [Fact]
-    public void NotifyRestoreFailures_OffersToForgetFileNotFound_OnlyWhenFileNotFoundPresent()
+    public void OfferToForgetFileNotFoundRestoreFailures_MethodIsRemoved()
+    {
+        // v2.16.21 SH-34 (review4-fable5.md LT-9 フェーズ1): 復元失敗通知と再試行解除確認を
+        // 1 ダイアログへ統合したため、別ダイアログを出していた旧 helper は不要になった。
+        var src = ReadSessionSource();
+        Assert.DoesNotContain("private void OfferToForgetFileNotFoundRestoreFailures", src);
+    }
+
+    [Fact]
+    public void NotifyRestoreFailures_ConfirmBranch_OnlyReachableWhenFileNotFoundPresent_AndReturnsBeforeShowError()
     {
         var src = ReadSessionSource();
         var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
         Assert.True(methodStart >= 0);
-        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
         Assert.True(methodEnd > methodStart);
         var body = src.Substring(methodStart, methodEnd - methodStart);
 
-        Assert.Contains("f.Failure == WorkspaceKindDetectionFailure.FileNotFound", body);
-        Assert.Contains("OfferToForgetFileNotFoundRestoreFailures();", body);
+        var guardIdx = body.IndexOf("f.Failure == WorkspaceKindDetectionFailure.FileNotFound", StringComparison.Ordinal);
+        var confirmIdx = body.IndexOf("_dialogs.Confirm(", StringComparison.Ordinal);
+        var returnIdx = body.IndexOf("return;", confirmIdx, StringComparison.Ordinal);
+        var showErrorIdx = body.IndexOf("_dialogs.ShowError(message, \"セッション復元\");", StringComparison.Ordinal);
+
+        Assert.True(guardIdx >= 0 && confirmIdx > guardIdx, "Confirm は FileNotFound 判定より後で呼ぶ必要がある");
+        Assert.True(returnIdx > confirmIdx, "Confirm 分岐は return で終える必要がある（ShowError と重ねて呼ばない）");
+        Assert.True(showErrorIdx > returnIdx, "ShowError は Confirm 分岐の return より後（FileNotFound を含まない場合の経路）にある必要がある");
+
+        // Confirm / ShowError とも呼び出しは 1 箇所のみ（同じ起動で 2 枚出ることはない）。
+        var secondConfirmIdx = body.IndexOf("_dialogs.Confirm(", confirmIdx + 1, StringComparison.Ordinal);
+        var secondShowErrorIdx = body.IndexOf("_dialogs.ShowError(", showErrorIdx + 1, StringComparison.Ordinal);
+        Assert.Equal(-1, secondConfirmIdx);
+        Assert.Equal(-1, secondShowErrorIdx);
     }
 
     [Fact]
-    public void OfferToForgetFileNotFoundRestoreFailures_OnlyForgetsWhenUserConfirms()
+    public void NotifyRestoreFailures_ConfirmedTrue_ForgetsFileNotFoundEntries_AndSetsStartupFlag()
     {
         var src = ReadSessionSource();
-        var methodStart = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
-        Assert.True(methodStart >= 0);
-        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures()", methodStart, StringComparison.Ordinal);
-        Assert.True(methodEnd > methodStart);
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
         var body = src.Substring(methodStart, methodEnd - methodStart);
 
-        var confirmIdx = body.IndexOf("_dialogs.Confirm(", StringComparison.Ordinal);
-        var guardIdx = body.IndexOf("if (!confirmed) return;", StringComparison.Ordinal);
+        var confirmedIfIdx = body.IndexOf("if (confirmed)", StringComparison.Ordinal);
         var forgetCallIdx = body.IndexOf("ForgetFileNotFoundRestoreFailures();", StringComparison.Ordinal);
         var flagSetIdx = body.IndexOf("_forgotFileNotFoundRestoreFailuresDuringStartup = true;", StringComparison.Ordinal);
 
-        Assert.True(confirmIdx >= 0 && guardIdx > confirmIdx, "確認ダイアログの後に early-return ガードが必要");
-        Assert.True(forgetCallIdx > guardIdx, "ForgetFileNotFoundRestoreFailures は confirmed ガードより後で呼ぶ必要がある");
+        Assert.True(confirmedIfIdx >= 0 && forgetCallIdx > confirmedIfIdx, "ForgetFileNotFoundRestoreFailures は if (confirmed) の中で呼ぶ必要がある");
         Assert.True(flagSetIdx > forgetCallIdx);
+    }
+
+    [Fact]
+    public void NotifyRestoreFailures_UsesMessageBuilder_ForBothConfirmAndShowErrorBranches()
+    {
+        // ShowError / Confirm 両方の呼び出しが、UI 非依存の SessionRestoreFailuresMessageBuilder の
+        // 結果（本文・再試行解除確認文とも）を使っていることを確認する（本文の二重管理を避ける）。
+        var src = ReadSessionSource();
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(failures)", body);
+        Assert.Contains("SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion", body);
     }
 
     [Fact]
@@ -1001,15 +1032,14 @@ public class SessionTabMapperTests
     }
 
     [Fact]
-    public void ForgetFileNotFoundRestoreFailures_DoesNotCallSaveSessionDirectly()
+    public void NotifyRestoreFailures_DoesNotCallSaveSessionDirectly()
     {
         // TD-66 の _isRestoringSession ガード下で、復元中に中途半端な session 保存をしないことを
         // 静的に裏付ける。保存はコンストラクターが復元完了後にまとめて行う。
         var src = ReadSessionSource();
-        var offerStart = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
-        var forgetStart = src.IndexOf("private void ForgetFileNotFoundRestoreFailures()", StringComparison.Ordinal);
-        Assert.True(offerStart >= 0 && forgetStart > offerStart);
-        var body = src.Substring(offerStart, forgetStart - offerStart);
+        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
+        var methodEnd = src.IndexOf("private void ForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
 
         Assert.DoesNotContain("SaveSession();", body);
         Assert.DoesNotContain("SaveSessionAfterTabChange();", body);
@@ -1030,50 +1060,84 @@ public class SessionTabMapperTests
     }
 
     [Fact]
-    public void NotifyRestoreFailuresDialog_MentionsStopRetryingIntent()
+    public void ForgetFileNotFoundQuestion_MentionsStopRetryingIntent()
     {
-        var src = ReadSessionSource();
-        Assert.Contains("次回から復元対象から外しますか", src);
+        Assert.Contains("次回から復元対象から外しますか", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
     }
 
     [Fact]
-    public void NotifyRestoreFailuresDialog_MentionsNetworkOrExternalDriveCaution()
+    public void ForgetFileNotFoundQuestion_MentionsNetworkOrExternalDriveCaution()
     {
-        var src = ReadSessionSource();
-        Assert.Contains("ネットワークドライブ", src);
-        Assert.Contains("外部ドライブ", src);
+        Assert.Contains("ネットワークドライブ", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
+        Assert.Contains("外部ドライブ", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
+    }
+
+    [Fact]
+    public void ForgetFileNotFoundQuestion_ClarifiesOnlyFileNotFoundIsAffected()
+    {
+        // Yes を選んでも InvalidFormat / AccessDenied / SchemaVersionTooNew は解除対象に含まれないことを、
+        // 確認文自体が明示していることを確認する。
+        Assert.Contains("見つからないファイル以外は引き続き再試行されます", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
     }
 
     // ── v2.16.19 TD-71 (review2-fable5.md 新リスク②): 復元失敗通知の .bak 詳細案内 ─────────
+    // v2.16.21 SH-34 で本文組み立てが SessionRestoreFailuresMessageBuilder へ移ったため、
+    // ソーステキスト静的確認ではなく builder の実際の挙動でテストする。
 
     [Fact]
-    public void NotifyRestoreFailures_AppendsBakDetailHint_OnlyWhenInvalidFormatPresent()
+    public void BuildFailuresMessage_AppendsBakDetailHint_OnlyWhenInvalidFormatPresent()
     {
-        var src = ReadSessionSource();
-        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
-        Assert.True(methodStart >= 0);
-        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
-        Assert.True(methodEnd > methodStart);
-        var body = src.Substring(methodStart, methodEnd - methodStart);
+        var withInvalidFormat = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\broken.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+        };
+        var withoutInvalidFormat = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+        };
 
-        Assert.Contains("f.Failure == WorkspaceKindDetectionFailure.InvalidFormat", body);
-        Assert.Contains("FileErrorMessages.MultipleFailuresBakDetailHint", body);
+        Assert.Contains(
+            FileErrorMessages.MultipleFailuresBakDetailHint,
+            SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(withInvalidFormat));
+        Assert.DoesNotContain(
+            FileErrorMessages.MultipleFailuresBakDetailHint,
+            SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(withoutInvalidFormat));
     }
 
     [Fact]
-    public void NotifyRestoreFailures_BakHintCheck_IsSeparateFromFileNotFoundForgetCheck()
+    public void BuildFailuresMessage_MixedFileNotFoundAndInvalidFormat_IncludesBakHint_ButNotForgetQuestion()
     {
-        // TD-70 の FileNotFound 再試行解除確認と TD-71 の .bak 誘導は別々の条件分岐であり、
-        // 混同していないことを確認する（それぞれ異なる WorkspaceKindDetectionFailure 値を見る）。
-        var src = ReadSessionSource();
-        var methodStart = src.IndexOf("private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)", StringComparison.Ordinal);
-        var methodEnd = src.IndexOf("private void OfferToForgetFileNotFoundRestoreFailures", methodStart, StringComparison.Ordinal);
-        var body = src.Substring(methodStart, methodEnd - methodStart);
+        // .bak 誘導はメッセージ本文（builder）側の責務、FileNotFound 再試行解除確認は
+        // 呼び出し側（Shell）が別途連結する責務であり、混同していないことを確認する。
+        var mixed = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\broken.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+        };
 
-        var bakCheckIdx = body.IndexOf("f.Failure == WorkspaceKindDetectionFailure.InvalidFormat", StringComparison.Ordinal);
-        var forgetCheckIdx = body.IndexOf("f.Failure == WorkspaceKindDetectionFailure.FileNotFound", StringComparison.Ordinal);
-        Assert.True(bakCheckIdx >= 0 && forgetCheckIdx >= 0);
-        Assert.NotEqual(bakCheckIdx, forgetCheckIdx);
+        var message = SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(mixed);
+
+        Assert.Contains(FileErrorMessages.MultipleFailuresBakDetailHint, message);
+        Assert.DoesNotContain(SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion, message);
+    }
+
+    [Fact]
+    public void MergedConfirmMessage_MixedFileNotFoundAndInvalidFormat_ContainsBothBakHintAndForgetQuestion()
+    {
+        // NestSuiteShellWindow.NotifyRestoreFailures が実際に組み立てる文字列
+        // （message + "\n\n" + ForgetFileNotFoundQuestion）を模して、混在時に両方の要素が
+        // 1 つの Confirm メッセージに含まれることを確認する。
+        var mixed = new[]
+        {
+            new SessionRestoreFailure(@"C:\work\missing.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new SessionRestoreFailure(@"C:\work\broken.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+        };
+
+        var merged = SessionRestoreFailuresMessageBuilder.BuildFailuresMessage(mixed) +
+            "\n\n" + SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion;
+
+        Assert.Contains(FileErrorMessages.MultipleFailuresBakDetailHint, merged);
+        Assert.Contains("次回から復元対象から外しますか", merged);
     }
 
     [Fact]
