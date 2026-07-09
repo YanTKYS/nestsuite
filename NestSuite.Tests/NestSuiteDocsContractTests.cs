@@ -525,6 +525,57 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-59 |", backlog);
     }
 
+    // ── TD-71: review2 小リスク②③の案内・設計記録 ───────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21619()
+    {
+        Assert.Contains("v2.16.19", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_Contains_TD71()
+    {
+        Assert.Contains("TD-71", File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md")));
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD71_MentionsBakHintAndActiveFilePathAsymmetry()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var td71Section = text.Substring(text.IndexOf("TD-71", StringComparison.Ordinal));
+        var nextSectionIdx = td71Section.IndexOf("\n## ", 1, StringComparison.Ordinal);
+        if (nextSectionIdx > 0) td71Section = td71Section.Substring(0, nextSectionIdx);
+
+        Assert.Contains(".bak", td71Section);
+        Assert.Contains("ActiveFilePath", td71Section);
+    }
+
+    [Fact]
+    public void Backlog_DoesNotContain_TD71AsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.DoesNotContain("| TD-71 |", backlog);
+    }
+
+    [Fact]
+    public void Backlog_MentionsTD71InCompletedRange()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 71), "TD-71 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        // TD-59 は今回削除しない open item として残っている想定
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DesignDecisions_RecordsActiveFilePathFreshnessAsymmetry()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "design", "design-decisions.md"));
+        Assert.Contains("ActiveFilePath", text);
+        Assert.Contains("鮮度非対称", text);
+        Assert.Contains("TD-71", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

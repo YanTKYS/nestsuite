@@ -191,10 +191,17 @@ public partial class NestSuiteShellWindow
 
         var lines = failures.Select(f =>
             $"- {Path.GetFileName(f.FilePath)}: {FileErrorMessages.ForKindDetectionFailure(f.Failure).Split('\n')[0]}");
-        _dialogs.ShowError(
+        var message =
             "前回開いていた一部のファイルを復元できませんでした。\n次回起動時にも再試行します。\n\n" +
-            string.Join("\n", lines),
-            "セッション復元");
+            string.Join("\n", lines);
+
+        // v2.16.19 TD-71 (review2-fable5.md 新リスク②): InvalidFormat が 1 件でも含まれる場合のみ、
+        // 単体で開き直すと詳しい .bak 復元案内が出ることを末尾に 1 行添える（TD-70 の FileNotFound
+        // 再試行解除確認とは役割を混ぜない）。
+        if (failures.Any(f => f.Failure == WorkspaceKindDetectionFailure.InvalidFormat))
+            message += "\n\n" + FileErrorMessages.MultipleFailuresBakDetailHint;
+
+        _dialogs.ShowError(message, "セッション復元");
 
         // v2.16.18 TD-70 (review2-fable5.md 新リスク①): FileNotFound は恒久的な削除・移動の
         // 可能性が高いため、利用者が明示的に「次回から再試行しない」を選べるようにする。

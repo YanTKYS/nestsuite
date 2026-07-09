@@ -142,4 +142,52 @@ public class MultipleOpenFailureMessageBuilderTests
         Assert.Contains("a.txt", message);
         Assert.Contains("このファイル形式は NestSuite では開けません", message);
     }
+
+    // ── v2.16.19 TD-71 (review2-fable5.md 新リスク②): InvalidFormat 時の .bak 詳細案内 ──────
+
+    [Fact]
+    public void Build_ContainsInvalidFormat_AppendsBakDetailHint()
+    {
+        var failures = new[]
+        {
+            new OpenFileFailure(@"C:\a.txt", WorkspaceKindDetectionFailure.UnsupportedExtension),
+            new OpenFileFailure(@"C:\broken.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+        };
+
+        var message = MultipleOpenFailureMessageBuilder.Build(failures);
+
+        Assert.Contains(FileErrorMessages.MultipleFailuresBakDetailHint, message);
+    }
+
+    [Fact]
+    public void Build_DoesNotContainInvalidFormat_DoesNotAppendBakDetailHint()
+    {
+        var failures = new[]
+        {
+            new OpenFileFailure(@"C:\a.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+            new OpenFileFailure(@"C:\b.nestsuite", WorkspaceKindDetectionFailure.AccessDenied),
+            new OpenFileFailure(@"C:\c.nestsuite", WorkspaceKindDetectionFailure.SchemaVersionTooNew),
+        };
+
+        var message = MultipleOpenFailureMessageBuilder.Build(failures);
+
+        Assert.DoesNotContain(FileErrorMessages.MultipleFailuresBakDetailHint, message);
+    }
+
+    [Fact]
+    public void Build_MultipleInvalidFormatEntries_AppendsBakDetailHintOnlyOnce()
+    {
+        var failures = new[]
+        {
+            new OpenFileFailure(@"C:\a.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+            new OpenFileFailure(@"C:\b.nestsuite", WorkspaceKindDetectionFailure.InvalidFormat),
+            new OpenFileFailure(@"C:\c.notenest", WorkspaceKindDetectionFailure.FileNotFound),
+        };
+
+        var message = MultipleOpenFailureMessageBuilder.Build(failures);
+
+        var occurrences = message.Split(
+            [FileErrorMessages.MultipleFailuresBakDetailHint], StringSplitOptions.None).Length - 1;
+        Assert.Equal(1, occurrences);
+    }
 }
