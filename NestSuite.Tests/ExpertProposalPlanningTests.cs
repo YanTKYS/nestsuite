@@ -13,7 +13,7 @@ public class ExpertProposalPlanningTests
 {
     private static readonly string RepoRoot = TestPaths.RepoRoot;
 
-    // ── planning doc の存在と必須分類 ─────────────────────────────────────
+    // ── planning doc の存在 ─────────────────────────────────────────────
 
     [Fact]
     public void PlanningDoc_ExpertProposals_Exists()
@@ -22,43 +22,13 @@ public class ExpertProposalPlanningTests
         Assert.True(File.Exists(path), $"Planning doc not found: {path}");
     }
 
-    [Fact]
-    public void PlanningDoc_Contains_ShortTermSection()
-    {
-        var text = ReadPlanningDoc();
-        Assert.Contains("短期採用候補", text);
-    }
-
-    [Fact]
-    public void PlanningDoc_Contains_StagedSection()
-    {
-        var text = ReadPlanningDoc();
-        Assert.Contains("段階的採用候補", text);
-    }
-
-    [Fact]
-    public void PlanningDoc_Contains_LongTermSection()
-    {
-        var text = ReadPlanningDoc();
-        Assert.Contains("長期構想", text);
-    }
-
-    [Fact]
-    public void PlanningDoc_Contains_OutOfScopeSection()
-    {
-        var text = ReadPlanningDoc();
-        Assert.Contains("当面対象外", text);
-    }
-
-    [Fact]
-    public void PlanningDoc_AI_IsOutOfScope_NotShortTerm()
-    {
-        // AI 要約・クラウド同期などは当面対象外として整理されている。
-        // 当面対象外セクション以降に「外部 AI」が含まれ、短期採用候補には含まれないことを確認する。
-        var text = ReadPlanningDoc();
-        Assert.Contains("外部 AI", text);
-        Assert.Contains("当面対象外", text);
-    }
+    // TD-75e (v2.16.31): TD-75d（v2.16.30, static-test-deletion-candidate-review.md）で
+    // Delete candidate と判断された、凍結済み planning 文書（expert-proposals-2026-06.md）の
+    // 章構成固定 5 件（短期採用候補・段階的採用候補・長期構想・当面対象外・外部 AI 対象外）を
+    // 削除した。文書自体は今後編集されない履歴文書であり、章構成を CI で守り続ける価値は薄いと
+    // 判断された。提案の採否は release notes / backlog で追跡済み（「外部 AI 対象外」の現行方針は
+    // backlog の RJ-2 行で追跡）。文書の誤削除検知は上の PlanningDoc_ExpertProposals_Exists が
+    // 引き続き担う。
 
     // TD-75a-2 (v2.16.27): この節にあった機械的な存在確認は
     // NestSuiteDocsContractTests.cs へ移設した。検証内容は変えていない。
@@ -201,13 +171,6 @@ public class ExpertProposalPlanningTests
     // ── バージョン / スキーマ ────────────────────────────────────────────
 
     // ── helpers ─────────────────────────────────────────────────────────
-
-    private string ReadPlanningDoc()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "planning", "expert-proposals-2026-06.md");
-        Assert.True(File.Exists(path), $"Planning doc not found: {path}");
-        return File.ReadAllText(path);
-    }
 
     private string ReadBacklog() => TestPaths.ReadBacklog();
 
