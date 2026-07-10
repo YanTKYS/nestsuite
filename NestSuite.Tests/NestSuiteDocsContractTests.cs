@@ -170,12 +170,15 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD75_RemainsOpenItem()
+    public void Backlog_TD75_IsNowCompleted()
     {
-        // TD-74 の完了済み範囲チェックに付随していた「TD-75 は open item として追加されている」
-        // 確認を独立させた（TD-75a でここへ集約）。TD-75 自体は本タスクでも完了扱いにしない。
+        // TD-75a〜TD-75e（v2.16.26〜v2.16.31）ですべて完了したため、TD-75e (v2.16.31) で
+        // TD-75 は completed range へ移動し open item 表からは外れた。
+        // 旧 Backlog_TD75_RemainsOpenItem（TD-75a で追加）をこのテストへ置き換えた。
         var backlog = TestPaths.ReadBacklog();
-        Assert.Contains("| TD-75 |", backlog);
+        Assert.DoesNotContain("| TD-75 |", backlog);
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 75),
+            "TD-75 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -675,6 +678,31 @@ public class NestSuiteDocsContractTests
         Assert.Contains("Replace then delete", text);
         Assert.Contains("Defer", text);
         Assert.Contains("削除・skip は 1 件も行っていない", text);
+    }
+
+    // ── TD-75e: Delete candidate 10 件の実削除 ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21631_AndTD75e()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.31", text);
+        Assert.Contains("TD-75e", text);
+    }
+
+    [Fact]
+    public void Backlog_TD75_MentionsTD75eCompletion()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-64〜TD-75", backlog);
+    }
+
+    [Fact]
+    public void StaticTestDeletionCandidateReview_MentionsTD75eImplementationResult()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "static-test-deletion-candidate-review.md"));
+        Assert.Contains("実施結果", text);
+        Assert.Contains("TD-75e", text);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

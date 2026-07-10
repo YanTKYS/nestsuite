@@ -7,6 +7,17 @@
 
 ---
 
+## v2.16.31 — TD-75e: Delete candidate 10 件の実削除
+
+- TD-75d（v2.16.30、`docs/planning/static-test-deletion-candidate-review.md`）で Delete candidate と判断済みの静的テスト 10 件を削除した
+- `ExpertProposalPlanningTests.cs` から、凍結済み planning 文書（`expert-proposals-2026-06.md`）の章構成固定 5 件（短期採用候補・段階的採用候補・長期構想・当面対象外・外部 AI 対象外）を削除した
+- `NestSuiteShellXamlTests.cs` から、古い UI 削除ガード 5 件（SH-25 の上部バー起動ボタン・NoteNest エクスポートメニュー不在確認、ID-14 のサンプル文言不在確認、v2.15.1 の横断検索メニュー重複配置・各 Nest 起動項目のツールメニュー不在確認）を削除した
+- Keep と判断された 3 件（`PlanningDoc_ExpertProposals_Exists` / `NoteNestWorkspaceViewXaml_DoesNotContain_EditorFontFamilyComboBox` / `ShellXaml_DoesNotIntroduce_SearchNestWorkspace`）は削除していない
+- `ExpertProposalPlanningTests.cs` 自体は削除していない（削除した 5 件の呼び出し専用だった `ReadPlanningDoc()` helper のみ整理した）
+- 既存テストの skip は行っていない。production code の変更もない
+- TD-75 の残作業が完了したため、backlog の完了済み範囲を TD-64〜TD-75 に更新し、TD-75 を open item 表から外した。**TD-75 全体を完了扱いにした**
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.30 — TD-75d: 削除候補テストの削除判断レビュー
 
 - TD-74 の棚卸しレビューで「削除候補」とされた静的テストについて削除判断レビューを行い、`docs/planning/static-test-deletion-candidate-review.md` を追加した

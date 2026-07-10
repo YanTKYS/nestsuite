@@ -13,24 +13,11 @@ public class NestSuiteShellXamlTests
 
     // ── SH-25: Shell 上部バー削除・メニュー導線整理 ──────────────────────
 
-    [Fact]
-    public void ShellXaml_DoesNotContain_TopBarLaunchButtons()
-    {
-        var src = ReadShellXaml();
-        Assert.DoesNotContain("Shell.NoteNestLaunchButton", src);
-        Assert.DoesNotContain("Shell.IdeaNestLaunchButton", src);
-        Assert.DoesNotContain("Shell.ChatNestLaunchButton", src);
-    }
-
-    [Fact]
-    public void ShellXaml_DoesNotContain_NoteExportMenuItems()
-    {
-        // SH-25: NoteNest エクスポートメニューは Shell File メニューから NoteNestWorkspaceView の右クリックへ移管した
-        var src = ReadShellXaml();
-        Assert.DoesNotContain("MenuExportNoteMarkdownCopy_Click", src);
-        Assert.DoesNotContain("MenuExportNoteMarkdownSave_Click", src);
-        Assert.DoesNotContain("MenuExportAllNotesMarkdownSave_Click", src);
-    }
+    // TD-75e (v2.16.31): TD-75d（v2.16.30, static-test-deletion-candidate-review.md）で
+    // Delete candidate と判断された、SH-25（v2.10.21）の削除決定ガード 2 件
+    // （ShellXaml_DoesNotContain_TopBarLaunchButtons / _NoteExportMenuItems）を削除した。
+    // 削除決定から十分に安定しており、現行導線は下の ShellXaml_NewMenu_HasDescriptions /
+    // NoteNestWorkspaceViewXaml_Contains_ExportContextMenu の positive 確認が引き続き保証する。
 
     [Fact]
     public void ShellXaml_NewMenu_HasDescriptions()
@@ -95,15 +82,9 @@ public class NestSuiteShellXamlTests
 
     // ── ID-14: IdeaNest 新規カードのサンプル表示削減 ──────────────────────
 
-    [Fact]
-    public void PreviewIdeaWindowXaml_DoesNotContain_TagExampleText()
-    {
-        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "IdeaNest", "Views", "PreviewIdeaWindow.xaml");
-        Assert.True(File.Exists(path), $"PreviewIdeaWindow.xaml not found: {path}");
-        var src = File.ReadAllText(path);
-        Assert.DoesNotContain("例: アイデア", src);
-        Assert.DoesNotContain("タグをカンマ区切りで入力", src);
-    }
+    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
+    // PreviewIdeaWindowXaml_DoesNotContain_TagExampleText（ID-14, v2.10.22 の文言削減決定
+    // ガード）を削除した。古い文言削減決定であり、特定サンプル文言の再発リスクは実質的にない。
 
     // ── v2.15.0 SH: Shell横断検索の最小実装 ──────────────────────────────
 
@@ -139,25 +120,10 @@ public class NestSuiteShellXamlTests
 
     // ── v2.15.1 SH: 横断検索導線・メニュー整理・タブ移動ショートカット調整 ─
 
-    [Fact]
-    public void ShellXaml_ViewMenu_NoLongerContainsCrossSearchMenuItem()
-    {
-        // 横断検索は「表示」（表示切替）ではなく「ツール」（作業補助）配下へ移動した。
-        var src = ReadShellXaml();
-        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
-        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
-        Assert.True(viewMenuStart >= 0, "表示メニューが見つからない");
-        Assert.True(toolMenuStart >= 0, "ツールメニューが見つからない");
-        Assert.True(toolMenuStart < viewMenuStart, "ツールメニューは表示メニューより前に定義されている想定");
-
-        // 表示メニューの範囲（ツールメニュー終了〜表示メニュー開始の次の閉じタグまで）に
-        // 横断検索メニュー項目が含まれないことを確認する。
-        var viewMenuSection = src.Substring(viewMenuStart);
-        var viewMenuEnd = viewMenuSection.IndexOf("<MenuItem Header=\"ヘルプ(_H)\"", StringComparison.Ordinal);
-        Assert.True(viewMenuEnd >= 0, "ヘルプメニューが見つからない（表示メニューの終端検出に使用）");
-        var viewMenuOnly = viewMenuSection.Substring(0, viewMenuEnd);
-        Assert.DoesNotContain("Shell.CrossSearchMenuItem", viewMenuOnly);
-    }
+    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
+    // ShellXaml_ViewMenu_NoLongerContainsCrossSearchMenuItem（横断検索メニューが表示メニューに
+    // 重複配置されていないことの確認）を削除した。現行導線（ツールメニュー配下）は
+    // 下の ShellXaml_ToolMenu_ContainsCrossSearchMenuItem の positive 確認が引き続き保証する。
 
     [Fact]
     public void ShellXaml_ToolMenu_ContainsCrossSearchMenuItem()
@@ -186,21 +152,12 @@ public class NestSuiteShellXamlTests
         Assert.Contains("デバイス移行パックをインポート", toolMenuSection);
     }
 
-    [Fact]
-    public void ShellXaml_ToolMenu_NoLongerContainsPerNestLaunchItems()
-    {
-        // v2.15.1 SH: 各 Nest の新規作成・起動項目はツールメニューから削除し、
-        // ファイル > 新規作成 とタブバー ＋ ボタンへ集約した。
-        var src = ReadShellXaml();
-        var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
-        var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
-        Assert.True(toolMenuStart >= 0 && viewMenuStart > toolMenuStart);
-        var toolMenuSection = src.Substring(toolMenuStart, viewMenuStart - toolMenuStart);
-        Assert.DoesNotContain("Shell.MenuToolNoteNest", toolMenuSection);
-        Assert.DoesNotContain("Shell.MenuToolIdeaNest", toolMenuSection);
-        Assert.DoesNotContain("Shell.MenuToolChatNest", toolMenuSection);
-        Assert.DoesNotContain("MenuTool_Click", toolMenuSection);
-    }
+    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
+    // ShellXaml_ToolMenu_NoLongerContainsPerNestLaunchItems（各 Nest 起動項目がツールメニューに
+    // 残っていないことの確認、v2.15.1）を削除した。現行導線（ファイル > 新規作成 + タブバー）は
+    // 下の ShellXaml_FileNewMenu_ContainsPerNestDescriptiveLabelsAndAutomationIds /
+    // ShellXaml_TabAddButtonMenu_ContainsPerNestDescriptiveLabels の positive 確認が
+    // 引き続き保証する。
 
     [Fact]
     public void ShellXaml_FileNewMenu_ContainsPerNestDescriptiveLabelsAndAutomationIds()
