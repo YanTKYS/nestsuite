@@ -6,6 +6,10 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// v2.10.14 TD-28: テストクラス分類・整理方針の一次分析 docs の固定テスト。
+/// v2.16.29 TD-75c: test-classification-analysis.md は「TD-28 / TD-30 / TD-32 時点の
+/// 過去分析スナップショット」と位置づけが整理された。このクラスの文書構成確認は、
+/// 現役ルールの固定ではなく、過去分析の記録が失われていないことの確認として維持する。
+/// 現在の静的テスト判断基準は static-test-guidelines.md（TD-73）側を参照。
 /// </summary>
 public class TestClassificationAnalysisTests
 {
@@ -183,4 +187,20 @@ public class TestClassificationAnalysisTests
         Assert.Contains("FormatSchemaRegressionTests", text);
     }
 
+    // TD-75c: 文書の位置づけ整理 (v2.16.29)
+
+    [Fact]
+    public void AnalysisDocument_StatesPastSnapshotPositioning()
+    {
+        // v2.16.29 TD-75c: 文書冒頭に「過去分析スナップショット」の位置づけと、
+        // 現在の静的テスト判断基準（static-test-guidelines.md）・現時点の棚卸しレビュー
+        // （static-test-inventory-review.md）への参照があることを確認する。
+        // 文言完全一致ではなく、重要語句の存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var text = File.ReadAllText(path);
+
+        Assert.Contains("過去分析スナップショット", text);
+        Assert.Contains("static-test-guidelines.md", text);
+        Assert.Contains("static-test-inventory-review.md", text);
+    }
 }
