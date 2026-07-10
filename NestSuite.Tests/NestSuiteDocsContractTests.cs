@@ -592,21 +592,21 @@ public class NestSuiteDocsContractTests
 
     // ── TD-75a-2: 散在 docs-contract test の集約 ─────────────────────────────
 
+    // TD-75e (v2.16.31) fix: TD-75 完了に伴い backlog.md の TD-75 行自体を削除したため
+    // （TD-33 の運用方針: 完了済み項目は backlog.md に残さない）、この節にあった
+    // Backlog_TD75_MentionsTD75xCompletion（backlog 側で各サブタスクの完了記録と
+    // "| TD-75 |" open item 行の存在を確認していた）4 件は、以後恒久的に成立しない
+    // 前提を検証する形になっていた（CI で実際に FAIL した）。各サブタスクの完了記録は
+    // 下の ReleaseNotes_Contains_V216XX_AndTD75X が release notes 側で引き続き保証しており、
+    // "| TD-75 |" が open item として残っていないことは Backlog_TD75_IsNowCompleted が
+    // 保証するため、削除しても検証内容は失われていない。
+
     [Fact]
     public void ReleaseNotes_Contains_V21627_AndTD75a2()
     {
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
         Assert.Contains("v2.16.27", text);
         Assert.Contains("TD-75a-2", text);
-    }
-
-    [Fact]
-    public void Backlog_TD75_MentionsTD75a2Completion()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-75a-2", backlog);
-        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
-        Assert.Contains("| TD-75 |", backlog);
     }
 
     // ── TD-75b: 静的確認 2 件の挙動テスト化 ─────────────────────────────────
@@ -619,15 +619,6 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-75b", text);
     }
 
-    [Fact]
-    public void Backlog_TD75_MentionsTD75bCompletion()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-75b", backlog);
-        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
-        Assert.Contains("| TD-75 |", backlog);
-    }
-
     // ── TD-75c: test-classification-analysis.md の位置づけ整理 ──────────────
 
     [Fact]
@@ -638,15 +629,6 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-75c", text);
     }
 
-    [Fact]
-    public void Backlog_TD75_MentionsTD75cCompletion()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-75c", backlog);
-        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
-        Assert.Contains("| TD-75 |", backlog);
-    }
-
     // ── TD-75d: 削除候補テストの削除判断レビュー ─────────────────────────────
 
     [Fact]
@@ -655,15 +637,6 @@ public class NestSuiteDocsContractTests
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
         Assert.Contains("v2.16.30", text);
         Assert.Contains("TD-75d", text);
-    }
-
-    [Fact]
-    public void Backlog_TD75_MentionsTD75dCompletion()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-75d", backlog);
-        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
-        Assert.Contains("| TD-75 |", backlog);
     }
 
     [Fact]
