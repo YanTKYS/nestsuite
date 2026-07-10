@@ -7,6 +7,18 @@
 
 ---
 
+## v2.16.30 — TD-75d: 削除候補テストの削除判断レビュー
+
+- TD-74 の棚卸しレビューで「削除候補」とされた静的テストについて削除判断レビューを行い、`docs/planning/static-test-deletion-candidate-review.md` を追加した
+- 現行コードを確認した結果、実際の対象は 13 件（`ExpertProposalPlanningTests` の凍結 planning 文書スナップショット確認 6 件 + `NestSuiteShellXamlTests` の削除決定ガード 7 件。TD-74 の「約 14 件」は概算）だった
+- 候補ごとに Delete candidate（10 件）/ Keep（3 件）/ Replace then delete（0 件）/ Defer（0 件）へ分類し、判断理由・削除時のリスクと緩和・次アクションを文書化した
+- Keep は、参照されている履歴文書の誤削除検知（`PlanningDoc_ExpertProposals_Exists`）、保存対象事故のバグ履歴と直結する再導入ガード（フォント種類 ComboBox）、現役の設計境界（横断検索を新 Workspace にしない）の 3 件
+- Delete candidate の保証は、現行導線の positive 確認・backlog の RJ-2 行・release notes 等で追跡済みであることを確認した
+- TD-74 で「要追加確認」だった `TestClassificationAnalysisTests` の 7 件は TD-75c で Keep 確定済みのため対象外とした
+- 今回は判断レビューのみで、既存テストの削除・skip は 1 件も行っていない。実削除は次回以降の別タスク（ユーザー承認の上）で行う
+- TD-75 全体はまだ完了扱いにしていない（残作業: Delete candidate 10 件の実削除）
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.29 — TD-75c: test-classification-analysis.md の位置づけ整理
 
 - `docs/development/test-classification-analysis.md` の冒頭に位置づけを追記し、「TD-28 / TD-30 / TD-32 時点のテストクラス分類・棚卸し結果を記録した過去分析スナップショット」であることを明確化した

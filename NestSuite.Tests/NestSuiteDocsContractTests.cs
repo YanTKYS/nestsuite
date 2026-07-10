@@ -644,6 +644,39 @@ public class NestSuiteDocsContractTests
         Assert.Contains("| TD-75 |", backlog);
     }
 
+    // ── TD-75d: 削除候補テストの削除判断レビュー ─────────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21630_AndTD75d()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.30", text);
+        Assert.Contains("TD-75d", text);
+    }
+
+    [Fact]
+    public void Backlog_TD75_MentionsTD75dCompletion()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-75d", backlog);
+        // TD-75 全体は今回も完了扱いにしていない（open item のまま）。
+        Assert.Contains("| TD-75 |", backlog);
+    }
+
+    [Fact]
+    public void StaticTestDeletionCandidateReview_ExistsAndMentionsJudgments()
+    {
+        // 文言完全一致ではなく、4 分類と「削除・skip を行っていない」旨の重要語句確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "static-test-deletion-candidate-review.md");
+        Assert.True(File.Exists(path), $"static-test-deletion-candidate-review.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("Delete candidate", text);
+        Assert.Contains("Keep", text);
+        Assert.Contains("Replace then delete", text);
+        Assert.Contains("Defer", text);
+        Assert.Contains("削除・skip は 1 件も行っていない", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
