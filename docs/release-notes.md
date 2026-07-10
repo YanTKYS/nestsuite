@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.32 — TD-59a: `.nestsuite` 二重読込解消の設計レビュー
+
+- `docs/planning/nestsuite-double-read-design-review.md` を追加し、`.nestsuite` の二重読込・二重パース解消の設計レビューを行った
+- 全読込経路（共通 / 種別別 Open ダイアログ・起動引数・最近ファイル・session 復元・pipe / 二重起動・ファイル関連付け・保存後の内部再読込）を棚卸しし、主要経路では `FromFilePath` の再判定を含め実際は 3 回の読込・wrapper 解析が発生していることを特定した
+- 設計案 5 つ（コンテキスト明示引き渡し / EnvelopeContent 直渡し / FileService overload / パス単位キャッシュ / 共通 loader）を比較し、採用案を確定した: 1 open operation に限定した `WorkspaceFileOpenContext` を probe（`TryPrepareOpen`）から FileService（`Load(path, preloadedEnvelope)` overload）まで明示的に引き渡す。process-wide / path-based cache は stale data・解放条件・テスト汚染の理由で不採用と確定した
+- API・型の C# スケッチ、TOCTOU 方針（1 operation = 1 スナップショット、再読込・mtime 比較なし）、kind 検証（`TryGetKind` 集約点維持・FileService 内 `EnsureKind` 再検証維持）、`WorkspaceKindDetectionFailure` の扱い、各 FileService の変更方針、テスト戦略（readAllText delegate 注入と「preloaded なら存在しないファイルでも読める」性質による読込回数検証）を文書化した
+- 後続実装を TD-59b-1〜b-5 に分割し、通常エンジニアが設計判断をやり直さず実装できる粒度にした
+- production code の動作変更はない。二重読込自体はまだ解消していない（TD-59b で実装する）。TD-59 全体は未完了で open item のまま
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.31 — TD-75e: Delete candidate 10 件の実削除
 
 - TD-75d（v2.16.30、`docs/planning/static-test-deletion-candidate-review.md`）で Delete candidate と判断済みの静的テスト 10 件を削除した
