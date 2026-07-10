@@ -678,6 +678,41 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-75e", text);
     }
 
+    // ── TD-59a: .nestsuite 二重読込解消の設計レビュー ─────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21632_AndTD59a()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.32", text);
+        Assert.Contains("TD-59a", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59aCompletion_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59a", backlog);
+        // 設計レビューのみ完了。TD-59 全体（実装 = TD-59b）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_ExistsAndMentionsKeyDecisions()
+    {
+        // 文言完全一致ではなく、読込経路・採用案・TOCTOU・kind 検証・後続実装・
+        // production code 未変更の重要語句の存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md");
+        Assert.True(File.Exists(path), $"nestsuite-double-read-design-review.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("読込経路一覧", text);
+        Assert.Contains("採用案", text);
+        Assert.Contains("TOCTOU", text);
+        Assert.Contains("EnsureKind", text);
+        Assert.Contains("TD-59b", text);
+        Assert.Contains("production code の変更は行っていない", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
