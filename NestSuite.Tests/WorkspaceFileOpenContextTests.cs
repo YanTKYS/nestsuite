@@ -102,7 +102,7 @@ public class WorkspaceFileOpenContextTests
     [Fact]
     public void TryPrepareOpen_NestSuiteValid_Succeeds_WithExactlyOneReadCall_AndPreloadedEnvelope()
     {
-        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.2", """{"a":1}""");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", """{"a":1}""");
         var readCalls = 0;
 
         var success = NestSuiteTabFactory.TryPrepareOpen(
@@ -246,7 +246,7 @@ public class WorkspaceFileOpenContextTests
         var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         try
         {
-            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.2", "{}"));
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}"));
 
             Assert.True(NestSuiteTabFactory.TryGetKind(path, out var kind, out var failure));
             Assert.Equal(NestSuiteWorkspaceKind.NoteNest, kind);
