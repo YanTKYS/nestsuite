@@ -74,6 +74,8 @@ public static class NestSuiteTabFactory
     /// <see cref="NestSuiteWorkspaceKind"/> を決定する。
     /// レガシー拡張子についてはファイル内容の読込は行わず、ViewModel の生成も行わない
     /// （いずれも呼び出し側の責務）。
+    /// v2.16.34 TD-59b-1: <see cref="TryGetKind(string, out NestSuiteWorkspaceKind)"/> +
+    /// <see cref="FromResolvedKind"/> の合成として実装する（挙動は不変）。
     /// </summary>
     /// <exception cref="ArgumentException">対応していない拡張子・種別判定不能の場合。</exception>
     public static NestSuiteDocumentTab FromFilePath(string filePath)
@@ -81,6 +83,21 @@ public static class NestSuiteTabFactory
         if (!TryGetKind(filePath, out var kind))
             throw new ArgumentException(
                 $"対応していないファイル形式です: {Path.GetExtension(filePath)}", nameof(filePath));
+
+        return FromResolvedKind(filePath, kind);
+    }
+
+    /// <summary>
+    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.4):
+    /// 判定済み kind からタブを生成する。ファイル I/O を行わない（<see cref="TryGetKind(string, out NestSuiteWorkspaceKind)"/>
+    /// を呼ばない）。<see cref="TryPrepareOpen"/> で probe 済みの呼び出し元が、読込#3（再判定）を
+    /// 省略するために使う。Temp を含む未知の kind は <see cref="GetExtension"/> と同じ基準で
+    /// <see cref="ArgumentOutOfRangeException"/> により明示的に失敗する。
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Temp や未知の kind の場合。</exception>
+    public static NestSuiteDocumentTab FromResolvedKind(string filePath, NestSuiteWorkspaceKind kind)
+    {
+        GetExtension(kind); // 未知の kind（Temp 含む）をここで明示的に失敗させる（現行 factory 方針と同じ基準）
 
         return new NestSuiteDocumentTab
         {
@@ -106,45 +123,85 @@ public static class NestSuiteTabFactory
     /// 通知できるようにする。
     /// `.nestsuite` は wrapper の payloadSchemaVersion が現行より新しい場合、本読込（FM-4 ガード）まで
     /// 進む前にここで <see cref="WorkspaceKindDetectionFailure.SchemaVersionTooNew"/> として検出する。
+    /// v2.16.34 TD-59b-1: 実装を <see cref="TryPrepareOpen"/> へ委譲する（context は破棄する）。
+    /// 種別判定の集約点・公開挙動は不変。
     /// </summary>
     public static bool TryGetKind(
         string filePath, out NestSuiteWorkspaceKind kind, out WorkspaceKindDetectionFailure failure)
     {
-        failure = WorkspaceKindDetectionFailure.None;
-        var ext = Path.GetExtension(filePath);
-        if (KindByExtension.TryGetValue(ext, out kind)) return true;
+        var success = TryPrepareOpen(filePath, out var context, out failure);
+        kind = success ? context.WorkspaceKind : default;
+        return success;
+    }
 
-        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(filePath))
+    /// <summary>
+    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.3, §16, §17):
+    /// 種別判定と wrapper 解析を 1 回の読込で行い、本読込まで使えるコンテキストを返す。
+    /// 種別判定の集約点は引き続きこのクラス（<see cref="TryGetKind(string, out NestSuiteWorkspaceKind, out WorkspaceKindDetectionFailure)"/>
+    /// はこのメソッドへ委譲する）。
+    ///
+    /// <para>入口で <paramref name="filePath"/> を <see cref="Path.GetFullPath(string)"/> により
+    /// 正規化し、<c>context.FilePath</c> / <c>context.Preloaded.SourcePath</c> には
+    /// 同一の正規化済みパスを格納する。Shell 層の <see cref="ShellFileOpenPlanner"/> には
+    /// 依存しない。</para>
+    ///
+    /// <para>レガシー拡張子（.notenest / .ideanest / .chatnest）は読込 delegate を呼ばず
+    /// <c>Preloaded = null</c> の context を返す。`.nestsuite` は
+    /// <see cref="NestSuiteWorkspaceEnvelope.ReadFromFile"/> を 1 回だけ呼び、失敗時（wrapper 解析
+    /// 失敗・未知 kind・schema too-new のいずれも）は再読込しない。未対応拡張子は読込を行わない。</para>
+    ///
+    /// <para><paramref name="fileExists"/> / <paramref name="readAllText"/> はテスト用の読取り
+    /// delegate で、<see cref="NestSuiteWorkspaceEnvelope.ReadFromFile"/> へそのまま転送する
+    /// （省略時は実際の I/O）。</para>
+    /// </summary>
+    public static bool TryPrepareOpen(
+        string filePath,
+        out WorkspaceFileOpenContext context,
+        out WorkspaceKindDetectionFailure failure,
+        Func<string, bool>? fileExists = null,
+        Func<string, string>? readAllText = null)
+    {
+        failure = WorkspaceKindDetectionFailure.None;
+        context = default!;
+
+        var normalizedPath = Path.GetFullPath(filePath);
+        var ext = Path.GetExtension(normalizedPath);
+
+        if (KindByExtension.TryGetValue(ext, out var legacyKind))
         {
-            var result = NestSuiteWorkspaceEnvelope.DetectKindFromFile(filePath);
-            if (result.Failure != WorkspaceKindDetectionFailure.None)
+            context = new WorkspaceFileOpenContext(normalizedPath, legacyKind, preloaded: null);
+            return true;
+        }
+
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(normalizedPath))
+        {
+            var readResult = NestSuiteWorkspaceEnvelope.ReadFromFile(normalizedPath, fileExists, readAllText);
+            if (readResult.Failure != WorkspaceKindDetectionFailure.None)
             {
-                failure = result.Failure;
-                kind = default;
+                failure = readResult.Failure;
                 return false;
             }
 
-            var mapped = MapEnvelopeKind(result.WorkspaceKind);
+            var envelope = readResult.Envelope!;
+            var mapped = MapEnvelopeKind(envelope.WorkspaceKind);
             if (mapped == null)
             {
                 failure = WorkspaceKindDetectionFailure.UnknownWorkspaceKind;
-                kind = default;
                 return false;
             }
 
-            if (IsPayloadSchemaTooNew(mapped.Value, result.PayloadSchemaVersion))
+            if (IsPayloadSchemaTooNew(mapped.Value, envelope.PayloadSchemaVersion))
             {
                 failure = WorkspaceKindDetectionFailure.SchemaVersionTooNew;
-                kind = default;
                 return false;
             }
 
-            kind = mapped.Value;
+            var preloaded = new PreloadedWorkspaceEnvelope(normalizedPath, envelope);
+            context = new WorkspaceFileOpenContext(normalizedPath, mapped.Value, preloaded);
             return true;
         }
 
         failure = WorkspaceKindDetectionFailure.UnsupportedExtension;
-        kind = default;
         return false;
     }
 

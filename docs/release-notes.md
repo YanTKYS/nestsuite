@@ -7,6 +7,20 @@
 
 ---
 
+## v2.16.34 — TD-59b-1: `.nestsuite` 基盤API・context・test seam実装
+
+- TD-59a-2（v2.16.33）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8・§12・§13・§16〜§18）に従い、`.nestsuite` 二重読込解消のための基盤 API を実装した。設計方針自体の変更はない
+- `NestSuiteWorkspaceEnvelope` に `EnvelopeReadResult`（`Envelope` / `Failure`）と `ReadFromFile(path, fileExists?, readAllText?)` を追加した。ファイルを 1 回だけ読んで wrapper を解析し、failure 分類（FileNotFound / AccessDenied / InvalidFormat / IoError / Unknown）は既存 `DetectKindFromFile` と完全に同一にした。既存 `DetectKindFromFile` はこの `ReadFromFile` の上へ委譲する形に再実装した（`KindDetectionResult` の形・`TryDetectKindFromFile` の挙動は不変）
+- `PreloadedWorkspaceEnvelope`（`SourcePath` + `Envelope`）と `WorkspaceFileOpenContext`（`FilePath` + `WorkspaceKind` + `Preloaded`）を新規追加した（`NestSuite/Services/WorkspaceFileOpenContext.cs`）。どちらも `sealed class` + internal コンストラクター + get-only プロパティとし、public コンストラクターも public setter も持たない。呼び出し側が任意の path と envelope を自由に組み合わせて生成することはできない（`InternalsVisibleTo` は追加せず、テストは `NestSuiteTabFactory.TryPrepareOpen` を通じてのみこれらの型を得る。reflection によるテストで生成境界を検証済み）
+- `NestSuiteTabFactory` に `TryPrepareOpen(filePath, out context, out failure, fileExists?, readAllText?)` を追加した。入口で `Path.GetFullPath` により path を正規化し、`context.FilePath` と `context.Preloaded.SourcePath`（非 null 時）は同一の正規化済み path になる。`.nestsuite` は read delegate をちょうど 1 回だけ呼び、成功時だけでなく invalid wrapper・unknown workspace kind・schema too-new のいずれの失敗時も再読込しない（no retry）。レガシー拡張子（.notenest / .ideanest / .chatnest）と未対応拡張子は read delegate を 0 回しか呼ばない
+- `NestSuiteTabFactory.FromResolvedKind(filePath, kind)` を追加した。ファイル I/O を行わず、`TryGetKind` を呼ばない。Temp を含む未知の kind は `GetExtension` と同じ基準で `ArgumentOutOfRangeException` により明示的に失敗する
+- 既存 `TryGetKind`（2 引数・3 引数の両方）は `TryPrepareOpen` へ委譲し、context を破棄するよう再実装した（種別判定の集約点は引き続き `NestSuiteTabFactory`、公開挙動は不変）。既存 `FromFilePath` は `TryGetKind` + `FromResolvedKind` の合成として再実装した（公開挙動は不変）
+- `NestSuiteWorkspaceEnvelopeTests.cs` に `ReadFromFile` のテスト（正常時 1 回読込・`fileExists=false` で 0 回・不正 JSON / wrapper 形式不正 → InvalidFormat・`UnauthorizedAccessException` / `SecurityException` → AccessDenied・`IOException` → IoError・想定外例外 → Unknown・既定 delegate での実ファイル読込）を追加した
+- 新規 `WorkspaceFileOpenContextTests.cs` を追加し、生成境界（public コンストラクターなし・public setter なし、reflection 検証）、`TryPrepareOpen` の読込回数（`.nestsuite` 正常・invalid wrapper・unknown kind・schema too-new は 1 回、レガシー・未対応拡張子は 0 回）、context 生成保証（`FilePath` がフルパス・`Preloaded.SourcePath` と `IsSameFile` で一致・`WorkspaceKind` が wrapper と一致）、`TryGetKind` 委譲後の後方互換、`FromResolvedKind` の非読込タブ生成を検証した
+- **今回は基盤 API のみの追加であり、FileService（`ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService`）の `LoadPrepared`、Shell の `ShellFileOpenDecision.OpenContext`、session 復元経路はいずれも未切替。実利用経路（Open ダイアログ・起動引数・最近ファイル・session 復元・pipe）の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）**
+- `docs/planning/nestsuite-double-read-design-review.md` に §19 実施結果を追記した（設計決定自体は変更していない）
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.33 — TD-59a-2: `.nestsuite` 二重読込解消設計の安全性補足
 
 - TD-59a（v2.16.32）の設計レビューに対し、実装前に必要な安全性補足を行い、`nestsuite-double-read-design-review.md` を採用案へ統一のうえ §16〜§18 を追加した

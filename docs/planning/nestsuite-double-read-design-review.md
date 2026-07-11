@@ -436,3 +436,12 @@ public static bool TryPrepareOpen(
 - **TD-59b-2** が「FileService の安全な prepared 読込 API」（`LoadPrepared`）と「同種別ファイル間の path 取り違えテスト」「kind 誤配線 6 通り」「既存直接読込 `Load(path)` との区別（無変更維持）」を含む。
 - TD-59b-3〜b-5 の範囲は §13 から変更なし（呼び出し形が `Load(path, envelope)` から `LoadPrepared(context)` に変わるのみ）。
 - 番号の追加はない。実装者は §8 のシグネチャと §8.6 のガード順序（(a)〜(i)）をそのまま実装すればよく、設計判断のやり直しは不要。
+
+## 19. 実施結果（TD-59b-1、v2.16.34）
+
+§8・§12・§13・§16〜§18 のとおり実装した。設計方針自体の変更はない。シグネチャは §17 のスケッチとほぼ一致し、差分は以下のみ:
+
+- `EnvelopeReadResult` / `WorkspaceFileOpenContext` / `PreloadedWorkspaceEnvelope` はいずれも `record` ではなく `sealed record`（`EnvelopeReadResult`）・`sealed class` + internal コンストラクター（context 2 型）とした。context 2 型を `record` にしなかったのは、`record` の public 位置引数コンストラクターと `with` 式による差し替えが §16 で禁止した「path と envelope の自由な組み合わせ」を許してしまうため（§16 の脅威そのもの）。`sealed class` + internal コンストラクター + get-only プロパティにすることで、生成境界を型システムで強制した。
+- `WorkspaceFileOpenContext` の生成境界（public コンストラクターなし・public setter なし）はテストから reflection で検証済み（`WorkspaceFileOpenContextTests.cs`）。`InternalsVisibleTo` は追加していない。
+- TD-59b-1 の範囲は基盤 API・型・test seam のみ。`ProjectFileService.LoadPrepared` などの FileService 実装（TD-59b-2）、Shell 経路切替（TD-59b-3）、session 復元経路（TD-59b-4）は未着手。これらの経路は引き続き `FromFilePath` 経由で `.nestsuite` を最大 3 回読み込む従来の実装のままであり、実利用時の読込回数はまだ減っていない。
+- TD-59 全体は本補足の時点でも未完了（open item）。

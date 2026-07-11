@@ -121,40 +121,74 @@ public static class NestSuiteWorkspaceEnvelope
         WorkspaceKindDetectionFailure Failure);
 
     /// <summary>
-    /// v2.14.7 SH-31: ファイルから workspaceKind を判定し、失敗時は理由つきで返す。
-    /// 例外を外へ投げない（呼び元は Failure で文言を出し分ける）。
+    /// v2.16.34 TD-59b-1: ファイル読込 + wrapper 解析の結果。失敗時は Envelope=null + 理由。
+    /// <see cref="ReadFromFile"/> の戻り値。
     /// </summary>
-    public static KindDetectionResult DetectKindFromFile(string path)
+    public sealed record EnvelopeReadResult(
+        EnvelopeContent? Envelope,
+        WorkspaceKindDetectionFailure Failure);
+
+    /// <summary>
+    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.2, §17):
+    /// ファイルを 1 回だけ読んで wrapper を解析する。例外を外へ投げない。
+    /// <paramref name="fileExists"/> / <paramref name="readAllText"/> はテスト用の読取り delegate
+    /// （省略時は実際の <see cref="File.Exists(string)"/> / <see cref="File.ReadAllText(string)"/>）。
+    /// <see cref="ShellFileOpenPlanner.Plan"/> の fileExists/detectKind 注入と同じ流儀に揃える
+    /// （DI 基盤・InternalsVisibleTo は導入しない）。
+    /// failure 分類は従来の <see cref="DetectKindFromFile"/> と同一。
+    /// </summary>
+    public static EnvelopeReadResult ReadFromFile(
+        string path,
+        Func<string, bool>? fileExists = null,
+        Func<string, string>? readAllText = null)
     {
+        fileExists ??= File.Exists;
+        readAllText ??= File.ReadAllText;
         try
         {
-            if (!File.Exists(path))
-                return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.FileNotFound);
-            var envelope = Read(File.ReadAllText(path));
-            return new KindDetectionResult(
-                envelope.WorkspaceKind, envelope.PayloadSchemaVersion, WorkspaceKindDetectionFailure.None);
+            if (!fileExists(path))
+                return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.FileNotFound);
+            var envelope = Read(readAllText(path));
+            return new EnvelopeReadResult(envelope, WorkspaceKindDetectionFailure.None);
         }
         catch (UnauthorizedAccessException)
         {
-            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.AccessDenied);
+            return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.AccessDenied);
         }
         catch (System.Security.SecurityException)
         {
-            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.AccessDenied);
+            return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.AccessDenied);
         }
         catch (InvalidDataException)
         {
             // Read() の失敗（JSON 破損・wrapper 形式不一致・必須項目欠落）はすべて「形式を確認できない」扱い
-            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.InvalidFormat);
+            return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.InvalidFormat);
         }
         catch (IOException)
         {
-            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.IoError);
+            return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.IoError);
         }
         catch
         {
-            return new KindDetectionResult(null, "", WorkspaceKindDetectionFailure.Unknown);
+            return new EnvelopeReadResult(null, WorkspaceKindDetectionFailure.Unknown);
         }
+    }
+
+    /// <summary>
+    /// v2.14.7 SH-31: ファイルから workspaceKind を判定し、失敗時は理由つきで返す。
+    /// 例外を外へ投げない（呼び元は Failure で文言を出し分ける）。
+    /// v2.16.34 TD-59b-1: 実装を <see cref="ReadFromFile"/> の上へ委譲した
+    /// （読込・failure 分類ロジック自体は移動しただけで、挙動・戻り値の形は不変）。
+    /// </summary>
+    public static KindDetectionResult DetectKindFromFile(string path)
+    {
+        var result = ReadFromFile(path);
+        if (result.Failure != WorkspaceKindDetectionFailure.None)
+            return new KindDetectionResult(null, "", result.Failure);
+
+        var envelope = result.Envelope!;
+        return new KindDetectionResult(
+            envelope.WorkspaceKind, envelope.PayloadSchemaVersion, WorkspaceKindDetectionFailure.None);
     }
 
     /// <summary>
