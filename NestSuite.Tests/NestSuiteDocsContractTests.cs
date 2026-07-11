@@ -838,6 +838,51 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-59b-3", text);
     }
 
+    // ── TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21636_AndTD59b22()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.36", text);
+        Assert.Contains("TD-59b-2-2", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b22_MentionsExtensionGuardAndFileIOBeforeThrow()
+    {
+        // レガシー拡張子ガード・ArgumentException・ファイル I/O 前の失敗が記録されていることを
+        // 確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("レガシー", text);
+        Assert.Contains("拡張子", text);
+        Assert.Contains("ArgumentException", text);
+        Assert.Contains("ファイル I/O 前", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59b22_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59b-2-2", backlog);
+        // 拡張子ガード補完のみ完了。TD-59 全体（Shell / session 切替を含む）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
+        Assert.Contains("TD-59b-3", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b22ImplementationResult()
+    {
+        // §21 実施結果: レガシー拡張子ガード補完済み・Shell/session 未切替の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果（TD-59b-2-2", text);
+        Assert.Contains("レガシー", text);
+        Assert.Contains("拡張子", text);
+        Assert.Contains("ArgumentException", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

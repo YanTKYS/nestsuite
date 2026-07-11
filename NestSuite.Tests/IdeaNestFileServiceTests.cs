@@ -428,6 +428,52 @@ public class IdeaNestFileServiceTests
         Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
     }
 
+    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+
+    [Fact]
+    public void LoadPrepared_IdeaNestKind_WrongLegacyExtension_Notenest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}-wrong.notenest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.IdeaNest, null);
+
+        var ex = Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+        Assert.Contains(".ideanest", ex.Message);
+    }
+
+    [Fact]
+    public void LoadPrepared_IdeaNestKind_WrongLegacyExtension_Chatnest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}-wrong.chatnest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.IdeaNest, null);
+
+        Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_IdeaNestKind_UnsupportedExtension_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}-wrong.txt");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.IdeaNest, null);
+
+        Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_CorrectExtension_StillSucceeds_Regression()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "RegressionCheck", Ideas = new() });
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+
+            var workspace = IdeaNestFileService.LoadPrepared(context);
+
+            Assert.Equal("RegressionCheck", workspace.WorkspaceName);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
     [Fact]
     public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
     {

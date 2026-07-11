@@ -375,6 +375,48 @@ public class ProjectFileServiceTests : IDisposable
         Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
     }
 
+    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+
+    [Fact]
+    public void LoadPrepared_NoteNestKind_WrongLegacyExtension_Ideanest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-wrong.ideanest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.NoteNest, null);
+
+        var ex = Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+        Assert.Contains(".notenest", ex.Message);
+    }
+
+    [Fact]
+    public void LoadPrepared_NoteNestKind_WrongLegacyExtension_Chatnest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-wrong.chatnest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.NoteNest, null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_NoteNestKind_UnsupportedExtension_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-wrong.txt");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.NoteNest, null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_CorrectExtension_StillSucceeds_Regression()
+    {
+        // v2.16.36 で拡張子ガードを追加しても、正しい組み合わせは従来どおり成功する。
+        _svc.Save(_path, new Project { ProjectName = "RegressionCheck" });
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(_path, out var context, out _));
+
+        var project = _svc.LoadPrepared(context);
+
+        Assert.Equal("RegressionCheck", project.ProjectName);
+    }
+
     [Fact]
     public void LoadPrepared_PathMismatch_SameWorkspaceKind_ThrowsArgumentException_NotEnsureKind()
     {

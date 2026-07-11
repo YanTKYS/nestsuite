@@ -455,6 +455,48 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
     }
 
+    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+
+    [Fact]
+    public void LoadPrepared_ChatNestKind_WrongLegacyExtension_Notenest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = TempPath("wrong-notenest.notenest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.ChatNest, null);
+
+        var ex = Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+        Assert.Contains(".chatnest", ex.Message);
+    }
+
+    [Fact]
+    public void LoadPrepared_ChatNestKind_WrongLegacyExtension_Ideanest_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = TempPath("wrong-ideanest.ideanest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.ChatNest, null);
+
+        Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_ChatNestKind_UnsupportedExtension_ThrowsArgumentException_BeforeFileIO()
+    {
+        var missingPath = TempPath("wrong.txt");
+        var context = WorkspaceFileOpenContextTestFactory.Create(missingPath, NestSuiteWorkspaceKind.ChatNest, null);
+
+        Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_CorrectExtension_StillSucceeds_Regression()
+    {
+        var path = TempPath("regression.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "regression-check" }]);
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+
+        var result = ChatNestFileService.LoadPrepared(context);
+
+        Assert.Equal("regression-check", result[0].Text);
+    }
+
     [Fact]
     public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
     {

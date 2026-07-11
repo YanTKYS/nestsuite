@@ -108,6 +108,13 @@ public static class IdeaNestFileService
         // (h) レガシー誤配線（他 Workspace の拡張子を含む）
         if (context.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest)
             throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
+        // (h2) v2.16.36 TD-59b-2-2: WorkspaceKind は一致していても、FilePath のレガシー拡張子が
+        // 別 Workspace のもの（例: .notenest）である不正 context をファイル I/O 前に拒否する。
+        // 既存 ValidateExtension は NotSupportedException を投げるため、契約が合わない
+        // prepared 読込用にはここで明示的な ArgumentException ガードを追加する。
+        if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException(
+                $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
         // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
         return Load(context.FilePath);
     }
