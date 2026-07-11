@@ -2,6 +2,7 @@ using System.Reflection;
 using NestSuite;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -88,9 +89,12 @@ public class WorkspaceSessionSyncHelperTests
     [Fact]
     public void NestSuiteShellWindow_LoadInitialNoteNestFile_StillExists()
     {
+        // v2.16.37 TD-59b-3: LoadInitialFile が probe 済みの WorkspaceFileOpenContext を渡すため、
+        // string path 版から context 版へシグネチャが変わった（LoadInitialFile 以外に呼び元が
+        // ないため overload ではなく置き換え）。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialNoteNestFile", InstanceNonPublic, null,
-                [typeof(string)], null);
+                [typeof(WorkspaceFileOpenContext)], null);
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);
     }
@@ -100,7 +104,7 @@ public class WorkspaceSessionSyncHelperTests
     {
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialChatNestFile", InstanceNonPublic, null,
-                [typeof(string)], null);
+                [typeof(WorkspaceFileOpenContext)], null);
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);
     }
@@ -110,7 +114,7 @@ public class WorkspaceSessionSyncHelperTests
     {
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialIdeaNestFile", InstanceNonPublic, null,
-                [typeof(string)], null);
+                [typeof(WorkspaceFileOpenContext)], null);
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);
     }

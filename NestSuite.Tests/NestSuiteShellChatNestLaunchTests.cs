@@ -1,5 +1,6 @@
 using System.Reflection;
 using NestSuite;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -17,11 +18,13 @@ public class NestSuiteShellChatNestLaunchTests
     public void NestSuiteShellWindow_HasLoadInitialChatNestFileMethod()
     {
         // v1.7.7: LoadInitialChatNestFile が起動時 .chatnest 読込ヘルパーとして宣言されていることを確認
+        // v2.16.37 TD-59b-3: LoadInitialFile が probe 済みの WorkspaceFileOpenContext を渡すため、
+        // string path 版から context 版へシグネチャが変わった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialChatNestFile",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(string)],
+                [typeof(WorkspaceFileOpenContext)],
                 null);
         Assert.NotNull(method);
     }

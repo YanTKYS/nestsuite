@@ -17,19 +17,26 @@ public partial class NestSuiteShellWindow
     /// v1.9.7: .ideanest ファイルを開き、新しい IdeaNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
     /// v1.10.1: 読込ロジックを LoadIdeaNestFileAt に分離した。
+    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を IdeaNest の
+    /// 期待 loader へ渡す（実体が別 Workspace の場合も IdeaNest 側へ自動ルーティングしない。
+    /// <see cref="IdeaNestFileService.LoadPrepared"/> 内の EnsureKind が既存文言で失敗する）。
     /// </summary>
     private void OpenIdeaNestFile()
     {
         var rawPath = _dialogs.SelectIdeaNestOpenPath();
         if (rawPath == null) return;
-        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.IdeaNest, path)) return;
+        var expectedTabs = _tabs.Where(t => t.WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest);
+        var decision = ShellFileOpenPlanner.Plan(rawPath, expectedTabs);
+        if (!TryResolveTypedDialogDecision(decision)) return;
 
-        LoadIdeaNestFileAt(path);
+        LoadIdeaNestFileAt(decision.OpenContext!);
     }
 
-    /// <summary>v1.10.1: パス指定で IdeaNest ファイルを読み込みタブを作成する。ダイアログ・重複チェックは呼び元の責務。</summary>
+    /// <summary>
+    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
+    /// からのみ呼ばれる）。パス指定で IdeaNest ファイルを読み込みタブを作成する。
+    /// </summary>
     private void LoadIdeaNestFileAt(string path)
     {
         try
@@ -48,22 +55,50 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// 追加読込なしで IdeaNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
+    /// 最近ファイル、pipe の新しい読込経路から使用する。
+    /// </summary>
+    private void LoadIdeaNestFileAt(WorkspaceFileOpenContext context)
+    {
+        try
+        {
+            var workspace = IdeaNestFileService.LoadPrepared(context);
+            var vm = CreateIdeaNestViewModel();
+            vm.LoadFromWorkspace(workspace);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.IdeaNest, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
+        }
+        catch (Exception ex)
+        {
+            LogAndShowLoadError("IdeaNestLoad", "IdeaNest", "IdeaNest ファイルを開けませんでした。", ex, context.FilePath);
+        }
+    }
+
+    /// <summary>
     /// v1.9.2: .chatnest ファイルを開き、新しい ChatNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
     /// v1.10.1: 読込ロジックを LoadChatNestFileAt に分離した。
+    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を ChatNest の
+    /// 期待 loader へ渡す（異なる Workspace の自動ルーティングはしない）。
     /// </summary>
     private void OpenChatNestFile()
     {
         var rawPath = _dialogs.SelectChatNestOpenPath();
         if (rawPath == null) return;
-        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.ChatNest, path)) return;
+        var expectedTabs = _tabs.Where(t => t.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest);
+        var decision = ShellFileOpenPlanner.Plan(rawPath, expectedTabs);
+        if (!TryResolveTypedDialogDecision(decision)) return;
 
-        LoadChatNestFileAt(path);
+        LoadChatNestFileAt(decision.OpenContext!);
     }
 
-    /// <summary>v1.10.1: パス指定で ChatNest ファイルを読み込みタブを作成する。ダイアログ・重複チェックは呼び元の責務。</summary>
+    /// <summary>
+    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
+    /// からのみ呼ばれる）。パス指定で ChatNest ファイルを読み込みタブを作成する。
+    /// </summary>
     private void LoadChatNestFileAt(string path)
     {
         try
@@ -79,6 +114,29 @@ public partial class NestSuiteShellWindow
         catch (Exception ex)
         {
             LogAndShowLoadError("ChatNestLoad", "ChatNest", "ChatNest ファイルを開けませんでした。", ex, path);
+        }
+    }
+
+    /// <summary>
+    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// 追加読込なしで ChatNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
+    /// 最近ファイル、pipe の新しい読込経路から使用する。
+    /// </summary>
+    private void LoadChatNestFileAt(WorkspaceFileOpenContext context)
+    {
+        try
+        {
+            var newVm = new ChatNestWorkspaceViewModel();
+            newVm.ContentFontFamily = _workspaceEditorFontFamily;
+            var messages = ChatNestFileService.LoadPrepared(context);
+            newVm.LoadMessages(messages);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath, () => newVm.PropertyChanged += OnChatNestPropertyChanged);
+        }
+        catch (Exception ex)
+        {
+            LogAndShowLoadError("ChatNestLoad", "ChatNest", "ChatNest ファイルを開けませんでした。", ex, context.FilePath);
         }
     }
 
@@ -116,8 +174,11 @@ public partial class NestSuiteShellWindow
                 continue;
             }
 
+            // v2.16.37 TD-59b-3: LoadWorkspace decision では OpenContext が非 null であることが
+            // 内部契約。null なら明示的に失敗させ（ArgumentNullException）、path ベース読込へ
+            // 暗黙フォールバックしない。
             int tabsBefore = _tabs.Count;
-            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
+            LoadWorkspaceFileAt(decision.OpenContext!);
             // v2.16.15 TD-67: 種別判定後の実読込失敗（例外）は Load*FileAt が既に個別ダイアログを
             // 出しているため、ここでは具体理由を持たず Unknown（汎用文言）で件数・ファイル名のみ添える。
             if (_tabs.Count == tabsBefore)
@@ -181,22 +242,23 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        var kind = decision.WorkspaceKind!.Value;
-        path = decision.Path;
-        switch (kind)
+        // v2.16.37 TD-59b-3: Plan が既に prepared context を probe 済みのため、ここで種別を
+        // 再判定しない。context.FilePath を正本のまま、対応する起動時 loader へ渡す。
+        var context = decision.OpenContext!;
+        switch (context.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
-                LoadInitialNoteNestFile(path);
+                LoadInitialNoteNestFile(context);
                 break;
             case NestSuiteWorkspaceKind.ChatNest:
-                LoadInitialChatNestFile(path);
+                LoadInitialChatNestFile(context);
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
-                LoadInitialIdeaNestFile(path);
+                LoadInitialIdeaNestFile(context);
                 break;
             default:
                 _dialogs.ShowError(
-                    $"このファイル形式は NestSuite ではまだ対応していません。\n\n{path}",
+                    $"このファイル形式は NestSuite ではまだ対応していません。\n\n{context.FilePath}",
                     "未対応");
                 EnsureDefaultTab();
                 break;
@@ -204,22 +266,59 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.16.37 TD-59b-3: 種別別 Open ダイアログ共通の probe 結果処理。
+    /// MissingFile / KindDetectionFailed は通知して false を返す。ActivateExistingTab は
+    /// 既存タブをアクティブ化して false を返す。LoadWorkspace のときだけ true を返し、
+    /// 呼び出し側が期待する Workspace の prepared loader へ <c>decision.OpenContext</c> を渡す。
+    /// </summary>
+    private bool TryResolveTypedDialogDecision(ShellFileOpenDecision decision)
+    {
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
+        {
+            _dialogs.ShowError(
+                $"{FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.FileNotFound)}\n\n{decision.Path}",
+                "ファイルを開けません");
+            return false;
+        }
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
+        {
+            _dialogs.ShowError(
+                $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}",
+                decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension
+                    ? "未対応のファイル形式" : "ファイルを開けません");
+            return false;
+        }
+        if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
+        {
+            ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// v1.9.5: .notenest ファイルを開き、新しい NoteNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
     /// v1.10.1: 読込ロジックを LoadNoteNestFileAt に分離した。
+    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を NoteNest の
+    /// 期待 loader へ渡す（異なる Workspace の自動ルーティングはしない）。
     /// </summary>
     private void OpenNoteNestFile()
     {
         var rawPath = _dialogs.SelectProjectOpenPath();
         if (rawPath == null) return;
-        var path = ShellFileOpenPlanner.NormalizePath(rawPath);
 
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.NoteNest, path)) return;
+        var expectedTabs = _tabs.Where(t => t.WorkspaceKind == NestSuiteWorkspaceKind.NoteNest);
+        var decision = ShellFileOpenPlanner.Plan(rawPath, expectedTabs);
+        if (!TryResolveTypedDialogDecision(decision)) return;
 
-        LoadNoteNestFileAt(path);
+        LoadNoteNestFileAt(decision.OpenContext!);
     }
 
-    /// <summary>v1.10.1: パス指定で NoteNest ファイルを読み込みタブを作成する。ダイアログ・重複チェックは呼び元の責務。</summary>
+    /// <summary>
+    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
+    /// からのみ呼ばれる）。パス指定で NoteNest ファイルを読み込みタブを作成する。
+    /// </summary>
     private void LoadNoteNestFileAt(string path)
     {
         try
@@ -243,33 +342,62 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
+    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// 追加読込なしで NoteNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
+    /// 最近ファイル、pipe の新しい読込経路から使用する。kind 不一致等の失敗は
+    /// <see cref="MainViewModel.OpenPreparedFileAtStartup"/> が内部で通知・ログ済みのため、
+    /// ここでは追加のダイアログを出さず opened=false のまま return する。
+    /// </summary>
+    private void LoadNoteNestFileAt(WorkspaceFileOpenContext context)
+    {
+        try
+        {
+            var vm = CreateNoteNestViewModel();
+            _suppressFontSizePropagation = true;
+            bool opened;
+            try { opened = vm.OpenPreparedFileAtStartup(context); }
+            finally { _suppressFontSizePropagation = false; }
+            if (!opened) return;
+            vm.EditorFontSize = _noteNestEditorFontSize;
+            vm.EditorFontFamily = _workspaceEditorFontFamily;
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
+        }
+        catch (Exception ex)
+        {
+            LogAndShowLoadError("NoteNestLoadTab", "NoteNest", "NoteNest ファイルを開けませんでした。", ex, context.FilePath);
+        }
+    }
+
+    /// <summary>
     /// v1.9.5: 起動時に .notenest ファイルを新しい NoteNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
-    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。
+    /// <see cref="LoadInitialFile"/> の Plan で既に判定済みだが、context の kind/path だけを
+    /// 使い、ファイルを読み直さない）。
     /// </summary>
-    private void LoadInitialNoteNestFile(string path)
+    private void LoadInitialNoteNestFile(WorkspaceFileOpenContext context)
     {
-        path = ShellFileOpenPlanner.NormalizePath(path);
-
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.NoteNest, path)) return;
+        if (TryActivateExistingTab(context.WorkspaceKind, context.FilePath)) return;
 
         try
         {
             var vm = CreateNoteNestViewModel();
             _suppressFontSizePropagation = true;
             bool opened;
-            try { opened = vm.OpenFileAtStartup(path); }
+            try { opened = vm.OpenPreparedFileAtStartup(context); }
             finally { _suppressFontSizePropagation = false; }
             if (!opened) { EnsureDefaultTab(); return; }
             vm.EditorFontSize = _noteNestEditorFontSize;
             vm.EditorFontFamily = _workspaceEditorFontFamily;
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
-            RegisterLoadedTab(tab, session, path);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
         }
         catch (Exception ex)
         {
-            LogAndShowLoadError("NoteNestLoadInitialTab", "NoteNest", "NoteNest ファイルを開けませんでした。", ex, path);
+            LogAndShowLoadError("NoteNestLoadInitialTab", "NoteNest", "NoteNest ファイルを開けませんでした。", ex, context.FilePath);
             EnsureDefaultTab();
         }
     }
@@ -296,29 +424,27 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// v1.9.2: 起動時に .chatnest ファイルを新しい ChatNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
-    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため）。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。context の
+    /// kind/path だけを使い、ファイルを読み直さない）。
     /// </summary>
-    private void LoadInitialChatNestFile(string path)
+    private void LoadInitialChatNestFile(WorkspaceFileOpenContext context)
     {
-        // v1.9.2 fix: 起動引数は相対パスで渡される可能性があるためフルパスに正規化する
-        path = ShellFileOpenPlanner.NormalizePath(path);
-
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.ChatNest, path)) return;
+        if (TryActivateExistingTab(context.WorkspaceKind, context.FilePath)) return;
 
         try
         {
             var newVm = new ChatNestWorkspaceViewModel();
             newVm.ContentFontFamily = _workspaceEditorFontFamily;
-            var messages = ChatNestFileService.Load(path);
+            var messages = ChatNestFileService.LoadPrepared(context);
             newVm.LoadMessages(messages);
 
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, path, false);
-            RegisterLoadedTab(tab, session, path, () => newVm.PropertyChanged += OnChatNestPropertyChanged);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath, () => newVm.PropertyChanged += OnChatNestPropertyChanged);
         }
         catch (Exception ex)
         {
-            LogAndShowLoadError("ChatNestLoadInitial", "ChatNest", "ChatNest ファイルを開けませんでした。", ex, path);
+            LogAndShowLoadError("ChatNestLoadInitial", "ChatNest", "ChatNest ファイルを開けませんでした。", ex, context.FilePath);
             EnsureDefaultTab();
         }
     }
@@ -326,27 +452,26 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// v1.9.7: 起動時に .ideanest ファイルを新しい IdeaNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
-    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため）。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。context の
+    /// kind/path だけを使い、ファイルを読み直さない）。
     /// </summary>
-    private void LoadInitialIdeaNestFile(string path)
+    private void LoadInitialIdeaNestFile(WorkspaceFileOpenContext context)
     {
-        path = ShellFileOpenPlanner.NormalizePath(path);
-
-        if (TryActivateExistingTab(NestSuiteWorkspaceKind.IdeaNest, path)) return;
+        if (TryActivateExistingTab(context.WorkspaceKind, context.FilePath)) return;
 
         try
         {
-            var workspace = IdeaNestFileService.Load(path);
+            var workspace = IdeaNestFileService.LoadPrepared(context);
             var vm = CreateIdeaNestViewModel();
             vm.LoadFromWorkspace(workspace);
 
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.IdeaNest, vm, path, false);
-            RegisterLoadedTab(tab, session, path);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.IdeaNest, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
         }
         catch (Exception ex)
         {
-            LogAndShowLoadError("IdeaNestLoadInitial", "IdeaNest", "IdeaNest ファイルを開けませんでした。", ex, path);
+            LogAndShowLoadError("IdeaNestLoadInitial", "IdeaNest", "IdeaNest ファイルを開けませんでした。", ex, context.FilePath);
             EnsureDefaultTab();
         }
     }

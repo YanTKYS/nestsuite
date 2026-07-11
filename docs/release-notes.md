@@ -7,6 +7,22 @@
 
 ---
 
+## v2.16.37 — TD-59b-3: Shell読込経路のprepared context切替
+
+- TD-59a〜TD-59b-2-2（v2.16.32〜v2.16.36）で確定・実装した設計に基づき、session 復元を除く Shell のファイル読込経路を `WorkspaceFileOpenContext` へ切り替えた。設計方針自体の変更はない
+- `ShellFileOpenDecision.OpenContext` を追加した（末尾の省略可能引数）。`LoadWorkspace` decision のときだけ非 null になり、`.nestsuite` の読込元パス・wrapper 内容を本読込まで運ぶ
+- `ShellFileOpenPlanner.Plan` の既定判定を `TryGetKind` から `TryPrepareOpen` へ切り替えた。session 復元用の `detectKind` seam は TD-59b-4 まで暫定維持し、`detectKind` と新設の `prepareOpen`（テスト用 delegate 注入シーム）を同時指定した場合は `ArgumentException` になる
+- 共通 Open ダイアログ・種別別 Open ダイアログ（NoteNest/IdeaNest/ChatNest）・起動引数（ファイル関連付け含む）・最近使ったファイル・pipe・二重起動転送を、いずれも prepared context 経路へ切り替えた
+- Shell の prepared loader（`LoadWorkspaceFileAt(context)`、NoteNest/IdeaNest/ChatNest 各 loader）は各 FileService の `LoadPrepared`（NoteNest は `MainViewModel.OpenPreparedFileAtStartup`）と `NestSuiteTabFactory.FromResolvedKind` を使用する
+- 適用経路の `.nestsuite` 読込回数が、共通 Open ダイアログ・起動引数・最近使ったファイル・pipe/二重起動転送で最大 3 回から 1 回に、種別別 Open ダイアログで最大 2 回から 1 回になった
+- 種別別 Open ダイアログで実体が異なる Workspace の `.nestsuite` を選択した場合も自動的に別 Workspace へルーティングせず、期待する Workspace の `LoadPrepared` を通し、既存の `EnsureKind` による `InvalidDataException` 経路で通知する（既存挙動を維持）
+- 既存の重複タブ再利用・最近ファイル更新・起動時 fallback（`EnsureDefaultTab`）・failure 分類ごとの通知文言はすべて維持した
+- **session 復元は今回変更していない**: `TryRestoreSession` は `detectKind` 互換モードと旧 path 版 loader（`LoadWorkspaceFileAt(kind, path)` 等）を引き続き使用し、session.json 形式・復元順序・failure 通知・pending entry の持ち越しに変更はない
+- 保存後の内部再同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）も変更していない
+- `docs/planning/nestsuite-double-read-design-review.md` に §22 実施結果を追記した（設計決定自体は変更していない）
+- **TD-59 は引き続き未完了（open item）**。残作業は TD-59b-4（session 復元経路の prepared context 化）・TD-59b-5（保存後内部同期の非読込化、任意）
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.36 — TD-59b-2-2: レガシーprepared拡張子ガード補完
 
 - v2.16.35 の `LoadPrepared` 安全性実装に対する限定的な安全性補完。TD-59a〜TD-59b-2 で確定・実装した設計は変更していない
