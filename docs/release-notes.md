@@ -7,6 +7,19 @@
 
 ---
 
+## v2.16.36 — TD-59b-2-2: レガシーprepared拡張子ガード補完
+
+- v2.16.35 の `LoadPrepared` 安全性実装に対する限定的な安全性補完。TD-59a〜TD-59b-2 で確定・実装した設計は変更していない
+- レガシー prepared 分岐（`context.Preloaded == null`）に拡張子一致ガードを追加した。`context.WorkspaceKind` が読込先 FileService と一致していても、`context.FilePath` のレガシー拡張子が別 Workspace のもの（例: NoteNest kind + `.ideanest` path）である不正 context を拒否する
+- 正しい enum ＋ 別 Workspace 拡張子の不正 context を、ファイル I/O 前に `ArgumentException` で拒否する（既存 `Load(path)` へ委譲する前にガードするため、存在しない path でも `FileNotFoundException` にならない）
+- `ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService` の全組み合わせをテストした: NoteNest kind + `.ideanest`/`.chatnest`、IdeaNest kind + `.notenest`/`.chatnest`、ChatNest kind + `.notenest`/`.ideanest`、および未対応拡張子（`.txt` 等）
+- 正常なレガシー prepared 読込（`.notenest` / `.ideanest` / `.chatnest` の正しい組み合わせ）は回帰テストで維持を確認した
+- `.nestsuite` prepared 経路（ガード順・`IsSameFile`・`EnsureKind`・schema 検証・追加ファイル I/O ゼロ）は変更していない
+- NoteNest の prepared 読込チェーン（`MainViewModel.OpenPreparedFileAtStartup` → `ProjectLifecycleService.OpenPrepared` → `ProjectFileService.LoadPrepared`）は変更していない
+- Shell から `LoadPrepared` を呼ぶ経路・session 復元経路は引き続き未着手。実利用経路の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）
+- `docs/planning/nestsuite-double-read-design-review.md` に §21 実施結果を追記した（設計決定自体は変更していない）
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.35 — TD-59b-2: FileService `LoadPrepared`・安全性テスト実装
 
 - TD-59a / TD-59a-2 / TD-59b-1（v2.16.32〜v2.16.34）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8.6・§10・§12・§13・§16〜§19）に従い、3 つの Workspace FileService へ安全な prepared 読込を実装した。設計方針自体の変更はない

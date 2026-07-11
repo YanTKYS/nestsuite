@@ -459,3 +459,15 @@ public static bool TryPrepareOpen(
 - prepared 読込の「追加ファイル I/O ゼロ」は、実際には存在しない path の context で `LoadPrepared` が成功することで証明した（3 FileService）。
 - Shell から `LoadPrepared` を呼ぶ経路・`ShellFileOpenDecision.OpenContext`・session 復元経路はいずれも未着手のまま。実利用経路（Open ダイアログ・起動引数・最近ファイル・session 復元・pipe）は引き続き `FromFilePath` を経由するため、`.nestsuite` の読込回数はまだ減っていない。
 - TD-59 全体は本実装の時点でも未完了（open item）。残作業は TD-59b-3（Shell 経路切替）・TD-59b-4（session 復元経路）・TD-59b-5（保存後内部同期の非読込化、任意）。
+
+## 21. 実施結果（TD-59b-2-2、v2.16.36）
+
+TD-59b-2（v2.16.35）の `LoadPrepared` に対する安全性補完。設計方針自体の変更はない。
+
+- レガシー prepared context（`Preloaded == null`）の分岐に、拡張子一致ガードを追加した。`context.WorkspaceKind` が読込先 FileService と一致していても、`context.FilePath` のレガシー拡張子が別 Workspace のもの（例: NoteNest kind + `.ideanest` path）である不正 context を、`ArgumentException` でファイル I/O 前に拒否する。
+- ガード順は既存の (g) `.nestsuite` パスなのに preloaded なし → (h) `WorkspaceKind` 不一致 → **(h2) レガシー拡張子不一致（今回追加）** → (i) 正常時は既存 `Load(path)` へ委譲、の順に揃えた。
+- 3 Workspace 全組み合わせ（NoteNest kind + `.ideanest`/`.chatnest`、IdeaNest kind + `.notenest`/`.chatnest`、ChatNest kind + `.notenest`/`.ideanest`）と、未対応拡張子（例: `.txt`）をテストした。いずれも実在しない path で検証し、ファイル I/O 前に `ArgumentException` になることを確認した。
+- 正常なレガシー prepared 読込（`.notenest` / `.ideanest` / `.chatnest` それぞれの正しい組み合わせ）は回帰テストで維持を確認した。
+- `.nestsuite` prepared 経路（preloaded 非 null 分岐のガード順・追加ファイル I/O ゼロ）は変更していない。
+- Shell から `LoadPrepared` を呼ぶ経路・session 復元経路は本補完でも未着手のまま。実利用経路の `.nestsuite` 読込回数はまだ減っていない。
+- TD-59 全体は本補完の時点でも未完了（open item）。
