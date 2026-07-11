@@ -79,6 +79,12 @@ public partial class NestSuiteShellWindow
     /// v1.9.5: 指定した NoteNest MainViewModel に対応するタブの FilePath・IsModified を同期する。
     /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// ChatNest の <see cref="SyncChatNestTabForViewModel"/> と対称な実装。
+    /// v2.16.39 TD-59b-5 (nestsuite-double-read-design-review.md §9, §24): <paramref name="vm"/> が
+    /// <see cref="MainViewModel"/> である時点で WorkspaceKind は NoteNest に確定しているため、
+    /// <see cref="NestSuiteTabFactory.TryGetKind"/> / <see cref="NestSuiteTabFactory.FromFilePath"/>
+    /// による `.nestsuite` の再読込は行わない（<see cref="MainViewModel.IsModified"/> /
+    /// <see cref="MainViewModel.CurrentFilePath"/> の PropertyChanged ごとに呼ばれるため、
+    /// 読込回数への影響が大きい）。
     /// </summary>
     private void SyncNoteNestTabForViewModel(MainViewModel vm)
     {
@@ -88,9 +94,8 @@ public partial class NestSuiteShellWindow
         if (tab == null) return;
         NestSuiteDocumentTab updatedTab;
         if (vm.CurrentFilePath is string path &&
-            NestSuiteTabFactory.TryGetKind(path, out var kind) &&
-            kind == NestSuiteWorkspaceKind.NoteNest)
-            updatedTab = NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached, IsPinned = tab.IsPinned };
+            NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(path, NestSuiteWorkspaceKind.NoteNest))
+            updatedTab = NestSuiteTabFactory.FromResolvedKind(path, NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached, IsPinned = tab.IsPinned };
         else
             updatedTab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { Id = tab.Id, IsModified = vm.IsModified, IsDetached = tab.IsDetached, IsPinned = tab.IsPinned };
         ReplaceTab(tab, updatedTab);

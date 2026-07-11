@@ -1,7 +1,8 @@
 # `.nestsuite` 二重読込解消 設計レビュー
 
 > 作成: v2.16.32 TD-59a / 安全性補足: v2.16.33 TD-59a-2（§8・§9・§10・§12・§13 を採用案へ統一し、§16〜§18 を追加）
-> 性質: エキスパート設計レビュー。**production code の変更は行っていない**（実装は TD-59b で行う）。
+> 性質: エキスパート設計レビュー。**作成時点では production code の変更は行っていない**（実装は TD-59b で行う）。
+> 実装完了: v2.16.39 / TD-59b-5（§20〜§24 に実施結果を記録。TD-59 完了）
 > 前提: FM-1（`.nestsuite` wrapper, formatVersion 1.0）/ FM-4（SchemaVersionGuard）/ SH-31（失敗理由つき種別判定）/ TD-62（ShellFileOpenPlanner）の設計を維持する。
 
 ## 1. 目的
@@ -499,4 +500,18 @@ TD-59b-2（v2.16.35）の `LoadPrepared` に対する安全性補完。設計方
 - 適用経路では `.nestsuite` の session 復元時の読込（wrapper 読込 + 本読込）が最大 3 回から 1 回になったことを、`SessionTabMapperTests`（read delegate 呼出回数）と `SessionRestoreCompositionTests`（`CreateRestoreTargets` → `Plan` → `LoadPrepared` → `FromResolvedKind` の合成、実ファイル不要）で確認した。レガシー拡張子は引き続き 0 回（probe 段階）・`LoadPrepared` 側で 1 回。`NestSuiteShellWindow` は WPF Window のため直接インスタンス化はせず、既存方針どおり型シグネチャの contract test（`NestSuiteShellPreparedContextRoutingTests` / `WorkspaceSessionSyncHelperTests`）で補完した。
 - session.json のフィールド・形式は変更していない。保存後の内部再同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）・post-save probe も変更していない。
 - **TD-59 は引き続き未完了（open item）**。残作業は TD-59b-5（任意、保存後 probe の非読込化）と、全経路を通した最終的な回帰確認。
-- TD-59 全体は本実装の時点でも未完了（open item）。残作業は TD-59b-4（session 復元経路の prepared context 化）・TD-59b-5（保存後内部同期の非読込化、任意）。
+
+## 24. 実施結果（TD-59b-5、v2.16.39・TD-59完了）
+
+§9 の「保存後の内部再同期」「NoteNest VM 同期」に残っていた最後の内部再読込を解消し、TD-59 を完了させた。設計方針自体の変更はない。
+
+- `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(filePath, kind)` を追加した。既に判定済み・信頼できる `WorkspaceKind` とファイルパスの組み合わせが妥当かを、ファイル I/O なしで確認する純粋判定 API。WorkspaceKind を判定する API ではなく、保存直後の内部状態更新・読込済み ViewModel のタブ同期など kind が既に確定している経路専用（利用者が任意のファイルを開く入口には使わない。そちらは引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。`.nestsuite` は wrapper 内容を読まず拡張子だけで NoteNest/IdeaNest/ChatNest のいずれとも妥当とみなし、レガシー拡張子は対応する拡張子（大文字小文字を区別しない）と一致する場合のみ妥当とする。null・空・空白 path、`Path.GetFullPath` が例外になる入力、未対応拡張子、Temp、未知の kind はすべて false。
+- `SavedWorkspaceStateUpdater.TryCreate` から `NestSuiteTabFactory.TryGetKind` / `FromFilePath` を撤去し、`IsPathCompatibleWithResolvedKind` + `FromResolvedKind` へ切り替えた（非読込化）。保存した WorkspaceKind は `currentTab.WorkspaceKind`（保存を実行した Workspace 固有の FileService・呼び出し元）から既に確定しているため、保存成功直後に `.nestsuite` を再度開いて wrapper の kind を再検証しない。Id・IsModified・IsDetached・IsPinned・DisplayName・TabHeaderText・Session への反映・RecentFilePath・保存失敗時に状態更新しない契約はすべて維持した。これにより**保存後のタブ・Session 状態更新での `.nestsuite` 追加読込が 0 回**になった。
+- `NestSuiteShellWindow.SyncNoteNestTabForViewModel` からも `TryGetKind` / `FromFilePath` を撤去し、`IsPathCompatibleWithResolvedKind` + `FromResolvedKind` へ切り替えた（非読込化）。`MainViewModel` である時点で WorkspaceKind は NoteNest に確定しているため、`IsModified` / `CurrentFilePath` の PropertyChanged ごとに発生していた `.nestsuite` の不要な再読込が **0 回**になった。無題タブへの fallback・`ReplaceTab` 使用・PropertyChanged 購読順序は変更していない。
+- レガシー拡張子と WorkspaceKind の不一致確認・unsupported extension・Temp の除外は、保存後同期・NoteNest VM 同期のいずれも読込なしで従来どおり維持した。
+- 全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）は `.nestsuite` **読込 1 回**のまま、レガシー形式は FileService で**読込 1 回**のまま（TD-59b-1〜b-4 で確立済み、今回変更していない）。
+- FileService 側の `EnsureKind`・`IsSameFile`・`SchemaVersionGuard`、failure 分類・通知、session pending entry の持ち越しはいずれも維持した（安全性ガード維持）。
+- production code で `TryGetKind` / `FromFilePath` を呼ぶのは `NestSuiteTabFactory` 自身の内部委譲のみになった。Shell のファイル Open routing・session 復元・保存後状態同期・NoteNest VM 同期のいずれからも呼ばれない。両 API 自体は公開互換 API として維持する（削除していない）。
+- 最終回帰結果: `ShellFileOpenPlannerTests` / `ShellFileOpenCompositionTests` / `SessionRestoreCompositionTests` / `WorkspaceFileOpenContextTests` / 各 FileService の `LoadPrepared` テスト・path 取り違えテスト・kind 誤配線 6 通り・schema too-new テスト・session failure / pending entry テスト・Shell prepared routing contract test は、いずれも削除・弱体化せず既存のまま最終マトリクスとして維持した。
+- session.json 形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper `formatVersion`（`1.0`）・Workspace 保存形式は変更していない。外部依存の追加なし。既存テストの削除・skip なし。
+- **TD-59 完了**: 全ユーザー向け Open 経路・session 復元は `.nestsuite` 読込 1 回、保存後内部同期・NoteNest VM 同期は 0 回、path と解析済み内容を分離する API なし、既存の安全性ガード・failure 分類・通知・pending entry・レガシー形式の挙動をすべて維持したまま完了条件を満たした。

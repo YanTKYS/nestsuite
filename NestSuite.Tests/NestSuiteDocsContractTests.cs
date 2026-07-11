@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NestSuite.Models;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -161,12 +162,16 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD59_RemainsOpenItem()
+    public void Backlog_TD59_IsNowCompleted()
     {
-        // 元は TD-66〜TD-73 の完了済み範囲チェックそれぞれに同一の確認が重複していた
-        // （「TD-59 は今回削除しない open item として残っている想定」）。TD-75a でここへ集約した。
+        // TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）ですべて完了したため、TD-59b-5 (v2.16.39) で
+        // TD-59 は completed range へ移動し open item 表からは外れた。
+        // 旧 Backlog_TD59_RemainsOpenItem（元は TD-66〜TD-73 の完了済み範囲チェックそれぞれに
+        // 同一の確認が重複していたのを TD-75a で集約したもの）をこのテストへ置き換えた。
         var backlog = TestPaths.ReadBacklog();
-        Assert.Contains("| TD-59 |", backlog);
+        Assert.DoesNotContain("| TD-59 |", backlog);
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 59),
+            "TD-59 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
     }
 
     [Fact]
@@ -688,14 +693,18 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-59a", text);
     }
 
-    [Fact]
-    public void Backlog_TD59_MentionsTD59aCompletion_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59a", backlog);
-        // 設計レビューのみ完了。TD-59 全体（実装 = TD-59b）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-    }
+    // v2.16.39 TD-59b-5 fix: TD-59 完了に伴い backlog.md の TD-59 行自体を削除したため
+    // （TD-33 の運用方針: 完了済み項目は backlog.md に残さない。TD-75a-2 で TD-75 系に適用したのと
+    // 同じ整理）、この節にあった Backlog_TD59_MentionsTD59aCompletion_AndRemainsOpenItem /
+    // Backlog_TD59_MentionsTD59a2_AndRemainsOpenItem / Backlog_TD59_MentionsTD59b1_AndRemainsOpenItem /
+    // Backlog_TD59_MentionsTD59b2_AndRemainsOpenItem / Backlog_TD59_MentionsTD59b22_AndRemainsOpenItem /
+    // Backlog_TD59_MentionsTD59b3_AndRemainsOpenItem / Backlog_TD59_MentionsTD59b4_AndRemainsOpenItem /
+    // Backlog_TD59_MentionsAllUserFacingPathsNowReadOnce（8 件）は、以後恒久的に成立しない前提
+    // （"| TD-59 |" が open item として残っている・特定の暫定文言が backlog に残っている）を検証する
+    // 形になっていた。各サブタスクの完了記録は下の ReleaseNotes_Contains_V216XX_AndTD59XX が
+    // release notes 側（不変の履歴）で引き続き保証しており、"| TD-59 |" が open item として
+    // 残っていないことは Backlog_TD59_IsNowCompleted が保証するため、削除しても検証内容は
+    // 失われていない。
 
     [Fact]
     public void DoubleReadDesignReview_ExistsAndMentionsKeyDecisions()
@@ -721,15 +730,6 @@ public class NestSuiteDocsContractTests
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
         Assert.Contains("v2.16.33", text);
         Assert.Contains("TD-59a-2", text);
-    }
-
-    [Fact]
-    public void Backlog_TD59_MentionsTD59a2_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59a-2", backlog);
-        // 設計補足のみ完了。TD-59 全体（実装 = TD-59b）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
     }
 
     [Fact]
@@ -765,17 +765,6 @@ public class NestSuiteDocsContractTests
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
         Assert.Contains("LoadPrepared", text);
         Assert.Contains("読込回数はまだ減っていない", text);
-    }
-
-    [Fact]
-    public void Backlog_TD59_MentionsTD59b1_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59b-1", backlog);
-        // 基盤 API 実装のみ完了。TD-59 全体（FileService / Shell 切替を含む）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
-        Assert.Contains("TD-59b-2", backlog);
     }
 
     [Fact]
@@ -815,17 +804,6 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD59_MentionsTD59b2_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59b-2", backlog);
-        // FileService LoadPrepared 実装のみ完了。TD-59 全体（Shell / session 切替を含む）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
-        Assert.Contains("TD-59b-3", backlog);
-    }
-
-    [Fact]
     public void DoubleReadDesignReview_MentionsTD59b2ImplementationResult()
     {
         // §20 実施結果: LoadPrepared 実装済み・安全性テスト実施済み・Shell/session 未切替の
@@ -861,17 +839,6 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD59_MentionsTD59b22_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59b-2-2", backlog);
-        // 拡張子ガード補完のみ完了。TD-59 全体（Shell / session 切替を含む）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
-        Assert.Contains("TD-59b-3", backlog);
-    }
-
-    [Fact]
     public void DoubleReadDesignReview_MentionsTD59b22ImplementationResult()
     {
         // §21 実施結果: レガシー拡張子ガード補完済み・Shell/session 未切替の重要語句確認に留める。
@@ -904,17 +871,6 @@ public class NestSuiteDocsContractTests
         Assert.Contains("FromResolvedKind", text);
         Assert.Contains("読込回数が", text);
         Assert.Contains("session 復元は今回変更していない", text);
-    }
-
-    [Fact]
-    public void Backlog_TD59_MentionsTD59b3_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59b-3", backlog);
-        // Shell 主要経路切替のみ完了。TD-59 全体（session 復元切替を含む）は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
-        Assert.Contains("TD-59b-4", backlog);
     }
 
     [Fact]
@@ -968,27 +924,6 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD59_MentionsTD59b4_AndRemainsOpenItem()
-    {
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-59b-4", backlog);
-        // session 復元経路切替のみ完了。TD-59 全体は open item のまま。
-        Assert.Contains("| TD-59 |", backlog);
-        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
-        Assert.Contains("TD-59b-5", backlog);
-    }
-
-    [Fact]
-    public void Backlog_TD59_MentionsAllUserFacingPathsNowReadOnce()
-    {
-        // TD-59b-4 完了により Open ダイアログ・起動引数・最近ファイル・pipe・session 復元の
-        // すべての経路で `.nestsuite` 読込が 1 回になったことが記録されていることを確認する。
-        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("全経路（Open ダイアログ・起動引数・最近ファイル・pipe・二重起動転送・session 復元）", backlog);
-        Assert.Contains("読込が 1 回になった", backlog);
-    }
-
-    [Fact]
     public void DoubleReadDesignReview_MentionsTD59b4ImplementationResult()
     {
         // §23 実施結果: SessionRestoreTarget・OpenContext・TryPrepareOpen・detectKind 撤去・
@@ -1002,6 +937,63 @@ public class NestSuiteDocsContractTests
         Assert.Contains("detectKind", text);
         Assert.Contains("撤去", text);
         Assert.Contains("TD-59 は引き続き未完了", text);
+    }
+
+    // ── TD-59b-5: 保存後内部同期の非読込化・全経路最終回帰（TD-59 完了） ─────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21639_AndTD59b5()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.39", text);
+        Assert.Contains("TD-59b-5", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b5_MentionsNonReadingSavePathSyncAndFromResolvedKind()
+    {
+        // 保存後内部同期・NoteNest VM 同期の非読込化・FromResolvedKind への切替が
+        // 記録されていることを確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "TD-59b-5");
+        Assert.Contains("保存後", section);
+        Assert.Contains("非読込化", section);
+        Assert.Contains("FromResolvedKind", section);
+        Assert.Contains("IsPathCompatibleWithResolvedKind", section);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b5_MentionsAllOpenPathsReadOnceAndTD59Completed()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "TD-59b-5");
+        Assert.Contains("Open 経路", section);
+        Assert.Contains("読込は 1 回", section);
+        Assert.Contains("TD-59 を完了した", section);
+        Assert.Contains($"NoteNest schema（`{Project.CurrentSchemaVersion}`）", section);
+    }
+
+    [Fact]
+    public void Backlog_TD59_CompletedRangeCoversId_AndHasNoOpenItemRow()
+    {
+        var backlog = TestPaths.ReadBacklog();
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 59),
+            "TD-59 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        Assert.DoesNotContain("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b5ImplementationResult_AndTD59Completion()
+    {
+        // §24 実施結果: IsPathCompatibleWithResolvedKind・SavedWorkspaceStateUpdater/
+        // SyncNoteNestTabForViewModel の非読込化・TD-59 完了の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果（TD-59b-5", text);
+        Assert.Contains("IsPathCompatibleWithResolvedKind", text);
+        Assert.Contains("SavedWorkspaceStateUpdater", text);
+        Assert.Contains("SyncNoteNestTabForViewModel", text);
+        Assert.Contains("TD-59 完了", text);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────

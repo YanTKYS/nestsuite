@@ -153,19 +153,101 @@ public class SavedWorkspaceStateUpdaterTests
         finally { File.Delete(savedPath); }
     }
 
+    // v2.16.39 TD-59b-5: TryCreate は保存成功後の内部状態更新であり、保存直後にファイルを
+    // 再度開いて wrapper の kind を再検証しない契約へ変更した。旧
+    // TryCreate_NestSuiteSavedPath_KindMismatch_Fails（保存済み .nestsuite の wrapper 内容が
+    // currentTab.WorkspaceKind と食い違う場合に false を期待していた）は、この新しい契約のもとでは
+    // 成立しない前提を検証する形になるため、下記の「再読込しない」契約テストへ置き換えた
+    // （テストの削除ではなく、変更後の責務境界に合わせた更新）。
     [Fact]
-    public void TryCreate_NestSuiteSavedPath_KindMismatch_Fails()
+    public void TryCreate_NestSuiteSavedPath_UsesCurrentTabKindWithoutReopeningFile()
     {
+        // wrapper の中身は実際には ChatNest だが、currentTab（保存を実行した Workspace）は NoteNest。
+        // TryCreate はファイルを再読込しないため、wrapper 内容ではなく currentTab.WorkspaceKind を
+        // そのまま信頼し、成功する。ファイル Open の安全性（内容と kind の一致確認）は
+        // TryPrepareOpen / LoadPrepared 側の責務であり、ここでは担わない。
         var savedPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         try
         {
             File.WriteAllText(savedPath, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
             var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsModified = true };
 
-            var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, isModifiedAfterSave: false, out _);
+            var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, isModifiedAfterSave: false, out var state);
 
-            Assert.False(ok);
+            Assert.True(ok);
+            Assert.Equal(NestSuiteWorkspaceKind.NoteNest, state.UpdatedTab.WorkspaceKind);
+            Assert.Equal(savedPath, state.UpdatedTab.FilePath);
         }
         finally { File.Delete(savedPath); }
+    }
+
+    [Theory]
+    [InlineData(NestSuiteWorkspaceKind.NoteNest)]
+    [InlineData(NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData(NestSuiteWorkspaceKind.ChatNest)]
+    public void TryCreate_NestSuiteSavedPath_MissingFile_StillSucceeds_UsingCurrentTabKind(NestSuiteWorkspaceKind kind)
+    {
+        // 実在しない .nestsuite path を使用する。TryGetKind / FromFilePath による再読込が
+        // 残っていれば、ファイル不在で失敗するはず（TryPrepareOpen は FileNotFound を返す）。
+        // 成功することで、追加のファイル読込・存在確認が行われていないことを保証する。
+        var savedPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var tab = NestSuiteTabFactory.CreateUntitled(kind) with { IsModified = true };
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, isModifiedAfterSave: false, out var state);
+
+        Assert.True(ok);
+        Assert.False(File.Exists(savedPath));
+        Assert.Equal(kind, state.UpdatedTab.WorkspaceKind);
+        Assert.Equal(savedPath, state.UpdatedTab.FilePath);
+        Assert.Equal(Path.GetFileName(savedPath), state.UpdatedTab.DisplayName);
+        Assert.False(state.UpdatedTab.IsModified);
+    }
+
+    [Fact]
+    public void TryCreate_SaveSuccess_PreservesTabId()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with { IsModified = true };
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\work\saved.notenest", false, out var state);
+
+        Assert.True(ok);
+        Assert.Equal(tab.Id, state.UpdatedTab.Id);
+    }
+
+    [Fact]
+    public void TryCreate_SaveSuccess_PreservesIsDetached()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest) with
+        {
+            IsModified = true,
+            IsDetached = true
+        };
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\work\saved.notenest", false, out var state);
+
+        Assert.True(ok);
+        Assert.True(state.UpdatedTab.IsDetached);
+    }
+
+    [Fact]
+    public void TryCreate_UnsupportedExtension_IsRejected()
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, @"C:\work\saved.txt", false, out _);
+
+        Assert.False(ok);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TryCreate_EmptyOrWhitespaceSavedPath_IsRejected(string savedPath)
+    {
+        var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.NoteNest);
+
+        var ok = SavedWorkspaceStateUpdater.TryCreate(tab, savedPath, false, out _);
+
+        Assert.False(ok);
     }
 }

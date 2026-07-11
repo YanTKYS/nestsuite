@@ -639,4 +639,103 @@ public class NestSuiteDocumentTabTests
         }
         finally { File.Delete(path); }
     }
+
+    // ── v2.16.39 TD-59b-5: IsPathCompatibleWithResolvedKind（ファイル I/O なしの純粋判定） ──────
+
+    [Theory]
+    [InlineData(NestSuiteWorkspaceKind.NoteNest)]
+    [InlineData(NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData(NestSuiteWorkspaceKind.ChatNest)]
+    public void IsPathCompatibleWithResolvedKind_NestSuiteExtension_MissingFile_ReturnsTrue_ForAllFileWorkspaceKinds(
+        NestSuiteWorkspaceKind kind)
+    {
+        // 実在しない path でも true になることで、wrapper 内容・ファイル存在を確認していないことを保証する。
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(path, kind);
+
+        Assert.True(result);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public void IsPathCompatibleWithResolvedKind_NestSuiteExtension_Temp_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(path, NestSuiteWorkspaceKind.Temp);
+
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("file.notenest", NestSuiteWorkspaceKind.NoteNest, true)]
+    [InlineData("file.ideanest", NestSuiteWorkspaceKind.IdeaNest, true)]
+    [InlineData("file.chatnest", NestSuiteWorkspaceKind.ChatNest, true)]
+    [InlineData("FILE.NOTENEST", NestSuiteWorkspaceKind.NoteNest, true)]
+    [InlineData("FILE.IDEANEST", NestSuiteWorkspaceKind.IdeaNest, true)]
+    [InlineData("FILE.CHATNEST", NestSuiteWorkspaceKind.ChatNest, true)]
+    [InlineData("file.ideanest", NestSuiteWorkspaceKind.NoteNest, false)]
+    [InlineData("file.chatnest", NestSuiteWorkspaceKind.IdeaNest, false)]
+    [InlineData("file.notenest", NestSuiteWorkspaceKind.ChatNest, false)]
+    public void IsPathCompatibleWithResolvedKind_LegacyExtension_MatchesOnlyCorrespondingKind(
+        string fileName, NestSuiteWorkspaceKind kind, bool expected)
+    {
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(fileName, kind);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void IsPathCompatibleWithResolvedKind_EmptyOrWhitespacePath_ReturnsFalse(string path)
+    {
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(path, NestSuiteWorkspaceKind.NoteNest);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPathCompatibleWithResolvedKind_UnsupportedExtension_ReturnsFalse()
+    {
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind("file.txt", NestSuiteWorkspaceKind.NoteNest);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPathCompatibleWithResolvedKind_NoExtension_ReturnsFalse()
+    {
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind("file", NestSuiteWorkspaceKind.NoteNest);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPathCompatibleWithResolvedKind_LegacyExtension_Temp_ReturnsFalse()
+    {
+        var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind("file.notenest", NestSuiteWorkspaceKind.Temp);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPathCompatibleWithResolvedKind_IgnoresActualNestSuiteWrapperContent_EvenWhenMismatched()
+    {
+        // .nestsuite の中身（wrapper 内 workspaceKind）が実際には別 Workspace（ChatNest）であっても、
+        // 拡張子と NoteNest の組み合わせだけで true になる。wrapper を読んで内容と突き合わせる
+        // 設計ではないことの直接確認（読込回数自体は SessionTabMapperTests 等の read delegate
+        // カウントで別途保証している）。
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+
+            var result = NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(path, NestSuiteWorkspaceKind.NoteNest);
+
+            Assert.True(result);
+        }
+        finally { File.Delete(path); }
+    }
 }
