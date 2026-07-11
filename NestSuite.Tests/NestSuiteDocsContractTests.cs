@@ -1045,6 +1045,55 @@ public class NestSuiteDocsContractTests
         Assert.Contains("下書き", backlog);
     }
 
+    // ── review6-fable5-2: SH-36下書き保護の設計補完 ─────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21641_AndReview6_2()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.41", text);
+        Assert.Contains("review6-fable5-2", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_Review6_2_MentionsChatNestTransientInputAndQuarantine()
+    {
+        // ChatNest の未送信入力の保護・下書き・隔離・production code 変更なし・schema 維持が
+        // 記録されていることを確認する。ファイル名・API 名・文章全文には固定しない。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "review6-fable5-2");
+        Assert.Contains("production code の変更はなし", section);
+        Assert.Contains("ChatNest", section);
+        Assert.Contains("未送信", section);
+        Assert.Contains("下書き", section);
+        Assert.Contains("隔離", section);
+        Assert.Contains("SH-36", section);
+        Assert.Contains($"`{Project.CurrentSchemaVersion}`", section);
+    }
+
+    [Fact]
+    public void Review6_2Doc_ExistsAndMentionsKeySections()
+    {
+        // 文言完全一致ではなく、章立ての重要語句の存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-2.md");
+        Assert.True(File.Exists(path), $"review6-fable5-2.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("総評", text);
+        Assert.Contains("InputText", text);
+        Assert.Contains("隔離", text);
+        Assert.Contains("結論", text);
+        Assert.Contains("production code の変更は行っていない", text);
+    }
+
+    [Fact]
+    public void Review6Doc_PointsToReview6_2_AsAuthoritativeForSH36()
+    {
+        // 初期設計（review6）と補完後設計（review6-fable5-2）の関係が review6 側に記録されている。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5.md"));
+        Assert.Contains("review6-fable5-2", text);
+        Assert.Contains("正とする", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
