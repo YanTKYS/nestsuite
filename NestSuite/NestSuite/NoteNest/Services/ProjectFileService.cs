@@ -34,7 +34,65 @@ public class ProjectFileService
                 envelope.PayloadSchemaVersion, Project.CurrentSchemaVersion, "NoteNest");
             json = envelope.PayloadJson;
         }
-        var project = JsonSerializer.Deserialize<Project>(json, Options)
+        return DeserializeAndValidate(json, envelope);
+    }
+
+    /// <summary>
+    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6, §10):
+    /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が既に読んだ wrapper を追加読込なしで
+    /// デシリアライズする。<paramref name="context"/> の path と解析済み内容は分離できない
+    /// （path のみを別引数で受ける overload は追加しない）。
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> が null の場合。</exception>
+    /// <exception cref="ArgumentException">
+    /// FilePath が空・Temp・path/拡張子/kind の組み合わせが呼び出し契約に反する場合。
+    /// </exception>
+    /// <exception cref="InvalidDataException">wrapper の workspaceKind が NoteNest ではない場合。</exception>
+    public Project LoadPrepared(WorkspaceFileOpenContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (string.IsNullOrWhiteSpace(context.FilePath))
+            throw new ArgumentException("FilePath が空です。", nameof(context));
+        if (context.WorkspaceKind == NestSuiteWorkspaceKind.Temp)
+            throw new ArgumentException("TempNest はファイル型 Workspace ではありません。", nameof(context));
+
+        if (context.Preloaded is { } preloaded)
+        {
+            // (a) preloaded + レガシー拡張子パス = TryPrepareOpen を経ていない組み合わせ
+            if (!NestSuiteWorkspaceEnvelope.IsEnvelopePath(context.FilePath))
+                throw new ArgumentException("解析済み envelope はレガシー拡張子には使えません。", nameof(context));
+            // (b) path 不一致 = 別ファイルの解析結果を組み替えた誤配線（同種ファイル間も検出）
+            if (!NestSuiteOpenFilePolicy.IsSameFile(context.FilePath, preloaded.SourcePath))
+                throw new ArgumentException(
+                    "解析済み Workspace データの読込元パスが、指定されたファイルパスと一致しません。", nameof(context));
+            // (c) wrapper 内容と読込先の不一致（利用者起因の種別違いでも起きるため、既存文言を維持）
+            NestSuiteWorkspaceEnvelope.EnsureKind(preloaded.Envelope, NestSuiteWorkspaceEnvelope.KindNoteNest);
+            // (d) (c) を通過したのに enum が異なる = context の改変等の契約違反
+            if (context.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest)
+                throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
+            // (e) FM-4: wrapper 宣言 schema の too-new 事前確認（現行と同一の SchemaVersionGuard 例外）
+            SchemaVersionGuard.EnsureNotNewer(
+                preloaded.Envelope.PayloadSchemaVersion, Project.CurrentSchemaVersion, "NoteNest");
+            // (f) 追加のファイル読込は行わない（0 回）
+            return DeserializeAndValidate(preloaded.Envelope.PayloadJson, preloaded.Envelope);
+        }
+
+        // (g) .nestsuite なのに preloaded がない = TryPrepareOpen を経ていない契約違反
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(context.FilePath))
+            throw new ArgumentException(".nestsuite の prepared 読込には解析済み envelope が必要です。", nameof(context));
+        // (h) レガシー誤配線（他 Workspace の拡張子を含む）
+        if (context.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest)
+            throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
+        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        return Load(context.FilePath);
+    }
+
+    /// <summary>
+    /// payload JSON のデシリアライズ + schema 検証。<see cref="Load"/> / <see cref="LoadPrepared"/> で共有する。
+    /// </summary>
+    private Project DeserializeAndValidate(string payloadJson, NestSuiteWorkspaceEnvelope.EnvelopeContent? envelope)
+    {
+        var project = JsonSerializer.Deserialize<Project>(payloadJson, Options)
             ?? throw new InvalidDataException("プロジェクトデータが無効です。");
         // v2.14.4 FM-4: 現行より新しい schema を無警告で読み込み → 上書き保存で未知フィールドを失う経路を防ぐ
         SchemaVersionGuard.EnsureNotNewer(project.Version, Project.CurrentSchemaVersion, "NoteNest");

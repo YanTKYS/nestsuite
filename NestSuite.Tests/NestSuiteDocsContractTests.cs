@@ -791,6 +791,53 @@ public class NestSuiteDocsContractTests
         Assert.Contains("WorkspaceFileOpenContext", text);
     }
 
+    // ── TD-59b-2: FileService LoadPrepared・安全性テスト実装 ──────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21635_AndTD59b2()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.35", text);
+        Assert.Contains("TD-59b-2", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b2_MentionsSafetyGuardsAndShellNotYetSwitched()
+    {
+        // path 一致再検証・同種ファイル取り違え・kind 誤配線・Shell 未切替・実利用読込回数未削減が
+        // 記録されていることを確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("IsSameFile", text);
+        Assert.Contains("同種ファイル", text);
+        Assert.Contains("誤配線", text);
+        Assert.Contains("OpenPrepared", text);
+        Assert.Contains("読込回数はまだ減っていない", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59b2_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59b-2", backlog);
+        // FileService LoadPrepared 実装のみ完了。TD-59 全体（Shell / session 切替を含む）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
+        Assert.Contains("TD-59b-3", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b2ImplementationResult()
+    {
+        // §20 実施結果: LoadPrepared 実装済み・安全性テスト実施済み・Shell/session 未切替の
+        // 重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果（TD-59b-2", text);
+        Assert.Contains("LoadPrepared", text);
+        Assert.Contains("OpenPrepared", text);
+        Assert.Contains("TD-59b-3", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

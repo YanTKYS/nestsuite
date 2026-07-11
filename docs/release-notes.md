@@ -7,6 +7,19 @@
 
 ---
 
+## v2.16.35 — TD-59b-2: FileService `LoadPrepared`・安全性テスト実装
+
+- TD-59a / TD-59a-2 / TD-59b-1（v2.16.32〜v2.16.34）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8.6・§10・§12・§13・§16〜§19）に従い、3 つの Workspace FileService へ安全な prepared 読込を実装した。設計方針自体の変更はない
+- `ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService` に `LoadPrepared(WorkspaceFileOpenContext)` を追加した。path と解析済み内容を別引数で受ける overload（`Load(path, envelope)` 等）は追加していない。既存 `Load(string path)` は無変更で維持し、直接読込と prepared 読込はメソッド名で区別する
+- `LoadPrepared` は §8.6 のガード順序（(a) preloaded とレガシー拡張子の組み合わせ違反 → (b) `IsSameFile` による path 一致 → (c) 既存 `EnsureKind` による wrapper kind 検証 → (d) context enum 一致検証 → (e) wrapper 宣言 schema too-new → (f) payload デシリアライズ・検証、preloaded が null の場合は (g)〜(i) のレガシー誤配線検証）をそのまま実装した。FileService 境界で `NestSuiteOpenFilePolicy.IsSameFile(context.FilePath, preloaded.SourcePath)` による path 一致再検証を追加し、既存の `EnsureKind`・`SchemaVersionGuard`（wrapper 宣言 schema too-new・payload 側 schema too-new・wrapper/payload 整合）はすべて維持した
+- `Load(string path)` と `LoadPrepared(context)` の間で payload デシリアライズ + 検証を共有する private helper（NoteNest/ChatNest は新規 `DeserializeAndValidate`、IdeaNest は既存 `ValidatePayload` を再利用）を切り出した。3 FileService を共通基底クラスへは統合していない（保存形式の独立性を維持）
+- NoteNest の prepared 読込チェーンを実装した: `MainViewModel.OpenPreparedFileAtStartup(WorkspaceFileOpenContext)` → `ProjectLifecycleService.OpenPrepared(WorkspaceFileOpenContext)` → `ProjectFileService.LoadPrepared`。現在ファイル・recent files・保存先はすべて `context.FilePath` のみを正本とし、別引数の path を受けない（読み込んだ内容と保存先が乖離しない）。成功時の `StatusMessage`・失敗時のログ／ダイアログ経路は既存 `OpenFileAtStartup` / `TryOpenProject` と共有し、新しい Info/Warning ログは追加していない
+- `NestSuiteTabFactory.TryPrepareOpen` / `TryGetKind` に、null・空・空白のみ・`Path.GetFullPath` が例外になる不正 path への防御を追加した（例外を外へ出さず `UnsupportedExtension` を返す。新しい `WorkspaceKindDetectionFailure` 値は追加していない）
+- 安全性テストを追加した: 同種ファイル間の path 取り違え（NoteNest / IdeaNest / ChatNest の 3 Workspace、`EnsureKind` ではなく path 一致ガードで失敗することを確認）、WorkspaceKind 誤配線 6 通り（`InvalidDataException` + 既存 `EnsureKind` 文言）、context enum 改変（wrapper kind は正しいが context 側だけ改変した不正 context、reflection で構成）、3 FileService それぞれの追加ファイル I/O ゼロ確認（実在しない path の context でも成功することで証明）。不正 context の生成は reflection helper 1 か所（`WorkspaceFileOpenContextTestFactory`）に集約し、production の public 生成制限（internal コンストラクター・`InternalsVisibleTo` 不使用）は弱めていない
+- **今回は 3 FileService の `LoadPrepared` と NoteNest の prepared チェーンまでの実装であり、Shell から `LoadPrepared` を呼ぶ経路（`ShellFileOpenDecision.OpenContext`・`ShellFileOpenPlanner.Plan` のprepareOpen化）・Open ダイアログ／起動引数／最近ファイル／pipe の切替・session 復元経路はいずれも未着手。実利用経路の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）**
+- `docs/planning/nestsuite-double-read-design-review.md` に §20 実施結果を追記した（設計決定自体は変更していない）
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.34 — TD-59b-1: `.nestsuite` 基盤API・context・test seam実装
 
 - TD-59a-2（v2.16.33）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8・§12・§13・§16〜§18）に従い、`.nestsuite` 二重読込解消のための基盤 API を実装した。設計方針自体の変更はない

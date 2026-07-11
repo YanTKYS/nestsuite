@@ -1,3 +1,4 @@
+using NestSuite;
 using NestSuite.Models;
 using NestSuite.Services;
 using Xunit;
@@ -250,5 +251,181 @@ public class ProjectFileServiceTests : IDisposable
             foreach (var f in new[] { nestSuitePath, nestSuitePath + ".tmp", nestSuitePath + ".bak" })
                 if (File.Exists(f)) File.Delete(f);
         }
+    }
+
+    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+
+    [Fact]
+    public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            _svc.Save(nestSuitePath, new Project { ProjectName = "Prepared", ProjectId = "id-1" });
+
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(nestSuitePath, out var context, out _));
+            var viaPrepared = _svc.LoadPrepared(context);
+            var viaDirect = _svc.Load(nestSuitePath);
+
+            Assert.Equal(viaDirect.ProjectName, viaPrepared.ProjectName);
+            Assert.Equal(viaDirect.ProjectId, viaPrepared.ProjectId);
+        }
+        finally
+        {
+            foreach (var f in new[] { nestSuitePath, nestSuitePath + ".tmp", nestSuitePath + ".bak" })
+                if (File.Exists(f)) File.Delete(f);
+        }
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        _svc.Save(_path, new Project { ProjectName = "LegacyPrepared", ProjectId = "id-2" });
+
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(_path, out var context, out _));
+        Assert.Null(context.Preloaded);
+        var viaPrepared = _svc.LoadPrepared(context);
+        var viaDirect = _svc.Load(_path);
+
+        Assert.Equal(viaDirect.ProjectName, viaPrepared.ProjectName);
+        Assert.Equal(viaDirect.ProjectId, viaPrepared.ProjectId);
+    }
+
+    [Fact]
+    public void LoadPrepared_AdditionalFileIO_IsZero_ForMissingPath()
+    {
+        // v2.16.35 §13: 実際には存在しない path の context でも成功することで、
+        // 追加のファイル読込がゼロであることを証明する（追加読込があれば FileNotFoundException になる）。
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        _svc.Save(nestSuitePath, new Project { ProjectName = "ZeroIO" });
+        var wrapped = File.ReadAllText(nestSuitePath);
+        File.Delete(nestSuitePath);
+
+        var success = NestSuiteTabFactory.TryPrepareOpen(
+            nestSuitePath, out var context, out _,
+            fileExists: _ => true,
+            readAllText: _ => wrapped);
+        Assert.True(success);
+        Assert.False(File.Exists(nestSuitePath));
+
+        var project = _svc.LoadPrepared(context);
+
+        Assert.Equal("ZeroIO", project.ProjectName);
+    }
+
+    [Fact]
+    public void LoadPrepared_NullContext_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _svc.LoadPrepared(null!));
+    }
+
+    [Fact]
+    public void LoadPrepared_EmptyFilePath_ThrowsArgumentException()
+    {
+        var context = WorkspaceFileOpenContextTestFactory.Create("", NestSuiteWorkspaceKind.NoteNest, null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_TempContext_ThrowsArgumentException()
+    {
+        var context = WorkspaceFileOpenContextTestFactory.Create(_path, NestSuiteWorkspaceKind.Temp, null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_PreloadedWithLegacyExtension_ThrowsArgumentException()
+    {
+        // preloaded envelope をレガシー拡張子パスと組み合わせるのは TryPrepareOpen を経ていない契約違反。
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            _svc.Save(nestSuitePath, new Project { ProjectName = "X" });
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(nestSuitePath, out var nestSuiteContext, out _));
+
+            var legacyPathWithPreloaded = WorkspaceFileOpenContextTestFactory.Create(
+                _path, NestSuiteWorkspaceKind.NoteNest, nestSuiteContext.Preloaded);
+
+            Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(legacyPathWithPreloaded));
+        }
+        finally
+        {
+            foreach (var f in new[] { nestSuitePath, nestSuitePath + ".tmp", nestSuitePath + ".bak" })
+                if (File.Exists(f)) File.Delete(f);
+        }
+    }
+
+    [Fact]
+    public void LoadPrepared_NestSuiteWithoutPreloaded_ThrowsArgumentException()
+    {
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var context = WorkspaceFileOpenContextTestFactory.Create(
+            nestSuitePath, NestSuiteWorkspaceKind.NoteNest, preloaded: null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_WorkspaceKindMismatch_ThrowsArgumentException()
+    {
+        var context = WorkspaceFileOpenContextTestFactory.Create(_path, NestSuiteWorkspaceKind.IdeaNest, null);
+
+        Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_PathMismatch_SameWorkspaceKind_ThrowsArgumentException_NotEnsureKind()
+    {
+        // v2.16.35 §9: 同じ NoteNest 同士でも、path が envelope の読込元と一致しなければ検出する
+        // （EnsureKind ではなく path 一致ガードで失敗すること・全文一致ではなくキーワードのみ確認）。
+        var pathA = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-A.nestsuite");
+        var pathB = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-B.nestsuite");
+        try
+        {
+            _svc.Save(pathA, new Project { ProjectName = "A" });
+            _svc.Save(pathB, new Project { ProjectName = "B" });
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(pathA, out var contextA, out _));
+
+            var mismatched = WorkspaceFileOpenContextTestFactory.Create(
+                pathB, NestSuiteWorkspaceKind.NoteNest, contextA.Preloaded);
+
+            var ex = Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(mismatched));
+            Assert.Contains("パス", ex.Message);
+        }
+        finally
+        {
+            foreach (var f in new[] { pathA, pathA + ".bak", pathB, pathB + ".bak" })
+                if (File.Exists(f)) File.Delete(f);
+        }
+    }
+
+    [Fact]
+    public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
+    {
+        // v2.16.35 §8.6 (e): TryPrepareOpen は probe 時点で too-new を検出して context を作らないため、
+        // ここでは LoadPrepared 自身の防御（EnsureNotNewer の再確認）を reflection で直接検証する。
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "9.9.9", "{}");
+        var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+        var preloaded = WorkspaceFileOpenContextTestFactory.CreatePreloaded(nestSuitePath, envelope);
+        var context = WorkspaceFileOpenContextTestFactory.Create(nestSuitePath, NestSuiteWorkspaceKind.NoteNest, preloaded);
+
+        Assert.Throws<SchemaVersionTooNewException>(() => _svc.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_WrapperPayloadSchemaMismatch_ThrowsInvalidDataException()
+    {
+        // v2.16.35 §12: wrapper 宣言 schema と payload 側 schema の不整合検証（EnsureEnvelopeConsistent）が
+        // prepared 経路でも維持されていることを確認する。
+        var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.0.0", """{"version":"1.2.0"}""");
+        var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+        var preloaded = WorkspaceFileOpenContextTestFactory.CreatePreloaded(nestSuitePath, envelope);
+        var context = WorkspaceFileOpenContextTestFactory.Create(nestSuitePath, NestSuiteWorkspaceKind.NoteNest, preloaded);
+
+        Assert.Throws<InvalidDataException>(() => _svc.LoadPrepared(context));
     }
 }

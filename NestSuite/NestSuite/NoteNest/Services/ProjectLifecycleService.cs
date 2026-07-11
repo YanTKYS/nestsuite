@@ -57,6 +57,15 @@ public sealed class ProjectLifecycleService
 
     public void Open(string path) => Load(_files.Load(path), path);
 
+    /// <summary>
+    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6):
+    /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）で得た <paramref name="context"/> を
+    /// 追加読込なしで開く。現在ファイルとして関連付ける path は <see cref="WorkspaceFileOpenContext.FilePath"/>
+    /// のみ（別引数の path は受けない。読み込んだ内容と保存先が乖離しない）。
+    /// </summary>
+    public void OpenPrepared(WorkspaceFileOpenContext context) =>
+        Load(_files.LoadPrepared(context), context.FilePath);
+
     public void Save(string path) => Save(path, createBackup: true);
 
     /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>

@@ -24,6 +24,15 @@ public partial class MainViewModel
     public bool OpenFileAtStartup(string path) => TryOpenProject(path);
 
     /// <summary>
+    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6):
+    /// probe（<see cref="NestSuite.NestSuiteTabFactory.TryPrepareOpen"/>）で得た
+    /// <paramref name="context"/> を、<see cref="ProjectLifecycleService.OpenPrepared"/> 経由で
+    /// 追加読込なしで開く。成功時の StatusMessage・失敗時のログ／ダイアログ経路は
+    /// <see cref="OpenFileAtStartup"/> と同一にする。
+    /// </summary>
+    public bool OpenPreparedFileAtStartup(WorkspaceFileOpenContext context) => TryOpenPreparedProject(context);
+
+    /// <summary>
     /// 確認なしで新規プロジェクトを作成する。
     /// NestSuite がタブ閉じ操作でユーザー確認を完了済みの場合に呼ぶ。
     /// 通常の新規作成（ユーザー操作）には <see cref="NewProjectCommand"/> を使用すること。
@@ -123,11 +132,18 @@ public partial class MainViewModel
         StatusMessage = "最近使ったファイルをクリアしました。";
     }
 
-    private bool TryOpenProject(string path)
+    private bool TryOpenProject(string path) =>
+        TryOpenProjectCore(() => _lifecycle.Open(path), path);
+
+    /// <summary>v2.16.35 TD-59b-2: prepared 経路。既存 <see cref="TryOpenProject"/> と同じ成功/失敗処理を共有する。</summary>
+    private bool TryOpenPreparedProject(WorkspaceFileOpenContext context) =>
+        TryOpenProjectCore(() => _lifecycle.OpenPrepared(context), context.FilePath);
+
+    private bool TryOpenProjectCore(Action open, string path)
     {
         try
         {
-            _lifecycle.Open(path);
+            open();
             StatusMessage = $"プロジェクトを開きました: {System.IO.Path.GetFileName(path)}";
             return true;
         }
