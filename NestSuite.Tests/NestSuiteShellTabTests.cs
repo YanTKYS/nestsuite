@@ -468,4 +468,36 @@ public class NestSuiteShellTabTests
         Assert.Equal(2, parameters.Length);
         Assert.Equal(typeof(object), parameters[0].ParameterType);
     }
+
+    // ── v2.16.39 TD-59b-5: SyncNoteNestTabForViewModel の非読込化契約 ────────────
+    // WPF Window を生成せず、メソッド範囲だけを対象にした狭い contract test。
+    // production API を public 化しない既存方針に合わせる。
+
+    [Fact]
+    public void SyncNoteNestTabForViewModel_UsesPathCompatibilityCheck_NotTryGetKindOrFromFilePath()
+    {
+        var src = ReadSource("NestSuiteShellWindow.TabLifecycle.cs");
+        var methodStart = src.IndexOf(
+            "private void SyncNoteNestTabForViewModel(MainViewModel vm)", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0);
+        var methodEnd = src.IndexOf(
+            "private void SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel vm)",
+            methodStart, StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart);
+        var body = src.Substring(methodStart, methodEnd - methodStart);
+
+        Assert.Contains("IsPathCompatibleWithResolvedKind(", body);
+        Assert.Contains("FromResolvedKind(", body);
+        Assert.DoesNotContain("TryGetKind(", body);
+        Assert.DoesNotContain("FromFilePath(", body);
+        Assert.Contains("CreateUntitled(", body);
+        Assert.Contains("ReplaceTab(", body);
+    }
+
+    private static string ReadSource(string fileName)
+    {
+        var path = Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", fileName);
+        Assert.True(File.Exists(path), $"{fileName} not found: {path}");
+        return File.ReadAllText(path);
+    }
 }

@@ -7,6 +7,21 @@
 
 ---
 
+## v2.16.39 — TD-59b-5: 保存後内部同期の非読込化・全経路最終回帰
+
+- TD-59a〜TD-59b-4（v2.16.32〜v2.16.38）で実装した `.nestsuite` 二重・三重読込解消を完了させた。設計方針自体の変更はない
+- `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind(filePath, kind)` を追加した。既に判定済み・信頼できる `WorkspaceKind` とファイルパスの組み合わせが妥当かを、ファイル I/O なしで確認する純粋判定 API（`.nestsuite` は wrapper 内容を読まず拡張子だけで NoteNest/IdeaNest/ChatNest のいずれとも妥当とみなし、レガシー拡張子は対応する拡張子と一致する場合のみ妥当とする）。WorkspaceKind を判定する API ではなく、保存直後の内部状態更新・読込済み ViewModel のタブ同期など、kind が既に確定している経路専用。利用者が任意のファイルを開く入口の判定には使わない（そちらは引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）
+- `SavedWorkspaceStateUpdater.TryCreate` から `NestSuiteTabFactory.TryGetKind` / `FromFilePath` を撤去し、`IsPathCompatibleWithResolvedKind` + `FromResolvedKind` へ切り替えた。保存した WorkspaceKind は `currentTab.WorkspaceKind`（保存を実行した Workspace 固有の FileService・呼び出し元）から既に確定しているため、保存成功直後に `.nestsuite` を再度開いて wrapper の kind を再検証しない。これにより保存後のタブ・Session 状態更新での `.nestsuite` 追加読込が 0 回になった
+- `NestSuiteShellWindow.SyncNoteNestTabForViewModel` からも `TryGetKind` / `FromFilePath` を撤去し、`IsPathCompatibleWithResolvedKind` + `FromResolvedKind` へ切り替えた。`MainViewModel` である時点で WorkspaceKind は NoteNest に確定しているため、`IsModified` / `CurrentFilePath` の PropertyChanged ごとに発生していた `.nestsuite` の不要な再読込が 0 回になった
+- レガシー拡張子と WorkspaceKind の不一致確認・unsupported extension・Temp の除外・空/空白 path の拒否は、いずれも読込なしで従来どおり維持した
+- Id・IsModified・IsDetached・IsPinned・DisplayName・TabHeaderText・Session への反映（FilePath/IsModified）・RecentFilePath・最近ファイル更新・保存失敗時に状態更新しない契約は、保存後同期・NoteNest VM 同期のいずれも変更していない
+- 全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` の読込は 1 回のまま、レガシー形式は FileService で 1 回のまま。保存後状態同期・NoteNest VM 同期は 0 回になった
+- FileService 側の `EnsureKind`・`IsSameFile`・schema guard、failure 分類・通知、session pending entry の持ち越しはすべて維持した
+- production code で `TryGetKind` / `FromFilePath` を呼ぶのは `NestSuiteTabFactory` 自身の内部委譲（`FromFilePath` → `TryGetKind` → `TryPrepareOpen`）のみになった。Shell のファイル Open routing・session 復元・保存後状態同期・NoteNest VM 同期のいずれからも呼ばれない。両 API 自体は公開互換 API として維持する（削除していない）
+- `docs/planning/nestsuite-double-read-design-review.md` に §24 実施結果を追記した（設計決定自体は変更していない）
+- **TD-59 を完了した**。全ユーザー向け Open 経路・session 復元は `.nestsuite` 読込 1 回、保存後内部同期・NoteNest VM 同期は 0 回、path と解析済み内容を分離する API なし、既存の安全性ガード（`EnsureKind`・`IsSameFile`・schema guard）・failure 分類・通知・pending entry・レガシー形式の挙動をすべて維持したまま完了条件を満たした
+- session.json 形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper `formatVersion`（`1.0`）・Workspace 保存形式は変更していない。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.38 — TD-59b-4: session復元経路のprepared context切替
 
 - TD-59a〜TD-59b-3（v2.16.32〜v2.16.37）で確定・実装した設計に基づき、session 復元の読込経路を `WorkspaceFileOpenContext` へ切り替えた。設計方針自体の変更はない

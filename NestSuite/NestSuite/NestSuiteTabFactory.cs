@@ -243,6 +243,49 @@ public static class NestSuiteTabFactory
         return file > currentParsed;
     }
 
+    /// <summary>
+    /// v2.16.39 TD-59b-5 (nestsuite-double-read-design-review.md §9, §24):
+    /// 既に判定済み・信頼できる <paramref name="kind"/> と <paramref name="filePath"/> の拡張子の
+    /// 組み合わせが妥当かどうかを、ファイル I/O なしで確認する。<b>WorkspaceKind を判定する API
+    /// ではない</b>（それは <see cref="TryPrepareOpen"/> の役割のまま）。
+    ///
+    /// <para>保存直後の内部状態更新（<c>SavedWorkspaceStateUpdater</c>）や、読込済み ViewModel の
+    /// タブ同期（<c>SyncNoteNestTabForViewModel</c>）など、WorkspaceKind が既に信頼できる内部状態
+    /// として確定している経路専用。利用者が任意のファイルを開く入口の検証には使わない
+    /// （そちらは引き続き <see cref="TryPrepareOpen"/> → <c>LoadPrepared</c> → <c>EnsureKind</c> →
+    /// schema 検証を使う）。</para>
+    ///
+    /// <para><c>.nestsuite</c> は拡張子だけで NoteNest / IdeaNest / ChatNest のいずれとも
+    /// 組み合わせ妥当とする（wrapper 内容は読まない）。レガシー拡張子は <paramref name="kind"/> に
+    /// 対応する拡張子（大文字小文字を区別しない）と一致する場合のみ true。null・空・空白 path、
+    /// <see cref="Path.GetFullPath(string)"/> が例外になる入力、未対応拡張子、Temp、未知の kind は
+    /// すべて false。</para>
+    /// </summary>
+    public static bool IsPathCompatibleWithResolvedKind(string filePath, NestSuiteWorkspaceKind kind)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return false;
+
+        string normalizedPath;
+        try
+        {
+            normalizedPath = Path.GetFullPath(filePath);
+        }
+        catch
+        {
+            return false;
+        }
+
+        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(normalizedPath))
+        {
+            return kind is NestSuiteWorkspaceKind.NoteNest
+                or NestSuiteWorkspaceKind.IdeaNest
+                or NestSuiteWorkspaceKind.ChatNest;
+        }
+
+        return ExtensionByKind.TryGetValue(kind, out var expectedExt) &&
+            string.Equals(Path.GetExtension(normalizedPath), expectedExt, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>wrapper の workspaceKind 文字列を enum へ対応付ける。未知の種別は null。</summary>
     private static NestSuiteWorkspaceKind? MapEnvelopeKind(string? kindName) => kindName switch
     {
