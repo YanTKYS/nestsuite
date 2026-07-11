@@ -67,6 +67,7 @@ SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、
 |----|------|------|--------|
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | InvalidFormat / AccessDenied / SchemaVersionTooNew は TD-70 の解除対象外であり、恒久的に解消されない場合は毎起動で復元失敗通知が出続ける。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する。**FAQ / ユーザーガイドへの間接経路案内は v2.16.22 で反映済み。** 解除対象拡張・個別解除は LT-9 フェーズ2 に吸収する。**ただし LT-9 フェーズ2 自体はトリガー成立まで実装しない（review5-fable5.md）。** | C |
+| SH-36 | 無題・未保存タブの下書き自動保存（クラッシュ時保護） | FilePath を持たない無題タブは、自動保存（SH-33 は意図的に対象外）・session（保存済みファイルのみ）・未保存確認（正常終了時のみ）のいずれの保護も受けず、異常終了で内容が全損する。既定起動タブが無題 NoteNest のため露出が広い。既存の `.nestsuite` wrapper 形式のまま `%APPDATA%\NoteNest\drafts\` へ `draft-<tabId>.nestsuite` を既存 30 秒 tick で書き（`.bak` なし・MarkSaved / CurrentFilePath / session / recent files を一切変更しない無副作用 snapshot）、SaveAs 成功・閉鎖破棄・終了確認のクリーン経路で削除する。異常終了後の起動時のみ MessageBox 1 枚（design-decisions §56 の Owner 制約によりカスタム Window 不可）で復元を確認し、復元タブは無題・未保存（FilePath=null / IsModified=true）とする。「いいえ」は下書き破棄（文言に明記。恒久 nag を新設しない）。session.json・schema・wrapper・保存形式変更なし。TempNest は対象外。2 段階実装: SH-36a = 書込側 + ライフサイクル（v2.16.41 想定）、SH-36b = 起動時復元（v2.16.42 想定）。実装境界の詳細は `docs/planning/review6-fable5.md` §7・§10 | A |
 
 ---
 

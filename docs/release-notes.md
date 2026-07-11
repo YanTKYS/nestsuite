@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.40 — review6-fable5: TD-59完了後の高リスク・高効果設計課題再評価
+
+- **production code の変更はなし**。TD-59 完了（v2.16.39）後の全体を対象とした、期間限定エキスパートによる設計・優先順位レビュー。成果物は `docs/planning/review6-fable5.md`
+- backlog 全候補（SH / TN / L・M・H / ID / CH / LK / LT / RJ）、review1〜review5 の既決事項、`nestsuite-double-read-design-review.md`、および現行 production code / テストを再評価した。review1〜review5 で閉じた指摘の再発・別経路は確認されず、既決事項（session 保護方式・`.bak` 意味論・Tabs[] 正本・WorkspaceKind ヒント非信頼等）はすべて維持と再判定した
+- 現在すぐ対応すべき重大リスクはないと判定した。データ保護マトリクスで唯一開いている穴は「無題・未保存タブのクラッシュ時全損」（自動保存 SH-33 の意図的対象外・session 対象外・未保存確認は正常終了のみ）で、既定起動タブが無題 NoteNest であるため露出が広い
+- **通常実装候補を 3 件に絞った**: 第 1 候補 = **SH-36**（無題タブの下書き自動保存。新規採番し backlog へ追加。既存 `.nestsuite` wrapper 形式のまま `%APPDATA%` 配下へ下書きを書き、異常終了後の起動時に MessageBox 1 枚で復元する 2 段階実装 = v2.16.41 SH-36a / v2.16.42 SH-36b）、第 2 候補 = **TD-76**（静的テスト再肥大化の整理: docs-contract の TD-59 系 Fact のデータ駆動集約 + `SessionTabMapperTests` の Shell 境界スキャン分離。着手時に採番）、第 3 候補 = **M17**（検索結果のマッチ箇所ハイライト。純粋な分割 helper + Run バインドで実装、Attached Behavior 不使用）
+- 最優先候補 SH-36 は、通常エンジニアへ渡せる水準まで実装境界を確定した（変更点・不変点・責務配置・互換性・テスト・完了条件・持ち越し。`review6-fable5.md` §10）
+- **LT-9 フェーズ2は引き続き実装しない**。review5 の着手トリガー 3 条件（all-or-nothing 解除の実害報告 / 恒久 nag の間接経路不十分の報告 / SH-35 推進判断）がいずれも未成立であることを再確認した
+- 選定候補のいずれも schema / session.json / Workspace 保存形式の変更を伴わない。NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper `formatVersion` は `1.0` のまま。外部依存追加なし。既存テストの削除・skip なし（今回の変更は version・release notes・backlog の SH-36 採番・docs-contract テスト追加のみ）
+
 ## v2.16.39 — TD-59b-5: 保存後内部同期の非読込化・全経路最終回帰
 
 - TD-59a〜TD-59b-4（v2.16.32〜v2.16.38）で実装した `.nestsuite` 二重・三重読込解消を完了させた。設計方針自体の変更はない
