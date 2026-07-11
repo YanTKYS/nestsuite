@@ -996,6 +996,55 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-59 完了", text);
     }
 
+    // ── review6-fable5: TD-59完了後の高リスク・高効果設計課題再評価 ─────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21640_AndReview6()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.40", text);
+        Assert.Contains("review6-fable5", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_Review6_MentionsNoProductionCodeChangeAndCandidateSelection()
+    {
+        // production code 変更なし・通常実装候補の絞り込み・最優先候補の確定・
+        // LT-9 継続保留・schema 維持が記録されていることを確認する。
+        // 候補名の詳細や文章全文には固定しない（TD-73 ガイドライン）。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "review6-fable5");
+        Assert.Contains("production code の変更はなし", section);
+        Assert.Contains("通常実装候補", section);
+        Assert.Contains("最優先候補", section);
+        Assert.Contains("LT-9", section);
+        Assert.Contains($"`{Project.CurrentSchemaVersion}`", section);
+    }
+
+    [Fact]
+    public void Review6Doc_ExistsAndMentionsKeySections()
+    {
+        // 文言完全一致ではなく、章立ての重要語句と結論系キーワードの存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5.md");
+        Assert.True(File.Exists(path), $"review6-fable5.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("総評", text);
+        Assert.Contains("backlog再評価", text);
+        Assert.Contains("最優先候補", text);
+        Assert.Contains("LT-9", text);
+        Assert.Contains("結論", text);
+        Assert.Contains("production code の変更は行っていない", text);
+    }
+
+    [Fact]
+    public void Backlog_SH36_IsRecordedAsOpenItem()
+    {
+        // review6 で新規採番した最優先候補。実装完了扱いではなく open item として追加されている。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.Contains("| SH-36 |", backlog);
+        Assert.Contains("下書き", backlog);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
