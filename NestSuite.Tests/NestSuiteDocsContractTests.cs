@@ -932,6 +932,78 @@ public class NestSuiteDocsContractTests
         Assert.Contains("TD-59b-4", text);
     }
 
+    // ── TD-59b-4: session復元経路のprepared context切替 ──────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21638_AndTD59b4()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.38", text);
+        Assert.Contains("TD-59b-4", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b4_MentionsSessionRestoreTargetOpenContextAndTryPrepareOpen()
+    {
+        // SessionRestoreTarget・OpenContext・TryPrepareOpen への切替が記録されていることを
+        // 確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("SessionRestoreTarget", text);
+        Assert.Contains("OpenContext", text);
+        Assert.Contains("TryPrepareOpen", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b4_MentionsReadCountReductionAndDetectKindSeamRemoval()
+    {
+        // session 復元の読込 1 回化・detectKind seam 撤去・旧 path loader 撤去・
+        // session.json 不変が記録されていることを確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "TD-59b-4");
+        Assert.Contains("読込回数", section);
+        Assert.Contains("detectKind", section);
+        Assert.Contains("撤去", section);
+        Assert.Contains("session.json 形式", section);
+        Assert.Contains("TD-59b-5", section);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59b4_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59b-4", backlog);
+        // session 復元経路切替のみ完了。TD-59 全体は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
+        Assert.Contains("TD-59b-5", backlog);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsAllUserFacingPathsNowReadOnce()
+    {
+        // TD-59b-4 完了により Open ダイアログ・起動引数・最近ファイル・pipe・session 復元の
+        // すべての経路で `.nestsuite` 読込が 1 回になったことが記録されていることを確認する。
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("全経路（Open ダイアログ・起動引数・最近ファイル・pipe・二重起動転送・session 復元）", backlog);
+        Assert.Contains("読込が 1 回になった", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b4ImplementationResult()
+    {
+        // §23 実施結果: SessionRestoreTarget・OpenContext・TryPrepareOpen・detectKind 撤去・
+        // 旧 path loader 撤去・TD-59 未完了の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果（TD-59b-4", text);
+        Assert.Contains("SessionRestoreTarget", text);
+        Assert.Contains("OpenContext", text);
+        Assert.Contains("TryPrepareOpen", text);
+        Assert.Contains("detectKind", text);
+        Assert.Contains("撤去", text);
+        Assert.Contains("TD-59 は引き続き未完了", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

@@ -428,6 +428,234 @@ public class SessionTabMapperTests
         finally { File.Delete(path); }
     }
 
+    // ── v2.16.38 TD-59b-4: TryPrepareOpen 化に伴う OpenContext / 読込回数の確認 ──────
+
+    [Theory]
+    [InlineData("NoteNest", NestSuiteWorkspaceKind.NoteNest)]
+    [InlineData("IdeaNest", NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData("ChatNest", NestSuiteWorkspaceKind.ChatNest)]
+    public void TryCreateRestoreTarget_NestSuitePath_OpenContextHoldsPreloadedEnvelope_WithExactlyOneReadCall(
+        string kindName, NestSuiteWorkspaceKind expectedKind)
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap(kindName, "0.1.0", "{}");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out _,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return wrapped; });
+
+        Assert.True(ok);
+        Assert.NotNull(target.OpenContext);
+        Assert.Equal(path, target.FilePath);
+        Assert.Equal(path, target.OpenContext.FilePath);
+        Assert.Equal(expectedKind, target.WorkspaceKind);
+        Assert.Equal(expectedKind, target.OpenContext.WorkspaceKind);
+        Assert.NotNull(target.OpenContext.Preloaded);
+        Assert.Equal(path, target.OpenContext.Preloaded!.SourcePath);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Theory]
+    [InlineData(".notenest", NestSuiteWorkspaceKind.NoteNest)]
+    [InlineData(".ideanest", NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData(".chatnest", NestSuiteWorkspaceKind.ChatNest)]
+    public void TryCreateRestoreTarget_LegacyPath_OpenContextHasNoPreloadedEnvelope_WithZeroReadCalls(
+        string extension, NestSuiteWorkspaceKind expectedKind)
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + extension);
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return "unused"; });
+
+        Assert.True(ok);
+        Assert.NotNull(target.OpenContext);
+        Assert.Equal(expectedKind, target.WorkspaceKind);
+        Assert.Null(target.OpenContext.Preloaded);
+        Assert.Equal(0, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_MissingNestSuiteFile_ReportsFileNotFound_WithZeroReadCalls()
+    {
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            @"C:\missing\ghost.nestsuite", out var target, out var failure,
+            fileExists: _ => false,
+            readAllText: _ => { readCalls++; return "unused"; });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, failure);
+        Assert.Equal(0, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_MissingLegacyFile_ReportsFileNotFound_WithZeroReadCalls()
+    {
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            @"C:\missing\ghost.notenest", out var target, out var failure,
+            fileExists: _ => false,
+            readAllText: _ => { readCalls++; return "unused"; });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, failure);
+        Assert.Equal(0, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_InvalidNestSuiteJson_ReportsInvalidFormat_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return "not valid json"; });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_UnknownWorkspaceKindInWrapper_ReportsUnknownWorkspaceKind_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("MysteryNest", "0.1.0", "{}");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return wrapped; });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.UnknownWorkspaceKind, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_SchemaVersionTooNewInWrapper_ReportsSchemaVersionTooNew_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "99.0.0", "{}");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return wrapped; });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.SchemaVersionTooNew, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_UnauthorizedAccessOnRead_ReportsAccessDenied_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; throw new UnauthorizedAccessException(); });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.AccessDenied, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_IOExceptionOnRead_ReportsIoError_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; throw new IOException(); });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.IoError, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_UnexpectedExceptionOnRead_ReportsUnknown_WithOneReadCall()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var readCalls = 0;
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure,
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; throw new InvalidOperationException(); });
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.Unknown, failure);
+        Assert.Equal(1, readCalls);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TryCreateRestoreTarget_EmptyOrWhitespacePath_SkipsSilently_NoFailureRecorded(string filePath)
+    {
+        var ok = SessionTabMapper.TryCreateRestoreTarget(filePath, out var target, out var failure);
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.None, failure);
+    }
+
+    [Fact]
+    public void TryCreateRestoreTarget_UnsupportedExtension_SkipsSilently_NoFailureRecorded()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".unknownext");
+
+        var ok = SessionTabMapper.TryCreateRestoreTarget(
+            path, out var target, out var failure, fileExists: _ => true);
+
+        Assert.False(ok);
+        Assert.Equal(WorkspaceKindDetectionFailure.None, failure);
+    }
+
+    [Fact]
+    public void CreateRestoreTargets_TabsShape_NestSuitePinnedEntry_PropagatesIsPinned_AndOpenContext()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "0.1.0", "{}");
+        var readCalls = 0;
+        var state = new NestSuiteSessionState
+        {
+            Tabs = new List<NestSuiteSessionTabState>
+            {
+                new() { FilePath = path, WorkspaceKind = "NoteNest", IsPinned = true },
+            },
+        };
+
+        var targets = SessionTabMapper.CreateRestoreTargets(
+            state, fileExists: _ => true, out var failures,
+            readAllText: _ => { readCalls++; return wrapped; });
+
+        Assert.Empty(failures);
+        var target = Assert.Single(targets);
+        Assert.True(target.IsPinned);
+        Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, target.WorkspaceKind);
+        Assert.NotNull(target.OpenContext);
+        Assert.Equal(1, readCalls);
+    }
+
     // ── v2.14.7 SH-31: 読めない .nestsuite の復元通知 ──────────────────
 
     [Fact]

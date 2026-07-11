@@ -152,26 +152,13 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3 まで: WorkspaceKind に応じた path 版 Load*FileAt メソッドへ委譲する。
-    /// <b>TD-59b-4 までの session 復元専用の互換経路。新規の Shell 読込経路（共通・種別別 Open、
-    /// 起動引数、最近ファイル、pipe）からは呼ばない。</b>
-    /// これらは <see cref="LoadWorkspaceFileAt(WorkspaceFileOpenContext)"/> へ切り替え済み。
-    /// </summary>
-    private void LoadWorkspaceFileAt(NestSuiteWorkspaceKind kind, string path)
-    {
-        switch (kind)
-        {
-            case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
-            case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
-        }
-    }
-
-    /// <summary>
-    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe（<see cref="ShellFileOpenPlanner.Plan"/>
-    /// が返す <see cref="WorkspaceFileOpenContext"/>）を、追加のファイル読込なしで対応する
-    /// prepared Load*FileAt メソッドへ委譲する。<paramref name="context"/>.FilePath が open operation 内の
-    /// 唯一の path 正本であり、ここで path を再生成・再正規化しない。
+    /// v2.16.37 TD-59b-3 / v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): probe
+    /// （<see cref="ShellFileOpenPlanner.Plan"/> が返す <see cref="WorkspaceFileOpenContext"/>）を、
+    /// 追加のファイル読込なしで対応する prepared Load*FileAt メソッドへ委譲する。共通・種別別 Open、
+    /// 起動引数、最近ファイル、pipe、session 復元のすべての Shell 読込経路がこのメソッドを使う
+    /// （TD-59b-4 で session 復元専用の path 版 <c>LoadWorkspaceFileAt(kind, path)</c> は撤去した）。
+    /// <paramref name="context"/>.FilePath が open operation 内の唯一の path 正本であり、
+    /// ここで path を再生成・再正規化しない。
     /// </summary>
     private void LoadWorkspaceFileAt(WorkspaceFileOpenContext context)
     {

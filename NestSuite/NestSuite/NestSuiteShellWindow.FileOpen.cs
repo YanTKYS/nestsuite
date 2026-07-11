@@ -34,30 +34,9 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
-    /// からのみ呼ばれる）。パス指定で IdeaNest ファイルを読み込みタブを作成する。
-    /// </summary>
-    private void LoadIdeaNestFileAt(string path)
-    {
-        try
-        {
-            var workspace = IdeaNestFileService.Load(path);
-            var vm = CreateIdeaNestViewModel();
-            vm.LoadFromWorkspace(workspace);
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.IdeaNest, vm, path, false);
-            RegisterLoadedTab(tab, session, path);
-        }
-        catch (Exception ex)
-        {
-            LogAndShowLoadError("IdeaNestLoad", "IdeaNest", "IdeaNest ファイルを開けませんでした。", ex, path);
-        }
-    }
-
-    /// <summary>
     /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
     /// 追加読込なしで IdeaNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
-    /// 最近ファイル、pipe の新しい読込経路から使用する。
+    /// 最近ファイル、pipe、session 復元の読込経路から使用する。
     /// </summary>
     private void LoadIdeaNestFileAt(WorkspaceFileOpenContext context)
     {
@@ -96,31 +75,9 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
-    /// からのみ呼ばれる）。パス指定で ChatNest ファイルを読み込みタブを作成する。
-    /// </summary>
-    private void LoadChatNestFileAt(string path)
-    {
-        try
-        {
-            var newVm = new ChatNestWorkspaceViewModel();
-            newVm.ContentFontFamily = _workspaceEditorFontFamily;
-            var messages = ChatNestFileService.Load(path);
-            newVm.LoadMessages(messages);
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.ChatNest, newVm, path, false);
-            RegisterLoadedTab(tab, session, path, () => newVm.PropertyChanged += OnChatNestPropertyChanged);
-        }
-        catch (Exception ex)
-        {
-            LogAndShowLoadError("ChatNestLoad", "ChatNest", "ChatNest ファイルを開けませんでした。", ex, path);
-        }
-    }
-
-    /// <summary>
     /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
     /// 追加読込なしで ChatNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
-    /// 最近ファイル、pipe の新しい読込経路から使用する。
+    /// 最近ファイル、pipe、session 復元の読込経路から使用する。
     /// </summary>
     private void LoadChatNestFileAt(WorkspaceFileOpenContext context)
     {
@@ -316,35 +273,9 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// TD-59b-4 までの session 復元専用の互換経路（<see cref="LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)"/>
-    /// からのみ呼ばれる）。パス指定で NoteNest ファイルを読み込みタブを作成する。
-    /// </summary>
-    private void LoadNoteNestFileAt(string path)
-    {
-        try
-        {
-            var vm = CreateNoteNestViewModel();
-            _suppressFontSizePropagation = true;
-            bool opened;
-            try { opened = vm.OpenFileAtStartup(path); }
-            finally { _suppressFontSizePropagation = false; }
-            if (!opened) return;
-            vm.EditorFontSize = _noteNestEditorFontSize;
-            vm.EditorFontFamily = _workspaceEditorFontFamily;
-            var tab = NestSuiteTabFactory.FromFilePath(path);
-            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.NoteNest, vm, path, false);
-            RegisterLoadedTab(tab, session, path);
-        }
-        catch (Exception ex)
-        {
-            LogAndShowLoadError("NoteNestLoadTab", "NoteNest", "NoteNest ファイルを開けませんでした。", ex, path);
-        }
-    }
-
-    /// <summary>
     /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
     /// 追加読込なしで NoteNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
-    /// 最近ファイル、pipe の新しい読込経路から使用する。kind 不一致等の失敗は
+    /// 最近ファイル、pipe、session 復元の読込経路から使用する。kind 不一致等の失敗は
     /// <see cref="MainViewModel.OpenPreparedFileAtStartup"/> が内部で通知・ログ済みのため、
     /// ここでは追加のダイアログを出さず opened=false のまま return する。
     /// </summary>

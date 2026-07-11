@@ -35,28 +35,45 @@ public class NestSuiteShellPreparedContextRoutingTests
     }
 
     [Fact]
-    public void NestSuiteShellWindow_HasLoadWorkspaceFileAt_PathOverload_ForSessionRestore()
+    public void NestSuiteShellWindow_LoadWorkspaceFileAt_PathOverload_IsRemoved()
     {
-        // TD-59b-4 までの session 復元専用の互換経路として維持されていることを確認する。
+        // v2.16.38 TD-59b-4: session 復元も prepared context 経路へ切り替わったため、
+        // 暫定互換だった path 版 (NestSuiteWorkspaceKind, string) は撤去した。
         var method = typeof(NestSuiteShellWindow).GetMethod(
             "LoadWorkspaceFileAt", PrivateInstance, null, [typeof(NestSuiteWorkspaceKind), typeof(string)], null);
-        Assert.NotNull(method);
+        Assert.Null(method);
     }
 
     [Theory]
     [InlineData("LoadNoteNestFileAt")]
     [InlineData("LoadIdeaNestFileAt")]
     [InlineData("LoadChatNestFileAt")]
-    public void NestSuiteShellWindow_LoadXFileAt_HasBothContextAndPathOverloads(string methodName)
+    public void NestSuiteShellWindow_LoadXFileAt_HasContextOverload_ButNotPathOverload(string methodName)
     {
-        // context 版は新しい Shell 読込経路、path 版は session 復元専用の互換経路として両方残る。
+        // v2.16.38 TD-59b-4: session 復元専用だった path 版は撤去し、context 版だけを残した。
         var contextOverload = typeof(NestSuiteShellWindow).GetMethod(
             methodName, PrivateInstance, null, [typeof(WorkspaceFileOpenContext)], null);
         var pathOverload = typeof(NestSuiteShellWindow).GetMethod(
             methodName, PrivateInstance, null, [typeof(string)], null);
 
         Assert.NotNull(contextOverload);
-        Assert.NotNull(pathOverload);
+        Assert.Null(pathOverload);
+    }
+
+    [Fact]
+    public void SessionRestoreTarget_HasOpenContextProperty_OfWorkspaceFileOpenContextType()
+    {
+        var property = typeof(SessionRestoreTarget).GetProperty("OpenContext");
+        Assert.NotNull(property);
+        Assert.Equal(typeof(WorkspaceFileOpenContext), property!.PropertyType);
+    }
+
+    [Fact]
+    public void ShellFileOpenPlanner_Plan_HasNoDetectKindParameter()
+    {
+        var method = typeof(ShellFileOpenPlanner).GetMethod("Plan", BindingFlags.Public | BindingFlags.Static);
+        Assert.NotNull(method);
+        Assert.DoesNotContain(method!.GetParameters(), p => p.Name == "detectKind");
     }
 
     [Theory]
