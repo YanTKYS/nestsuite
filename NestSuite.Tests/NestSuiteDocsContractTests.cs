@@ -747,6 +747,50 @@ public class NestSuiteDocsContractTests
         Assert.Contains("PreloadedWorkspaceEnvelope", text);
     }
 
+    // ── TD-59b-1: .nestsuite 基盤API・context・test seam実装 ──────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21634_AndTD59b1()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.34", text);
+        Assert.Contains("TD-59b-1", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b1_MentionsFileServiceAndShellNotYetSwitched()
+    {
+        // 実装範囲の境界（FileService / Shell / session 未切替、実利用読込回数は未削減）が
+        // 記録されていることを確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("LoadPrepared", text);
+        Assert.Contains("読込回数はまだ減っていない", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59b1_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59b-1", backlog);
+        // 基盤 API 実装のみ完了。TD-59 全体（FileService / Shell 切替を含む）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
+        Assert.Contains("TD-59b-2", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b1ImplementationResult()
+    {
+        // §19 実施結果: 基盤 API 実装済み・FileService/Shell/session 未切替の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果", text);
+        Assert.Contains("ReadFromFile", text);
+        Assert.Contains("TryPrepareOpen", text);
+        Assert.Contains("FromResolvedKind", text);
+        Assert.Contains("WorkspaceFileOpenContext", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

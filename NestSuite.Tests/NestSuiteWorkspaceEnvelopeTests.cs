@@ -220,4 +220,126 @@ public class NestSuiteWorkspaceEnvelopeTests
         }
         finally { File.Delete(path); }
     }
+
+    // ── v2.16.34 TD-59b-1: ReadFromFile（読込回数・failure 分類の test seam） ──
+
+    [Fact]
+    public void ReadFromFile_ValidEnvelope_ReturnsEnvelope_AndNoneFailure_WithExactlyOneReadCall()
+    {
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}");
+        var readCalls = 0;
+
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/path.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return wrapped; });
+
+        Assert.Equal(1, readCalls);
+        Assert.Equal(WorkspaceKindDetectionFailure.None, result.Failure);
+        Assert.NotNull(result.Envelope);
+        Assert.Equal("NoteNest", result.Envelope!.WorkspaceKind);
+        Assert.Equal("1.4.1", result.Envelope.PayloadSchemaVersion);
+    }
+
+    [Fact]
+    public void ReadFromFile_FileDoesNotExist_ReturnsFileNotFound_AndDoesNotCallReadAllText()
+    {
+        var readCalls = 0;
+
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/missing.nestsuite",
+            fileExists: _ => false,
+            readAllText: _ => { readCalls++; return "unused"; });
+
+        Assert.Equal(0, readCalls);
+        Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, result.Failure);
+        Assert.Null(result.Envelope);
+    }
+
+    [Fact]
+    public void ReadFromFile_InvalidJson_ReturnsInvalidFormat_WithOneReadCall()
+    {
+        var readCalls = 0;
+
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/broken.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => { readCalls++; return "not json"; });
+
+        Assert.Equal(1, readCalls);
+        Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, result.Failure);
+        Assert.Null(result.Envelope);
+    }
+
+    [Fact]
+    public void ReadFromFile_ValidJsonButNotWrapperFormat_ReturnsInvalidFormat()
+    {
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/not-wrapper.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => """{"foo":1}""");
+
+        Assert.Equal(WorkspaceKindDetectionFailure.InvalidFormat, result.Failure);
+    }
+
+    [Fact]
+    public void ReadFromFile_UnauthorizedAccessException_ReturnsAccessDenied()
+    {
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/locked.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => throw new UnauthorizedAccessException());
+
+        Assert.Equal(WorkspaceKindDetectionFailure.AccessDenied, result.Failure);
+        Assert.Null(result.Envelope);
+    }
+
+    [Fact]
+    public void ReadFromFile_SecurityException_ReturnsAccessDenied()
+    {
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/restricted.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => throw new System.Security.SecurityException());
+
+        Assert.Equal(WorkspaceKindDetectionFailure.AccessDenied, result.Failure);
+    }
+
+    [Fact]
+    public void ReadFromFile_IOException_ReturnsIoError()
+    {
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/network-drive.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => throw new IOException());
+
+        Assert.Equal(WorkspaceKindDetectionFailure.IoError, result.Failure);
+    }
+
+    [Fact]
+    public void ReadFromFile_UnexpectedException_ReturnsUnknown()
+    {
+        var result = NestSuiteWorkspaceEnvelope.ReadFromFile(
+            "fake/weird.nestsuite",
+            fileExists: _ => true,
+            readAllText: _ => throw new InvalidOperationException());
+
+        Assert.Equal(WorkspaceKindDetectionFailure.Unknown, result.Failure);
+    }
+
+    [Fact]
+    public void ReadFromFile_DefaultDelegates_ReadsRealFileFromDisk()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
+        try
+        {
+            File.WriteAllText(path, NestSuiteWorkspaceEnvelope.Wrap("ChatNest", "0.4.1", "{}"));
+
+            var result = NestSuiteWorkspaceEnvelope.ReadFromFile(path);
+
+            Assert.Equal(WorkspaceKindDetectionFailure.None, result.Failure);
+            Assert.Equal("ChatNest", result.Envelope!.WorkspaceKind);
+        }
+        finally { File.Delete(path); }
+    }
 }
