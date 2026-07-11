@@ -60,7 +60,7 @@ public class SessionRestoreCompositionTests
     {
         var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         var wrapped = NestSuiteWorkspaceEnvelope.Wrap(
-            "IdeaNest", "0.1.0", """{"version":"0.1.0","workspaceName":"Restored","ideas":[],"settings":{}}""");
+            "IdeaNest", "1.1.4", """{"version":"1.1.4","workspaceName":"Restored","ideas":[],"settings":{}}""");
         var readCalls = 0;
         var state = new NestSuiteSessionState
         {
