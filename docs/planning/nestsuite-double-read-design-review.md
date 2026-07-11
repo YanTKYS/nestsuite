@@ -445,3 +445,17 @@ public static bool TryPrepareOpen(
 - `WorkspaceFileOpenContext` の生成境界（public コンストラクターなし・public setter なし）はテストから reflection で検証済み（`WorkspaceFileOpenContextTests.cs`）。`InternalsVisibleTo` は追加していない。
 - TD-59b-1 の範囲は基盤 API・型・test seam のみ。`ProjectFileService.LoadPrepared` などの FileService 実装（TD-59b-2）、Shell 経路切替（TD-59b-3）、session 復元経路（TD-59b-4）は未着手。これらの経路は引き続き `FromFilePath` 経由で `.nestsuite` を最大 3 回読み込む従来の実装のままであり、実利用時の読込回数はまだ減っていない。
 - TD-59 全体は本補足の時点でも未完了（open item）。
+
+## 20. 実施結果（TD-59b-2、v2.16.35）
+
+§8.6・§10・§12・§13・§16〜§19 のとおり実装した。設計方針自体の変更はない。
+
+- 3 FileService（`ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService`）へ `LoadPrepared(WorkspaceFileOpenContext)` を実装した。§8.6 の疑似コードとガード順序（(a)〜(i)）をそのまま踏襲している。path と解析済み内容を別引数で受ける overload は追加していない。
+- FileService 境界で `NestSuiteOpenFilePolicy.IsSameFile(context.FilePath, preloaded.SourcePath)` による path 一致再検証を追加した。既存の `EnsureKind`（wrapper 内容の kind 検証）・`SchemaVersionGuard`（wrapper 宣言 schema too-new・payload 側 schema too-new・wrapper/payload 整合）は削除・弱化せずすべて維持した。
+- `Load(string path)` と `LoadPrepared(context)` で payload のデシリアライズ + 検証を共有する private helper（`DeserializeAndValidate` / IdeaNest は既存の `ValidatePayload` をそのまま再利用）を切り出した。3 FileService を共通基底クラスへ統合することはしていない（保存形式の独立性を維持）。
+- NoteNest の prepared 読込チェーンを実装した: `MainViewModel.OpenPreparedFileAtStartup` → `ProjectLifecycleService.OpenPrepared` → `ProjectFileService.LoadPrepared`。現在ファイル・recent files・保存先はすべて `context.FilePath` のみを正本とし、別引数の path は受けない。成功時の `StatusMessage`・失敗時のログ／ダイアログ経路は既存の `OpenFileAtStartup` / `TryOpenProject` と共有する private helper（`TryOpenProjectCore`）にまとめ、新しい Info/Warning ログは追加していない。
+- `NestSuiteTabFactory.TryPrepareOpen` / `TryGetKind` に、null・空・空白のみ・`Path.GetFullPath` が例外になる不正 path への防御を追加した（いずれも例外を外へ出さず `UnsupportedExtension` を返す。新しい `WorkspaceKindDetectionFailure` 値は追加していない）。
+- 安全性テストとして、同種ファイル間の path 取り違え（3 Workspace）・WorkspaceKind 誤配線（6 通り）・context enum 改変（3 Workspace、reflection で構成した不正 context）を追加した。いずれも production の public 生成制限（internal コンストラクター・`InternalsVisibleTo` 不使用）は弱めていない。
+- prepared 読込の「追加ファイル I/O ゼロ」は、実際には存在しない path の context で `LoadPrepared` が成功することで証明した（3 FileService）。
+- Shell から `LoadPrepared` を呼ぶ経路・`ShellFileOpenDecision.OpenContext`・session 復元経路はいずれも未着手のまま。実利用経路（Open ダイアログ・起動引数・最近ファイル・session 復元・pipe）は引き続き `FromFilePath` を経由するため、`.nestsuite` の読込回数はまだ減っていない。
+- TD-59 全体は本実装の時点でも未完了（open item）。残作業は TD-59b-3（Shell 経路切替）・TD-59b-4（session 復元経路）・TD-59b-5（保存後内部同期の非読込化、任意）。

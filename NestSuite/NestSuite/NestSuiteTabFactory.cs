@@ -164,7 +164,25 @@ public static class NestSuiteTabFactory
         failure = WorkspaceKindDetectionFailure.None;
         context = default!;
 
-        var normalizedPath = Path.GetFullPath(filePath);
+        // v2.16.35 TD-59b-2: null・空・空白のみ・Path.GetFullPath が例外になる不正 path は、
+        // Try... API として例外を外へ出さず UnsupportedExtension（既存 enum で最も近い値）として扱う。
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            failure = WorkspaceKindDetectionFailure.UnsupportedExtension;
+            return false;
+        }
+
+        string normalizedPath;
+        try
+        {
+            normalizedPath = Path.GetFullPath(filePath);
+        }
+        catch
+        {
+            failure = WorkspaceKindDetectionFailure.UnsupportedExtension;
+            return false;
+        }
+
         var ext = Path.GetExtension(normalizedPath);
 
         if (KindByExtension.TryGetValue(ext, out var legacyKind))

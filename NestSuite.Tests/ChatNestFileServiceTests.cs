@@ -1,5 +1,7 @@
 using System.IO;
+using NestSuite;
 using NestSuite.ChatNest;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -368,5 +370,101 @@ public class ChatNestFileServiceTests : IDisposable
         var loaded = ChatNestFileService.Load(path);
         Assert.Single(loaded);
         Assert.Equal("second-message", loaded[0].Text);
+    }
+
+    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+
+    [Fact]
+    public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        var path = TempPath("prepared.nestsuite");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "prepared-message" }]);
+
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+        var viaPrepared = ChatNestFileService.LoadPrepared(context);
+        var viaDirect = ChatNestFileService.Load(path);
+
+        Assert.Equal(viaDirect.Count, viaPrepared.Count);
+        Assert.Equal(viaDirect[0].Text, viaPrepared[0].Text);
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        var path = TempPath("prepared.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "legacy-message" }]);
+
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+        Assert.Null(context.Preloaded);
+        var viaPrepared = ChatNestFileService.LoadPrepared(context);
+        var viaDirect = ChatNestFileService.Load(path);
+
+        Assert.Equal(viaDirect[0].Text, viaPrepared[0].Text);
+    }
+
+    [Fact]
+    public void LoadPrepared_AdditionalFileIO_IsZero_ForMissingPath()
+    {
+        var path = TempPath("zeroio.nestsuite");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.自分, Text = "zero-io" }]);
+        var wrapped = File.ReadAllText(path);
+        File.Delete(path);
+
+        var success = NestSuiteTabFactory.TryPrepareOpen(
+            path, out var context, out _,
+            fileExists: _ => true,
+            readAllText: _ => wrapped);
+        Assert.True(success);
+        Assert.False(File.Exists(path));
+
+        var result = ChatNestFileService.LoadPrepared(context);
+
+        Assert.Equal("zero-io", result[0].Text);
+    }
+
+    [Fact]
+    public void LoadPrepared_NullContext_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => ChatNestFileService.LoadPrepared(null!));
+    }
+
+    [Fact]
+    public void LoadPrepared_TempContext_ThrowsArgumentException()
+    {
+        var path = TempPath("temp.chatnest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.Temp, null);
+
+        Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_NestSuiteWithoutPreloaded_ThrowsArgumentException()
+    {
+        var path = TempPath("nopreloaded.nestsuite");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.ChatNest, preloaded: null);
+
+        Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_WorkspaceKindMismatch_ThrowsArgumentException()
+    {
+        var path = TempPath("mismatch.chatnest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.NoteNest, null);
+
+        Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
+    {
+        var path = TempPath("toonew-prepared.nestsuite");
+        var wrapped = NestSuite.Services.NestSuiteWorkspaceEnvelope.Wrap(
+            "ChatNest", "9.9.9", """{"version":"9.9.9","messages":[]}""");
+        var envelope = NestSuite.Services.NestSuiteWorkspaceEnvelope.Read(wrapped);
+        var preloaded = WorkspaceFileOpenContextTestFactory.CreatePreloaded(path, envelope);
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.ChatNest, preloaded);
+
+        Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => ChatNestFileService.LoadPrepared(context));
     }
 }

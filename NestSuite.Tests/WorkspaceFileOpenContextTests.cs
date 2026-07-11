@@ -97,6 +97,48 @@ public class WorkspaceFileOpenContextTests
         Assert.Equal(0, readCalls);
     }
 
+    // ── v2.16.35 TD-59b-2 §7: 空・不正 path の防御 ─────────────────────────
+
+    [Fact]
+    public void TryPrepareOpen_NullPath_ReturnsFalse_WithoutThrowing()
+    {
+        var success = NestSuiteTabFactory.TryPrepareOpen(null!, out _, out var failure);
+
+        Assert.False(success);
+        Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);
+    }
+
+    [Fact]
+    public void TryPrepareOpen_EmptyPath_ReturnsFalse_WithoutThrowing()
+    {
+        var success = NestSuiteTabFactory.TryPrepareOpen("", out _, out var failure);
+
+        Assert.False(success);
+        Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);
+    }
+
+    [Fact]
+    public void TryPrepareOpen_WhitespacePath_ReturnsFalse_WithoutThrowing()
+    {
+        var success = NestSuiteTabFactory.TryPrepareOpen("   ", out _, out var failure);
+
+        Assert.False(success);
+        Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);
+    }
+
+    [Fact]
+    public void TryGetKind_EmptyPath_ReturnsFalse_WithoutThrowing()
+    {
+        Assert.False(NestSuiteTabFactory.TryGetKind("", out _));
+    }
+
+    [Fact]
+    public void TryGetKind_WhitespacePath_ReturnsFalse_WithoutThrowing()
+    {
+        Assert.False(NestSuiteTabFactory.TryGetKind("   ", out _, out var failure));
+        Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);
+    }
+
     // ── TryPrepareOpen: .nestsuite（read delegate は常にちょうど 1 回） ────────
 
     [Fact]

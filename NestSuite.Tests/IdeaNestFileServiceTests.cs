@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using System.Reflection;
+using NestSuite;
 using NestSuite.IdeaNest.Models;
 using NestSuite.IdeaNest.Services;
+using NestSuite.Services;
 using Xunit;
 using System.Text.Json;
 
@@ -333,5 +335,122 @@ public class IdeaNestFileServiceTests
             Assert.Equal("Second", loaded.WorkspaceName);
         }
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+
+    [Fact]
+    public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Prepared", Ideas = new() });
+
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+            var viaPrepared = IdeaNestFileService.LoadPrepared(context);
+            var viaDirect = IdeaNestFileService.Load(path);
+
+            Assert.Equal(viaDirect.WorkspaceName, viaPrepared.WorkspaceName);
+            Assert.Equal(viaDirect.Version, viaPrepared.Version);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_ViaTryPrepareOpen_MatchesDirectLoad()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "LegacyPrepared", Ideas = new() });
+
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var context, out _));
+            Assert.Null(context.Preloaded);
+            var viaPrepared = IdeaNestFileService.LoadPrepared(context);
+            var viaDirect = IdeaNestFileService.Load(path);
+
+            Assert.Equal(viaDirect.WorkspaceName, viaPrepared.WorkspaceName);
+        }
+        finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
+    }
+
+    [Fact]
+    public void LoadPrepared_AdditionalFileIO_IsZero_ForMissingPath()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "ZeroIO", Ideas = new() });
+        var wrapped = File.ReadAllText(path);
+        File.Delete(path);
+
+        var success = NestSuiteTabFactory.TryPrepareOpen(
+            path, out var context, out _,
+            fileExists: _ => true,
+            readAllText: _ => wrapped);
+        Assert.True(success);
+        Assert.False(File.Exists(path));
+
+        var workspace = IdeaNestFileService.LoadPrepared(context);
+
+        Assert.Equal("ZeroIO", workspace.WorkspaceName);
+    }
+
+    [Fact]
+    public void LoadPrepared_NullContext_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => IdeaNestFileService.LoadPrepared(null!));
+    }
+
+    [Fact]
+    public void LoadPrepared_TempContext_ThrowsArgumentException()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.Temp, null);
+
+        Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_NestSuiteWithoutPreloaded_ThrowsArgumentException()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.IdeaNest, preloaded: null);
+
+        Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_LegacyExtension_WorkspaceKindMismatch_ThrowsArgumentException()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ideanest");
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.NoteNest, null);
+
+        Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
+    {
+        // TryPrepareOpen は probe 時点で too-new を検出するため、LoadPrepared 自身の防御を直接検証する。
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "9.9.9", """{"version":"9.9.9","ideas":[],"settings":{}}""");
+        var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+        var preloaded = WorkspaceFileOpenContextTestFactory.CreatePreloaded(path, envelope);
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.IdeaNest, preloaded);
+
+        Assert.Throws<SchemaVersionTooNewException>(() => IdeaNestFileService.LoadPrepared(context));
+    }
+
+    [Fact]
+    public void LoadPrepared_PayloadMissingVersionField_ThrowsInvalidDataException()
+    {
+        // §12: prepared 経路でも payload 側の必須フィールド検証（ValidatePayload）が維持されていることを確認する。
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("IdeaNest", "1.1.4", "{}");
+        var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+        var preloaded = WorkspaceFileOpenContextTestFactory.CreatePreloaded(path, envelope);
+        var context = WorkspaceFileOpenContextTestFactory.Create(path, NestSuiteWorkspaceKind.IdeaNest, preloaded);
+
+        Assert.Throws<InvalidDataException>(() => IdeaNestFileService.LoadPrepared(context));
     }
 }

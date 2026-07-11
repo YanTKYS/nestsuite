@@ -1,3 +1,4 @@
+using NestSuite;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 using Xunit;
@@ -101,6 +102,87 @@ public class ProjectLifecycleServiceTests : IDisposable
 
         Assert.True(File.Exists(projectPath));
         Assert.Empty(context.Session.RecentFiles);
+    }
+
+    // ── v2.16.35 TD-59b-2: OpenPrepared（設計文書 §8.6） ────────────────────
+
+    [Fact]
+    public void OpenPrepared_SetsCurrentFilePathToContextFilePath_AndTracksRecentFile()
+    {
+        var context = CreateContext();
+        context.Lifecycle.CreateNew();
+        context.Notes.AddNotebook("Added");
+        var path = Path.Combine(_directory, "prepared.notenest");
+        context.Lifecycle.Save(path);
+
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var openContext, out _));
+        context.Notes.AddNotebook("Temporary");
+        context.Lifecycle.OpenPrepared(openContext);
+
+        Assert.Equal(openContext.FilePath, context.Session.CurrentFilePath);
+        Assert.Contains(context.Session.RecentFiles, file => file.FullPath == openContext.FilePath);
+    }
+
+    [Fact]
+    public void OpenPrepared_LoadsProjectContentIntoViewModels_AndClearsModifiedFlag()
+    {
+        var context = CreateContext();
+        context.Lifecycle.CreateNew();
+        context.Notes.AddNotebook("Added");
+        context.Session.IsModified = true;
+        var path = Path.Combine(_directory, "prepared-content.notenest");
+        context.Lifecycle.Save(path);
+
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var openContext, out _));
+        context.Notes.AddNotebook("Temporary");
+        context.Lifecycle.OpenPrepared(openContext);
+
+        Assert.False(context.Session.IsModified);
+        Assert.Contains(context.Notes.Notebooks, notebook => notebook.Title == "Added");
+        Assert.DoesNotContain(context.Notes.Notebooks, notebook => notebook.Title == "Temporary");
+    }
+
+    [Fact]
+    public void OpenPrepared_NestSuitePath_LoadsWithoutAdditionalFileRead()
+    {
+        var context = CreateContext();
+        context.Lifecycle.CreateNew();
+        var path = Path.Combine(_directory, "prepared.nestsuite");
+        context.Lifecycle.Save(path);
+        var wrapped = File.ReadAllText(path);
+        File.Delete(path);
+
+        var success = NestSuiteTabFactory.TryPrepareOpen(
+            path, out var openContext, out _,
+            fileExists: _ => true,
+            readAllText: _ => wrapped);
+        Assert.True(success);
+        Assert.False(File.Exists(path));
+
+        context.Lifecycle.OpenPrepared(openContext);
+
+        Assert.Equal(path, context.Session.CurrentFilePath);
+    }
+
+    [Fact]
+    public void OpenPrepared_MatchesOpenResult_ForSamePath()
+    {
+        var contextA = CreateContext();
+        contextA.Lifecycle.CreateNew();
+        contextA.Notes.AddNotebook("Shared");
+        var path = Path.Combine(_directory, "compare.notenest");
+        contextA.Lifecycle.Save(path);
+
+        var contextB = CreateContext();
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(path, out var openContext, out _));
+        contextB.Lifecycle.OpenPrepared(openContext);
+
+        var contextC = CreateContext();
+        contextC.Lifecycle.Open(path);
+
+        Assert.Equal(
+            contextC.Notes.Notebooks.Select(n => n.Title),
+            contextB.Notes.Notebooks.Select(n => n.Title));
     }
 
     public void Dispose()
