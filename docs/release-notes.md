@@ -7,6 +7,23 @@
 
 ---
 
+## v2.16.38 — TD-59b-4: session復元経路のprepared context切替
+
+- TD-59a〜TD-59b-3（v2.16.32〜v2.16.37）で確定・実装した設計に基づき、session 復元の読込経路を `WorkspaceFileOpenContext` へ切り替えた。設計方針自体の変更はない
+- `SessionRestoreTarget` を `OpenContext`（`WorkspaceFileOpenContext`）を正本とする形へ再設計した。`FilePath` / `WorkspaceKind` は独立したフィールドではなく `OpenContext` からの導出プロパティであり、path と解析済み内容を呼び出し側が自由に組み替えることはできない。`SessionRestoreTarget` 自体は引き続き session.json へシリアライズしない
+- `SessionTabMapper.TryCreateRestoreTarget` の種別判定を `NestSuiteTabFactory.TryGetKind` から `TryPrepareOpen` へ切り替えた。`state.Tabs[].WorkspaceKind`（保存時の UI 表示ヒント）は復元判定に使わず、実ファイル（拡張子・`.nestsuite` wrapper）から都度再判定する方針は従来どおり維持した
+- `fileExists` 指定時は従来どおり 1 回だけ事前に存在確認し、`TryPrepareOpen` 側では二重確認しない（`FileNotFound` は従来と同じタイミング・分類のまま）
+- テスト用の `readAllText` delegate 注入シームを `TryCreateRestoreTarget`（全 overload）・`CreateRestoreTargets` に追加した（末尾の省略可能引数、既定は実際の `File.ReadAllText`）
+- `NestSuiteShellWindow.TryRestoreSession` を、`ShellFileOpenPlanner.Plan` の `detectKind` 再注入から `prepareOpen: _ => (true, target.OpenContext, WorkspaceKindDetectionFailure.None)` へ切り替えた。`LoadWorkspace` decision のときは `LoadWorkspaceFileAt(decision.OpenContext!)` を使う（Planner が返した OpenContext のみを使い、path からの再読込にフォールバックしない）
+- `.nestsuite` の session 復元時の読込回数が最大 3 回から 1 回になった。レガシー拡張子（`.notenest` / `.ideanest` / `.chatnest`）は従来どおり 1 回のまま。読めない `.nestsuite` の復元失敗は従来どおり probe 1 回・本読込なしのまま
+- `ShellFileOpenPlanner.Plan` の `detectKind` seam を撤去した（`prepareOpen` のみに一本化）。TD-59b-3 で導入した dual-seam・相互排他ガードもあわせて削除した。`NestSuiteTabFactory.TryGetKind` 自体は撤去していない（公開 API 互換として維持、内部では `TryPrepareOpen` に委譲）
+- `Plan` に `prepareOpen` delegate 契約の防御を追加した: `Success=true` かつ `Context=null` を返した場合、または返した `Context.FilePath` が対象 path と一致しない場合、`InvalidOperationException` になる（既定の `TryPrepareOpen` 経路の挙動には影響しない）
+- Shell の旧 path 版ルーター `LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)` と、session 復元専用だった `LoadNoteNestFileAt(string)` / `LoadIdeaNestFileAt(string)` / `LoadChatNestFileAt(string)` を撤去した。`WorkspaceFileOpenContext` を受け取る overload のみを残した（`ProjectFileService.Load(string)` 等の既存 `Load(path)` 系・`NestSuiteTabFactory.FromFilePath` / `TryGetKind` は撤去していない）
+- pin 状態・復元件数カウント・`ActiveFilePath` 選択・既存タブ再利用（`ActivateExistingTab`）・復元失敗の通知（`NotifyRestoreFailures`）・pending entry の持ち越し（`_pendingSessionRestoreEntries`）は、いずれも既存のとおり変更していない（今回変更したのは復元対象生成の「種別判定・読込元」だけ）
+- `docs/planning/nestsuite-double-read-design-review.md` に §23 実施結果を追記した（設計決定自体は変更していない）
+- **TD-59 は引き続き未完了（open item）**。残作業は TD-59b-5（保存後内部同期の非読込化、任意）と、全経路を通した最終的な回帰確認
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・保存後の内部再同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
+
 ## v2.16.37 — TD-59b-3: Shell読込経路のprepared context切替
 
 - TD-59a〜TD-59b-2-2（v2.16.32〜v2.16.36）で確定・実装した設計に基づき、session 復元を除く Shell のファイル読込経路を `WorkspaceFileOpenContext` へ切り替えた。設計方針自体の変更はない

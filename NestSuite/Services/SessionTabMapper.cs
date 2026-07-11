@@ -1,10 +1,20 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// セッション復元時に開く対象ファイル、Workspace 種別、ピン留め状態を表す。
+/// セッション復元時に開く対象ファイルを表す。
 /// v2.16.3 SH-15: 新 session の Tabs[].IsPinned と旧 session の FilePaths を同じ復元対象へ写像する。
+///
+/// <para>v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): <see cref="OpenContext"/> を
+/// 正本として保持する。<see cref="FilePath"/> / <see cref="WorkspaceKind"/> は独立したフィールドではなく
+/// <see cref="OpenContext"/> からの導出プロパティであり、path と解析済み内容（<c>.nestsuite</c> の
+/// preloaded envelope を含む）を呼び出し側が自由に組み替えることはできない。<see cref="SessionRestoreTarget"/>
+/// 自体は session.json へシリアライズしない（復元ループの間だけ保持する一時オブジェクト）。</para>
 /// </summary>
-public sealed record SessionRestoreTarget(string FilePath, NestSuiteWorkspaceKind WorkspaceKind, bool IsPinned = false);
+public sealed record SessionRestoreTarget(WorkspaceFileOpenContext OpenContext, bool IsPinned = false)
+{
+    public string FilePath => OpenContext.FilePath;
+    public NestSuiteWorkspaceKind WorkspaceKind => OpenContext.WorkspaceKind;
+}
 
 /// <summary>
 /// v2.14.7 SH-31: セッション復元で復元対象にできなかったファイルとその理由。
@@ -124,8 +134,9 @@ public static class SessionTabMapper
     public static bool TryCreateRestoreTarget(
         string filePath,
         out SessionRestoreTarget target,
-        Func<string, bool>? fileExists = null) =>
-        TryCreateRestoreTarget(filePath, isPinned: false, out target, out _, fileExists);
+        Func<string, bool>? fileExists = null,
+        Func<string, string>? readAllText = null) =>
+        TryCreateRestoreTarget(filePath, isPinned: false, out target, out _, fileExists, readAllText);
 
     /// <summary>
     /// v2.14.7 SH-31: 失敗理由つきの復元対象生成。
@@ -138,15 +149,30 @@ public static class SessionTabMapper
         string filePath,
         out SessionRestoreTarget target,
         out WorkspaceKindDetectionFailure failure,
-        Func<string, bool>? fileExists = null) =>
-        TryCreateRestoreTarget(filePath, isPinned: false, out target, out failure, fileExists);
+        Func<string, bool>? fileExists = null,
+        Func<string, string>? readAllText = null) =>
+        TryCreateRestoreTarget(filePath, isPinned: false, out target, out failure, fileExists, readAllText);
 
+    /// <summary>
+    /// v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): 種別判定を
+    /// <see cref="NestSuiteTabFactory.TryGetKind(string, out NestSuiteWorkspaceKind, out WorkspaceKindDetectionFailure)"/>
+    /// から <see cref="NestSuiteTabFactory.TryPrepareOpen(string, out WorkspaceFileOpenContext, out WorkspaceKindDetectionFailure, Func{string, bool}?, Func{string, string}?)"/>
+    /// へ切り替えた。<c>.nestsuite</c> の wrapper 読込はここで 1 回に集約され、
+    /// <see cref="SessionRestoreTarget.OpenContext"/> として復元ループ・本読込まで運ばれる。
+    ///
+    /// <para><paramref name="fileExists"/> が指定された場合、まずここで 1 回だけ存在確認する
+    /// （従来どおり不存在は <see cref="WorkspaceKindDetectionFailure.FileNotFound"/>）。
+    /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> 側は legacy 拡張子では元々 <paramref name="fileExists"/> を
+    /// 呼ばないが、<c>.nestsuite</c> では呼ぶため、二重の存在確認を避けるためここでの事前確認が
+    /// 成功した後は <c>_ =&gt; true</c> を渡す。</para>
+    /// </summary>
     private static bool TryCreateRestoreTarget(
         string filePath,
         bool isPinned,
         out SessionRestoreTarget target,
         out WorkspaceKindDetectionFailure failure,
-        Func<string, bool>? fileExists = null)
+        Func<string, bool>? fileExists = null,
+        Func<string, string>? readAllText = null)
     {
         target = default!;
         failure = WorkspaceKindDetectionFailure.None;
@@ -158,15 +184,23 @@ public static class SessionTabMapper
             failure = WorkspaceKindDetectionFailure.FileNotFound;
             return false;
         }
-        if (!NestSuiteTabFactory.TryGetKind(filePath, out var kind, out var detected))
+
+        var success = NestSuiteTabFactory.TryPrepareOpen(
+            filePath,
+            out var openContext,
+            out var detected,
+            fileExists: fileExists != null ? _ => true : null,
+            readAllText: readAllText);
+
+        if (!success)
         {
             if (detected != WorkspaceKindDetectionFailure.UnsupportedExtension)
                 failure = detected;
             return false;
         }
-        if (kind == NestSuiteWorkspaceKind.Temp) return false;
+        if (openContext.WorkspaceKind == NestSuiteWorkspaceKind.Temp) return false;
 
-        target = new SessionRestoreTarget(filePath, kind, isPinned);
+        target = new SessionRestoreTarget(openContext, isPinned);
         return true;
     }
 
@@ -180,13 +214,14 @@ public static class SessionTabMapper
     /// 復元可能なファイルの復元は失敗があっても妨げない。
     /// v2.16.16 TD-68 (review1-fable5.md R-8): <c>state.Tabs[].WorkspaceKind</c>（保存時の UI 表示
     /// ヒント文字列）はここでは信頼ソースとして使わない。復元対象の種別は下記 TryCreateRestoreTarget
-    /// 内で <see cref="NestSuiteTabFactory.TryGetKind"/> によりファイル内容・拡張子から都度再判定する
+    /// 内で <see cref="NestSuiteTabFactory.TryPrepareOpen"/> によりファイル内容・拡張子から都度再判定する
     /// （session の記述と実ファイルが食い違っていても安全側に倒れる）。
     /// </summary>
     public static IReadOnlyList<SessionRestoreTarget> CreateRestoreTargets(
         NestSuiteSessionState state,
         Func<string, bool>? fileExists,
-        out IReadOnlyList<SessionRestoreFailure> failures)
+        out IReadOnlyList<SessionRestoreFailure> failures,
+        Func<string, string>? readAllText = null)
     {
         var targets = new List<SessionRestoreTarget>();
         var failed = new List<SessionRestoreFailure>();
@@ -195,7 +230,7 @@ public static class SessionTabMapper
             foreach (var tab in state.Tabs)
             {
                 // tab.WorkspaceKind（保存時の UI 表示ヒント）はここでは参照しない。TryCreateRestoreTarget が再判定する。
-                if (TryCreateRestoreTarget(tab.FilePath, tab.IsPinned, out var target, out var failure, fileExists))
+                if (TryCreateRestoreTarget(tab.FilePath, tab.IsPinned, out var target, out var failure, fileExists, readAllText))
                     targets.Add(target);
                 else if (failure != WorkspaceKindDetectionFailure.None)
                     failed.Add(new SessionRestoreFailure(tab.FilePath, failure, tab.IsPinned));
@@ -205,7 +240,7 @@ public static class SessionTabMapper
         {
             foreach (var filePath in state.FilePaths)
             {
-                if (TryCreateRestoreTarget(filePath, out var target, out var failure, fileExists))
+                if (TryCreateRestoreTarget(filePath, out var target, out var failure, fileExists, readAllText))
                     targets.Add(target);
                 else if (failure != WorkspaceKindDetectionFailure.None)
                     failed.Add(new SessionRestoreFailure(filePath, failure));

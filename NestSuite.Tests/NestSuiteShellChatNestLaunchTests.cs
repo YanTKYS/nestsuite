@@ -104,12 +104,14 @@ public class NestSuiteShellChatNestLaunchTests
     [Fact]
     public void NestSuiteShellWindow_HasLoadChatNestFileAtMethod()
     {
-        // v1.10.1: LoadChatNestFileAt が OpenNestSuiteFile から呼ばれる ChatNest 読込ヘルパーとして宣言されていることを確認
+        // v1.10.1: LoadChatNestFileAt が OpenNestSuiteFile から呼ばれる ChatNest 読込ヘルパーとして宣言されていることを確認。
+        // v2.16.38 TD-59b-4: session 復元専用だった string path overload は撤去し、
+        // WorkspaceFileOpenContext overload のみを残した。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadChatNestFileAt",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(string)],
+                [typeof(WorkspaceFileOpenContext)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);

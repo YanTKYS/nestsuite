@@ -133,7 +133,7 @@ public static class NestSuiteWorkspaceEnvelope
     /// ファイルを 1 回だけ読んで wrapper を解析する。例外を外へ投げない。
     /// <paramref name="fileExists"/> / <paramref name="readAllText"/> はテスト用の読取り delegate
     /// （省略時は実際の <see cref="File.Exists(string)"/> / <see cref="File.ReadAllText(string)"/>）。
-    /// <see cref="ShellFileOpenPlanner.Plan"/> の fileExists/detectKind 注入と同じ流儀に揃える
+    /// <see cref="ShellFileOpenPlanner.Plan"/> の fileExists/prepareOpen 注入と同じ流儀に揃える
     /// （DI 基盤・InternalsVisibleTo は導入しない）。
     /// failure 分類は従来の <see cref="DetectKindFromFile"/> と同一。
     /// </summary>

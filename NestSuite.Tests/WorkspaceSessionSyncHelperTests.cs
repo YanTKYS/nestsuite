@@ -45,11 +45,22 @@ public class WorkspaceSessionSyncHelperTests
     [Fact]
     public void NestSuiteShellWindow_HasLoadWorkspaceFileAtMethod()
     {
+        // v2.16.38 TD-59b-4: session 復元専用の path 版 (NestSuiteWorkspaceKind, string) は撤去し、
+        // context 版だけを残した（session 復元も prepared context 経路へ切り替わったため）。
+        var method = typeof(NestSuiteShellWindow)
+            .GetMethod("LoadWorkspaceFileAt", InstanceNonPublic, null,
+                [typeof(WorkspaceFileOpenContext)], null);
+        Assert.NotNull(method);
+        Assert.Equal(typeof(void), method!.ReturnType);
+    }
+
+    [Fact]
+    public void NestSuiteShellWindow_LoadWorkspaceFileAt_PathOverload_IsRemoved()
+    {
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadWorkspaceFileAt", InstanceNonPublic, null,
                 [typeof(NestSuiteWorkspaceKind), typeof(string)], null);
-        Assert.NotNull(method);
-        Assert.Equal(typeof(void), method!.ReturnType);
+        Assert.Null(method);
     }
 
     // ── SyncChatNest/IdeaNest 回帰: 外部シグネチャが保たれていることを確認 ──

@@ -13,7 +13,7 @@ public class ShellFileOpenPlannerTests
             "missing.notenest",
             [],
             fileExists: _ => false,
-            detectKind: _ => throw new InvalidOperationException("Kind detection should not run for missing files."));
+            prepareOpen: _ => throw new InvalidOperationException("prepareOpen should not run for missing files."));
 
         Assert.Equal(ShellFileOpenDecisionKind.MissingFile, decision.DecisionKind);
         Assert.Equal(WorkspaceKindDetectionFailure.FileNotFound, decision.Failure);
@@ -27,7 +27,7 @@ public class ShellFileOpenPlannerTests
             "unsupported.txt",
             [],
             fileExists: _ => true,
-            detectKind: _ => (false, default, WorkspaceKindDetectionFailure.UnsupportedExtension));
+            prepareOpen: _ => (false, null, WorkspaceKindDetectionFailure.UnsupportedExtension));
 
         Assert.Equal(ShellFileOpenDecisionKind.KindDetectionFailed, decision.DecisionKind);
         Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, decision.Failure);
@@ -51,7 +51,11 @@ public class ShellFileOpenPlannerTests
             path.ToUpperInvariant(),
             [tab],
             fileExists: _ => true,
-            detectKind: _ => (true, NestSuiteWorkspaceKind.NoteNest, WorkspaceKindDetectionFailure.None));
+            prepareOpen: p =>
+            {
+                var success = NestSuiteTabFactory.TryPrepareOpen(p, out var context, out var failure);
+                return (success, success ? context : null, failure);
+            });
 
         Assert.Equal(ShellFileOpenDecisionKind.ActivateExistingTab, decision.DecisionKind);
         Assert.Same(tab, decision.ExistingTab);
@@ -69,19 +73,27 @@ public class ShellFileOpenPlannerTests
             DisplayName = "shared.nestsuite",
             FilePath = path,
         };
+        var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.4.1", "{}");
 
         var decision = ShellFileOpenPlanner.Plan(
             path,
             [tab],
             fileExists: _ => true,
-            detectKind: _ => (true, NestSuiteWorkspaceKind.NoteNest, WorkspaceKindDetectionFailure.None));
+            prepareOpen: p =>
+            {
+                var success = NestSuiteTabFactory.TryPrepareOpen(
+                    p, out var context, out var failure,
+                    fileExists: _ => true,
+                    readAllText: _ => wrapped);
+                return (success, success ? context : null, failure);
+            });
 
         Assert.Equal(ShellFileOpenDecisionKind.LoadWorkspace, decision.DecisionKind);
         Assert.Null(decision.ExistingTab);
         Assert.Equal(NestSuiteWorkspaceKind.NoteNest, decision.WorkspaceKind);
     }
 
-    // ── v2.16.37 TD-59b-3: 既定判定の TryPrepareOpen 化・OpenContext ──────────
+    // ── v2.16.37 TD-59b-3 / v2.16.38 TD-59b-4: 既定判定の TryPrepareOpen 化・OpenContext ──
 
     [Fact]
     public void Plan_NestSuiteFile_Default_LoadWorkspace_OpenContextMatchesDecision_WithExactlyOneReadCall()
@@ -196,29 +208,28 @@ public class ShellFileOpenPlannerTests
         Assert.Null(decision.OpenContext);
     }
 
+    // ── v2.16.38 TD-59b-4 §11: prepareOpen delegate 契約の防御 ──────────────
+
     [Fact]
-    public void Plan_DetectKindSeam_StillProducesDecisionWithoutOpenContext()
+    public void Plan_PrepareOpenReturnsSuccessWithNullContext_ThrowsInvalidOperationException()
     {
-        // TD-59b-4 までの session 復元専用の暫定互換モード。OpenContext を持たない。
-        var decision = ShellFileOpenPlanner.Plan(
-            "restore.notenest",
+        Assert.Throws<InvalidOperationException>(() => ShellFileOpenPlanner.Plan(
+            "any.nestsuite",
             [],
             fileExists: _ => true,
-            detectKind: _ => (true, NestSuiteWorkspaceKind.NoteNest, WorkspaceKindDetectionFailure.None));
-
-        Assert.Equal(ShellFileOpenDecisionKind.LoadWorkspace, decision.DecisionKind);
-        Assert.Equal(NestSuiteWorkspaceKind.NoteNest, decision.WorkspaceKind);
-        Assert.Null(decision.OpenContext);
+            prepareOpen: _ => (true, null, WorkspaceKindDetectionFailure.None)));
     }
 
     [Fact]
-    public void Plan_DetectKindAndPrepareOpenBothSpecified_ThrowsArgumentException()
+    public void Plan_PrepareOpenReturnsContextWithMismatchedPath_ThrowsInvalidOperationException()
     {
-        Assert.Throws<ArgumentException>(() => ShellFileOpenPlanner.Plan(
-            "any.notenest",
+        var otherPath = ShellFileOpenPlanner.NormalizePath("other.notenest");
+        Assert.True(NestSuiteTabFactory.TryPrepareOpen(otherPath, out var otherContext, out _));
+
+        Assert.Throws<InvalidOperationException>(() => ShellFileOpenPlanner.Plan(
+            "target.notenest",
             [],
             fileExists: _ => true,
-            detectKind: _ => (true, NestSuiteWorkspaceKind.NoteNest, WorkspaceKindDetectionFailure.None),
-            prepareOpen: _ => (true, null, WorkspaceKindDetectionFailure.None)));
+            prepareOpen: _ => (true, otherContext, WorkspaceKindDetectionFailure.None)));
     }
 }

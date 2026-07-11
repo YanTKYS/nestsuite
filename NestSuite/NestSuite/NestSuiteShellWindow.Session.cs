@@ -115,6 +115,8 @@ public partial class NestSuiteShellWindow
     /// v2.14.7 SH-31: 読めない `.nestsuite`（存在するのに種別判定できない）は無言でスキップせず、
     /// まとめて 1 回通知する。session からの削除はしない（次回起動時に再試行される）。
     /// v2.16.7 TD-65: 存在しないファイルも同様に通知・持ち越し対象にする（<see cref="_pendingSessionRestoreEntries"/>）。
+    /// v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): <see cref="SessionRestoreTarget.OpenContext"/>
+    /// を復元ループへそのまま渡す。target 生成時に probe した wrapper 内容（`.nestsuite`）を再読込しない。
     /// </summary>
     private bool TryRestoreSession()
     {
@@ -132,15 +134,14 @@ public partial class NestSuiteShellWindow
             int restoredCount = 0;
             foreach (var target in targets)
             {
-                // v2.16.16 TD-68 (review1-fable5.md R-8): target.WorkspaceKind は session.json の
-                // Tabs[].WorkspaceKind（保存時の文字列ヒント）ではなく、CreateRestoreTargets が
-                // NestSuiteTabFactory.TryGetKind でファイルから再判定した enum 値。ここでファイル
-                // 実読込を省略しているのではない点に注意。
+                // v2.16.38 TD-59b-4: target.OpenContext は CreateRestoreTargets が
+                // NestSuiteTabFactory.TryPrepareOpen で 1 回だけ読んだ結果（.nestsuite の wrapper 内容を含む）。
+                // ここでは再読込せず、Planner の既存タブ判定にだけ使う。
                 var decision = ShellFileOpenPlanner.Plan(
                     target.FilePath,
                     _tabs,
                     fileExists: _ => true,
-                    detectKind: _ => (true, target.WorkspaceKind, WorkspaceKindDetectionFailure.None));
+                    prepareOpen: _ => (true, target.OpenContext, WorkspaceKindDetectionFailure.None));
 
                 if (decision.DecisionKind == ShellFileOpenDecisionKind.ActivateExistingTab)
                 {
@@ -149,7 +150,7 @@ public partial class NestSuiteShellWindow
                 }
 
                 int tabsBefore = _tabs.Count;
-                LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
+                LoadWorkspaceFileAt(decision.OpenContext!);
                 if (_tabs.Count > tabsBefore)
                 {
                     restoredCount++;
