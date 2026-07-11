@@ -1,5 +1,6 @@
 using System.Reflection;
 using NestSuite;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -41,11 +42,13 @@ public class NestSuiteShellNoteNestLaunchTests
     public void NestSuiteShellWindow_HasLoadInitialNoteNestFileMethod()
     {
         // v1.9.5: LoadInitialNoteNestFile が起動時 .notenest 読込ヘルパーとして宣言されていることを確認
+        // v2.16.37 TD-59b-3: LoadInitialFile が probe 済みの WorkspaceFileOpenContext を渡すため、
+        // string path 版から context 版へシグネチャが変わった。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadInitialNoteNestFile",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
                 null,
-                [typeof(string)],
+                [typeof(WorkspaceFileOpenContext)],
                 null);
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);

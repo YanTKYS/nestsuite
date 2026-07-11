@@ -883,6 +883,55 @@ public class NestSuiteDocsContractTests
         Assert.Contains("ArgumentException", text);
     }
 
+    // ── TD-59b-3: Shell読込経路のprepared context切替 ──────────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21637_AndTD59b3()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.37", text);
+        Assert.Contains("TD-59b-3", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_TD59b3_MentionsOpenContextLoadPreparedFromResolvedKindAndReadCountReduction()
+    {
+        // OpenContext・LoadPrepared・FromResolvedKind・読込1回化・session 復元未切替が
+        // 記録されていることを確認する。文言完全一致ではなくキーワードのみ確認する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("OpenContext", text);
+        Assert.Contains("LoadPrepared", text);
+        Assert.Contains("FromResolvedKind", text);
+        Assert.Contains("読込回数が", text);
+        Assert.Contains("session 復元は今回変更していない", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59b3_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59b-3", backlog);
+        // Shell 主要経路切替のみ完了。TD-59 全体（session 復元切替を含む）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+        Assert.False(BacklogCompletedRangeCoversTD(backlog, 59));
+        Assert.Contains("TD-59b-4", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsTD59b3ImplementationResult()
+    {
+        // §22 実施結果: OpenContext・TryPrepareOpen・LoadPrepared・FromResolvedKind・
+        // TD-59b-4 への言及の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("実施結果（TD-59b-3", text);
+        Assert.Contains("OpenContext", text);
+        Assert.Contains("TryPrepareOpen", text);
+        Assert.Contains("LoadPrepared", text);
+        Assert.Contains("FromResolvedKind", text);
+        Assert.Contains("TD-59b-4", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

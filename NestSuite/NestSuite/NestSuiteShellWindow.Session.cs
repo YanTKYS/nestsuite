@@ -73,7 +73,8 @@ public partial class NestSuiteShellWindow
             ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
             return;
         }
-        LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
+        // v2.16.37 TD-59b-3: prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
+        LoadWorkspaceFileAt(decision.OpenContext!);
     }
 
     // ── v1.15.0: セッション復元 ──────────────────────────────────────────────
@@ -261,7 +262,8 @@ public partial class NestSuiteShellWindow
                 ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
                 return;
             }
-            LoadWorkspaceFileAt(decision.WorkspaceKind!.Value, decision.Path);
+            // v2.16.37 TD-59b-3: prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
+            LoadWorkspaceFileAt(decision.OpenContext!);
         });
     }
 

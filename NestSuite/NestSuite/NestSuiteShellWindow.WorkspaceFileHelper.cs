@@ -152,8 +152,10 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// WorkspaceKind に応じた Load*FileAt メソッドへ委譲する。
-    /// セッション復元・最近ファイルクリック・パイプ経由オープン時に使用する。
+    /// v2.16.37 TD-59b-3 まで: WorkspaceKind に応じた path 版 Load*FileAt メソッドへ委譲する。
+    /// <b>TD-59b-4 までの session 復元専用の互換経路。新規の Shell 読込経路（共通・種別別 Open、
+    /// 起動引数、最近ファイル、pipe）からは呼ばない。</b>
+    /// これらは <see cref="LoadWorkspaceFileAt(WorkspaceFileOpenContext)"/> へ切り替え済み。
     /// </summary>
     private void LoadWorkspaceFileAt(NestSuiteWorkspaceKind kind, string path)
     {
@@ -162,6 +164,35 @@ public partial class NestSuiteShellWindow
             case NestSuiteWorkspaceKind.NoteNest: LoadNoteNestFileAt(path); break;
             case NestSuiteWorkspaceKind.ChatNest: LoadChatNestFileAt(path); break;
             case NestSuiteWorkspaceKind.IdeaNest: LoadIdeaNestFileAt(path); break;
+        }
+    }
+
+    /// <summary>
+    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe（<see cref="ShellFileOpenPlanner.Plan"/>
+    /// が返す <see cref="WorkspaceFileOpenContext"/>）を、追加のファイル読込なしで対応する
+    /// prepared Load*FileAt メソッドへ委譲する。<paramref name="context"/>.FilePath が open operation 内の
+    /// 唯一の path 正本であり、ここで path を再生成・再正規化しない。
+    /// </summary>
+    private void LoadWorkspaceFileAt(WorkspaceFileOpenContext context)
+    {
+        // v2.16.37 TD-59b-3 §9: LoadWorkspace decision で OpenContext が欠けているのは
+        // 内部契約違反。path ベース読込への暗黙フォールバックはしない。
+        ArgumentNullException.ThrowIfNull(context);
+
+        switch (context.WorkspaceKind)
+        {
+            case NestSuiteWorkspaceKind.NoteNest:
+                LoadNoteNestFileAt(context);
+                break;
+            case NestSuiteWorkspaceKind.IdeaNest:
+                LoadIdeaNestFileAt(context);
+                break;
+            case NestSuiteWorkspaceKind.ChatNest:
+                LoadChatNestFileAt(context);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(context), context.WorkspaceKind, "対応していない WorkspaceKind です。");
         }
     }
 }

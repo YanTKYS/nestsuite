@@ -471,3 +471,15 @@ TD-59b-2（v2.16.35）の `LoadPrepared` に対する安全性補完。設計方
 - `.nestsuite` prepared 経路（preloaded 非 null 分岐のガード順・追加ファイル I/O ゼロ）は変更していない。
 - Shell から `LoadPrepared` を呼ぶ経路・session 復元経路は本補完でも未着手のまま。実利用経路の `.nestsuite` 読込回数はまだ減っていない。
 - TD-59 全体は本補完の時点でも未完了（open item）。
+
+## 22. 実施結果（TD-59b-3、v2.16.37）
+
+§9・§10・§12・§13・§16〜§19 のとおり、session 復元を除く Shell の主要読込経路を prepared context へ切り替えた。設計方針自体の変更はない。
+
+- `ShellFileOpenDecision` に `OpenContext`（`WorkspaceFileOpenContext?`、末尾の省略可能引数）を追加した。`LoadWorkspace` のときだけ非 null、`MissingFile` / `KindDetectionFailed` / `ActivateExistingTab` は null のまま（probe 結果をこれ以上保持する必要がないため）。
+- `ShellFileOpenPlanner.Plan` の既定判定を `TryGetKind` から `TryPrepareOpen` へ切り替えた。既存の `fileExists` 事前確認は維持し、TOCTOU・failure 分類は変えていない。`detectKind`（session 復元専用の暫定互換モード、TD-59b-4 まで維持）と `prepareOpen`（テスト用 delegate 注入シーム）を追加し、両方同時指定は `ArgumentException` で拒否する。`detectKind` を指定した場合は従来どおり `OpenContext = null` の decision を返す。
+- 共通 Open ダイアログ・種別別 Open ダイアログ（NoteNest/IdeaNest/ChatNest）・起動引数（ファイル関連付け含む）・最近使ったファイル・pipe/二重起動転送を、いずれも `decision.OpenContext` を使う経路へ切り替えた。種別別ダイアログは実体 kind に関わらず期待 Workspace の prepared loader へ context を渡し、異種の場合は `EnsureKind` の既存 `InvalidDataException` 経路で失敗する（自動ルーティングしない）。
+- Shell に `LoadWorkspaceFileAt(WorkspaceFileOpenContext)` と、NoteNest/IdeaNest/ChatNest 用の prepared loader（`LoadNoteNestFileAt` / `LoadIdeaNestFileAt` / `LoadChatNestFileAt` の context オーバーロード、`LoadInitialNoteNestFile` / `LoadInitialChatNestFile` / `LoadInitialIdeaNestFile` の context 版シグネチャ）を追加した。NoteNest は `MainViewModel.OpenPreparedFileAtStartup`、IdeaNest/ChatNest は各 FileService の `LoadPrepared` を使い、タブ生成は `NestSuiteTabFactory.FromResolvedKind` を使う。`context.FilePath` が open operation 内の唯一の path 正本。
+- session 復元専用の path 版 loader（`LoadWorkspaceFileAt(kind, path)`、`LoadNoteNestFileAt(path)` 等）はそのまま維持し、`TryRestoreSession` は変更していない。session.json 形式・復元順序・failure 通知・pending entry の持ち越しは変更なし。
+- 適用経路では `.nestsuite` の読込（wrapper 読込 + 本読込）が 1 回に統合されたことを、`ShellFileOpenPlannerTests`（read delegate 呼出回数）と `ShellFileOpenCompositionTests`（`Plan` → `LoadPrepared` → `FromResolvedKind` の合成、実ファイル不要）で確認した。`NestSuiteShellWindow` は WPF Window のため直接インスタンス化はせず、既存方針どおり型シグネチャの contract test（`NestSuiteShellPreparedContextRoutingTests` 等）で補完した。
+- TD-59 全体は本実装の時点でも未完了（open item）。残作業は TD-59b-4（session 復元経路の prepared context 化）・TD-59b-5（保存後内部同期の非読込化、任意）。
