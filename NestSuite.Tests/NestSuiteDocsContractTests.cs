@@ -713,6 +713,40 @@ public class NestSuiteDocsContractTests
         Assert.Contains("production code の変更は行っていない", text);
     }
 
+    // ── TD-59a-2: .nestsuite 二重読込解消設計の安全性補足 ──────────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21633_AndTD59a2()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.33", text);
+        Assert.Contains("TD-59a-2", text);
+    }
+
+    [Fact]
+    public void Backlog_TD59_MentionsTD59a2_AndRemainsOpenItem()
+    {
+        var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
+        Assert.Contains("TD-59a-2", backlog);
+        // 設計補足のみ完了。TD-59 全体（実装 = TD-59b）は open item のまま。
+        Assert.Contains("| TD-59 |", backlog);
+    }
+
+    [Fact]
+    public void DoubleReadDesignReview_MentionsSafetySupplementKeyDecisions()
+    {
+        // TD-59a-2 の安全性補足: path と解析済み内容の対応保証・同種ファイル間の取り違え・
+        // IsSameFile・test seam（読込 delegate）の重要語句確認に留める。
+        var text = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+        Assert.Contains("path と解析済み内容の対応保証", text);
+        Assert.Contains("同種ファイル間の取り違え", text);
+        Assert.Contains("IsSameFile", text);
+        Assert.Contains("読込回数テスト用 seam", text);
+        Assert.Contains("LoadPrepared", text);
+        Assert.Contains("PreloadedWorkspaceEnvelope", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

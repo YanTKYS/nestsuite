@@ -7,6 +7,17 @@
 
 ---
 
+## v2.16.33 — TD-59a-2: `.nestsuite` 二重読込解消設計の安全性補足
+
+- TD-59a（v2.16.32）の設計レビューに対し、実装前に必要な安全性補足を行い、`nestsuite-double-read-design-review.md` を採用案へ統一のうえ §16〜§18 を追加した
+- **path と解析済み envelope の対応保証を確定した**: 当初スケッチの `Load(path, preloadedEnvelope)` は、同じ WorkspaceKind の別ファイル（NoteNest A の envelope + NoteNest B の path）の取り違えを `EnsureKind` で検出できず、保存時に A の内容で B を上書きする利用者データ事故につながるため不採用とした
+- FileService の prepared 読込 API を `LoadPrepared(WorkspaceFileOpenContext)` に確定した（path と envelope を別引数で受けない）。読込元パスを刻印する `PreloadedWorkspaceEnvelope(SourcePath, Envelope)` を導入し、FileService 境界で `IsSameFile` による path 一致検証を追加する設計にした（kind 検証 `EnsureKind` は従来どおり維持し、ユーザー起因の種別違いが現行と同一文言で通知されるガード評価順も確定）
+- NoteNest の Shell → VM → lifecycle → FileService の引き渡しは、省略可能引数ではなく `OpenPreparedFileAtStartup` / `OpenPrepared` のメソッド名分離に確定した（`context.FilePath` のみが保存先の正本になる）
+- 読込回数テスト用 seam を確定した: production アセンブリに InternalsVisibleTo がないため internal seam は不採用とし、`ReadFromFile` / `TryPrepareOpen` への public 省略可能 delegate 注入（`ShellFileOpenPlanner.Plan` と同じ流儀）で `.nestsuite` = 1 回（失敗時も 1 回）・レガシー = 0 回を検証可能にした
+- テスト戦略に path / envelope 対応（同種ファイル間の取り違え検出・`IsSameFile` 基準の表記差吸収・context の path が正本）を追加し、TD-59b-1 / b-2 の実装単位を更新した
+- production code の変更はない。二重・三重読込はまだ解消していない（TD-59b で実装する）。TD-59 は open item のまま
+- コード動作・session 形式・保存形式・schema・wrapper 変更なし
+
 ## v2.16.32 — TD-59a: `.nestsuite` 二重読込解消の設計レビュー
 
 - `docs/planning/nestsuite-double-read-design-review.md` を追加し、`.nestsuite` の二重読込・二重パース解消の設計レビューを行った
