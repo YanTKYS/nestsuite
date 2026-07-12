@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using NestSuite.Models;
 using NestSuite.Services;
 using NestSuite.ViewModels;
@@ -12,6 +14,8 @@ namespace NestSuite.Tests;
 /// </summary>
 public class AppExitAndTabCloseRegressionTests
 {
+    private static readonly string RepoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+
     // ── アプリ終了: 未保存なし → 確認なしで継続 ──────────────────────────
 
     [Fact]
@@ -26,6 +30,21 @@ public class AppExitAndTabCloseRegressionTests
         var result = CloseConfirmationService.EvaluateMany(targets, _ => { asked = true; return UnsavedChangeDecision.Cancel; });
         Assert.True(result.CanContinue);
         Assert.False(asked);
+    }
+
+    [Fact]
+    public void DraftRecovery_StartupContract_UsesOwnerlessPromptAndRestoresBeforeTimer()
+    {
+        var shellCtor = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
+        var recovery = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.DraftRecovery.cs"));
+
+        Assert.True(shellCtor.IndexOf("RestoreDraftsAtStartup()", StringComparison.Ordinal) <
+                    shellCtor.IndexOf("StartAutoSaveTimer()", StringComparison.Ordinal));
+        Assert.Contains("MessageBox.Show(", recovery);
+        Assert.DoesNotContain("MessageBox.Show(this", recovery);
+        Assert.Contains("MessageBoxButton.YesNoCancel", recovery);
+        Assert.Contains("MessageBoxResult.No", recovery);
+        Assert.Contains("MessageBoxResult.Yes", recovery);
     }
 
     // ── アプリ終了: 未保存 NoteNest が確認対象になる ─────────────────────

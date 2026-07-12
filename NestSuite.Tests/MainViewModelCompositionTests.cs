@@ -71,6 +71,28 @@ public class MainViewModelCompositionTests
     }
 
     [Fact]
+    public void OpenProjectSnapshotAsUntitled_LoadsDirtyWithoutRecentOrFilePath()
+    {
+        var source = new MainViewModel();
+        var notebook = source.Notes.AddNotebook("Draft");
+        var note = source.Notes.AddNote(notebook, "Recovered")!;
+        note.Content = "body";
+        var project = source.CreateProjectSnapshotForDraft();
+
+        var main = new MainViewModel();
+        var recentBefore = main.RecentFiles.ToArray();
+        main.StatusMessage = "before";
+
+        main.OpenProjectSnapshotAsUntitled(project);
+
+        Assert.Null(main.CurrentFilePath);
+        Assert.True(main.IsModified);
+        Assert.Equal(recentBefore, main.RecentFiles);
+        Assert.Equal("before", main.StatusMessage);
+        Assert.Contains(main.Notes.AllNotes, n => n.Title == "Recovered" && n.Content == "body");
+    }
+
+    [Fact]
     public void EditorFontFamilyChange_DoesNotMarkProjectModified()
     {
         // v2.14.16 BUG: NoteNest エディタフォント種類は NestSuite の UI 設定

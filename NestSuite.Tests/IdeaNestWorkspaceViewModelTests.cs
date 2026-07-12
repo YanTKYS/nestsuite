@@ -43,6 +43,26 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Empty(saved.Settings.SearchText);
     }
 
+    [Fact]
+    public void LoadFromWorkspaceAsDraft_RestoresCardsAndMarksDirty()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+
+        vm.LoadFromWorkspaceAsDraft(new Workspace
+        {
+            WorkspaceName = "下書き",
+            Ideas = [new Idea { Id = "draft-card", Title = "復元カード" }],
+            Settings = new WorkspaceSettings { CardSize = "large" },
+        });
+
+        Assert.True(vm.HasChanges);
+        Assert.Contains(vm.AllCards, card => card.Id == "draft-card" && card.Title == "復元カード");
+        Assert.Equal("large", vm.BuildWorkspaceForSave().Settings.CardSize);
+
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "clean-card" }] });
+        Assert.False(vm.HasChanges);
+    }
+
 
     [Fact]
     public void ArchiveFilterMode_FiltersActiveIncludeAndArchivedOnly()

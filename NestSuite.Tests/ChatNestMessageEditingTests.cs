@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using NestSuite.ChatNest;
 using NestSuite.Models;
+using NestSuite.Services;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -274,4 +276,41 @@ public class ChatNestMessageEditingTests
         Assert.True(vm.IsDirty);
         Assert.True(vm.HasUnsavedChanges);
     }
+
+    [Fact]
+    public void LoadMessagesAsDraft_RestoresTransientStateAndMarksDirty()
+    {
+        var messageId = Guid.NewGuid();
+        var vm = new ChatNestWorkspaceViewModel();
+
+        vm.LoadMessagesAsDraft(
+            [new Message { Id = messageId, Speaker = Speaker.自分, Text = "original" }],
+            new ChatNestTransientDraftState("input", "反論", messageId, "editing"));
+
+        Assert.True(vm.IsDirty);
+        Assert.True(vm.HasUnsavedChanges);
+        Assert.Equal("input", vm.InputText);
+        Assert.Equal(Speaker.反論, vm.SelectedSpeaker);
+        var message = Assert.Single(vm.Messages);
+        Assert.True(message.IsEditing);
+        Assert.Equal("editing", message.EditingText);
+        Assert.Equal("original", message.Text);
+    }
+
+    [Fact]
+    public void LoadMessagesAsDraft_MissingEditingTargetAppendsEditingTextToInput()
+    {
+        var vm = new ChatNestWorkspaceViewModel();
+
+        vm.LoadMessagesAsDraft(
+            [new Message { Speaker = Speaker.自分, Text = "kept" }],
+            new ChatNestTransientDraftState("input", "0", Guid.NewGuid(), "editing"));
+
+        Assert.Equal(Speaker.自分, vm.SelectedSpeaker);
+        Assert.Equal("input" + Environment.NewLine + "editing", vm.InputText);
+        Assert.True(vm.IsDirty);
+        Assert.True(vm.HasUnsavedChanges);
+        Assert.False(Assert.Single(vm.Messages).IsEditing);
+    }
+
 }

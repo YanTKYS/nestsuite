@@ -7,6 +7,18 @@
 
 ---
 
+## v2.16.46 — SH-36b: 無題タブ下書きの起動時復元
+
+- 起動時に `%APPDATA%\NoteNest\drafts\` の `draft-*.nestsuite` を列挙し、下書きがある場合だけ ownerless の標準 MessageBox で Yes / No / Cancel を確認する。Yes は無題タブとして復元、No は列挙 pair を破棄、Cancel / Esc / ✕ は変更せず次回起動まで保持する。
+- NoteNest / IdeaNest / ChatNest の 3 Workspace を正式な `.nestsuite` 読込経路（TryPrepareOpen → LoadPrepared）で復元し、下書き path を FilePath・recent files・session entry へ入れない。元 tabId を引き継ぎ、復元後 pair は削除せず保持する。
+- 復元後は各 Workspace VM を dirty にする。NoteNest は無題 project snapshot、IdeaNest は `HasChanges=true`、ChatNest は確定済みメッセージだけでも `IsDirty=true` / `HasUnsavedChanges=true` として次 tick の下書き候補へ戻す。
+- ChatNest sidecar の transient state（InputText / SelectedSpeaker / EditingText）を復元する。編集対象メッセージが存在しない場合は EditingText を InputText へ退避し、利用者文字列を黙って捨てない。
+- sidecar 6 状態を起動復元で処理する。NotPresent / Loaded は正常、InvalidFormat / UnsupportedVersion / HashMismatch は本体を復元し sidecar だけ隔離、IoError は sidecar に触れず本体だけ復元する。HashMismatch sidecar は削除しない。
+- 本体破損・wrapper 不正・schema too-new・LoadPrepared 例外は pair を削除せず `.corrupt-*` へ隔離し、他の下書き復元を継続する。部分復元・隔離・破棄失敗は最後に最大 1 枚で集約通知する。
+- tabId 衝突時は新 tabId で復元し、新 pair を先に書き込めた場合だけ旧 pair を削除する。新 pair 書込失敗時は旧 pair を保持する。
+- 下書き復元は auto-save timer 開始前に実行し、起動引数ファイルがある場合は既存の `LoadInitialFile` により起動引数タブが最終 active になる。SH-36 はこれで完了した（SH-36完了）。後続予定は v2.16.47 / TD-76、v2.16.48 / M17 とする。
+- NoteNest schema `1.4.2`・`.nestsuite` wrapper `formatVersion 1.0`・draftFormatVersion `1.0`・session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし。
+
 ## v2.16.45 — SH-36a-2: sidecar Speaker数値値の正規化修正・SH-36a最終回帰
 
 - ChatNest sidecar の Speaker 正規化で `Enum.TryParse` が `"0"`〜`"3"` などの数値文字列を enum 値として受理する問題を修正した。sidecar Speaker は enum 名との完全一致だけを有効とし、数値文字列・符号付き数値・小数・null・空・空白・未知値・英語名・前後空白付き enum 名・複数値風文字列はすべて `自分` へフォールバックする。

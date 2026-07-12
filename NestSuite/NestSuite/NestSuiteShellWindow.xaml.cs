@@ -130,6 +130,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             ActivateTab(tempTab);
         }
 
+        RestoreDraftsAtStartup(); // v2.16.46 SH-36b: timer 開始前に無題下書きを復元する
         StartAutoSaveTimer(); // v2.14.12 SH-33
     }
 

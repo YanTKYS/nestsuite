@@ -276,6 +276,51 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         IsDirty = false;
     }
 
+    /// <summary>
+    /// SH-36b: 下書き復元専用。通常の <see cref="LoadMessages"/> は clean のまま維持し、
+    /// こちらだけ無題・未保存タブとして扱うため dirty にする。
+    /// </summary>
+    public void LoadMessagesAsDraft(
+        IEnumerable<Message> messages,
+        ChatNestTransientDraftState? transientState)
+    {
+        LoadMessages(messages);
+        if (transientState != null)
+            RestoreTransientDraftState(transientState);
+        IsDirty = true;
+    }
+
+    private void RestoreTransientDraftState(ChatNestTransientDraftState state)
+    {
+        InputText = state.InputText ?? string.Empty;
+        SelectedSpeaker = NormalizeDraftSpeaker(state.SelectedSpeaker);
+
+        if (state.EditingMessageId is not Guid editingMessageId)
+            return;
+
+        var target = Messages.FirstOrDefault(m => m.Model.Id == editingMessageId);
+        if (target != null)
+        {
+            target.RestoreEditingState(state.EditingText ?? string.Empty);
+            return;
+        }
+
+        var editingText = state.EditingText ?? string.Empty;
+        InputText = string.IsNullOrEmpty(InputText)
+            ? editingText
+            : InputText + Environment.NewLine + editingText;
+    }
+
+    private static Speaker NormalizeDraftSpeaker(string? selectedSpeaker) =>
+        selectedSpeaker switch
+        {
+            nameof(Speaker.自分) => Speaker.自分,
+            nameof(Speaker.反論) => Speaker.反論,
+            nameof(Speaker.補足) => Speaker.補足,
+            nameof(Speaker.結論) => Speaker.結論,
+            _ => Speaker.自分,
+        };
+
     // ── エクスポートテキスト生成（NoteNest 転記・Markdown） ──────────────────
 
     /// <summary>
