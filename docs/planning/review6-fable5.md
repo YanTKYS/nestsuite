@@ -2,7 +2,8 @@
 
 > 作成: v2.16.40 / review6-fable5
 > 性質: 期間限定エキスパートによる設計・優先順位レビュー。**production code の変更は行っていない。**
-> **補完（v2.16.41 / review6-fable5-2）**: SH-36 の下書き形式・ChatNest 一時入力（未送信 InputText・編集中テキスト）の保護・破損下書きの隔離・復元確認の選択肢・起動タブ前提の訂正（既定フォールバックは無題 NoteNest ではなく TempNest タブのアクティブ化）については `review6-fable5-2.md` で設計を補完した。**SH-36 の実装時は review6-fable5-2 を正とする**（本書 §7・§10 の初期設計は履歴として保持）。後続バージョンは v2.16.42 / SH-36a・v2.16.43 / SH-36b へ繰り下げ。
+> **補完（v2.16.41 / review6-fable5-2）**: SH-36 の下書き形式・ChatNest 一時入力（未送信 InputText・編集中テキスト）の保護・破損下書きの隔離・復元確認の選択肢・起動タブ前提の訂正（既定フォールバックは無題 NoteNest ではなく TempNest タブのアクティブ化）については `review6-fable5-2.md` で設計を補完した（本書 §7・§10 の初期設計は履歴として保持）。
+> **補完（v2.16.42 / review6-fable5-3）**: 復元後ライフサイクル（復元成功 pair の保持・tabId 引き継ぎ・復元後の VM 側 dirty・candidate false 時の pair 削除・sidecar 読込結果の分類）は `review6-fable5-3.md` で補完・修正した。**SH-36 の最新設計は review6-fable5-3 を正とする**。後続バージョンは v2.16.43 / SH-36a・v2.16.44 / SH-36b へ繰り下げ。
 > 前提: v2.16.39（TD-59a〜TD-59b-5 完了）時点の main。review1〜review5・`nestsuite-double-read-design-review.md`・backlog・design-decisions・static-test-guidelines・test-classification-analysis・schema-versioning-policy・release-notes および関連 production code / テストを確認済み。
 
 ## 1. 総評

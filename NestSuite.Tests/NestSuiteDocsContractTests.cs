@@ -1094,6 +1094,57 @@ public class NestSuiteDocsContractTests
         Assert.Contains("正とする", text);
     }
 
+    // ── review6-fable5-3: SH-36復元後ライフサイクル設計補完 ─────────────────
+
+    [Fact]
+    public void ReleaseNotes_Contains_V21642_AndReview6_3()
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        Assert.Contains("v2.16.42", text);
+        Assert.Contains("review6-fable5-3", text);
+    }
+
+    [Fact]
+    public void ReleaseNotes_Review6_3_MentionsPostRestoreLifecycleAndSidecarClassification()
+    {
+        // 復元後ライフサイクル・dirty・下書き・sidecar 分類・production code 変更なし・
+        // schema 維持が記録されていることを確認する。API 名・文言全文・後続バージョン一覧には固定しない。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
+        var section = ExtractReleaseNotesSection(text, "review6-fable5-3");
+        Assert.Contains("production code の変更はなし", section);
+        Assert.Contains("SH-36", section);
+        Assert.Contains("復元", section);
+        Assert.Contains("dirty", section);
+        Assert.Contains("下書き", section);
+        Assert.Contains("sidecar", section);
+        Assert.Contains($"`{Project.CurrentSchemaVersion}`", section);
+    }
+
+    [Fact]
+    public void Review6_3Doc_ExistsAndMentionsKeySections()
+    {
+        // 文言完全一致ではなく、章立ての重要語句の存在確認に留める。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-3.md");
+        Assert.True(File.Exists(path), $"review6-fable5-3.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("総評", text);
+        Assert.Contains("保護継続", text);
+        Assert.Contains("dirty", text);
+        Assert.Contains("sidecar", text);
+        Assert.Contains("結論", text);
+        Assert.Contains("production code の変更は行っていない", text);
+    }
+
+    [Fact]
+    public void Review6_2Doc_PointsToReview6_3_AsAuthoritativeForSH36()
+    {
+        // review6-fable5-2 の冒頭注記が最新正本（review6-fable5-3）を参照している
+        // （本文の初期判断は履歴として保持したまま）。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-2.md"));
+        Assert.Contains("review6-fable5-3", text);
+        Assert.Contains("正とする", text);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
 
     /// <summary>
