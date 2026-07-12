@@ -135,13 +135,14 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
     protected override void OnClosing(CancelEventArgs e)
     {
+        StopAutoSaveTimer();
         // v2.16.9 SH-29: 個別確認に入る前に、対象が 2 件以上あれば件数サマリを 1 回だけ表示する。
         // 対象タブの状態は変更せず、一括保存・一括破棄も行わない（既存の個別確認フローに委ねる）。
         if (!UnsavedCloseSummaryBuilder.ConfirmContinue(
                 GetUnsavedCloseConfirmationTargets(),
                 message => _dialogs.Confirm(message, "未保存タブの確認", MessageBoxImage.Warning)))
         {
-            e.Cancel = true;
+            CancelClosingAndRestartAutoSave(e);
             return;
         }
 
@@ -164,7 +165,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                     _                   => UnsavedChangeDecision.Cancel
                 },
                 () => TrySaveNoteNestForClose(noteSession));
-            if (closeDecision == UnsavedChangeDecision.Cancel) { e.Cancel = true; return; }
+            if (closeDecision == UnsavedChangeDecision.Cancel) { CancelClosingAndRestartAutoSave(e); return; }
         }
 
         // v1.9.7: すべての IdeaNest Session を順に確認する
@@ -181,7 +182,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                             "未保存の IdeaNest", MessageBoxImage.Warning)
                         ? UnsavedChangeDecision.Discard
                         : UnsavedChangeDecision.Cancel))
-            { e.Cancel = true; return; }
+            { CancelClosingAndRestartAutoSave(e); return; }
         }
 
         // v1.7.4: ChatNest に保存パスがある場合は「保存してから終了」を促す。
@@ -207,7 +208,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                             _ => UnsavedChangeDecision.Cancel
                         },
                     () => TrySaveChatNestToPath(chatSession, chatSession.FilePath!));
-                if (closeDecision == UnsavedChangeDecision.Cancel) { e.Cancel = true; return; }
+                if (closeDecision == UnsavedChangeDecision.Cancel) { CancelClosingAndRestartAutoSave(e); return; }
 
                 // MarkSaved() で IsDirty は解消されるが InputText が残っている場合
                 // HasUnsavedChanges は依然 true になる。保存対象外の入力テキストを破棄確認する。
@@ -216,7 +217,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                     !_dialogs.Confirm(
                         "入力欄の未投稿テキストは .chatnest に保存されません。\n破棄して終了しますか？",
                         "未投稿テキスト", MessageBoxImage.Warning))
-                { e.Cancel = true; return; }
+                { CancelClosingAndRestartAutoSave(e); return; }
             }
             else
             {
@@ -227,9 +228,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
                                 "未保存の ChatNest", MessageBoxImage.Warning)
                             ? UnsavedChangeDecision.Discard
                             : UnsavedChangeDecision.Cancel))
-                { e.Cancel = true; return; }
+                { CancelClosingAndRestartAutoSave(e); return; }
             }
         }
+
+        foreach (var tab in _tabs.ToList())
+            TryDeleteDraftForTab(tab.Id, "DraftDeleteOnClosing");
 
         // v2.6.0: TempNest の一時メモを保存する（デバウンス中のデータも確定させる）
         foreach (var s in _sessionManager.Sessions
@@ -253,6 +257,12 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         SaveWindowSize();
 
         base.OnClosing(e);
+    }
+
+    private void CancelClosingAndRestartAutoSave(CancelEventArgs e)
+    {
+        e.Cancel = true;
+        StartAutoSaveTimer();
     }
 
     /// <summary>
