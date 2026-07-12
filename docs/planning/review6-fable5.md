@@ -313,3 +313,11 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 - 結果行の移動先と MatchText を一致させた。
 - XAML・検索件数・並び順・クリック動作は変更していない。
 - M17 を完了状態として固定した。production 保存形式・session 形式・schema 変更なし。
+
+## 16. エキスパートレビュー対応フェーズ完了（v2.17.0）
+
+- review1〜review6 の総点検を実施した。詳細は `docs/planning/expert-review-closeout.md` を参照する。
+- SH-36、TD-76、M17 を完了状態として確認した。
+- LT-9 フェーズ2は review5 のトリガー待ち方針を維持し、v2.17.0 では実装しない。
+- エキスパート起点の特別進行を完了し、以後は通常 backlog へ復帰する。
+- review 文書は将来の判断基準として維持する。

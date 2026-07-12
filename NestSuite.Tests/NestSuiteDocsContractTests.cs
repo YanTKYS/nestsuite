@@ -78,6 +78,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.49", "TD-76-1", "TD-76-1" };
         yield return new object[] { "v2.16.50", "M17", "M17" };
         yield return new object[] { "v2.16.51", "M17-1", "M17-1" };
+        yield return new object[] { "v2.17.0", "expert-review-closeout", "expert-review-closeout" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -127,6 +128,37 @@ public class NestSuiteDocsContractTests
             .ToList();
 
         Assert.Equal(pairs.Count, pairs.Distinct().Count());
+    }
+
+    [Fact]
+    public void ExpertReviewCloseoutDoc_ExistsAndMentionsKeyContracts()
+    {
+        var path = Path.Combine(RepoRoot, "docs", "planning", "expert-review-closeout.md");
+
+        Assert.True(File.Exists(path), $"expert-review-closeout.md not found: {path}");
+
+        var text = File.ReadAllText(path);
+        foreach (var term in new[]
+        {
+            "review1",
+            "review2",
+            "review3",
+            "review4",
+            "review5",
+            "review6",
+            "SH-36",
+            "TD-76",
+            "M17",
+            "LT-9",
+            "通常 backlog",
+            "トリガー待ち",
+            "NoteNest schema `1.4.2`",
+            "wrapper `formatVersion 1.0`",
+            "draftFormatVersion 1.0",
+        })
+        {
+            Assert.Contains(term, text);
+        }
     }
 
     /// <summary>

@@ -7,6 +7,14 @@
 
 ---
 
+## v2.17.0 — エキスパートレビュー対応の総点検・回帰確認・通常backlog復帰
+
+- review1〜review6 対応を総点検し、対応状況を `docs/planning/expert-review-closeout.md`（expert-review-closeout）へ整理した。完了済み・通常 backlog・トリガー待ちを分類し、v2.17.0 をもってエキスパート対応フェーズを完了した。
+- SH-36、TD-76、M17 と各回帰修正の実装・テスト・文書を確認した。session・`.bak`・複数 open 失敗・`.nestsuite` 二重読込解消・draft 書込/復元/隔離・M17 検索強調の主要契約を総点検した。
+- 4 Workspace（NoteNest / IdeaNest / ChatNest / TempNest）の基本回帰は既存テスト・contract と総点検文書で確認した。実機確認はこの環境では未実施のため、マージ前に必要に応じて GitHub Actions と実機で確認する。
+- 新機能追加なし、UI 仕様変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。
+- 外部依存追加なし、net48_test 再開なし、ErrorLog は Error のみ、既存テスト削除・skip なし。v2.17.1 以降は通常 backlog 運用へ復帰する。
+
 ## v2.16.51 — M17-1: 検索結果行の対象一致位置と強調表示のずれ修正
 
 - M17 では検索結果行の文脈文字列を先頭から再検索していたため、前方文脈に過去の一致がある場合、2 件目以降の結果行で移動先とは別の一致を強調する問題があった。
