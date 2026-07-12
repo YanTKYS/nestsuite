@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NestSuite.ChatNest;
 
 namespace NestSuite.Services;
 
@@ -23,8 +24,8 @@ public static class DraftStore
     {
         tabId = string.Empty;
         if (string.IsNullOrWhiteSpace(draftFilePath)) return false;
-        if (draftFilePath.Contains("..", StringComparison.Ordinal)) return false;
         var name = Path.GetFileName(draftFilePath);
+        if (name.Contains("..", StringComparison.Ordinal)) return false;
         if (!name.StartsWith("draft-", StringComparison.OrdinalIgnoreCase) ||
             !name.EndsWith(NestSuiteWorkspaceEnvelope.FileExtension, StringComparison.OrdinalIgnoreCase)) return false;
         if (name.Contains(".state.json", StringComparison.OrdinalIgnoreCase) ||
@@ -103,9 +104,10 @@ public static class DraftStore
             if (!string.Equals(actualHash, sidecar.WorkspaceFileSha256, StringComparison.OrdinalIgnoreCase))
                 return new(TransientDraftReadStatus.HashMismatch, null);
             var state = sidecar.TransientState;
+            var selectedSpeaker = NormalizeSelectedSpeaker(state.SelectedSpeaker);
             return new(TransientDraftReadStatus.Loaded, new ChatNestTransientDraftState(
                 state.InputText ?? string.Empty,
-                string.IsNullOrWhiteSpace(state.SelectedSpeaker) ? "自分" : state.SelectedSpeaker!,
+                selectedSpeaker,
                 state.EditingMessageId,
                 state.EditingText ?? string.Empty));
         }
@@ -118,7 +120,7 @@ public static class DraftStore
     {
         if (!TryGetTabId(Path.GetFileName(draftFilePath), out var tabId)) throw new ArgumentException("Invalid draft path.", nameof(draftFilePath));
         var root = Path.GetDirectoryName(Path.GetFullPath(draftFilePath)) ?? ResolveRoot(null);
-        var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var stamp = NowProvider().ToString("yyyyMMdd-HHmmss");
         var target = MoveUnique(WorkspacePath(root, tabId), stamp);
         var sidecar = StatePath(root, tabId);
         if (File.Exists(sidecar)) MoveUnique(sidecar, stamp);
@@ -130,7 +132,7 @@ public static class DraftStore
         if (!TryGetTabId(Path.GetFileName(draftFilePath), out var tabId)) throw new ArgumentException("Invalid draft path.", nameof(draftFilePath));
         var root = Path.GetDirectoryName(Path.GetFullPath(draftFilePath)) ?? ResolveRoot(null);
         var sidecar = StatePath(root, tabId);
-        return File.Exists(sidecar) ? MoveUnique(sidecar, DateTime.Now.ToString("yyyyMMdd-HHmmss")) : null;
+        return File.Exists(sidecar) ? MoveUnique(sidecar, NowProvider().ToString("yyyyMMdd-HHmmss")) : null;
     }
 
     public static void Delete(string tabId, string? rootDirectory = null)
@@ -145,6 +147,14 @@ public static class DraftStore
     private static string ValidateTabId(string tabId) => Guid.TryParseExact(tabId, "N", out var guid) ? guid.ToString("N") : throw new ArgumentException("tabId must be GUID-N.", nameof(tabId));
     private static string WorkspacePath(string root, string tabId) => Path.Combine(root, $"draft-{tabId}.nestsuite");
     private static string StatePath(string root, string tabId) => Path.Combine(root, $"draft-{tabId}.state.json");
+    internal static Func<DateTime> NowProvider { get; set; } = () => DateTime.Now;
+
+    private static string NormalizeSelectedSpeaker(string? selectedSpeaker) =>
+        Enum.TryParse<Speaker>(selectedSpeaker, ignoreCase: false, out var parsedSpeaker) &&
+        Enum.IsDefined(parsedSpeaker)
+            ? parsedSpeaker.ToString()
+            : Speaker.自分.ToString();
+
     private static string Sha256Hex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     private static string MoveUnique(string path, string stamp)
     {

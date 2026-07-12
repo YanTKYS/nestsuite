@@ -232,7 +232,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             }
         }
 
-        foreach (var tab in _tabs.ToList())
+        foreach (var tab in _tabs.Where(t => DraftCandidatePolicy.IsSupportedWorkspace(t.WorkspaceKind)).ToList())
             TryDeleteDraftForTab(tab.Id, "DraftDeleteOnClosing");
 
         // v2.6.0: TempNest の一時メモを保存する（デバウンス中のデータも確定させる）

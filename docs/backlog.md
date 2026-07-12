@@ -67,7 +67,7 @@ SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、
 |----|------|------|--------|
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | InvalidFormat / AccessDenied / SchemaVersionTooNew は TD-70 の解除対象外であり、恒久的に解消されない場合は毎起動で復元失敗通知が出続ける。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する。**FAQ / ユーザーガイドへの間接経路案内は v2.16.22 で反映済み。** 解除対象拡張・個別解除は LT-9 フェーズ2 に吸収する。**ただし LT-9 フェーズ2 自体はトリガー成立まで実装しない（review5-fable5.md）。** | C |
-| SH-36 | 無題・未保存タブの下書き自動保存（クラッシュ時保護） | open。**SH-36a: v2.16.43 で書込側完了**（`DraftCandidatePolicy`、`DraftStore`、`.nestsuite` 本体 + ChatNest sidecar、SaveAs/CloseTab/OnClosing の active pair 削除）。**SH-36b: v2.16.44 で起動時復元予定**（復元 UI、復元タブ生成、sidecar 適用）。最新の正本文書は `docs/planning/review6-fable5-3.md`。 | A |
+| SH-36 | 無題・未保存タブの下書き自動保存（クラッシュ時保護） | open。**SH-36a: v2.16.43 で書込側実装、v2.16.44 で回帰修正完了**（終了時 TempNest 除外、sidecar Speaker 正規化、serialization / snapshot / lifecycle 回帰テスト補完）。**SH-36b: v2.16.45 で起動時復元予定**。最新の正本文書は `docs/planning/review6-fable5-3.md`。 | A |
 
 ---
 

@@ -26,6 +26,16 @@ public class DraftCandidatePolicyTests
     public void IsCandidate_Clean_ReturnsFalse(NestSuiteWorkspaceKind kind) =>
         Assert.False(DraftCandidatePolicy.IsCandidate(kind, null, hasDraftableChanges: false));
 
+    [Theory]
+    [InlineData(NestSuiteWorkspaceKind.NoteNest, true)]
+    [InlineData(NestSuiteWorkspaceKind.IdeaNest, true)]
+    [InlineData(NestSuiteWorkspaceKind.ChatNest, true)]
+    [InlineData(NestSuiteWorkspaceKind.Temp, false)]
+    [InlineData((NestSuiteWorkspaceKind)999, false)]
+    public void IsSupportedWorkspace_ReturnsTrueOnlyForDraftFileWorkspaces(
+        NestSuiteWorkspaceKind kind, bool expected) =>
+        Assert.Equal(expected, DraftCandidatePolicy.IsSupportedWorkspace(kind));
+
     [Fact]
     public void IsCandidate_Temp_ReturnsFalse() =>
         Assert.False(DraftCandidatePolicy.IsCandidate(NestSuiteWorkspaceKind.Temp, null, hasDraftableChanges: true));

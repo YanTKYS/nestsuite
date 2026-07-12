@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.44 — SH-36a-1: 下書き終了処理・sidecar読込契約の回帰修正
+
+- 正常終了時の下書き削除対象を NoteNest / IdeaNest / ChatNest に限定し、TempNest 固定 ID `tempnest-fixed` を `DraftStore.Delete` へ渡さないようにした。これにより正常終了時の誤った `DraftDeleteOnClosing` ErrorLog を解消した。
+- ChatNest sidecar の `SelectedSpeaker` は既存 `Speaker` enum 名へ正規化し、null・空・空白・未知・数値・大文字小文字違い等の不正値は `自分` へフォールバックする。Speaker 値だけの異常では `Loaded` を維持する。
+- `DraftStore` の `UnsupportedVersion` / `IoError`、Speaker 正規化、sidecar 単独隔離、HashMismatch sidecar 隔離、隔離先衝突、正常フルパス tabId 抽出の回帰テストを追加した。
+- 3 FileService の `SerializeWrapped` / `.nestsuite` Save 一致 / legacy 保存形式非 wrapper 化の回帰テストを追加し、IdeaNest serialization の入力 Workspace 無副作用も固定した。
+- NoteNest / IdeaNest / ChatNest の snapshot 無副作用テストと、SaveAs / CloseTab / OnClosing / timer 二重起動防止に関するライフサイクル contract test を補完した。
+- SH-36b は v2.16.45 で起動時復元予定。NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper `formatVersion` は `1.0` のまま。session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし。
+
 ## v2.16.43 — SH-36a: 無題タブの下書き自動保存（書込側）
 
 - 無題の NoteNest / IdeaNest / ChatNest タブについて、既存 30 秒 tick を使い `%APPDATA%\NoteNest\drafts\` へ下書きを書き込む書込側を実装した。候補 true では `draft-<tabId>.nestsuite` を atomic write し、候補 false では現在開いている該当 tabId の active pair だけを削除する。
