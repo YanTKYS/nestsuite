@@ -188,6 +188,36 @@ public class ChatNestMessageEditingTests
 
     // ── v1.7.5: 案A — 入力中テキストの保存後の扱い ─────────────────────
 
+
+    [Fact]
+    public void CreateTransientDraftState_CapturesInputSpeakerAndEditingWithoutSideEffects()
+    {
+        var vm = new ChatNestWorkspaceViewModel { SelectedSpeaker = Speaker.補足, InputText = "未送信" };
+        vm.PostCommand.Execute(null);
+        vm.InputText = "未送信";
+        vm.MarkSaved();
+        var message = vm.Messages[0];
+        message.BeginEditCommand.Execute(null);
+        message.EditingText = "編集中";
+        var beforeMessages = vm.Messages.Select(m => m.Model.Id).ToArray();
+        var wasDirty = vm.IsDirty;
+        var hadUnsaved = vm.HasUnsavedChanges;
+        var wasEditing = message.IsEditing;
+        var editingText = message.EditingText;
+
+        var state = vm.CreateTransientDraftState();
+
+        Assert.Equal("未送信", state.InputText);
+        Assert.Equal("補足", state.SelectedSpeaker);
+        Assert.Equal(message.Model.Id, state.EditingMessageId);
+        Assert.Equal("編集中", state.EditingText);
+        Assert.Equal(wasDirty, vm.IsDirty);
+        Assert.Equal(hadUnsaved, vm.HasUnsavedChanges);
+        Assert.Equal(wasEditing, message.IsEditing);
+        Assert.Equal(editingText, message.EditingText);
+        Assert.Equal(beforeMessages, vm.Messages.Select(m => m.Model.Id));
+    }
+
     [Fact]
     public void MarkSaved_WhenInputTextRemains_HasUnsavedChangesIsTrue()
     {

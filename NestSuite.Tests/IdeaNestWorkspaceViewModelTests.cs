@@ -153,6 +153,28 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Equal("アーカイブを解除しました", vm.StatusMessage);
     }
 
+
+    [Fact]
+    public void BuildWorkspaceForSave_IncludesCardsAndDoesNotMarkSaved()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            WorkspaceName = "DraftSnapshot",
+            Ideas = [new Idea { Id = "card-1", Title = "Title", Body = "Body" }],
+            Settings = new WorkspaceSettings { CardSize = "large" },
+        });
+        vm.MarkDirty();
+        var hadChanges = vm.HasChanges;
+
+        var snapshot = vm.BuildWorkspaceForSave();
+
+        Assert.Equal("card-1", snapshot.Ideas.Single().Id);
+        Assert.Equal("large", snapshot.Settings.CardSize);
+        Assert.Equal(hadChanges, vm.HasChanges);
+        Assert.True(vm.HasChanges);
+    }
+
     [Fact]
     public void MarkDirtyAndMarkSaved_UpdateHasChanges()
     {
