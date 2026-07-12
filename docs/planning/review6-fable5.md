@@ -275,3 +275,49 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 - 残る本物の高リスクは「無題タブのクラッシュ時全損」1 点であり、**SH-36** として最優先で塞ぐ（2 PR・形式変更なし・正常時 UI 不変）
 - 開発側の実測負荷である静的テスト再肥大化を **TD-76** で早期に刈り、利用者の定常負荷である検索の目視探索を **M17** で削る
 - LT-9 フェーズ2 は引き続きトリガー待ち。review1〜5 の既決事項はすべて維持し、再オープンした項目はない
+
+## 14. 実施結果（TD-76、v2.16.48）
+
+- docs-contract の機械的な release notes version / ID 存在確認を、既存のデータ駆動表へ集約した。
+- 意味のある設計判断確認・正本関係・schema 維持確認・backlog 完了確認などの個別契約テストは維持した。
+- Shell session 復元 source scan を `NestSuiteShellSessionRestoreContractTests` へ分離し、`SessionTabMapperTests` を Mapper の挙動中心へ戻した。
+- テストケース・assertion の削除や弱体化は行っていない。
+- `NestSuiteTabFactory.TryGetKind` のコメントを、現行の `TryPrepareOpen` 中心の責務へ修正した。
+- production 動作・UI・保存形式・session 形式は変更していない。
+- TD-76 を完了した。次は v2.16.49 / M17（検索結果のマッチ箇所ハイライト）。
+
+### TD-76回帰修正（v2.16.49）
+
+- TD-75 の open row 不在確認がデータ移設から漏れていたため、`BacklogCompletedOpenItemAbsenceRecords` へ TD-75 を追加した。
+- TD-75 の完了範囲確認は既存の `BacklogCompletedTDRangeRecords` の 75 行で維持している。
+- TD-76 の docs-contract 集約と Shell contract 分離は変更していない。
+- assertion・テストケースの完全性を回復した。
+- production 動作・UI・保存形式・session 形式は変更していない。
+- 次は v2.16.50 / M17（検索結果のマッチ箇所ハイライト）。
+
+## 15. 実施結果（M17、v2.16.50）
+
+- NoteNest 全ノート検索結果へ、検索語に一致した箇所の強調表示を追加した。
+- 強調対象は最初の一致 1 か所だけとした。
+- WPF 非依存の純粋 helper で検索結果文脈を Before / Match / After へ分割する。
+- ViewModel 相当の検索結果行生成時に分割し、XAML は 3 つの `Run` で表示する。
+- Attached Behavior や converter は追加していない。
+- 検索ロジック・検索結果件数・前後文脈生成・結果クリック動作は変更していない。
+- Shell 横断検索・IdeaNest・ChatNest・本文エディタ内ハイライトは対象外とした。
+- M17 を完了した。production 保存形式・session 形式・schema は変更していない。
+
+### M17回帰修正（v2.16.51）
+
+- 複数一致時に対象結果と強調位置がずれる問題を修正した。
+- 文脈内再検索を廃止し、本文上の対象 `CharIndex` から文脈内 offset を算出する。
+- 結果行の移動先と MatchText を一致させた。
+- XAML・検索件数・並び順・クリック動作は変更していない。
+- M17 を完了状態として固定した。production 保存形式・session 形式・schema 変更なし。
+
+## 16. エキスパートレビュー対応フェーズ完了（v2.17.0）
+
+- review1〜review6 の総点検を実施した。詳細は `docs/planning/expert-review-closeout.md` を参照する。
+- SH-36、TD-76、M17 を完了状態として確認した。
+- LT-9 フェーズ2は review5 のトリガー待ち方針を維持し、v2.17.0 では実装しない。
+- エキスパート起点の特別進行を完了し、以後は通常 backlog へ復帰する。
+- review 文書は将来の判断基準として維持する。
