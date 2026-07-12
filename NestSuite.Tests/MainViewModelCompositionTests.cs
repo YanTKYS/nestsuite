@@ -46,6 +46,52 @@ public class MainViewModelCompositionTests
         Assert.True(main.IsModified);
     }
 
+
+    [Fact]
+    public void CreateProjectSnapshotForDraft_IncludesLatestContentWithoutSideEffects()
+    {
+        var main = new MainViewModel();
+        var notebook = main.Notes.AddNotebook("NB");
+        var note = main.Notes.AddNote(notebook, "Note")!;
+        main.SelectNote(note);
+        main.Editor.Content = "draft body";
+        main.StatusMessage = "status before";
+        main.IsModified = true;
+        var filePath = main.CurrentFilePath;
+        var selected = main.Editor.SelectedNote;
+
+        var snapshot = main.CreateProjectSnapshotForDraft();
+
+        var snapshotNote = snapshot.Notebooks.SelectMany(nb => nb.Notes).Single(n => n.Id == note.Id);
+        Assert.Equal("draft body", snapshotNote.Content);
+        Assert.Equal(filePath, main.CurrentFilePath);
+        Assert.True(main.IsModified);
+        Assert.Equal("status before", main.StatusMessage);
+        Assert.Same(selected, main.Editor.SelectedNote);
+    }
+
+    [Fact]
+    public void OpenProjectSnapshotAsUntitled_LoadsDirtyWithoutRecentOrFilePath()
+    {
+        var source = new MainViewModel();
+        var notebook = source.Notes.AddNotebook("Draft");
+        var note = source.Notes.AddNote(notebook, "Recovered")!;
+        note.Content = "body";
+        var project = source.CreateProjectSnapshotForDraft();
+
+        var main = new MainViewModel();
+        var recentBefore = main.RecentFiles.ToArray();
+        main.StatusMessage = "before";
+
+        main.OpenProjectSnapshotAsUntitled(project);
+
+        Assert.Null(main.CurrentFilePath);
+        Assert.True(main.IsModified);
+        Assert.Equal(recentBefore, main.RecentFiles);
+        Assert.Equal("before", main.StatusMessage);
+        Assert.Contains(main.Notes.AllNotes, n => n.Title == "Recovered" && n.Content == "body");
+    }
+
     [Fact]
     public void EditorFontFamilyChange_DoesNotMarkProjectModified()
     {

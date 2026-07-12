@@ -94,6 +94,7 @@ public partial class NestSuiteShellWindow
         // v1.9.1: タブ削除と同時に対応 Session を破棄する
         _sessionManager.Remove(tab.Id);
         _tabs.RemoveAt(idx);
+        TryDeleteDraftForTab(tab.Id, "DraftDeleteAfterClose");
 
         // v2.6.0: Temp タブが常に存在するため _tabs.Count == 0 にはならない
         // 右隣を優先、なければ左隣（最後のタブなら idx-1）
