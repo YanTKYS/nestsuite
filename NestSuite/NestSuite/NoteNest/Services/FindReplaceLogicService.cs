@@ -2,6 +2,30 @@ using System.Text.RegularExpressions;
 
 namespace NestSuite.Services;
 
+public sealed record SearchMatchSegments(string Before, string Match, string After)
+{
+    public bool HasMatch => Match.Length > 0;
+
+    public static SearchMatchSegments Split(
+        string? text,
+        string? query,
+        StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        var source = text ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(query))
+            return new SearchMatchSegments(source, string.Empty, string.Empty);
+
+        var index = source.IndexOf(query, comparison);
+        if (index < 0)
+            return new SearchMatchSegments(source, string.Empty, string.Empty);
+
+        return new SearchMatchSegments(
+            source[..index],
+            source.Substring(index, query.Length),
+            source[(index + query.Length)..]);
+    }
+}
+
 public static class FindReplaceLogicService
 {
     // Returns all start indices of keyword in text using the given comparison.

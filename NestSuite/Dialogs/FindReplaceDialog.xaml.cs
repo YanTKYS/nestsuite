@@ -7,7 +7,35 @@ using NestSuite.ViewModels;
 
 namespace NestSuite.Dialogs;
 
-internal sealed record AllNoteMatchItem(NoteViewModel Note, int CharIndex, string Display);
+internal sealed record AllNoteMatchItem(
+    NoteViewModel Note,
+    int CharIndex,
+    string Display,
+    string TitlePrefix,
+    string MatchBefore,
+    string MatchText,
+    string MatchAfter,
+    bool HasMatch)
+{
+    public static AllNoteMatchItem Create(
+        NoteViewModel note,
+        int charIndex,
+        string context,
+        string keyword,
+        StringComparison comparison)
+    {
+        var segments = SearchMatchSegments.Split(context, keyword, comparison);
+        return new AllNoteMatchItem(
+            note,
+            charIndex,
+            $"{note.Title}: {context}",
+            $"{note.Title}: ",
+            segments.Before,
+            segments.Match,
+            segments.After,
+            segments.HasMatch);
+    }
+}
 
 public partial class FindReplaceDialog : Window
 {
@@ -289,7 +317,12 @@ public partial class FindReplaceDialog : Window
             {
                 var idx = content.IndexOf(keyword, pos, Comparison);
                 if (idx < 0) break;
-                results.Add(new AllNoteMatchItem(note, idx, $"{note.Title}: {FindReplaceLogicService.BuildMatchContext(content, idx, keyword)}"));
+                results.Add(AllNoteMatchItem.Create(
+                    note,
+                    idx,
+                    FindReplaceLogicService.BuildMatchContext(content, idx, keyword),
+                    keyword,
+                    Comparison));
                 pos = idx + 1;
             }
         }

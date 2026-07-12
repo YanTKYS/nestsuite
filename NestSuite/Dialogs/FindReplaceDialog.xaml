@@ -105,9 +105,14 @@
                      KeyDown="AllNotesResult_KeyDown">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Display}"
-                                   TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding Display}"/>
+                        <TextBlock TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding Display}"
+                                   TextWrapping="Wrap">
+                            <Run Text="{Binding TitlePrefix}"/>
+                            <Run Text="{Binding MatchBefore}"/>
+                            <Run Text="{Binding MatchText}" FontWeight="Bold"/>
+                            <Run Text="{Binding MatchAfter}"/>
+                        </TextBlock>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

@@ -294,3 +294,14 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 - assertion・テストケースの完全性を回復した。
 - production 動作・UI・保存形式・session 形式は変更していない。
 - 次は v2.16.50 / M17（検索結果のマッチ箇所ハイライト）。
+
+## 15. 実施結果（M17、v2.16.50）
+
+- NoteNest 全ノート検索結果へ、検索語に一致した箇所の強調表示を追加した。
+- 強調対象は最初の一致 1 か所だけとした。
+- WPF 非依存の純粋 helper で検索結果文脈を Before / Match / After へ分割する。
+- ViewModel 相当の検索結果行生成時に分割し、XAML は 3 つの `Run` で表示する。
+- Attached Behavior や converter は追加していない。
+- 検索ロジック・検索結果件数・前後文脈生成・結果クリック動作は変更していない。
+- Shell 横断検索・IdeaNest・ChatNest・本文エディタ内ハイライトは対象外とした。
+- M17 を完了した。production 保存形式・session 形式・schema は変更していない。

@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.50 — M17: 検索結果のマッチ箇所ハイライト
+
+- NoteNest 全ノート検索結果の文脈内で、検索語に最初に一致した 1 か所を太字で強調表示するようにした。対象は NoteNest の全ノート検索結果一覧のみで、Shell 横断検索・IdeaNest・ChatNest・本文エディタ内ハイライトは対象外。
+- WPF 非依存の純粋な文字列分割 helper `SearchMatchSegments` を追加し、表示文脈を Before / Match / After へ分割する。Match は query 文字列ではなく元 text から切り出し、元文字列上の表記を維持する。
+- 大文字小文字の比較規則は既存検索仕様に合わせ、全ノート検索の `StringComparison` を helper に渡す。1 行内の複数一致は最初の 1 件だけを強調し、一致なしでは従来どおり全文を表示する。
+- helper の null・空・一致なし・先頭・中央・末尾・全体一致・大文字小文字・複数一致・日本語・サロゲートペア・再結合不変条件をテストした。
+- 検索対象・検索結果件数・並び順・前後文脈生成・結果クリック動作は変更していない。XAML converter / Attached Behavior は追加していない。
+- production 保存処理変更なし、UI 変更は NoteNest 検索結果表示のみ、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし、既存テスト削除・skip なし。
+
 ## v2.16.49 — TD-76-1: TD-75完了契約の欠落修正・TD-76監査記録補完
 
 - TD-76 で `Backlog_TD75_IsNowCompleted` を置き換えた際、TD-75 の完了範囲確認は `BacklogCompletedTDRangeRecords` の 75 行へ移したが、`| TD-75 |` open row 不在確認を `BacklogCompletedOpenItemAbsenceRecords` へ追加していなかった問題を修正した。
