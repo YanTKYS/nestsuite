@@ -124,8 +124,9 @@ public class DraftStoreTests
         File.WriteAllText(sidecar, "{");
         Assert.Equal(TransientDraftReadStatus.InvalidFormat, DraftStore.ReadTransientState(draft, root).Status);
 
-        File.Delete(sidecar);
-        Directory.CreateDirectory(sidecar);
+        DraftStore.WriteWorkspaceDraft(id, "{}", new ChatNestTransientDraftState("hello", "自分", null, ""), root);
+        File.Delete(draft);
+        Directory.CreateDirectory(draft);
         Assert.Equal(TransientDraftReadStatus.IoError, DraftStore.ReadTransientState(draft, root).Status);
     }
 
@@ -189,7 +190,7 @@ public class DraftStoreTests
         Assert.True(File.Exists(draft));
         Assert.False(File.Exists(sidecar));
         Assert.Contains("hello", File.ReadAllText(quarantinedSidecar!));
-        Assert.Empty(DraftStore.ListDraftFiles(root));
+        Assert.Equal(new[] { draft }, DraftStore.ListDraftFiles(root));
         Assert.Null(DraftStore.QuarantineTransientState(draft));
     }
 

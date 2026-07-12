@@ -62,7 +62,8 @@ public class MainViewModelCompositionTests
 
         var snapshot = main.CreateProjectSnapshotForDraft();
 
-        Assert.Equal("draft body", snapshot.Notebooks.Single().Notes.Single().Content);
+        var snapshotNote = snapshot.Notebooks.SelectMany(nb => nb.Notes).Single(n => n.Id == note.Id);
+        Assert.Equal("draft body", snapshotNote.Content);
         Assert.Equal(filePath, main.CurrentFilePath);
         Assert.True(main.IsModified);
         Assert.Equal("status before", main.StatusMessage);
