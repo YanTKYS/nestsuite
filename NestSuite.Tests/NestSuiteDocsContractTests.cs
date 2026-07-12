@@ -79,6 +79,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.50", "M17", "M17" };
         yield return new object[] { "v2.16.51", "M17-1", "M17-1" };
         yield return new object[] { "v2.17.0", "expert-review-closeout", "expert-review-closeout" };
+        yield return new object[] { "v2.17.1", "nestsuite-designer-guidelines.md", "nestsuite-designer-guidelines.md" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
