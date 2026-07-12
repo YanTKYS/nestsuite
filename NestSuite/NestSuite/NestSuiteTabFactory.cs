@@ -110,9 +110,10 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// ファイルパスから <see cref="NestSuiteWorkspaceKind"/> を解決できるかどうかを確認する。
-    /// v2.14.1 FM-1: `.nestsuite` の場合は wrapper の workspaceKind を内容から判定する
-    /// （ファイル未存在・wrapper 不正時は false）。全経路の種別判定はこのメソッドに集約されている。
+    /// ファイルパスから <see cref="NestSuiteWorkspaceKind"/> を解決できるか確認する。
+    /// `.nestsuite` を含む実際の probe・wrapper 解析・失敗分類は
+    /// <see cref="TryPrepareOpen"/> に集約され、この overload は
+    /// WorkspaceKind だけを必要とする呼び出し向けに結果を委譲して返す。
     /// </summary>
     public static bool TryGetKind(string filePath, out NestSuiteWorkspaceKind kind) =>
         TryGetKind(filePath, out kind, out _);

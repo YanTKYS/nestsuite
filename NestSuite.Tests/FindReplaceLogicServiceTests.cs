@@ -6,6 +6,101 @@ namespace NestSuite.Tests;
 // v2.8.7: TD-17 — FindReplaceDialog logic tests.
 public class FindReplaceLogicServiceTests
 {
+    // ── SearchMatchSegments ────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("前検索後", "検索", "前", "検索", "後")]
+    [InlineData("検索後", "検索", "", "検索", "後")]
+    [InlineData("前検索", "検索", "前", "検索", "")]
+    [InlineData("検索", "検索", "", "検索", "")]
+    [InlineData("本文", "検索", "本文", "", "")]
+    [InlineData("NestSuite", "nestsuite", "", "NestSuite", "")]
+    [InlineData("検索A検索B", "検索", "", "検索", "A検索B")]
+    [InlineData("これは検索対象です", "検索", "これは", "検索", "対象です")]
+    [InlineData("前😀検索後", "検索", "前😀", "検索", "後")]
+    [InlineData("前😀後", "😀", "前", "😀", "後")]
+    public void SearchMatchSegments_Split_ReturnsExpectedSegments(
+        string text,
+        string query,
+        string expectedBefore,
+        string expectedMatch,
+        string expectedAfter)
+    {
+        var result = SearchMatchSegments.Split(text, query, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Equal(expectedBefore, result.Before);
+        Assert.Equal(expectedMatch, result.Match);
+        Assert.Equal(expectedAfter, result.After);
+        Assert.Equal(text, result.Before + result.Match + result.After);
+        Assert.Equal(expectedMatch.Length > 0, result.HasMatch);
+    }
+
+    [Theory]
+    [InlineData(null, "検索", "")]
+    [InlineData("", "検索", "")]
+    [InlineData("本文", null, "本文")]
+    [InlineData("本文", "", "本文")]
+    [InlineData("本文", "   ", "本文")]
+    public void SearchMatchSegments_Split_NullOrEmptyInputs_ReturnNoMatch(
+        string? text,
+        string? query,
+        string expectedBefore)
+    {
+        var result = SearchMatchSegments.Split(text, query, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Equal(expectedBefore, result.Before);
+        Assert.Equal(string.Empty, result.Match);
+        Assert.Equal(string.Empty, result.After);
+        Assert.Equal(text ?? string.Empty, result.Before + result.Match + result.After);
+        Assert.False(result.HasMatch);
+    }
+
+    [Fact]
+    public void SearchMatchSegments_Split_RespectsComparisonProvidedBySearch()
+    {
+        var sensitive = SearchMatchSegments.Split("NestSuite", "nestsuite", StringComparison.Ordinal);
+        var insensitive = SearchMatchSegments.Split("NestSuite", "nestsuite", StringComparison.OrdinalIgnoreCase);
+
+        Assert.False(sensitive.HasMatch);
+        Assert.Equal("NestSuite", sensitive.Before);
+        Assert.True(insensitive.HasMatch);
+        Assert.Equal("NestSuite", insensitive.Match);
+    }
+
+    [Fact]
+    public void FindReplaceDialog_AllNotesResultTemplate_BindsSegmentsAndBoldsMatch()
+    {
+        var xaml = File.ReadAllText(Path.Combine(
+            TestPaths.RepoRoot,
+            "NestSuite",
+            "Dialogs",
+            "FindReplaceDialog.xaml"));
+
+        Assert.Contains("{Binding TitlePrefix}", xaml);
+        Assert.Contains("{Binding MatchBefore}", xaml);
+        Assert.Contains("{Binding MatchText}", xaml);
+        Assert.Contains("{Binding MatchAfter}", xaml);
+        Assert.Contains("FontWeight=\"Bold\"", xaml);
+    }
+
+    [Fact]
+    public void FindReplaceDialog_AllNotesResultItem_PreservesNavigationDataAndBuildsSegments()
+    {
+        var source = File.ReadAllText(Path.Combine(
+            TestPaths.RepoRoot,
+            "NestSuite",
+            "Dialogs",
+            "FindReplaceDialog.xaml.cs"));
+
+        Assert.Contains("SearchMatchSegments.Split(context, keyword, comparison)", source);
+        Assert.Contains("note,", source);
+        Assert.Contains("charIndex,", source);
+        Assert.Contains("$\"{note.Title}: {context}\"", source);
+        Assert.Contains("segments.Before", source);
+        Assert.Contains("segments.Match", source);
+        Assert.Contains("segments.After", source);
+    }
+
     // ── ComputeMatchPositions ────────────────────────────────────────────────
 
     [Fact]
