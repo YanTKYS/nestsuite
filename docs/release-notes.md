@@ -7,6 +7,21 @@
 
 ---
 
+## v2.16.41 — review6-fable5-2: SH-36下書き保護の設計補完
+
+- **production code の変更はなし**。review6-fable5（v2.16.40）で確定した SH-36（無題タブの下書き自動保存）の初期設計に対する、期間限定エキスパートの追加設計レビュー。成果物は `docs/planning/review6-fable5-2.md`（実装時はこれを正とする）
+- **review6 初期設計の中心的な不足を修正した**: ChatNest の下書き snapshot 源を `vm.MessageModels` としていたが、これは確定済みメッセージのみで、未送信の `InputText`・入力時の `SelectedSpeaker`・インライン編集中の `EditingText` を含まない。このまま実装すると「下書きファイルはあるが利用者が打っていた文章が入っていない」状態になるため、実装前に設計を補完した
+- 3 Workspace の「未保存内容」を A（保存モデルに含まれる）/ B（下書き専用状態として保護）/ C（対象外）に棚卸しした。NoteNest はエディタが編集のたびにモデルへ書き戻すため全コンテンツが A。IdeaNest は確定カード・設定（検索語含む）が A、`PreviewIdeaWindow`（作成・編集ダイアログ）内の未確定入力は参照不能のため **明示的に対象外（C）** とし「全入力保護」という表現を撤回・限定した。ChatNest は `InputText`・`SelectedSpeaker`・編集中テキスト + 対象メッセージ ID を B として保護する
+- 下書き候補判定を Workspace ごとの dirty 源（NoteNest = `IsModified` / IdeaNest = `HasChanges` / ChatNest = `HasUnsavedChanges`）で確定した。SH-33 自動保存が ChatNest で `IsDirty` を使うのと逆の選択であり、理由（保存で解消されない一時状態こそ下書きの保護対象）を記録した
+- **下書き保存構造は案 A を採用**: `draft-<tabId>.nestsuite`（既存 wrapper 形式のまま・手動 Open 可能）+ ChatNest のみ `draft-<tabId>.state.json` sidecar。sidecar は AppData 内専用の下書き内部形式（`draftFormatVersion 1.0`）で、本体ファイルの SHA-256 を持ち、世代ずれ検出時は一時状態のみ破棄して Workspace 本体の復元を続行する
+- 書込責務を `DraftStore` へ一意化した（各 FileService は既存 Save から抽出する `SerializeWrapped` の提供のみ。FileService は AppData・下書きの概念を持たない）。無副作用 snapshot の不変条件（dirty・CurrentFilePath・session・recent・`.bak` 等を一切動かさない）と、IdeaNest `BuildWorkspaceForSave` の内部設定同期が `HasChanges` に影響しないことの確認・回帰テスト条件を確定した
+- 下書き削除順序（SaveAs 成功後・タブ閉鎖確定後・終了確定後）と、`OnClosing` が AutoSave timer を停止しないことに起因する「破棄後に tick が下書きを再作成する」競合の解消手順（OnClosing 冒頭で停止・Cancel 全経路で再開）を確定した
+- 起動時復元順序（session 復元 → 復元失敗通知 → 下書き確認 → timer 開始 → 引数ファイル → Show）を現行コンストラクターと突き合わせて確定した。あわせて review6 の事実誤認（既定起動タブは無題 NoteNest ではなく TempNest タブのアクティブ化）を訂正した — SH-36 の優先判断自体は維持（発生時の損失が全損である点は不変）
+- **復元確認は Yes / No / Cancel を採用**（はい = 復元 / いいえ = 破棄を文言で明示 / キャンセル・Esc・✕ = 保留して次回再確認）。Esc が不可逆な破棄に落ちる Yes/No 案の誤操作リスクを排除した
+- **読めない下書きは削除せず `.corrupt-<timestamp>` へ隔離**し、通常列挙から除外（恒久 nag なし）・ErrorLog 記録・復元後 1 回だけ件数通知する。schema too-new の下書きも隔離（新バージョンのデータを旧バージョンが壊さない）
+- SH-36a 単独出荷期間は「drafts フォルダーの `.nestsuite` を手動で開いて復旧可能・ChatNest 一時入力の自動復元は SH-36b から」と限定を明記し、連続リリースを前提とした。**SH-36a / SH-36b の 2 段階実装は維持**（後続は v2.16.42 / SH-36a → v2.16.43 / SH-36b → v2.16.44 / TD-76 → v2.16.45 / M17 へ繰り下げ）
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper `formatVersion` は `1.0` のまま。session.json・Workspace 保存形式の変更なし（下書き専用内部形式は AppData 内のみ）。外部依存追加なし。既存テストの削除・skip なし
+
 ## v2.16.40 — review6-fable5: TD-59完了後の高リスク・高効果設計課題再評価
 
 - **production code の変更はなし**。TD-59 完了（v2.16.39）後の全体を対象とした、期間限定エキスパートによる設計・優先順位レビュー。成果物は `docs/planning/review6-fable5.md`
