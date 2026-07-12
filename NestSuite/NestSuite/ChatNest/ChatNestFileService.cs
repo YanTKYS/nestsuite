@@ -21,6 +21,24 @@ public static class ChatNestFileService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    public static string SerializePayload(IEnumerable<Message> messages)
+    {
+        var data = new ChatSessionData
+        {
+            Messages = messages.Select(m => new MessageData
+            {
+                Id = m.Id,
+                Speaker = m.Speaker.ToString(),
+                Text = m.Text,
+                CreatedAt = m.CreatedAt
+            }).ToList()
+        };
+        return JsonSerializer.Serialize(data, JsonOptions);
+    }
+
+    public static string SerializeWrapped(IEnumerable<Message> messages) => NestSuiteWorkspaceEnvelope.Wrap(
+        NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, SerializePayload(messages));
+
     /// <summary>.chatnest ファイルにメッセージを保存する（tmp+replace パターン）。</summary>
     /// <exception cref="IOException">ファイル書き込みに失敗した場合。</exception>
     public static void Save(string path, IEnumerable<Message> messages) =>
@@ -32,22 +50,9 @@ public static class ChatNestFileService
     /// <exception cref="IOException">ファイル書き込みに失敗した場合。</exception>
     public static void Save(string path, IEnumerable<Message> messages, bool createBackup)
     {
-        var data = new ChatSessionData
-        {
-            Messages = messages.Select(m => new MessageData
-            {
-                Id        = m.Id,
-                Speaker   = m.Speaker.ToString(),
-                Text      = m.Text,
-                CreatedAt = m.CreatedAt
-            }).ToList()
-        };
-
-        var json = JsonSerializer.Serialize(data, JsonOptions);
-        // v2.14.1 FM-1: .nestsuite の場合は wrapper で包む。payload（既存 ChatNest JSON）の中身は変更しない
-        if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
-            json = NestSuiteWorkspaceEnvelope.Wrap(
-                NestSuiteWorkspaceEnvelope.KindChatNest, FileVersionString, json);
+        var json = NestSuiteWorkspaceEnvelope.IsEnvelopePath(path)
+            ? SerializeWrapped(messages)
+            : SerializePayload(messages);
         // v2.14.5 FM-5: 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
         // v2.16.6 TD-64: createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
         if (createBackup)

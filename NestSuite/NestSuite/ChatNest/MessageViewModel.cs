@@ -94,6 +94,12 @@ public class MessageViewModel : INotifyPropertyChanged
         IsEditing = true;
     }
 
+    internal void RestoreEditingState(string editingText)
+    {
+        EditingText = editingText;
+        IsEditing = true;
+    }
+
     private void CommitEdit()
     {
         var trimmed = EditingText.Trim();

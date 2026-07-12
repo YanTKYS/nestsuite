@@ -410,6 +410,16 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         OnPropertyChanged(nameof(DisplayName));
     }
 
+    /// <summary>
+    /// SH-36b: 下書き復元専用。通常 Open の clean 契約は維持しつつ、
+    /// 復元後の無題タブが次 tick の下書き候補になるよう dirty として扱う。
+    /// </summary>
+    public void LoadFromWorkspaceAsDraft(Workspace workspace)
+    {
+        LoadFromWorkspace(workspace);
+        MarkDirty();
+    }
+
     public Workspace BuildWorkspaceForSave()
     {
         SyncSettings();

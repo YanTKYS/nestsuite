@@ -66,6 +66,16 @@ public sealed class ProjectLifecycleService
     public void OpenPrepared(WorkspaceFileOpenContext context) =>
         Load(_files.LoadPrepared(context), context.FilePath);
 
+    /// <summary>
+    /// SH-36b: AppData の下書きから読み込んだ Project を、通常ファイルとは関連付けず
+    /// 無題・未保存状態として配置する。recent files や保存済み状態は更新しない。
+    /// </summary>
+    public void OpenSnapshotAsUntitled(Project project)
+    {
+        Load(project, filePath: null);
+        _session.IsModified = true;
+    }
+
     public void Save(string path) => Save(path, createBackup: true);
 
     /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
