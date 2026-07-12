@@ -340,6 +340,71 @@ public class IdeaNestFileServiceTests
     // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]
+    public void SerializeWrapped_ReturnsValidEnvelopeMatchesNestSuiteSaveAndDoesNotCreateFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var nestSuitePath = Path.Combine(root, "ideas.nestsuite");
+        try
+        {
+            var workspace = new Workspace { WorkspaceName = "Wrapped", Ideas = new() { new Idea { Id = "i1", Title = "T" } } };
+            var wrapped = IdeaNestFileService.SerializeWrapped(workspace);
+            Assert.Empty(Directory.EnumerateFileSystemEntries(root));
+            var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+            Assert.Equal(NestSuiteWorkspaceEnvelope.KindIdeaNest, envelope.WorkspaceKind);
+            Assert.Equal(IdeaNestFileService.SchemaVersion, envelope.PayloadSchemaVersion);
+
+            File.WriteAllText(nestSuitePath, wrapped);
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(nestSuitePath, out var context, out _));
+            Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, context.WorkspaceKind);
+            Assert.Equal("Wrapped", IdeaNestFileService.LoadPrepared(context).WorkspaceName);
+
+            File.Delete(nestSuitePath);
+            IdeaNestFileService.Save(nestSuitePath, workspace);
+            Assert.Equal(File.ReadAllText(nestSuitePath), wrapped);
+            Assert.False(File.Exists(nestSuitePath + ".bak"));
+            Assert.False(File.Exists(nestSuitePath + ".tmp"));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void Save_LegacyIdeaNest_RemainsPayloadNotEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".ideanest");
+        try
+        {
+            IdeaNestFileService.Save(path, new Workspace { WorkspaceName = "Legacy", Ideas = new() });
+            var json = File.ReadAllText(path);
+            Assert.DoesNotContain("NestSuiteWorkspace", json);
+            using var document = JsonDocument.Parse(json);
+            Assert.True(document.RootElement.TryGetProperty("version", out _));
+            Assert.Equal("Legacy", IdeaNestFileService.Load(path).WorkspaceName);
+        }
+        finally { foreach (var f in new[] { path, path + ".tmp", path + ".bak" }) if (File.Exists(f)) File.Delete(f); }
+    }
+
+    [Fact]
+    public void SerializeWrapped_DoesNotMutateInputWorkspace()
+    {
+        var workspace = new Workspace
+        {
+            Version = "0.0.0",
+            WorkspaceName = "NoMutation",
+            Ideas = new() { new Idea { Id = "i1", Tags = new() { " z ", "a" }, Title = "Title" } },
+            Settings = new WorkspaceSettings { SearchText = "find", SelectedTag = "tag", CardSize = "large" }
+        };
+        var tagsBefore = workspace.Ideas[0].Tags.ToArray();
+        var settingsBefore = (workspace.Settings.SearchText, workspace.Settings.SelectedTag, workspace.Settings.CardSize);
+
+        _ = IdeaNestFileService.SerializeWrapped(workspace);
+
+        Assert.Equal("0.0.0", workspace.Version);
+        Assert.Equal(tagsBefore, workspace.Ideas[0].Tags);
+        Assert.Equal(settingsBefore, (workspace.Settings.SearchText, workspace.Settings.SelectedTag, workspace.Settings.CardSize));
+    }
+
+    [Fact]
     public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
     {
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.nestsuite");
