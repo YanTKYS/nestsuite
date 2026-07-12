@@ -253,6 +253,52 @@ public class ProjectFileServiceTests : IDisposable
         }
     }
 
+
+    [Fact]
+    public void SerializeWrapped_ReturnsValidEnvelopeMatchesNestSuiteSaveAndDoesNotCreateFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var nestSuitePath = Path.Combine(root, "project.nestsuite");
+        try
+        {
+            var project = new Project { ProjectName = "Wrapped", ProjectId = "p1" };
+            var wrapped = _svc.SerializeWrapped(project);
+            Assert.Empty(Directory.EnumerateFileSystemEntries(root));
+            var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+            Assert.Equal(NestSuiteWorkspaceEnvelope.KindNoteNest, envelope.WorkspaceKind);
+            Assert.Equal(Project.CurrentSchemaVersion, envelope.PayloadSchemaVersion);
+
+            File.WriteAllText(nestSuitePath, wrapped);
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(nestSuitePath, out var context, out _));
+            Assert.Equal(NestSuiteWorkspaceKind.NoteNest, context.WorkspaceKind);
+            Assert.Equal("Wrapped", _svc.LoadPrepared(context).ProjectName);
+
+            File.Delete(nestSuitePath);
+            _svc.Save(nestSuitePath, project);
+            Assert.Equal(File.ReadAllText(nestSuitePath), wrapped);
+            Assert.False(File.Exists(nestSuitePath + ".bak"));
+            Assert.False(File.Exists(nestSuitePath + ".tmp"));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void Save_LegacyNoteNest_RemainsPayloadNotEnvelope()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".notenest");
+        try
+        {
+            _svc.Save(path, new Project { ProjectName = "Legacy" });
+            var json = File.ReadAllText(path);
+            Assert.DoesNotContain("NestSuiteWorkspace", json);
+            using var document = System.Text.Json.JsonDocument.Parse(json);
+            Assert.True(document.RootElement.TryGetProperty("projectName", out _));
+            Assert.Equal("Legacy", _svc.Load(path).ProjectName);
+        }
+        finally { foreach (var f in new[] { path, path + ".tmp", path + ".bak" }) if (File.Exists(f)) File.Delete(f); }
+    }
+
     // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]

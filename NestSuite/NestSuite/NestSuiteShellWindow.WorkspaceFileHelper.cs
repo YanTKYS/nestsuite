@@ -77,6 +77,7 @@ public partial class NestSuiteShellWindow
     {
         var tab = _tabs.FirstOrDefault(t => t.Id == session.TabId);
         if (tab == null) return false;
+        var wasUntitled = tab.FilePath == null;
         if (!SavedWorkspaceStateUpdater.TryCreate(tab, path, isModifiedAfterSave, out var state)) return false;
 
         ReplaceTab(tab, state.UpdatedTab);
@@ -84,6 +85,7 @@ public partial class NestSuiteShellWindow
         _recentFiles.Add(state.RecentFilePath);
         UpdateRecentFilesMenu();
         if (showNotification) ShowStatusNotification("  |  保存しました");
+        if (wasUntitled) TryDeleteDraftForTab(tab.Id, "DraftDeleteAfterSave");
         return true;
     }
 

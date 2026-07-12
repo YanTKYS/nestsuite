@@ -14,6 +14,17 @@ public static class IdeaNestFileService
     // that only need the file service namespace.
     public const string SchemaVersion = IdeaNestSchema.CurrentVersion;
 
+    public static string SerializePayload(Workspace workspace)
+    {
+        if (workspace == null) throw new ArgumentNullException(nameof(workspace));
+        var copy = IdeaNestWorkspaceService.DeserializeFromJson(IdeaNestWorkspaceService.SerializeToJson(workspace));
+        copy.Version = SchemaVersion;
+        return IdeaNestWorkspaceService.SerializeToJson(copy);
+    }
+
+    public static string SerializeWrapped(Workspace workspace) => NestSuiteWorkspaceEnvelope.Wrap(
+        NestSuiteWorkspaceEnvelope.KindIdeaNest, SchemaVersion, SerializePayload(workspace));
+
     public static void Save(string path, Workspace workspace) => Save(path, workspace, createBackup: true);
 
     /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
@@ -21,14 +32,9 @@ public static class IdeaNestFileService
     {
         if (workspace == null) throw new ArgumentNullException(nameof(workspace));
 
-        // v2.14.1 FM-1: .nestsuite の場合は wrapper で包む。payload（既存 IdeaNest JSON）の中身は変更しない
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
         {
-            workspace.Version = SchemaVersion;
-            var json = NestSuiteWorkspaceEnvelope.Wrap(
-                NestSuiteWorkspaceEnvelope.KindIdeaNest, SchemaVersion,
-                IdeaNestWorkspaceService.SerializeToJson(workspace));
-            IdeaNestWorkspaceService.WriteJson(path, json, createBackup);
+            IdeaNestWorkspaceService.WriteJson(path, SerializeWrapped(workspace), createBackup);
             return;
         }
 

@@ -21,6 +21,8 @@ public partial class MainViewModel
         return project.Notebooks.Count;
     }
 
+    public Project CreateProjectSnapshotForDraft() => _lifecycle.CreateSnapshot();
+
     public bool OpenFileAtStartup(string path) => TryOpenProject(path);
 
     /// <summary>

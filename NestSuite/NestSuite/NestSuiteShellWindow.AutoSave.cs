@@ -1,6 +1,7 @@
 using System.Windows.Threading;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.IdeaNest.Services;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 
@@ -18,9 +19,11 @@ public partial class NestSuiteShellWindow
     private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(30);
     private DispatcherTimer? _autoSaveTimer;
     private readonly HashSet<string> _autoSaveNotifiedFailureTabIds = new();
+    private readonly HashSet<string> _draftAutoSaveLoggedFailureTabIds = new();
 
     private void StartAutoSaveTimer()
     {
+        if (_autoSaveTimer != null) return;
         _autoSaveTimer = new DispatcherTimer { Interval = AutoSaveInterval };
         _autoSaveTimer.Tick += (_, _) => RunAutoSaveTick();
         _autoSaveTimer.Start();
@@ -40,14 +43,24 @@ public partial class NestSuiteShellWindow
     {
         foreach (var tab in _tabs.ToList())
         {
-            if (tab.FilePath == null) continue;
             if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) continue;
 
-            var isDirtyForAutoSave = ResolveAutoSaveDirtyState(tab, session);
-            if (!AutoSaveCandidatePolicy.IsCandidate(tab.WorkspaceKind, tab.FilePath, isDirtyForAutoSave)) continue;
+            if (tab.FilePath != null)
+            {
+                var isDirtyForAutoSave = ResolveAutoSaveDirtyState(tab, session);
+                if (!AutoSaveCandidatePolicy.IsCandidate(tab.WorkspaceKind, tab.FilePath, isDirtyForAutoSave)) continue;
 
-            if (AutoSaveTab(tab, session))
-                _autoSaveNotifiedFailureTabIds.Remove(tab.Id);
+                if (AutoSaveTab(tab, session))
+                    _autoSaveNotifiedFailureTabIds.Remove(tab.Id);
+                continue;
+            }
+
+            if (tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp) continue;
+            var isDirtyForDraft = ResolveDraftDirtyState(tab, session);
+            if (DraftCandidatePolicy.IsCandidate(tab.WorkspaceKind, tab.FilePath, isDirtyForDraft))
+                WriteDraftForTab(tab, session);
+            else
+                TryDeleteDraftForTab(tab.Id, "DraftDeleteCandidateFalse");
         }
     }
 
@@ -63,6 +76,51 @@ public partial class NestSuiteShellWindow
         tab.WorkspaceKind == NestSuiteWorkspaceKind.ChatNest
             ? ((ChatNestWorkspaceViewModel)session.WorkspaceViewModel).IsDirty
             : tab.IsModified;
+
+    private static bool ResolveDraftDirtyState(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session) =>
+        tab.WorkspaceKind switch
+        {
+            NestSuiteWorkspaceKind.NoteNest => tab.IsModified,
+            NestSuiteWorkspaceKind.IdeaNest => ((IdeaNestWorkspaceViewModel)session.WorkspaceViewModel).HasChanges,
+            // SH-36 drafts intentionally use HasUnsavedChanges, unlike SH-33 auto-save's IsDirty,
+            // because InputText and EditingText are not covered by normal ChatNest save files.
+            NestSuiteWorkspaceKind.ChatNest => ((ChatNestWorkspaceViewModel)session.WorkspaceViewModel).HasUnsavedChanges,
+            _ => false,
+        };
+
+    private void WriteDraftForTab(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
+    {
+        try
+        {
+            var wrappedJson = tab.WorkspaceKind switch
+            {
+                NestSuiteWorkspaceKind.NoteNest => new ProjectFileService().SerializeWrapped(
+                    ((MainViewModel)session.WorkspaceViewModel).CreateProjectSnapshotForDraft()),
+                NestSuiteWorkspaceKind.IdeaNest => IdeaNestFileService.SerializeWrapped(
+                    ((IdeaNestWorkspaceViewModel)session.WorkspaceViewModel).BuildWorkspaceForSave()),
+                NestSuiteWorkspaceKind.ChatNest => ChatNestFileService.SerializeWrapped(
+                    ((ChatNestWorkspaceViewModel)session.WorkspaceViewModel).MessageModels.ToList()),
+                _ => null,
+            };
+            if (wrappedJson == null) return;
+            var transient = session.WorkspaceViewModel is ChatNestWorkspaceViewModel chatVm
+                ? chatVm.CreateTransientDraftState()
+                : null;
+            DraftStore.WriteWorkspaceDraft(tab.Id, wrappedJson, transient);
+            _draftAutoSaveLoggedFailureTabIds.Remove(tab.Id);
+        }
+        catch (Exception ex)
+        {
+            if (_draftAutoSaveLoggedFailureTabIds.Add(tab.Id))
+                ErrorLogService.Log("DraftAutoSave", ex, tab.WorkspaceKind.ToString(), null);
+        }
+    }
+
+    private static void TryDeleteDraftForTab(string tabId, string operation)
+    {
+        try { DraftStore.Delete(tabId); }
+        catch (Exception ex) { ErrorLogService.Log(operation, ex, filePath: null); }
+    }
 
     private bool AutoSaveTab(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
