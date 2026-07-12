@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.45 — SH-36a-2: sidecar Speaker数値値の正規化修正・SH-36a最終回帰
+
+- ChatNest sidecar の Speaker 正規化で `Enum.TryParse` が `"0"`〜`"3"` などの数値文字列を enum 値として受理する問題を修正した。sidecar Speaker は enum 名との完全一致だけを有効とし、数値文字列・符号付き数値・小数・null・空・空白・未知値・英語名・前後空白付き enum 名・複数値風文字列はすべて `自分` へフォールバックする。
+- Speaker 値だけの異常では `TransientDraftReadStatus.Loaded` を維持し、InputText / EditingMessageId / EditingText など Speaker 以外の一時状態は維持する。
+- Speaker 正規化の境界値テストを追加し、PR #528 で修正した IoError（本体 path をディレクトリ化）・sidecar 単独隔離（本体は列挙に残る）・NoteNest snapshot（作成ノートを ID で特定）も維持した。
+- SH-36a 関連テストを再実行する前提の最終回帰として書込側を完了状態にし、SH-36b は v2.16.46 で起動時復元予定とした。
+- NoteNest schema `1.4.2`・`.nestsuite` wrapper `formatVersion 1.0`・session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし。
+
 ## v2.16.44 — SH-36a-1: 下書き終了処理・sidecar読込契約の回帰修正
 
 - 正常終了時の下書き削除対象を NoteNest / IdeaNest / ChatNest に限定し、TempNest 固定 ID `tempnest-fixed` を `DraftStore.Delete` へ渡さないようにした。これにより正常終了時の誤った `DraftDeleteOnClosing` ErrorLog を解消した。

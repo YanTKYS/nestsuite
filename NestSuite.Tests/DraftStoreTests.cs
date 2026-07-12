@@ -140,6 +140,17 @@ public class DraftStoreTests
     [InlineData("   ", "自分")]
     [InlineData("UnknownSpeaker", "自分")]
     [InlineData("0", "自分")]
+    [InlineData("1", "自分")]
+    [InlineData("2", "自分")]
+    [InlineData("3", "自分")]
+    [InlineData("-1", "自分")]
+    [InlineData("4", "自分")]
+    [InlineData("999", "自分")]
+    [InlineData("1.0", "自分")]
+    [InlineData(" 自分", "自分")]
+    [InlineData("自分 ", "自分")]
+    [InlineData("自 分", "自分")]
+    [InlineData("自分,反論", "自分")]
     [InlineData("self", "自分")]
     public void ReadTransientState_NormalizesSelectedSpeakerButKeepsLoaded(string? speaker, string expected)
     {

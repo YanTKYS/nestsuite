@@ -150,10 +150,14 @@ public static class DraftStore
     internal static Func<DateTime> NowProvider { get; set; } = () => DateTime.Now;
 
     private static string NormalizeSelectedSpeaker(string? selectedSpeaker) =>
-        Enum.TryParse<Speaker>(selectedSpeaker, ignoreCase: false, out var parsedSpeaker) &&
-        Enum.IsDefined(parsedSpeaker)
-            ? parsedSpeaker.ToString()
-            : Speaker.自分.ToString();
+        selectedSpeaker switch
+        {
+            nameof(Speaker.自分) => nameof(Speaker.自分),
+            nameof(Speaker.反論) => nameof(Speaker.反論),
+            nameof(Speaker.補足) => nameof(Speaker.補足),
+            nameof(Speaker.結論) => nameof(Speaker.結論),
+            _ => nameof(Speaker.自分),
+        };
 
     private static string Sha256Hex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     private static string MoveUnique(string path, string stamp)
