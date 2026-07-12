@@ -58,6 +58,24 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.23", "TD-73", "TD-73" };
         yield return new object[] { "v2.16.25", "TD-74", "TD-74" };
         yield return new object[] { "v2.16.26", "TD-75a", "TD-75a" };
+        yield return new object[] { "v2.16.43", "SH-36a", "SH-36a" };
+        yield return new object[] { "v2.16.44", "SH-36a-1", "SH-36a-1" };
+        yield return new object[] { "v2.16.45", "SH-36a-2", "SH-36a-2" };
+        yield return new object[] { "v2.16.46", "SH-36b", "SH-36b" };
+        yield return new object[] { "v2.16.47", "SH-36b-1", "SH-36b-1" };
+        yield return new object[] { "v2.16.32", "TD-59a", "TD-59a" };
+        yield return new object[] { "v2.16.33", "TD-59a-2", "TD-59a-2" };
+        yield return new object[] { "v2.16.34", "TD-59b-1", "TD-59b-1" };
+        yield return new object[] { "v2.16.35", "TD-59b-2", "TD-59b-2" };
+        yield return new object[] { "v2.16.36", "TD-59b-2-2", "TD-59b-2-2" };
+        yield return new object[] { "v2.16.37", "TD-59b-3", "TD-59b-3" };
+        yield return new object[] { "v2.16.38", "TD-59b-4", "TD-59b-4" };
+        yield return new object[] { "v2.16.39", "TD-59b-5", "TD-59b-5" };
+        yield return new object[] { "v2.16.40", "review6-fable5", "review6-fable5" };
+        yield return new object[] { "v2.16.41", "review6-fable5-2", "review6-fable5-2" };
+        yield return new object[] { "v2.16.42", "review6-fable5-3", "review6-fable5-3" };
+        yield return new object[] { "v2.16.48", "TD-76", "TD-76" };
+        yield return new object[] { "v2.16.49", "TD-76-1", "TD-76-1" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -99,6 +117,16 @@ public class NestSuiteDocsContractTests
             $"release notes に id '{id}' が見つからない（検索文字列: '{idSearchText}'）");
     }
 
+    [Fact]
+    public void ReleaseNoteVersionAndIdRecords_DoesNotContainDuplicatePairs()
+    {
+        var pairs = ReleaseNoteVersionAndIdRecords()
+            .Select(row => (Version: (string)row[0], Id: (string)row[1]))
+            .ToList();
+
+        Assert.Equal(pairs.Count, pairs.Distinct().Count());
+    }
+
     /// <summary>
     /// 完了済み id が backlog.md に open item の表行（"| id |"）として残っていないことを
     /// 確認するレコード一覧。
@@ -124,6 +152,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-72" };
         yield return new object[] { "SH-34" };
         yield return new object[] { "TD-73" };
+        yield return new object[] { "TD-75" };
+        yield return new object[] { "TD-76" };
     }
 
     [Theory]
@@ -150,6 +180,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { 72 };
         yield return new object[] { 73 };
         yield return new object[] { 74 };
+        yield return new object[] { 75 };
+        yield return new object[] { 76 };
     }
 
     [Theory]
@@ -175,15 +207,14 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TD75_IsNowCompleted()
+    public void Backlog_TD76_IsNowCompleted()
     {
-        // TD-75a〜TD-75e（v2.16.26〜v2.16.31）ですべて完了したため、TD-75e (v2.16.31) で
-        // TD-75 は completed range へ移動し open item 表からは外れた。
-        // 旧 Backlog_TD75_RemainsOpenItem（TD-75a で追加）をこのテストへ置き換えた。
+        // TD-76 (v2.16.48) は今回の PR で完了するため open item として残さず、
+        // 技術的負債・保守性セクションの completed range に含める。
         var backlog = TestPaths.ReadBacklog();
-        Assert.DoesNotContain("| TD-75 |", backlog);
-        Assert.True(BacklogCompletedRangeCoversTD(backlog, 75),
-            "TD-75 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
+        Assert.DoesNotContain("| TD-76 |", backlog);
+        Assert.True(BacklogCompletedRangeCoversTD(backlog, 76),
+            "TD-76 が backlog の完了済み範囲（TD-A〜TD-B）に含まれていない");
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -239,6 +270,27 @@ public class NestSuiteDocsContractTests
     // 意図が個別に強いテスト。ガイドライン (static-test-guidelines.md) に基づき、
     // 無理に統合しない。
     // ═══════════════════════════════════════════════════════════════════
+
+
+    [Fact]
+    public void Docs_Record_SH36aDraftWriteSideAndHashMismatchPolicy()
+    {
+        var releaseNotes = TestPaths.ReadReleaseNotes();
+        var backlog = TestPaths.ReadBacklog();
+        var planning = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-3.md"));
+
+        foreach (var term in new[] { "v2.16.43", "SH-36a", "下書き", "ChatNest", "sidecar", "HashMismatch", "隔離", "SH-36b" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.44", "SH-36a-1", "TempNest", "Speaker", "sidecar", "回帰" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.45", "SH-36a-2", "Speaker", "数値", "自分", "sidecar" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.46", "SH-36b", "起動時", "下書き", "復元", "Yes", "No", "Cancel", "ChatNest", "sidecar", "隔離", "SH-36 はこれで完了", "SH-36完了" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.47", "SH-36b-1", "列挙", "起動継続", "ID衝突", "rollback", "旧 pair", "TD-76" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        Assert.Contains($"NoteNest schema は `{Project.CurrentSchemaVersion}`", releaseNotes);
+    }
 
     // ── RJ-10: M2 見送り・タスク縮退方針整理 ────────────────────────────────
 
@@ -603,7 +655,7 @@ public class NestSuiteDocsContractTests
     // "| TD-75 |" open item 行の存在を確認していた）4 件は、以後恒久的に成立しない
     // 前提を検証する形になっていた（CI で実際に FAIL した）。各サブタスクの完了記録は
     // 下の ReleaseNotes_Contains_V216XX_AndTD75X が release notes 側で引き続き保証しており、
-    // "| TD-75 |" が open item として残っていないことは Backlog_TD75_IsNowCompleted が
+    // "| TD-75 |" が open item として残っていないことは Backlog_DoesNotContainCompletedIdAsOpenItem が
     // 保証するため、削除しても検証内容は失われていない。
 
     [Fact]
@@ -672,7 +724,7 @@ public class NestSuiteDocsContractTests
     public void Backlog_TD75_MentionsTD75eCompletion()
     {
         var backlog = File.ReadAllText(Path.Combine(RepoRoot, "docs", "backlog.md"));
-        Assert.Contains("TD-64〜TD-75", backlog);
+        Assert.Contains("TD-64〜TD-76", backlog);
     }
 
     [Fact]
@@ -685,13 +737,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59a: .nestsuite 二重読込解消の設計レビュー ─────────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21632_AndTD59a()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.32", text);
-        Assert.Contains("TD-59a", text);
-    }
 
     // v2.16.39 TD-59b-5 fix: TD-59 完了に伴い backlog.md の TD-59 行自体を削除したため
     // （TD-33 の運用方針: 完了済み項目は backlog.md に残さない。TD-75a-2 で TD-75 系に適用したのと
@@ -724,13 +769,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59a-2: .nestsuite 二重読込解消設計の安全性補足 ──────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21633_AndTD59a2()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.33", text);
-        Assert.Contains("TD-59a-2", text);
-    }
 
     [Fact]
     public void DoubleReadDesignReview_MentionsSafetySupplementKeyDecisions()
@@ -749,13 +787,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-1: .nestsuite 基盤API・context・test seam実装 ──────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21634_AndTD59b1()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.34", text);
-        Assert.Contains("TD-59b-1", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b1_MentionsFileServiceAndShellNotYetSwitched()
@@ -782,13 +813,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-2: FileService LoadPrepared・安全性テスト実装 ──────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21635_AndTD59b2()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.35", text);
-        Assert.Contains("TD-59b-2", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b2_MentionsSafetyGuardsAndShellNotYetSwitched()
@@ -818,13 +842,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21636_AndTD59b22()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.36", text);
-        Assert.Contains("TD-59b-2-2", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b22_MentionsExtensionGuardAndFileIOBeforeThrow()
@@ -852,13 +869,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-3: Shell読込経路のprepared context切替 ──────────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21637_AndTD59b3()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.37", text);
-        Assert.Contains("TD-59b-3", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b3_MentionsOpenContextLoadPreparedFromResolvedKindAndReadCountReduction()
@@ -890,13 +900,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-4: session復元経路のprepared context切替 ──────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21638_AndTD59b4()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.38", text);
-        Assert.Contains("TD-59b-4", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b4_MentionsSessionRestoreTargetOpenContextAndTryPrepareOpen()
@@ -941,13 +944,6 @@ public class NestSuiteDocsContractTests
 
     // ── TD-59b-5: 保存後内部同期の非読込化・全経路最終回帰（TD-59 完了） ─────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21639_AndTD59b5()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.39", text);
-        Assert.Contains("TD-59b-5", text);
-    }
 
     [Fact]
     public void ReleaseNotes_TD59b5_MentionsNonReadingSavePathSyncAndFromResolvedKind()
@@ -998,13 +994,6 @@ public class NestSuiteDocsContractTests
 
     // ── review6-fable5: TD-59完了後の高リスク・高効果設計課題再評価 ─────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21640_AndReview6()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.40", text);
-        Assert.Contains("review6-fable5", text);
-    }
 
     [Fact]
     public void ReleaseNotes_Review6_MentionsNoProductionCodeChangeAndCandidateSelection()
@@ -1037,23 +1026,17 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_SH36_IsRecordedAsOpenItem()
+    public void Backlog_SH36_IsRemovedAfterCompletion()
     {
-        // review6 で新規採番した最優先候補。実装完了扱いではなく open item として追加されている。
         var backlog = TestPaths.ReadBacklog();
-        Assert.Contains("| SH-36 |", backlog);
-        Assert.Contains("下書き", backlog);
+        Assert.DoesNotContain("| SH-36 |", backlog);
+        var releaseNotes = TestPaths.ReadReleaseNotes();
+        Assert.Contains("SH-36b", releaseNotes);
+        Assert.Contains("SH-36 はこれで完了", releaseNotes);
     }
 
     // ── review6-fable5-2: SH-36下書き保護の設計補完 ─────────────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21641_AndReview6_2()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.41", text);
-        Assert.Contains("review6-fable5-2", text);
-    }
 
     [Fact]
     public void ReleaseNotes_Review6_2_MentionsChatNestTransientInputAndQuarantine()
@@ -1096,13 +1079,6 @@ public class NestSuiteDocsContractTests
 
     // ── review6-fable5-3: SH-36復元後ライフサイクル設計補完 ─────────────────
 
-    [Fact]
-    public void ReleaseNotes_Contains_V21642_AndReview6_3()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "release-notes.md"));
-        Assert.Contains("v2.16.42", text);
-        Assert.Contains("review6-fable5-3", text);
-    }
 
     [Fact]
     public void ReleaseNotes_Review6_3_MentionsPostRestoreLifecycleAndSidecarClassification()

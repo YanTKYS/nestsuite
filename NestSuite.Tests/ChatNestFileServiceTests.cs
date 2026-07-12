@@ -372,6 +372,48 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Equal("second-message", loaded[0].Text);
     }
 
+
+    [Fact]
+    public void SerializeWrapped_ReturnsValidEnvelopeMatchesNestSuiteSaveAndDoesNotCreateFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var nestSuitePath = Path.Combine(root, "chat.nestsuite");
+        try
+        {
+            var messages = new[] { new Message { Id = Guid.NewGuid(), Speaker = Speaker.自分, Text = "hello" } };
+            var wrapped = ChatNestFileService.SerializeWrapped(messages);
+            Assert.Empty(Directory.EnumerateFileSystemEntries(root));
+            var envelope = NestSuiteWorkspaceEnvelope.Read(wrapped);
+            Assert.Equal(NestSuiteWorkspaceEnvelope.KindChatNest, envelope.WorkspaceKind);
+            Assert.Equal(ChatNestFileService.FileVersionString, envelope.PayloadSchemaVersion);
+
+            File.WriteAllText(nestSuitePath, wrapped);
+            Assert.True(NestSuiteTabFactory.TryPrepareOpen(nestSuitePath, out var context, out _));
+            Assert.Equal(NestSuiteWorkspaceKind.ChatNest, context.WorkspaceKind);
+            Assert.Equal("hello", ChatNestFileService.LoadPrepared(context).Single().Text);
+
+            File.Delete(nestSuitePath);
+            ChatNestFileService.Save(nestSuitePath, messages);
+            Assert.Equal(File.ReadAllText(nestSuitePath), wrapped);
+            Assert.False(File.Exists(nestSuitePath + ".bak"));
+            Assert.False(File.Exists(nestSuitePath + ".tmp"));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void Save_LegacyChatNest_RemainsPayloadNotEnvelope()
+    {
+        var path = TempPath("legacy.chatnest");
+        ChatNestFileService.Save(path, [new Message { Speaker = Speaker.結論, Text = "Legacy" }]);
+        var json = File.ReadAllText(path);
+        Assert.DoesNotContain("NestSuiteWorkspace", json);
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        Assert.True(document.RootElement.TryGetProperty("version", out _));
+        Assert.Equal("Legacy", ChatNestFileService.Load(path).Single().Text);
+    }
+
     // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]

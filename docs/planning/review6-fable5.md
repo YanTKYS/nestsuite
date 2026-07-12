@@ -275,3 +275,22 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 - 残る本物の高リスクは「無題タブのクラッシュ時全損」1 点であり、**SH-36** として最優先で塞ぐ（2 PR・形式変更なし・正常時 UI 不変）
 - 開発側の実測負荷である静的テスト再肥大化を **TD-76** で早期に刈り、利用者の定常負荷である検索の目視探索を **M17** で削る
 - LT-9 フェーズ2 は引き続きトリガー待ち。review1〜5 の既決事項はすべて維持し、再オープンした項目はない
+
+## 14. 実施結果（TD-76、v2.16.48）
+
+- docs-contract の機械的な release notes version / ID 存在確認を、既存のデータ駆動表へ集約した。
+- 意味のある設計判断確認・正本関係・schema 維持確認・backlog 完了確認などの個別契約テストは維持した。
+- Shell session 復元 source scan を `NestSuiteShellSessionRestoreContractTests` へ分離し、`SessionTabMapperTests` を Mapper の挙動中心へ戻した。
+- テストケース・assertion の削除や弱体化は行っていない。
+- `NestSuiteTabFactory.TryGetKind` のコメントを、現行の `TryPrepareOpen` 中心の責務へ修正した。
+- production 動作・UI・保存形式・session 形式は変更していない。
+- TD-76 を完了した。次は v2.16.49 / M17（検索結果のマッチ箇所ハイライト）。
+
+### TD-76回帰修正（v2.16.49）
+
+- TD-75 の open row 不在確認がデータ移設から漏れていたため、`BacklogCompletedOpenItemAbsenceRecords` へ TD-75 を追加した。
+- TD-75 の完了範囲確認は既存の `BacklogCompletedTDRangeRecords` の 75 行で維持している。
+- TD-76 の docs-contract 集約と Shell contract 分離は変更していない。
+- assertion・テストケースの完全性を回復した。
+- production 動作・UI・保存形式・session 形式は変更していない。
+- 次は v2.16.50 / M17（検索結果のマッチ箇所ハイライト）。

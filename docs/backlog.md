@@ -67,7 +67,6 @@ SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、
 |----|------|------|--------|
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | InvalidFormat / AccessDenied / SchemaVersionTooNew は TD-70 の解除対象外であり、恒久的に解消されない場合は毎起動で復元失敗通知が出続ける。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する。**FAQ / ユーザーガイドへの間接経路案内は v2.16.22 で反映済み。** 解除対象拡張・個別解除は LT-9 フェーズ2 に吸収する。**ただし LT-9 フェーズ2 自体はトリガー成立まで実装しない（review5-fable5.md）。** | C |
-| SH-36 | 無題・未保存タブの下書き自動保存（クラッシュ時保護） | FilePath を持たない無題タブ（「新規作成」で開いたタブ）は、自動保存（SH-33 は意図的に対象外）・session（保存済みファイルのみ）・未保存確認（正常終了時のみ）のいずれの保護も受けず、異常終了で内容が全損する。**保護対象**: 3 Workspace の確定済み Workspace モデル + ChatNest の未送信 `InputText`・入力時 `SelectedSpeaker`・インライン編集中テキスト（編集状態のまま復元。自動確定しない）。IdeaNest / NoteNest のモーダルダイアログ内の未確定入力・UI 状態（カーソル・検索等）は対象外。**構造**: `%APPDATA%\NoteNest\drafts\` へ `draft-<tabId>.nestsuite`（既存 wrapper 形式のまま）+ ChatNest のみ `draft-<tabId>.state.json` sidecar（下書き専用内部形式 `draftFormatVersion 1.0`・本体の SHA-256 で世代照合、不一致は一時状態のみ破棄）。既存 30 秒 tick で書き、無副作用 snapshot（MarkSaved / CurrentFilePath / session / recent / `.bak` を一切動かさない）。**削除**: SaveAs 成功・閉鎖破棄・終了確定のクリーン経路のみ（OnClosing 冒頭で AutoSave timer を停止し Cancel 時に再開して競合を防ぐ）。**復元**: 異常終了後の起動時のみ MessageBox（Yes = 復元 / No = 破棄（文言明示）/ Cancel = 保留し次回再確認。§56 Owner 制約によりカスタム Window 不可）。復元タブは無題・未保存（FilePath=null / IsModified=true）。**読めない下書き本体は削除せず `.corrupt-<timestamp>` へ隔離**（列挙除外・ErrorLog）。**復元後ライフサイクル（v2.16.42 / review6-fable5-3 で補完）**: 復元成功後も pair を保持し、下書きファイル名の tabId を復元タブの Id へ引き継いで通常ライフサイクル（次 tick 上書き・SaveAs/閉鎖/正常終了で削除）に合流させる（復元直後〜次 tick の保護空白なし）。ID 衝突時は新 Id で復元し新 pair の書込成功後に旧 pair を削除。復元直後はタブ record だけでなく VM 側 dirty（NoteNest `IsModified` / IdeaNest `HasChanges` / ChatNest `IsDirty`）も true にする専用読込 API を使う。candidate false へ戻った現行タブの pair は tick で削除（保留下書き・`.corrupt-*` は対象外）。sidecar 読込は 6 状態（NotPresent/Loaded/InvalidFormat/UnsupportedVersion/HashMismatch/IoError）へ分類し、部分復元（本体のみ復元）は隔離件数とまとめて最後に 1 回だけ通知。session.json・schema・wrapper・保存形式変更なし。TempNest 対象外。2 段階実装（連続リリース前提）: SH-36a = 書込側（v2.16.43 想定）、SH-36b = 起動時復元（v2.16.44 想定）。**実装は `docs/planning/review6-fable5-3.md` を最新の正とする**（-2・初版は履歴） | A |
 
 ---
 
@@ -171,7 +170,7 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-63、TD-64〜TD-75 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 **TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了した。全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` 読込は 1 回、保存後内部状態同期（`SavedWorkspaceStateUpdater`）・NoteNest ViewModel タブ同期（`SyncNoteNestTabForViewModel`）は 0 回になった。既に判定済み・信頼できる WorkspaceKind とファイルパスの組み合わせをファイル I/O なしで確認する `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind` を追加し、保存直後・ViewModel 同期の内部経路はこれと `FromResolvedKind` へ切り替えた（利用者が任意のファイルを開く入口は引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。詳細な実装経緯は `docs/release-notes.md`（v2.16.32〜v2.16.39）と `docs/planning/nestsuite-double-read-design-review.md` を参照。
 
