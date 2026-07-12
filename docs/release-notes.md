@@ -7,6 +7,19 @@
 
 ---
 
+## v2.16.42 — review6-fable5-3: SH-36復元後ライフサイクル設計補完
+
+- **production code の変更はなし**。review6-fable5-2（v2.16.41）の追加レビュー。SH-36 の復元「後」のライフサイクルに残っていた 4 つの実装前欠陥を補完した。成果物は `docs/planning/review6-fable5-3.md`（**SH-36 実装時の最新の正本**。-2・初版は履歴として保持し、冒頭に訂正注記を追加）
+- **復元成功後に pair を即削除する問題を修正した**: review6-fable5-2 の「復元成功 pair を削除し次 tick（最大 30 秒後）で再作成」では、復元直後の再クラッシュで同じ内容を二度失う保護空白が生じる。**復元 = 下書きの消費（削除）ではなく、下書きライフサイクルへの再接続**へ転換し、下書きファイル名の tabId（GUID-N 形式。検証つき `TryGetTabId` で抽出）を復元タブの `NestSuiteDocumentTab.Id` へ引き継ぎ、pair を保持したまま通常ライフサイクル（次 tick で同一 pair 上書き・SaveAs/閉鎖/正常終了で削除）に合流させる
+- **ID 衝突時（防御経路）**: 新 Id で復元 → 新 pair を即時書込 → 書込成功確認後に旧 pair 削除。旧 pair の先行削除・復元内容の黙殺・既存タブ上書きは禁止と確定した
+- **復元後の VM 側 dirty を確定した**: タブ record の `IsModified=true` だけでは、IdeaNest `LoadFromWorkspace`（`HasChanges=false`）・ChatNest `LoadMessages`（`IsDirty=false`）により VM が clean のままになり、復元タブが次 tick の下書き候補から外れ、タブ dirty 同期で record 側も false へ戻り得る。専用読込 API（NoteNest `OpenProjectSnapshotAsUntitled` / IdeaNest `LoadFromWorkspaceAsDraft` / ChatNest `LoadMessagesAsDraft`）が復元直後に `FilePath == null`・`tab.IsModified == true`・VM 固有 dirty == true・候補判定 true を事後条件として保証する（確定済みメッセージだけの ChatNest 下書きでも `IsDirty=true`）。既存の clean 読込契約（`LoadFromWorkspace` / `LoadMessages` / 通常 Open）は変更しない
+- **candidate false へ戻った現行タブの古い pair を削除する**: `RunAutoSaveTick` を二方向（候補 true → 書込 / 候補 false → 現行タブ Id の pair 削除）にし、「InputText を全消去して clean へ戻した内容が次回起動で復活する」事故を塞いだ。削除対象は現在の `_tabs` に存在する無題タブの Id に限定し、起動時「キャンセル」で保留された下書き・`.corrupt-*` には触れない（`DeleteAll` 禁止）
+- **ChatNest sidecar 読込結果を bool から 6 状態へ分類した**（NotPresent / Loaded / InvalidFormat / UnsupportedVersion / HashMismatch / IoError の `TransientDraftReadResult`）。sidecar 不在（正常）と未送信入力の喪失（異常）を同じ失敗として黙らせない。本体が正常なら sidecar 異常だけで本体を隔離せず、一時状態のみ破棄して復元を継続する。sidecar 単独異常は sidecar だけを隔離名へ移し、次 tick の正常 sidecar 再生成で同じ異常が次回起動へ残らない
+- **部分復元（本体は復元・未送信入力は復元不能）は利用者へ通知する**: 復元処理の最後に隔離件数とまとめて最大 1 枚（正常時は 0 枚）。ErrorLog にも記録
+- **`SerializeWrapped` の契約を補足した**: 常に `.nestsuite` wrapper 文字列を返す（path 非依存・I/O なし・状態変更なし）。既存 `Save(path, model)` の拡張子依存挙動（legacy 拡張子 → 従来 payload）は不変とし、legacy 形式へ wrapper を書き込む回帰の防止をテスト方針（`.nestsuite` Save との一致・legacy Save 不変・状態無変更）へ含めた
+- SH-36a / SH-36b の実装境界を更新し、後続バージョンを繰り下げた: **v2.16.43 / SH-36a（書込側）→ v2.16.44 / SH-36b(起動時復元) → v2.16.45 / TD-76 → v2.16.46 / M17**
+- NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper `formatVersion` は `1.0` のまま。session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし
+
 ## v2.16.41 — review6-fable5-2: SH-36下書き保護の設計補完
 
 - **production code の変更はなし**。review6-fable5（v2.16.40）で確定した SH-36（無題タブの下書き自動保存）の初期設計に対する、期間限定エキスパートの追加設計レビュー。成果物は `docs/planning/review6-fable5-2.md`（実装時はこれを正とする）

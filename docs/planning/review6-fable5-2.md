@@ -3,6 +3,7 @@
 > 作成: v2.16.41 / review6-fable5-2
 > 性質: 期間限定エキスパートによる追加設計レビュー。**production code の変更は行っていない。**
 > 前提: v2.16.40（review6-fable5）時点の main。SH-36 実装（SH-36a / SH-36b）はこの文書を正とする。
+> **注意（v2.16.42 / review6-fable5-3 による訂正）**: 復元成功後の pair 保持（本書の「復元成功 pair の削除」は撤回）、復元タブへの tabId 引き継ぎと ID 衝突処理、復元後の VM 側 dirty 状態、candidate false 時の既存 pair 削除、sidecar 読込結果の分類（bool の `TryReadTransientState` は結果型へ変更）、部分復元の利用者通知については **`review6-fable5-3.md` を正とする**。本文は履歴として初期判断のまま保持している。後続バージョンも v2.16.43 / SH-36a・v2.16.44 / SH-36b へ繰り下げ。
 > 対象コード確認済み: `ChatNestWorkspaceViewModel` / `MessageViewModel` / `IdeaNestWorkspaceViewModel`（`BuildWorkspaceForSave` / `SyncSettings` / `PreviewIdeaWindow`）/ `MainViewModel`・`ProjectLifecycleService.CreateSnapshot` / `EditorChangeCoordinator` / `NoteEditorHost.xaml`（`UpdateSourceTrigger=PropertyChanged`）/ `NestSuiteShellWindow.AutoSave.cs`・`.xaml.cs`（constructor / `OnClosing` / `OnClosed`）・`TabClose.cs` / `AutoSaveCandidatePolicy` / 3 FileService / `AtomicFileWriter` / `ErrorLogService` / design-decisions §56。
 
 ## 1. 総評
