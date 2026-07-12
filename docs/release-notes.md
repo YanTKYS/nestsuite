@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.48 — TD-76: 静的テスト再肥大化の整理
+
+- `NestSuiteDocsContractTests` の単純な version / ID 存在確認を既存の `ReleaseNoteVersionAndIdRecords` MemberData へ集約した。TD-59 系列（v2.16.32〜v2.16.39）と review6 系列（v2.16.40〜v2.16.42）の機械的な個別 Fact はデータ行へ移設した。
+- 意味のある設計判断確認・正本関係・schema 維持確認・backlog 完了確認・ユーザーガイド契約などは個別 Fact として維持し、assertion とテストケースは削除していない。
+- `SessionTabMapperTests` から Shell session 復元の source scan を分離し、`NestSuiteShellSessionRestoreContractTests` を新設した。Mapper の挙動テストと Shell 復元・復元失敗通知・再試行解除配線の contract test の責務を明確化した。
+- `NestSuiteTabFactory.TryGetKind` の古い doc comment を、現在の `TryPrepareOpen` 中心の probe・wrapper 解析・失敗分類責務に合わせて修正した（実装変更なし）。
+- production 動作変更なし、UI 変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし。外部依存追加なし、net48_test 再開なし、既存テスト skip なし。
+- 後続は v2.16.49 / M17（検索結果のマッチ箇所ハイライト）。
+
 ## v2.16.47 — SH-36b-1: 起動復元の列挙失敗耐性・ID衝突ロールバック修正
 
 - drafts フォルダー列挙例外で NestSuite が起動不能になる問題を修正した。列挙失敗は `DraftRestoreList` として ErrorLog へ記録し、復元確認 MessageBox・削除・隔離を行わず、通常起動と auto-save timer 開始を継続する（起動継続）。
