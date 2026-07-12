@@ -63,6 +63,16 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>v2.3.0: ファイル保存用に Message モデルシーケンスを返す。</summary>
     public IEnumerable<Message> MessageModels => Messages.Select(m => m.Model);
 
+    public ChatNestTransientDraftState CreateTransientDraftState()
+    {
+        var editing = Messages.FirstOrDefault(m => m.IsEditing && m.EditingText != m.Text);
+        return new ChatNestTransientDraftState(
+            InputText,
+            SelectedSpeaker.ToString(),
+            editing?.Model.Id,
+            editing?.EditingText ?? string.Empty);
+    }
+
     public string InputText
     {
         get => _inputText;

@@ -46,6 +46,30 @@ public class MainViewModelCompositionTests
         Assert.True(main.IsModified);
     }
 
+
+    [Fact]
+    public void CreateProjectSnapshotForDraft_IncludesLatestContentWithoutSideEffects()
+    {
+        var main = new MainViewModel();
+        var notebook = main.Notes.AddNotebook("NB");
+        var note = main.Notes.AddNote(notebook, "Note")!;
+        main.SelectNote(note);
+        main.Editor.Content = "draft body";
+        main.StatusMessage = "status before";
+        main.IsModified = true;
+        var filePath = main.CurrentFilePath;
+        var selected = main.Editor.SelectedNote;
+
+        var snapshot = main.CreateProjectSnapshotForDraft();
+
+        var snapshotNote = snapshot.Notebooks.SelectMany(nb => nb.Notes).Single(n => n.Id == note.Id);
+        Assert.Equal("draft body", snapshotNote.Content);
+        Assert.Equal(filePath, main.CurrentFilePath);
+        Assert.True(main.IsModified);
+        Assert.Equal("status before", main.StatusMessage);
+        Assert.Same(selected, main.Editor.SelectedNote);
+    }
+
     [Fact]
     public void EditorFontFamilyChange_DoesNotMarkProjectModified()
     {
