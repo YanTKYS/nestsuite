@@ -285,3 +285,12 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 - `NestSuiteTabFactory.TryGetKind` のコメントを、現行の `TryPrepareOpen` 中心の責務へ修正した。
 - production 動作・UI・保存形式・session 形式は変更していない。
 - TD-76 を完了した。次は v2.16.49 / M17（検索結果のマッチ箇所ハイライト）。
+
+### TD-76回帰修正（v2.16.49）
+
+- TD-75 の open row 不在確認がデータ移設から漏れていたため、`BacklogCompletedOpenItemAbsenceRecords` へ TD-75 を追加した。
+- TD-75 の完了範囲確認は既存の `BacklogCompletedTDRangeRecords` の 75 行で維持している。
+- TD-76 の docs-contract 集約と Shell contract 分離は変更していない。
+- assertion・テストケースの完全性を回復した。
+- production 動作・UI・保存形式・session 形式は変更していない。
+- 次は v2.16.50 / M17（検索結果のマッチ箇所ハイライト）。

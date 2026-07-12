@@ -7,6 +7,16 @@
 
 ---
 
+## v2.16.49 — TD-76-1: TD-75完了契約の欠落修正・TD-76監査記録補完
+
+- TD-76 で `Backlog_TD75_IsNowCompleted` を置き換えた際、TD-75 の完了範囲確認は `BacklogCompletedTDRangeRecords` の 75 行へ移したが、`| TD-75 |` open row 不在確認を `BacklogCompletedOpenItemAbsenceRecords` へ追加していなかった問題を修正した。
+- `BacklogCompletedOpenItemAbsenceRecords` へ TD-75 を追加し、TD-75 が backlog の open item 表へ戻っていないことを共通 Theory で確認する。TD-75 の完了範囲確認は既存のデータ行 75 で維持している。
+- TD-76 の主要なデータ駆動集約・Shell contract 分離は変更していない。移設したテストや assertion を戻したり弱めたりしていない。
+- TD-76 の移設対応を監査記録として明確化した: TD-59a〜TD-59b-5 と review6 系列の個別 version / ID Fact は `ReleaseNoteVersionAndIdRecords`、TD-75 open row 不在確認は `BacklogCompletedOpenItemAbsenceRecords` の TD-75 行、TD-75 完了範囲確認は `BacklogCompletedTDRangeRecords` の 75 行へ対応する。
+- Shell contract は旧 `SessionTabMapperTests` から新 `NestSuiteShellSessionRestoreContractTests` へ移設済みで、8 件のメソッド名・assertion は変更していない。
+- production 動作変更なし、UI 変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし、既存テスト削除・skip なし。
+- 後続は v2.16.50 / M17（検索結果のマッチ箇所ハイライト）。
+
 ## v2.16.48 — TD-76: 静的テスト再肥大化の整理
 
 - `NestSuiteDocsContractTests` の単純な version / ID 存在確認を既存の `ReleaseNoteVersionAndIdRecords` MemberData へ集約した。TD-59 系列（v2.16.32〜v2.16.39）と review6 系列（v2.16.40〜v2.16.42）の機械的な個別 Fact はデータ行へ移設した。
