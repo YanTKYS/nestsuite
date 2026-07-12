@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using NestSuite.Models;
 using NestSuite.Services;
 using NestSuite.ViewModels;
@@ -12,6 +14,8 @@ namespace NestSuite.Tests;
 /// </summary>
 public class AppExitAndTabCloseRegressionTests
 {
+    private static readonly string RepoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+
     // ── アプリ終了: 未保存なし → 確認なしで継続 ──────────────────────────
 
     [Fact]
@@ -26,6 +30,23 @@ public class AppExitAndTabCloseRegressionTests
         var result = CloseConfirmationService.EvaluateMany(targets, _ => { asked = true; return UnsavedChangeDecision.Cancel; });
         Assert.True(result.CanContinue);
         Assert.False(asked);
+    }
+
+    [Fact]
+    public void DraftRecovery_StartupContract_UsesOwnerlessPromptAndRestoresBeforeTimer()
+    {
+        var shellCtor = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
+        var recovery = File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.DraftRecovery.cs"));
+
+        Assert.True(shellCtor.IndexOf("RestoreDraftsAtStartup()", StringComparison.Ordinal) <
+                    shellCtor.IndexOf("StartAutoSaveTimer()", StringComparison.Ordinal));
+        Assert.Contains("TryListStartupDraftFiles", recovery);
+        Assert.Contains("DraftRestoreList", recovery);
+        Assert.Contains("MessageBox.Show(", recovery);
+        Assert.DoesNotContain("MessageBox.Show(this", recovery);
+        Assert.Contains("MessageBoxButton.YesNoCancel", recovery);
+        Assert.Contains("MessageBoxResult.No", recovery);
+        Assert.Contains("MessageBoxResult.Yes", recovery);
     }
 
     // ── アプリ終了: 未保存 NoteNest が確認対象になる ─────────────────────
@@ -205,6 +226,59 @@ public class AppExitAndTabCloseRegressionTests
         Assert.Contains(UnsavedChangeDecision.Cancel,  decisions);
         // Save は旧ダイアログにはなかった選択肢
         Assert.True(decisions.Length >= 3, "UnsavedChangeDecision は Save / Discard / Cancel の 3 択以上あること");
+    }
+
+
+    // ── SH-36a-1: draft lifecycle source contracts ─────────────────────
+
+    [Fact]
+    public void OnClosing_DraftDelete_FiltersToDraftSupportedWorkspaces()
+    {
+        Assert.True(DraftCandidatePolicy.IsSupportedWorkspace(NestSuiteWorkspaceKind.NoteNest));
+        Assert.True(DraftCandidatePolicy.IsSupportedWorkspace(NestSuiteWorkspaceKind.IdeaNest));
+        Assert.True(DraftCandidatePolicy.IsSupportedWorkspace(NestSuiteWorkspaceKind.ChatNest));
+        Assert.False(DraftCandidatePolicy.IsSupportedWorkspace(NestSuiteWorkspaceKind.Temp));
+        Assert.False(DraftCandidatePolicy.IsSupportedWorkspace((NestSuiteWorkspaceKind)999));
+
+        var source = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
+        var deleteIdx = source.IndexOf("TryDeleteDraftForTab(tab.Id, \"DraftDeleteOnClosing\")", StringComparison.Ordinal);
+        var filterIdx = source.LastIndexOf("DraftCandidatePolicy.IsSupportedWorkspace(t.WorkspaceKind)", deleteIdx, StringComparison.Ordinal);
+        Assert.True(filterIdx >= 0, "OnClosing must filter shutdown draft deletion through DraftCandidatePolicy before Delete.");
+    }
+
+    [Fact]
+    public void OnClosing_TimerStopAndCancelRestartContractsArePresent()
+    {
+        var source = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml.cs"));
+        var onClosingStart = source.IndexOf("protected override void OnClosing(CancelEventArgs e)", StringComparison.Ordinal);
+        var stopIdx = source.IndexOf("StopAutoSaveTimer();", onClosingStart, StringComparison.Ordinal);
+        var summaryCancelIdx = source.IndexOf("CancelClosingAndRestartAutoSave(e);", stopIdx, StringComparison.Ordinal);
+        var normalDeleteIdx = source.IndexOf("DraftDeleteOnClosing", stopIdx, StringComparison.Ordinal);
+        Assert.True(stopIdx > onClosingStart);
+        Assert.True(summaryCancelIdx > stopIdx && summaryCancelIdx < normalDeleteIdx);
+        Assert.Contains("private void CancelClosingAndRestartAutoSave", source);
+        Assert.Contains("StartAutoSaveTimer();", source.Substring(source.IndexOf("private void CancelClosingAndRestartAutoSave", StringComparison.Ordinal)));
+
+        var autoSaveSource = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.AutoSave.cs"));
+        Assert.Contains("if (_autoSaveTimer != null) return;", autoSaveSource);
+    }
+
+    [Fact]
+    public void SaveAndCloseDraftDeleteContractsAreAfterStateOrRemoval()
+    {
+        var saveSource = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.WorkspaceFileHelper.cs"));
+        var wasUntitledIdx = saveSource.IndexOf("var wasUntitled = tab.FilePath == null;", StringComparison.Ordinal);
+        var applyIdx = saveSource.IndexOf("SavedWorkspaceStateUpdater.ApplyToSession(session, state);", StringComparison.Ordinal);
+        var deleteAfterSaveIdx = saveSource.IndexOf("TryDeleteDraftForTab(tab.Id, \"DraftDeleteAfterSave\")", StringComparison.Ordinal);
+        Assert.True(wasUntitledIdx >= 0);
+        Assert.True(deleteAfterSaveIdx > applyIdx);
+
+        var closeSource = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.TabClose.cs"));
+        var removeSessionIdx = closeSource.IndexOf("_sessionManager.Remove(tab.Id);", StringComparison.Ordinal);
+        var removeTabIdx = closeSource.IndexOf("_tabs.RemoveAt(idx);", StringComparison.Ordinal);
+        var deleteAfterCloseIdx = closeSource.IndexOf("TryDeleteDraftForTab(tab.Id, \"DraftDeleteAfterClose\")", StringComparison.Ordinal);
+        Assert.True(deleteAfterCloseIdx > removeSessionIdx);
+        Assert.True(deleteAfterCloseIdx > removeTabIdx);
     }
 
     // ── バージョン / スキーマ ────────────────────────────────────────────

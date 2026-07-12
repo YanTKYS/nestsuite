@@ -58,6 +58,11 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.23", "TD-73", "TD-73" };
         yield return new object[] { "v2.16.25", "TD-74", "TD-74" };
         yield return new object[] { "v2.16.26", "TD-75a", "TD-75a" };
+        yield return new object[] { "v2.16.43", "SH-36a", "SH-36a" };
+        yield return new object[] { "v2.16.44", "SH-36a-1", "SH-36a-1" };
+        yield return new object[] { "v2.16.45", "SH-36a-2", "SH-36a-2" };
+        yield return new object[] { "v2.16.46", "SH-36b", "SH-36b" };
+        yield return new object[] { "v2.16.47", "SH-36b-1", "SH-36b-1" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -239,6 +244,27 @@ public class NestSuiteDocsContractTests
     // 意図が個別に強いテスト。ガイドライン (static-test-guidelines.md) に基づき、
     // 無理に統合しない。
     // ═══════════════════════════════════════════════════════════════════
+
+
+    [Fact]
+    public void Docs_Record_SH36aDraftWriteSideAndHashMismatchPolicy()
+    {
+        var releaseNotes = TestPaths.ReadReleaseNotes();
+        var backlog = TestPaths.ReadBacklog();
+        var planning = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-3.md"));
+
+        foreach (var term in new[] { "v2.16.43", "SH-36a", "下書き", "ChatNest", "sidecar", "HashMismatch", "隔離", "SH-36b" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.44", "SH-36a-1", "TempNest", "Speaker", "sidecar", "回帰" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.45", "SH-36a-2", "Speaker", "数値", "自分", "sidecar" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.46", "SH-36b", "起動時", "下書き", "復元", "Yes", "No", "Cancel", "ChatNest", "sidecar", "隔離", "SH-36 はこれで完了", "SH-36完了" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.47", "SH-36b-1", "列挙", "起動継続", "ID衝突", "rollback", "旧 pair", "TD-76" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        Assert.Contains($"NoteNest schema は `{Project.CurrentSchemaVersion}`", releaseNotes);
+    }
 
     // ── RJ-10: M2 見送り・タスク縮退方針整理 ────────────────────────────────
 
@@ -1037,12 +1063,13 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_SH36_IsRecordedAsOpenItem()
+    public void Backlog_SH36_IsRemovedAfterCompletion()
     {
-        // review6 で新規採番した最優先候補。実装完了扱いではなく open item として追加されている。
         var backlog = TestPaths.ReadBacklog();
-        Assert.Contains("| SH-36 |", backlog);
-        Assert.Contains("下書き", backlog);
+        Assert.DoesNotContain("| SH-36 |", backlog);
+        var releaseNotes = TestPaths.ReadReleaseNotes();
+        Assert.Contains("SH-36b", releaseNotes);
+        Assert.Contains("SH-36 はこれで完了", releaseNotes);
     }
 
     // ── review6-fable5-2: SH-36下書き保護の設計補完 ─────────────────────────
