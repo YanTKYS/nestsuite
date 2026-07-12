@@ -38,7 +38,17 @@ public partial class NestSuiteShellWindow
 
     private void RestoreDraftsAtStartup()
     {
-        var draftPaths = DraftStore.ListDraftFiles();
+        if (!TryListStartupDraftFiles(
+                () => DraftStore.ListDraftFiles(),
+                ex => ErrorLogService.Log(
+                    "DraftRestoreList",
+                    ex,
+                    filePath: DraftStore.DefaultRootDirectory),
+                out var draftPaths))
+        {
+            return;
+        }
+
         if (draftPaths.Count == 0)
             return;
 
@@ -85,6 +95,24 @@ public partial class NestSuiteShellWindow
             ActivateTab(lastRestoredTab);
 
         ShowDraftRestoreSummary(summary);
+    }
+
+    private static bool TryListStartupDraftFiles(
+        Func<IReadOnlyList<string>> listDraftFiles,
+        Action<Exception> logError,
+        out IReadOnlyList<string> draftPaths)
+    {
+        try
+        {
+            draftPaths = listDraftFiles();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logError(ex);
+            draftPaths = Array.Empty<string>();
+            return false;
+        }
     }
 
     private DraftRestoreSummary DiscardStartupDrafts(IReadOnlyList<string> draftPaths)
@@ -231,58 +259,127 @@ public partial class NestSuiteShellWindow
         out NestSuiteDocumentTab? restoredTab,
         out DraftRestoreIssue? issue)
     {
+        restoredTab = null;
         issue = null;
-        var restoredTabId = _tabs.Any(t => t.Id == originalTabId)
-            ? Guid.NewGuid().ToString("N")
-            : originalTabId;
+        var hasCollision = _tabs.Any(t => t.Id == originalTabId);
+        var restoredTabId = hasCollision ? Guid.NewGuid().ToString("N") : originalTabId;
+
+        if (!TryWriteCollisionPairBeforeRestore(
+                hasCollision,
+                restoredTabId,
+                wrappedJsonForCollision,
+                transientStateForCollision,
+                (tabId, wrappedJson, transientState) => DraftStore.WriteWorkspaceDraft(tabId, wrappedJson, transientState),
+                ex => ErrorLogService.Log("DraftRestoreCollisionWrite", ex, workspaceKind.ToString(), draftPath),
+                out issue))
+        {
+            return false;
+        }
 
         var tab = NestSuiteTabFactory.CreateUntitled(workspaceKind) with
         {
             Id = restoredTabId,
             IsModified = true,
         };
-        var session = CreateSessionForTab(tab);
-        _tabs.Add(tab);
-        _sessionManager.Add(session);
+        NestSuiteWorkspaceSession? session = null;
         try
         {
+            session = CreateSessionForTab(tab);
+            _tabs.Add(tab);
+            _sessionManager.Add(session);
             loadDraftModel(session);
         }
-        catch
+        catch (Exception ex)
         {
-            _sessionManager.Remove(tab.Id);
-            _tabs.Remove(tab);
+            CleanupFailedDraftRestore(tab, session);
+            if (hasCollision)
+            {
+                ErrorLogService.Log("DraftRestore", ex, workspaceKind.ToString(), draftPath);
+                RollbackCollisionPair(
+                    restoredTabId,
+                    tabId => DraftStore.Delete(tabId),
+                    rollbackEx => ErrorLogService.Log("DraftRestoreCollisionRollback", rollbackEx, workspaceKind.ToString(), draftPath));
+                issue = new DraftRestoreIssue(CollisionWriteFailed: true);
+                return false;
+            }
+
             throw;
         }
 
         restoredTab = _tabs.FirstOrDefault(t => t.Id == restoredTabId) ?? tab;
         ActivateTab(restoredTab);
 
-        if (restoredTabId != originalTabId)
+        if (hasCollision)
         {
             try
             {
-                DraftStore.WriteWorkspaceDraft(
-                    restoredTabId,
-                    wrappedJsonForCollision,
-                    transientStateForCollision);
-                try
-                {
-                    DraftStore.Delete(originalTabId);
-                }
-                catch (Exception ex)
-                {
-                    ErrorLogService.Log("DraftRestoreCollisionDelete", ex, workspaceKind.ToString(), draftPath);
-                }
+                DraftStore.Delete(originalTabId);
             }
             catch (Exception ex)
             {
-                ErrorLogService.Log("DraftRestoreCollisionWrite", ex, workspaceKind.ToString(), draftPath);
-                issue = new DraftRestoreIssue(CollisionWriteFailed: true);
+                ErrorLogService.Log("DraftRestoreCollisionDelete", ex, workspaceKind.ToString(), draftPath);
             }
         }
 
         return true;
+    }
+
+    private static bool TryWriteCollisionPairBeforeRestore(
+        bool hasCollision,
+        string restoredTabId,
+        string wrappedJsonForCollision,
+        ChatNestTransientDraftState? transientStateForCollision,
+        Action<string, string, ChatNestTransientDraftState?> writeDraft,
+        Action<Exception> logError,
+        out DraftRestoreIssue? issue)
+    {
+        issue = null;
+        if (!hasCollision)
+            return true;
+
+        try
+        {
+            writeDraft(restoredTabId, wrappedJsonForCollision, transientStateForCollision);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logError(ex);
+            issue = new DraftRestoreIssue(CollisionWriteFailed: true);
+            return false;
+        }
+    }
+
+    private static void RollbackCollisionPair(
+        string restoredTabId,
+        Action<string> deleteDraft,
+        Action<Exception> logError)
+    {
+        try
+        {
+            deleteDraft(restoredTabId);
+        }
+        catch (Exception ex)
+        {
+            logError(ex);
+        }
+    }
+
+    private void CleanupFailedDraftRestore(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession? session)
+    {
+        if (session?.WorkspaceViewModel is MainViewModel noteVm)
+            noteVm.PropertyChanged -= OnNoteNestSessionPropertyChanged;
+        if (session?.WorkspaceViewModel is IdeaNestWorkspaceViewModel ideaVm)
+            ideaVm.PropertyChanged -= OnIdeaNestPropertyChanged;
+        if (session?.WorkspaceViewModel is ChatNestWorkspaceViewModel chatVm)
+            chatVm.PropertyChanged -= OnChatNestPropertyChanged;
+        if (session?.WorkspaceViewModel is IDisposable disposable)
+            disposable.Dispose();
+
+        _sessionManager.Remove(tab.Id);
+        var currentTab = _tabs.FirstOrDefault(t => t.Id == tab.Id);
+        if (currentTab != null)
+            _tabs.Remove(currentTab);
     }
 
     private ChatNestTransientDraftState? HandleTransientDraftReadResult(
@@ -366,7 +463,7 @@ public partial class NestSuiteShellWindow
         if (summary.QuarantineFailedCount > 0)
             message.AppendLine($"・{summary.QuarantineFailedCount}件は読み取れない下書きまたは sidecar の退避にも失敗したため、そのまま保持しました。");
         if (summary.CollisionWriteFailedCount > 0)
-            message.AppendLine($"・{summary.CollisionWriteFailedCount}件はタブID衝突時の新しい下書き保存に失敗したため、元の下書きを保持しました。");
+            message.AppendLine($"・{summary.CollisionWriteFailedCount}件はタブID衝突を安全に解消できなかったため、復元せず元の下書きを保持しました。");
         if (summary.DiscardDeleteFailedCount > 0)
             message.AppendLine($"・{summary.DiscardDeleteFailedCount}件は下書きの破棄に失敗したため、そのまま保持しました。");
 

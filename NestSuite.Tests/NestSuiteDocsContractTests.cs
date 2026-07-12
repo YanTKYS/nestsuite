@@ -62,6 +62,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.44", "SH-36a-1", "SH-36a-1" };
         yield return new object[] { "v2.16.45", "SH-36a-2", "SH-36a-2" };
         yield return new object[] { "v2.16.46", "SH-36b", "SH-36b" };
+        yield return new object[] { "v2.16.47", "SH-36b-1", "SH-36b-1" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -259,6 +260,8 @@ public class NestSuiteDocsContractTests
         foreach (var term in new[] { "v2.16.45", "SH-36a-2", "Speaker", "数値", "自分", "sidecar" })
             Assert.Contains(term, releaseNotes + backlog + planning);
         foreach (var term in new[] { "v2.16.46", "SH-36b", "起動時", "下書き", "復元", "Yes", "No", "Cancel", "ChatNest", "sidecar", "隔離", "SH-36 はこれで完了", "SH-36完了" })
+            Assert.Contains(term, releaseNotes + backlog + planning);
+        foreach (var term in new[] { "v2.16.47", "SH-36b-1", "列挙", "起動継続", "ID衝突", "rollback", "旧 pair", "TD-76" })
             Assert.Contains(term, releaseNotes + backlog + planning);
         Assert.Contains($"NoteNest schema は `{Project.CurrentSchemaVersion}`", releaseNotes);
     }

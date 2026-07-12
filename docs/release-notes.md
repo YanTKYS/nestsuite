@@ -7,6 +7,15 @@
 
 ---
 
+## v2.16.47 — SH-36b-1: 起動復元の列挙失敗耐性・ID衝突ロールバック修正
+
+- drafts フォルダー列挙例外で NestSuite が起動不能になる問題を修正した。列挙失敗は `DraftRestoreList` として ErrorLog へ記録し、復元確認 MessageBox・削除・隔離を行わず、通常起動と auto-save timer 開始を継続する（起動継続）。
+- tabId 衝突時は新 pair 書込成功を復元タブ確定の前提にした。新 pair 書込失敗時はタブ・session を残さず、旧 pair を維持し、復元成功件数へ含めない。
+- 新 pair 成功後に VM 読込等が失敗した場合は、途中生成したタブ・session を cleanup し、新 pair を best effort で rollback して旧 pair を復元可能な状態で残す。
+- 旧 pair 削除失敗は復元成功を取り消さず、復元タブと新 pair を維持して ErrorLog へ記録する。
+- 列挙失敗と ID 衝突失敗の挙動テストを追加した。SH-36b の通常復元・元 tabId 引継ぎ・復元後 pair 保持・VM dirty・ChatNest transient・sidecar 6 状態処理は変更しない。
+- 後続は v2.16.48 / TD-76、v2.16.49 / M17。NoteNest schema `1.4.2`・`.nestsuite` wrapper `formatVersion 1.0`・draftFormatVersion `1.0`・session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし。
+
 ## v2.16.46 — SH-36b: 無題タブ下書きの起動時復元
 
 - 起動時に `%APPDATA%\NoteNest\drafts\` の `draft-*.nestsuite` を列挙し、下書きがある場合だけ ownerless の標準 MessageBox で Yes / No / Cancel を確認する。Yes は無題タブとして復元、No は列挙 pair を破棄、Cancel / Esc / ✕ は変更せず次回起動まで保持する。
@@ -16,7 +25,7 @@
 - sidecar 6 状態を起動復元で処理する。NotPresent / Loaded は正常、InvalidFormat / UnsupportedVersion / HashMismatch は本体を復元し sidecar だけ隔離、IoError は sidecar に触れず本体だけ復元する。HashMismatch sidecar は削除しない。
 - 本体破損・wrapper 不正・schema too-new・LoadPrepared 例外は pair を削除せず `.corrupt-*` へ隔離し、他の下書き復元を継続する。部分復元・隔離・破棄失敗は最後に最大 1 枚で集約通知する。
 - tabId 衝突時は新 tabId で復元し、新 pair を先に書き込めた場合だけ旧 pair を削除する。新 pair 書込失敗時は旧 pair を保持する。
-- 下書き復元は auto-save timer 開始前に実行し、起動引数ファイルがある場合は既存の `LoadInitialFile` により起動引数タブが最終 active になる。SH-36 はこれで完了した（SH-36完了）。後続予定は v2.16.47 / TD-76、v2.16.48 / M17 とする。
+- 下書き復元は auto-save timer 開始前に実行し、起動引数ファイルがある場合は既存の `LoadInitialFile` により起動引数タブが最終 active になる。SH-36 はこれで完了した（SH-36完了）。後続予定は v2.16.48 / TD-76、v2.16.49 / M17 とする。
 - NoteNest schema `1.4.2`・`.nestsuite` wrapper `formatVersion 1.0`・draftFormatVersion `1.0`・session.json・Workspace 保存形式の変更なし。外部依存追加なし。既存テストの削除・skip なし。
 
 ## v2.16.45 — SH-36a-2: sidecar Speaker数値値の正規化修正・SH-36a最終回帰

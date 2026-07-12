@@ -40,6 +40,8 @@ public class AppExitAndTabCloseRegressionTests
 
         Assert.True(shellCtor.IndexOf("RestoreDraftsAtStartup()", StringComparison.Ordinal) <
                     shellCtor.IndexOf("StartAutoSaveTimer()", StringComparison.Ordinal));
+        Assert.Contains("TryListStartupDraftFiles", recovery);
+        Assert.Contains("DraftRestoreList", recovery);
         Assert.Contains("MessageBox.Show(", recovery);
         Assert.DoesNotContain("MessageBox.Show(this", recovery);
         Assert.Contains("MessageBoxButton.YesNoCancel", recovery);
