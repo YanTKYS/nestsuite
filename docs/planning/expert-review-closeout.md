@@ -42,12 +42,18 @@
 
 | review | 主な論点 | 決定事項 | 実装状況 | 対応 version | 主なコード・テスト | 現在の扱い | 正本文書 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| review1 | 自動保存 `.bak`、session 鮮度、WorkspaceKind ヒント、`.bak` 導線 | 自動保存は `.bak` を更新しない。session は随時保存。WorkspaceKind は復元判定の信頼ソースにしない。 | 完了 | v2.16.6〜v2.16.16 | AutoSave / SessionTabMapper / ApplicationVersion・session 系テスト | 完了済み | `docs/planning/review1-fable5.md` |
-| review2 | R-1〜R-8 対応後の協調確認、残リスク整理 | TD-65〜TD-68 の設計を維持し、R-9〜R-14 は通常 backlog・見送りへ整理。 | 完了 | v2.16.14〜v2.16.16 | SessionTabMapperTests、session state tests | 完了済み | `docs/planning/review2-fable5.md` |
-| review3 | TD-69〜TD-71、FileNotFound 解除、`.bak` 案内 | Tabs 正本化、復元失敗 entry の扱い、`.bak` 案内を固定。 | 完了 | v2.16.17〜v2.16.19 | SessionTabMapperTests、BackupRestoreGuideProviderTests | 完了済み | `docs/planning/review3-fable5.md` |
+| review1 | 初回レビュー。R-1〜R-8（自動保存 `.bak`、session 鮮度、WorkspaceKind ヒント、`.bak` 導線など）を提示 | 自動保存は `.bak` を更新しない。session は随時保存。WorkspaceKind は復元判定の信頼ソースにしない。 | 完了 | 結果対応: v2.16.6〜v2.16.16 | AutoSave / SessionTabMapper / ApplicationVersion・session 系テスト | 完了済み | `docs/planning/review1-fable5.md` |
+| review2 | R-1〜R-8 の対応後レビュー。レビュー対象は v2.16.6〜v2.16.16 | 追加抽出された課題を TD-69〜TD-71 として通常実装へ切り出した。 | 完了 | 追加対応: TD-69〜TD-71 / v2.16.17〜v2.16.19 | SessionTabMapperTests、session state tests | 完了済み | `docs/planning/review2-fable5.md` |
+| review3 | TD-69〜TD-71 の対応後レビュー。レビュー対象は v2.16.17〜v2.16.19 | Tabs 正本化、復元失敗 entry の扱い、`.bak` 案内を固定。 | 完了 | レビュー対象: v2.16.17〜v2.16.19 | SessionTabMapperTests、BackupRestoreGuideProviderTests | 完了済み | `docs/planning/review3-fable5.md` |
 | review4 | LT-9 選択的 session 復元 UI | フル LT-9 は保留。SH-34 をフェーズ1として実装し、フェーズ2以降はトリガー待ち。 | フェーズ1完了、フェーズ2以降保留 | v2.16.21〜v2.16.24 | NestSuiteShellSessionRestoreContractTests、SessionRestoreFailuresMessageBuilder tests | トリガー待ち | `docs/planning/review4-fable5.md` |
 | review5 | LT-9 フェーズ2詳細設計 | フェーズ2の条件・対象・session 形式不変を確定。ただし実装はトリガー成立まで行わない。 | 設計済み・未実装 | v2.16.24 | backlog LT-9 記述、design-decisions、docs-contract | トリガー待ち | `docs/planning/review5-fable5.md` |
 | review6 | SH-36、TD-76、M17 の優先付け | SH-36を最優先、TD-76で静的テスト整理、M17で検索結果ハイライト。LT-9 フェーズ2は再オープンしない。 | 完了 | v2.16.40〜v2.16.51 | DraftStoreTests、DraftRecoveryRegressionTests、NestSuiteDocsContractTests、FindReplaceLogicServiceTests | 完了済み | `docs/planning/review6-fable5.md`, `review6-fable5-2.md`, `review6-fable5-3.md` |
+
+### review1〜review3 の version 関係補足
+
+- review1 は初回レビューで R-1〜R-8 を提示し、結果対応は v2.16.6〜v2.16.16 で実施した。主な対応は TD-64（v2.16.6）、TD-65（v2.16.7）、L20 + L8（v2.16.8）、TD-66（v2.16.14）、TD-67（v2.16.15）、TD-68（v2.16.16）。
+- review2 は R-1〜R-8 の対応後レビューであり、レビュー対象は v2.16.6〜v2.16.16。review2 で追加抽出された課題は TD-69〜TD-71 として v2.16.17〜v2.16.19 で実装した。
+- review3 は TD-69〜TD-71 の対応後レビューであり、レビュー対象は v2.16.17〜v2.16.19。
 
 ## 3. 主要回帰確認
 
