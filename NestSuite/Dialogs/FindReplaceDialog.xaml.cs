@@ -20,15 +20,16 @@ internal sealed record AllNoteMatchItem(
     public static AllNoteMatchItem Create(
         NoteViewModel note,
         int charIndex,
-        string context,
-        string keyword,
-        StringComparison comparison)
+        SearchMatchContext context)
     {
-        var segments = SearchMatchSegments.Split(context, keyword, comparison);
+        var segments = SearchMatchSegments.SplitAt(
+            context.Text,
+            context.MatchOffset,
+            context.MatchLength);
         return new AllNoteMatchItem(
             note,
             charIndex,
-            $"{note.Title}: {context}",
+            $"{note.Title}: {context.Text}",
             $"{note.Title}: ",
             segments.Before,
             segments.Match,
@@ -320,9 +321,7 @@ public partial class FindReplaceDialog : Window
                 results.Add(AllNoteMatchItem.Create(
                     note,
                     idx,
-                    FindReplaceLogicService.BuildMatchContext(content, idx, keyword),
-                    keyword,
-                    Comparison));
+                    FindReplaceLogicService.BuildMatchContextWithPosition(content, idx, keyword)));
                 pos = idx + 1;
             }
         }

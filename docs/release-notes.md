@@ -7,6 +7,14 @@
 
 ---
 
+## v2.16.51 — M17-1: 検索結果行の対象一致位置と強調表示のずれ修正
+
+- M17 では検索結果行の文脈文字列を先頭から再検索していたため、前方文脈に過去の一致がある場合、2 件目以降の結果行で移動先とは別の一致を強調する問題があった。
+- 検索本体が確定した本文上の `CharIndex` から文脈内 offset を算出する方式へ変更し、表示用文脈を再検索しないようにした。Before / Match / After は対象一致 offset から直接分割する。
+- ellipsis と改行置換を含む文脈でも offset を維持し、結果行の移動先と強調箇所が一致するようにした。既存 `SearchMatchSegments.Split` は維持し、特定位置用の分割 API を追加した。
+- XAML の 3 Run 表示は変更なし。検索件数・並び順・文脈長・クリック / Enter 移動動作は変更していない。Shell 横断検索・IdeaNest・ChatNest・本文エディタ内ハイライトは対象外。
+- production 保存処理変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし、既存テスト削除・skip なし。
+
 ## v2.16.50 — M17: 検索結果のマッチ箇所ハイライト
 
 - NoteNest 全ノート検索結果の文脈内で、検索語に最初に一致した 1 か所を太字で強調表示するようにした。対象は NoteNest の全ノート検索結果一覧のみで、Shell 横断検索・IdeaNest・ChatNest・本文エディタ内ハイライトは対象外。

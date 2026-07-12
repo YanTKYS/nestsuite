@@ -24,7 +24,32 @@ public sealed record SearchMatchSegments(string Before, string Match, string Aft
             source.Substring(index, query.Length),
             source[(index + query.Length)..]);
     }
+
+    public static SearchMatchSegments SplitAt(
+        string? text,
+        int matchOffset,
+        int matchLength)
+    {
+        var source = text ?? string.Empty;
+        if (matchOffset < 0 ||
+            matchLength <= 0 ||
+            matchOffset > source.Length ||
+            matchLength > source.Length - matchOffset)
+        {
+            return new SearchMatchSegments(source, string.Empty, string.Empty);
+        }
+
+        return new SearchMatchSegments(
+            source[..matchOffset],
+            source.Substring(matchOffset, matchLength),
+            source[(matchOffset + matchLength)..]);
+    }
 }
+
+public sealed record SearchMatchContext(
+    string Text,
+    int MatchOffset,
+    int MatchLength);
 
 public static class FindReplaceLogicService
 {
@@ -72,7 +97,10 @@ public static class FindReplaceLogicService
     }
 
     // Builds a display context string around matchStart in content.
-    public static string BuildMatchContext(string content, int matchStart, string keyword)
+    public static string BuildMatchContext(string content, int matchStart, string keyword) =>
+        BuildMatchContextWithPosition(content, matchStart, keyword).Text;
+
+    public static SearchMatchContext BuildMatchContextWithPosition(string content, int matchStart, string keyword)
     {
         const int contextLen = 35;
         var excerptStart = Math.Max(0, matchStart - contextLen);
@@ -81,6 +109,10 @@ public static class FindReplaceLogicService
                                   .Replace('\n', ' ').Replace('\r', ' ');
         var prefix = excerptStart > 0 ? "…" : "";
         var suffix = excerptEnd < content.Length ? "…" : "";
-        return $"{prefix}{excerpt}{suffix}";
+        var matchOffset = prefix.Length + matchStart - excerptStart;
+        return new SearchMatchContext(
+            $"{prefix}{excerpt}{suffix}",
+            matchOffset,
+            keyword.Length);
     }
 }
