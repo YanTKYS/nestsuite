@@ -36,6 +36,24 @@ public class TaskBoardViewModelTests
     }
 
     [Fact]
+    public void ReassigningExistingTaskValuesDoesNotRaiseChanged()
+    {
+        var board = new TaskBoardViewModel();
+        var task = board.AddTask(TaskGroupKeys.Today, "Task")!;
+        var changeCount = 0;
+        board.Changed += (_, _) => changeCount++;
+
+        task.Title = "Task";
+        task.IsCompleted = false;
+        task.Comment = "";
+        task.Priority = NestSuite.Models.TaskPriority.None;
+        task.DueDate = null;
+        task.LinkedNoteId = null;
+
+        Assert.Equal(0, changeCount);
+    }
+
+    [Fact]
     public void ClearLinksRaisesChangedOnlyWhenPersistentDataChanges()
     {
         var board = new TaskBoardViewModel();

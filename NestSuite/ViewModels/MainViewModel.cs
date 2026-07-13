@@ -37,7 +37,7 @@ public partial class MainViewModel : BaseViewModel, IDisposable
         SaveAsProjectCommand       = new RelayCommand(SaveProjectAs);
         ExitCommand                = new RelayCommand(Exit);
         AddNotebookCommand         = new RelayCommand(AddNotebook);
-        AddTaskCommand             = new RelayCommand(param => AddTask(param as string ?? "today"));
+        AddTaskCommand             = new RelayCommand(param => AddTask(param as string ?? TaskGroupKeys.Today));
         DeleteTaskCommand          = new RelayCommand(param => { if (param is TaskViewModel t) DeleteTask(t); });
         ToggleGroupCommand         = new RelayCommand(param => { if (param is TaskGroupViewModel g) g.IsExpanded = !g.IsExpanded; });
         MarkerClickCommand         = new RelayCommand(param => { if (param is MarkerViewModel m) NavigateToMarker?.Invoke(m); });

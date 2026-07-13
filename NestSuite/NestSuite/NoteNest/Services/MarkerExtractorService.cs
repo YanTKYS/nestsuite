@@ -19,7 +19,8 @@ public class MarkerExtractorService
     /// （<see cref="HasMarkers"/> のように複数行の content 全体へ直接適用する場合も正しく動作する）。
     /// </summary>
     private static readonly Regex Pattern =
-        new(@"^[ \t]*\[(TODO|FIXME|NOTE)\]\s*(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
+        new(@"^[ \t]*\[(" + MarkerTypeNames.Todo + "|" + MarkerTypeNames.Fixme + "|" + MarkerTypeNames.Note + @")\]\s*(.*)",
+            RegexOptions.Compiled | RegexOptions.Multiline);
 
     public static bool HasMarkers(string content) =>
         !string.IsNullOrEmpty(content) && Pattern.IsMatch(content);

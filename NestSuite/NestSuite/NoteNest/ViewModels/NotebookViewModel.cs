@@ -20,7 +20,12 @@ public class NotebookViewModel : BaseViewModel
     public string Title
     {
         get => _model.Title;
-        set { _model.Title = value; OnPropertyChanged(); }
+        set
+        {
+            if (_model.Title == value) return;
+            _model.Title = value;
+            OnPropertyChanged();
+        }
     }
 
     public bool IsExpanded

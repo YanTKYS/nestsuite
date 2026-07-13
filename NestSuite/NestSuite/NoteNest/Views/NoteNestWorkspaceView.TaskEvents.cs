@@ -23,9 +23,9 @@ public partial class NoteNestWorkspaceView
         menu.IsOpen = true;
     }
 
-    private void MoveTaskToToday_Click(object sender, RoutedEventArgs e)   => MoveTaskFromMenu(sender, "today");
-    private void MoveTaskToWeek_Click(object sender, RoutedEventArgs e)    => MoveTaskFromMenu(sender, "week");
-    private void MoveTaskToBacklog_Click(object sender, RoutedEventArgs e) => MoveTaskFromMenu(sender, "backlog");
+    private void MoveTaskToToday_Click(object sender, RoutedEventArgs e)   => MoveTaskFromMenu(sender, TaskGroupKeys.Today);
+    private void MoveTaskToWeek_Click(object sender, RoutedEventArgs e)    => MoveTaskFromMenu(sender, TaskGroupKeys.Week);
+    private void MoveTaskToBacklog_Click(object sender, RoutedEventArgs e) => MoveTaskFromMenu(sender, TaskGroupKeys.Backlog);
 
     private void RenameTask_Click(object sender, RoutedEventArgs e)
     {
