@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.5
+> version: v2.17.6
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|---|
 | `docs/README.md` | Canonical | docs 全体の入口 | 開発者・設計者 | 文書探索の起点 | 維持。archive 方針へのリンク追加は次回検討。 |
 | `docs/backlog.md` | Canonical | 未着手・保留・見送り課題の正本 | 開発者・設計者・release notes | 現行 backlog 管理の正本 | 維持。docs archive 移設課題は通常 backlog として管理。 |
-| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.5 を追加。 |
+| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.6 を追加。 |
 | `docs/development/nestsuite-development-guidelines.md` | Canonical | 実装者向け恒久規約 | 実装プロンプト・release checklist | 開発ルールの正本 | 維持。 |
 | `docs/development/nestsuite-designer-guidelines.md` | Canonical | 設計者向け恒久規約 | 設計・引継ぎ・実装プロンプト | 設計側ルールの正本 | 維持。 |
 | `docs/architecture/schema-versioning-policy.md` | Canonical | schema bump と互換読み込み方針 | 開発ガイド・backlog・schema tests | 保存形式変更時の正本 | 維持。 |
@@ -69,7 +69,7 @@
 | `docs/development/classic-code-contraction.md` | Archive Candidate | Classic 残存コード縮退記録 | 開発ガイド・release notes | 完了済み旧資産整理 | `docs/archive/legacy-notenest/` 候補。 |
 | `docs/development/save-flow-duplication.md` | Active Reference | 保存フロー重複メモ | TD 候補・実装者 | 未解消の設計負債の参考 | 維持。 |
 | `docs/development/sqlite-index-feasibility.md` | Active Reference | SQLite 補助インデックス feasibility | backlog LT-2 | 保留中の採用条件が backlog で現役 | 維持。 |
-| `docs/development/test-classification-analysis.md` | Archive Candidate | テスト分類一次分析 | static test 方針・release notes | 方針化済みの一次分析 | `docs/archive/spikes/` 候補。 |
+| `docs/archive/static-test/test-classification-analysis.md` | Archived | テスト分類一次分析 | static test 方針・release notes | 方針化済みの一次分析 | TD-81 で移設済み。現行正本は `docs/development/static-test-guidelines.md`。 |
 | `docs/guide/nestsuite-user-guide.md` | Canonical | 利用者向けガイド | README・release notes | 現行ユーザー向け正本 | 維持。 |
 | `docs/testing/nestsuite-release-checklist.md` | Canonical | リリース前確認の正本 | 開発ガイド・release 運用 | 毎回確認する運用文書 | 維持。タイトル version を更新。 |
 | `docs/testing/nestsuite-release-checklist-history.md` | Active Reference | release checklist 変更履歴 | release checklist | 現行チェックリストの補足 | 維持。 |
@@ -94,9 +94,9 @@
 | `docs/archive/expert-review/review6-fable5.md` | Archived | 高リスク課題再評価 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
 | `docs/archive/expert-review/review6-fable5-2.md` | Archived | SH-36 下書き保護補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
 | `docs/archive/expert-review/review6-fable5-3.md` | Archived | SH-36 復元後ライフサイクル補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
-| `docs/planning/nestsuite-double-read-design-review.md` | Archive Candidate | `.nestsuite` 二重読込解消レビュー | backlog TD-59・release notes | TD-59 完了済みの詳細記録 | static-test / spike 系と同じ次候補として移設検討。 |
-| `docs/planning/static-test-inventory-review.md` | Archive Candidate | 静的テスト棚卸しレビュー | docs-contract コメント・release notes | TD-74 完了済みレビュー | static-test 系として移設候補。 |
-| `docs/planning/static-test-deletion-candidate-review.md` | Archive Candidate | 静的テスト削除候補レビュー | release notes | 対応済みレビュー記録 | static-test 系として移設候補。 |
+| `docs/archive/completed-designs/nestsuite-double-read-design-review.md` | Archived | `.nestsuite` 二重読込解消レビュー | backlog TD-59・release notes | TD-59 完了済みの詳細記録 | TD-81 で移設済み。現行仕様は実装・release notes・backlog を優先。 |
+| `docs/archive/static-test/static-test-inventory-review.md` | Archived | 静的テスト棚卸しレビュー | docs-contract コメント・release notes | TD-74 完了済みレビュー | TD-81 で移設済み。 |
+| `docs/archive/static-test/static-test-deletion-candidate-review.md` | Archived | 静的テスト削除候補レビュー | release notes | 対応済みレビュー記録 | TD-81 で移設済み。過去の削除候補を現在も削除可能とは扱わない。 |
 
 ---
 
@@ -194,39 +194,40 @@ expert review 文書群は v2.17.4 / TD-79 で `docs/archive/expert-review/` へ
 
 ### TD-80完了: 完了済み integration / migration 計画
 
-次の文書群は v2.17.5 / TD-80 で archive へ移設済みである。
+完了済み integration / migration 計画は v2.17.5 / TD-80 で `docs/archive/completed-designs/` および `docs/archive/migrations/` へ移設済みである。
+
+### TD-81完了: static-test / spike 系レビュー
+
+次の文書群は v2.17.6 / TD-81 で archive へ移設済みである。
+
+Static-test:
+
+- `docs/archive/static-test/test-classification-analysis.md`
+- `docs/archive/static-test/static-test-inventory-review.md`
+- `docs/archive/static-test/static-test-deletion-candidate-review.md`
 
 Completed designs:
 
-- `docs/archive/completed-designs/ideanest-save-load-plan.md`
-- `docs/archive/completed-designs/nestsuite-multi-file-tabs-plan.md`
-- `docs/archive/completed-designs/nestsuite-notenest-multi-file-plan.md`
-- `docs/archive/completed-designs/nestsuite-preparation.md`
-
-Migrations:
-
-- `docs/archive/migrations/nestsuite-default-startup-plan.md`
-- `docs/archive/migrations/repository-rename.md`
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md`
 
 移設後の注意:
 
-- `docs/integration/README.md` と `docs/migration/README.md` は、配下の個別文書が archive へ移ったことを示す旧入口として残す
-- 現在の配布・運用手順は `docs/operations/` 配下の Canonical 文書を優先する
-- archive 文書だけを根拠に過去の統合計画・移行手順を再実装または再適用しない
+- 現行の静的テスト方針は `docs/development/static-test-guidelines.md` を正本とする
+- docs-contract の実装確認は `NestSuite.Tests/NestSuiteDocsContractTests.cs` を優先する
+- archive 文書だけを根拠にテストを削除・復活・追加しない
+- `.nestsuite` 二重読込解消の現行仕様は、実装、`docs/backlog.md`、`docs/release-notes.md` を優先する
 
-### 次の第1候補: 完了済み spike / static-test レビュー
+### 次の候補: 旧NoteNest・完了済み設計文書のarchive再分類
 
-対象候補:
+候補を一度に大量移設せず、次回以降は 1〜2 件程度に絞って扱う。
 
-- `docs/development/test-classification-analysis.md`
-- `docs/planning/static-test-inventory-review.md`
-- `docs/planning/static-test-deletion-candidate-review.md`
-- `docs/planning/nestsuite-double-read-design-review.md`
+優先候補:
 
-理由:
-
-- 方針化・実装済みのレビュー記録が中心
-- 現行判断は `docs/development/static-test-guidelines.md`、`docs/backlog.md`、`docs/release-notes.md` が担う
+- `docs/development/classic-code-contraction.md`
+- `docs/development/workspace-file-extension-unification.md`
+- `docs/design/notenest-editor-h0-reassessment.md`
+- `docs/operations/operation-note.md`
+- `docs/integration/README.md` / `docs/migration/README.md` の削除可否再判定
 
 ---
 
@@ -246,8 +247,9 @@ Migrations:
 
 ## 9. 次回作業案
 
-### v2.17.6: static-test / spike 系レビューの archive 移設
+### v2.17.7: 旧NoteNest・完了済み設計文書のarchive再分類
 
-- static-test 棚卸し・削除候補レビュー、テスト分類一次分析を移設する
-- 現行正本である `docs/development/static-test-guidelines.md` へのリンクを確認する
-- Delete Candidate の `docs/operations/operation-note.md` は削除せず、archive 化が必要かを再判定する
+- `docs/development/classic-code-contraction.md` と旧 NoteNest 系履歴の archive 先を確定する
+- 完了済み editor / extension 設計文書を、`completed-designs` へ移すか現状維持するか再判定する
+- `docs/integration/README.md` / `docs/migration/README.md` は、空入口として残すか Delete Candidate として扱うかを個別判断する
+- Delete Candidate の即削除は行わない

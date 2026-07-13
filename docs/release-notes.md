@@ -7,6 +7,13 @@
 
 ---
 
+## v2.17.6 — TD-81 static-test・spike系文書のarchive移設
+
+- **TD-81: static-test・spike系文書を archive へ移設した。** 完了済みの静的テスト棚卸し、分類分析、削除候補レビューを `docs/archive/static-test/` へ移し、`.nestsuite` 二重読込レビューを `docs/archive/completed-designs/` へ移設した。
+- `docs/archive/static-test/README.md` を追加し、現在の静的テスト方針の正本は `docs/development/static-test-guidelines.md`、`NestSuite.Tests/NestSuiteDocsContractTests.cs`、`docs/backlog.md`、`docs/release-notes.md` であることを明記した。
+- 関連リンクと docs-contract 参照を新しい archive パスへ更新した。文書本文の再設計・現行化は行っていない。
+- production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
 ## v2.17.5 — TD-80 完了済みintegration・migration計画のarchive移設
 
 - **TD-80: 完了済み integration / migration 計画を archive へ移設した。** `docs/integration/` 配下の実装済み統合計画 4 件を `docs/archive/completed-designs/` へ、完了済み移行・名称変更記録 2 件を `docs/archive/migrations/` へ、ファイル名を変えずに移した。
@@ -187,7 +194,7 @@
 - 全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` の読込は 1 回のまま、レガシー形式は FileService で 1 回のまま。保存後状態同期・NoteNest VM 同期は 0 回になった
 - FileService 側の `EnsureKind`・`IsSameFile`・schema guard、failure 分類・通知、session pending entry の持ち越しはすべて維持した
 - production code で `TryGetKind` / `FromFilePath` を呼ぶのは `NestSuiteTabFactory` 自身の内部委譲（`FromFilePath` → `TryGetKind` → `TryPrepareOpen`）のみになった。Shell のファイル Open routing・session 復元・保存後状態同期・NoteNest VM 同期のいずれからも呼ばれない。両 API 自体は公開互換 API として維持する（削除していない）
-- `docs/planning/nestsuite-double-read-design-review.md` に §24 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §24 実施結果を追記した（設計決定自体は変更していない）
 - **TD-59 を完了した**。全ユーザー向け Open 経路・session 復元は `.nestsuite` 読込 1 回、保存後内部同期・NoteNest VM 同期は 0 回、path と解析済み内容を分離する API なし、既存の安全性ガード（`EnsureKind`・`IsSameFile`・schema guard）・failure 分類・通知・pending entry・レガシー形式の挙動をすべて維持したまま完了条件を満たした
 - session.json 形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper `formatVersion`（`1.0`）・Workspace 保存形式は変更していない。外部依存の追加なし。既存テストの削除・skip なし
 
@@ -204,7 +211,7 @@
 - `Plan` に `prepareOpen` delegate 契約の防御を追加した: `Success=true` かつ `Context=null` を返した場合、または返した `Context.FilePath` が対象 path と一致しない場合、`InvalidOperationException` になる（既定の `TryPrepareOpen` 経路の挙動には影響しない）
 - Shell の旧 path 版ルーター `LoadWorkspaceFileAt(NestSuiteWorkspaceKind, string)` と、session 復元専用だった `LoadNoteNestFileAt(string)` / `LoadIdeaNestFileAt(string)` / `LoadChatNestFileAt(string)` を撤去した。`WorkspaceFileOpenContext` を受け取る overload のみを残した（`ProjectFileService.Load(string)` 等の既存 `Load(path)` 系・`NestSuiteTabFactory.FromFilePath` / `TryGetKind` は撤去していない）
 - pin 状態・復元件数カウント・`ActiveFilePath` 選択・既存タブ再利用（`ActivateExistingTab`）・復元失敗の通知（`NotifyRestoreFailures`）・pending entry の持ち越し（`_pendingSessionRestoreEntries`）は、いずれも既存のとおり変更していない（今回変更したのは復元対象生成の「種別判定・読込元」だけ）
-- `docs/planning/nestsuite-double-read-design-review.md` に §23 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §23 実施結果を追記した（設計決定自体は変更していない）
 - **TD-59 は引き続き未完了（open item）**。残作業は TD-59b-5（保存後内部同期の非読込化、任意）と、全経路を通した最終的な回帰確認
 - NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・保存後の内部再同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
 
@@ -220,7 +227,7 @@
 - 既存の重複タブ再利用・最近ファイル更新・起動時 fallback（`EnsureDefaultTab`）・failure 分類ごとの通知文言はすべて維持した
 - **session 復元は今回変更していない**: `TryRestoreSession` は `detectKind` 互換モードと旧 path 版 loader（`LoadWorkspaceFileAt(kind, path)` 等）を引き続き使用し、session.json 形式・復元順序・failure 通知・pending entry の持ち越しに変更はない
 - 保存後の内部再同期（`SavedWorkspaceStateUpdater` / `SyncNoteNestTabForViewModel`）も変更していない
-- `docs/planning/nestsuite-double-read-design-review.md` に §22 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §22 実施結果を追記した（設計決定自体は変更していない）
 - **TD-59 は引き続き未完了（open item）**。残作業は TD-59b-4（session 復元経路の prepared context 化）・TD-59b-5（保存後内部同期の非読込化、任意）
 - NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
 
@@ -234,12 +241,12 @@
 - `.nestsuite` prepared 経路（ガード順・`IsSameFile`・`EnsureKind`・schema 検証・追加ファイル I/O ゼロ）は変更していない
 - NoteNest の prepared 読込チェーン（`MainViewModel.OpenPreparedFileAtStartup` → `ProjectLifecycleService.OpenPrepared` → `ProjectFileService.LoadPrepared`）は変更していない
 - Shell から `LoadPrepared` を呼ぶ経路・session 復元経路は引き続き未着手。実利用経路の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）
-- `docs/planning/nestsuite-double-read-design-review.md` に §21 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §21 実施結果を追記した（設計決定自体は変更していない）
 - NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
 
 ## v2.16.35 — TD-59b-2: FileService `LoadPrepared`・安全性テスト実装
 
-- TD-59a / TD-59a-2 / TD-59b-1（v2.16.32〜v2.16.34）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8.6・§10・§12・§13・§16〜§19）に従い、3 つの Workspace FileService へ安全な prepared 読込を実装した。設計方針自体の変更はない
+- TD-59a / TD-59a-2 / TD-59b-1（v2.16.32〜v2.16.34）で確定した設計（`docs/archive/completed-designs/nestsuite-double-read-design-review.md` §8.6・§10・§12・§13・§16〜§19）に従い、3 つの Workspace FileService へ安全な prepared 読込を実装した。設計方針自体の変更はない
 - `ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService` に `LoadPrepared(WorkspaceFileOpenContext)` を追加した。path と解析済み内容を別引数で受ける overload（`Load(path, envelope)` 等）は追加していない。既存 `Load(string path)` は無変更で維持し、直接読込と prepared 読込はメソッド名で区別する
 - `LoadPrepared` は §8.6 のガード順序（(a) preloaded とレガシー拡張子の組み合わせ違反 → (b) `IsSameFile` による path 一致 → (c) 既存 `EnsureKind` による wrapper kind 検証 → (d) context enum 一致検証 → (e) wrapper 宣言 schema too-new → (f) payload デシリアライズ・検証、preloaded が null の場合は (g)〜(i) のレガシー誤配線検証）をそのまま実装した。FileService 境界で `NestSuiteOpenFilePolicy.IsSameFile(context.FilePath, preloaded.SourcePath)` による path 一致再検証を追加し、既存の `EnsureKind`・`SchemaVersionGuard`（wrapper 宣言 schema too-new・payload 側 schema too-new・wrapper/payload 整合）はすべて維持した
 - `Load(string path)` と `LoadPrepared(context)` の間で payload デシリアライズ + 検証を共有する private helper（NoteNest/ChatNest は新規 `DeserializeAndValidate`、IdeaNest は既存 `ValidatePayload` を再利用）を切り出した。3 FileService を共通基底クラスへは統合していない（保存形式の独立性を維持）
@@ -247,12 +254,12 @@
 - `NestSuiteTabFactory.TryPrepareOpen` / `TryGetKind` に、null・空・空白のみ・`Path.GetFullPath` が例外になる不正 path への防御を追加した（例外を外へ出さず `UnsupportedExtension` を返す。新しい `WorkspaceKindDetectionFailure` 値は追加していない）
 - 安全性テストを追加した: 同種ファイル間の path 取り違え（NoteNest / IdeaNest / ChatNest の 3 Workspace、`EnsureKind` ではなく path 一致ガードで失敗することを確認）、WorkspaceKind 誤配線 6 通り（`InvalidDataException` + 既存 `EnsureKind` 文言）、context enum 改変（wrapper kind は正しいが context 側だけ改変した不正 context、reflection で構成）、3 FileService それぞれの追加ファイル I/O ゼロ確認（実在しない path の context でも成功することで証明）。不正 context の生成は reflection helper 1 か所（`WorkspaceFileOpenContextTestFactory`）に集約し、production の public 生成制限（internal コンストラクター・`InternalsVisibleTo` 不使用）は弱めていない
 - **今回は 3 FileService の `LoadPrepared` と NoteNest の prepared チェーンまでの実装であり、Shell から `LoadPrepared` を呼ぶ経路（`ShellFileOpenDecision.OpenContext`・`ShellFileOpenPlanner.Plan` のprepareOpen化）・Open ダイアログ／起動引数／最近ファイル／pipe の切替・session 復元経路はいずれも未着手。実利用経路の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）**
-- `docs/planning/nestsuite-double-read-design-review.md` に §20 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §20 実施結果を追記した（設計決定自体は変更していない）
 - NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
 
 ## v2.16.34 — TD-59b-1: `.nestsuite` 基盤API・context・test seam実装
 
-- TD-59a-2（v2.16.33）で確定した設計（`docs/planning/nestsuite-double-read-design-review.md` §8・§12・§13・§16〜§18）に従い、`.nestsuite` 二重読込解消のための基盤 API を実装した。設計方針自体の変更はない
+- TD-59a-2（v2.16.33）で確定した設計（`docs/archive/completed-designs/nestsuite-double-read-design-review.md` §8・§12・§13・§16〜§18）に従い、`.nestsuite` 二重読込解消のための基盤 API を実装した。設計方針自体の変更はない
 - `NestSuiteWorkspaceEnvelope` に `EnvelopeReadResult`（`Envelope` / `Failure`）と `ReadFromFile(path, fileExists?, readAllText?)` を追加した。ファイルを 1 回だけ読んで wrapper を解析し、failure 分類（FileNotFound / AccessDenied / InvalidFormat / IoError / Unknown）は既存 `DetectKindFromFile` と完全に同一にした。既存 `DetectKindFromFile` はこの `ReadFromFile` の上へ委譲する形に再実装した（`KindDetectionResult` の形・`TryDetectKindFromFile` の挙動は不変）
 - `PreloadedWorkspaceEnvelope`（`SourcePath` + `Envelope`）と `WorkspaceFileOpenContext`（`FilePath` + `WorkspaceKind` + `Preloaded`）を新規追加した（`NestSuite/Services/WorkspaceFileOpenContext.cs`）。どちらも `sealed class` + internal コンストラクター + get-only プロパティとし、public コンストラクターも public setter も持たない。呼び出し側が任意の path と envelope を自由に組み合わせて生成することはできない（`InternalsVisibleTo` は追加せず、テストは `NestSuiteTabFactory.TryPrepareOpen` を通じてのみこれらの型を得る。reflection によるテストで生成境界を検証済み）
 - `NestSuiteTabFactory` に `TryPrepareOpen(filePath, out context, out failure, fileExists?, readAllText?)` を追加した。入口で `Path.GetFullPath` により path を正規化し、`context.FilePath` と `context.Preloaded.SourcePath`（非 null 時）は同一の正規化済み path になる。`.nestsuite` は read delegate をちょうど 1 回だけ呼び、成功時だけでなく invalid wrapper・unknown workspace kind・schema too-new のいずれの失敗時も再読込しない（no retry）。レガシー拡張子（.notenest / .ideanest / .chatnest）と未対応拡張子は read delegate を 0 回しか呼ばない
@@ -261,7 +268,7 @@
 - `NestSuiteWorkspaceEnvelopeTests.cs` に `ReadFromFile` のテスト（正常時 1 回読込・`fileExists=false` で 0 回・不正 JSON / wrapper 形式不正 → InvalidFormat・`UnauthorizedAccessException` / `SecurityException` → AccessDenied・`IOException` → IoError・想定外例外 → Unknown・既定 delegate での実ファイル読込）を追加した
 - 新規 `WorkspaceFileOpenContextTests.cs` を追加し、生成境界（public コンストラクターなし・public setter なし、reflection 検証）、`TryPrepareOpen` の読込回数（`.nestsuite` 正常・invalid wrapper・unknown kind・schema too-new は 1 回、レガシー・未対応拡張子は 0 回）、context 生成保証（`FilePath` がフルパス・`Preloaded.SourcePath` と `IsSameFile` で一致・`WorkspaceKind` が wrapper と一致）、`TryGetKind` 委譲後の後方互換、`FromResolvedKind` の非読込タブ生成を検証した
 - **今回は基盤 API のみの追加であり、FileService（`ProjectFileService` / `IdeaNestFileService` / `ChatNestFileService`）の `LoadPrepared`、Shell の `ShellFileOpenDecision.OpenContext`、session 復元経路はいずれも未切替。実利用経路（Open ダイアログ・起動引数・最近ファイル・session 復元・pipe）の `.nestsuite` 読込回数はまだ減っていない。TD-59 は引き続き未完了（open item）**
-- `docs/planning/nestsuite-double-read-design-review.md` に §19 実施結果を追記した（設計決定自体は変更していない）
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` に §19 実施結果を追記した（設計決定自体は変更していない）
 - NoteNest schema は `1.4.2` のまま、`.nestsuite` wrapper の `formatVersion` は `1.0` のまま。session.json 形式・Workspace 保存形式・schema・wrapper 形式の変更はなし。外部依存の追加なし。既存テストの削除・skip なし
 
 ## v2.16.33 — TD-59a-2: `.nestsuite` 二重読込解消設計の安全性補足
@@ -277,7 +284,7 @@
 
 ## v2.16.32 — TD-59a: `.nestsuite` 二重読込解消の設計レビュー
 
-- `docs/planning/nestsuite-double-read-design-review.md` を追加し、`.nestsuite` の二重読込・二重パース解消の設計レビューを行った
+- `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を追加し、`.nestsuite` の二重読込・二重パース解消の設計レビューを行った
 - 全読込経路（共通 / 種別別 Open ダイアログ・起動引数・最近ファイル・session 復元・pipe / 二重起動・ファイル関連付け・保存後の内部再読込）を棚卸しし、主要経路では `FromFilePath` の再判定を含め実際は 3 回の読込・wrapper 解析が発生していることを特定した
 - 設計案 5 つ（コンテキスト明示引き渡し / EnvelopeContent 直渡し / FileService overload / パス単位キャッシュ / 共通 loader）を比較し、採用案を確定した: 1 open operation に限定した `WorkspaceFileOpenContext` を probe（`TryPrepareOpen`）から FileService（`Load(path, preloadedEnvelope)` overload）まで明示的に引き渡す。process-wide / path-based cache は stale data・解放条件・テスト汚染の理由で不採用と確定した
 - API・型の C# スケッチ、TOCTOU 方針（1 operation = 1 スナップショット、再読込・mtime 比較なし）、kind 検証（`TryGetKind` 集約点維持・FileService 内 `EnsureKind` 再検証維持）、`WorkspaceKindDetectionFailure` の扱い、各 FileService の変更方針、テスト戦略（readAllText delegate 注入と「preloaded なら存在しないファイルでも読める」性質による読込回数検証）を文書化した
@@ -287,7 +294,7 @@
 
 ## v2.16.31 — TD-75e: Delete candidate 10 件の実削除
 
-- TD-75d（v2.16.30、`docs/planning/static-test-deletion-candidate-review.md`）で Delete candidate と判断済みの静的テスト 10 件を削除した
+- TD-75d（v2.16.30、`docs/archive/static-test/static-test-deletion-candidate-review.md`）で Delete candidate と判断済みの静的テスト 10 件を削除した
 - `ExpertProposalPlanningTests.cs` から、凍結済み planning 文書（`expert-proposals-2026-06.md`）の章構成固定 5 件（短期採用候補・段階的採用候補・長期構想・当面対象外・外部 AI 対象外）を削除した
 - `NestSuiteShellXamlTests.cs` から、古い UI 削除ガード 5 件（SH-25 の上部バー起動ボタン・NoteNest エクスポートメニュー不在確認、ID-14 のサンプル文言不在確認、v2.15.1 の横断検索メニュー重複配置・各 Nest 起動項目のツールメニュー不在確認）を削除した
 - Keep と判断された 3 件（`PlanningDoc_ExpertProposals_Exists` / `NoteNestWorkspaceViewXaml_DoesNotContain_EditorFontFamilyComboBox` / `ShellXaml_DoesNotIntroduce_SearchNestWorkspace`）は削除していない
@@ -298,7 +305,7 @@
 
 ## v2.16.30 — TD-75d: 削除候補テストの削除判断レビュー
 
-- TD-74 の棚卸しレビューで「削除候補」とされた静的テストについて削除判断レビューを行い、`docs/planning/static-test-deletion-candidate-review.md` を追加した
+- TD-74 の棚卸しレビューで「削除候補」とされた静的テストについて削除判断レビューを行い、`docs/archive/static-test/static-test-deletion-candidate-review.md` を追加した
 - 現行コードを確認した結果、実際の対象は 13 件（`ExpertProposalPlanningTests` の凍結 planning 文書スナップショット確認 6 件 + `NestSuiteShellXamlTests` の削除決定ガード 7 件。TD-74 の「約 14 件」は概算）だった
 - 候補ごとに Delete candidate（10 件）/ Keep（3 件）/ Replace then delete（0 件）/ Defer（0 件）へ分類し、判断理由・削除時のリスクと緩和・次アクションを文書化した
 - Keep は、参照されている履歴文書の誤削除検知（`PlanningDoc_ExpertProposals_Exists`）、保存対象事故のバグ履歴と直結する再導入ガード（フォント種類 ComboBox）、現役の設計境界（横断検索を新 Workspace にしない）の 3 件
@@ -310,7 +317,7 @@
 
 ## v2.16.29 — TD-75c: test-classification-analysis.md の位置づけ整理
 
-- `docs/development/test-classification-analysis.md` の冒頭に位置づけを追記し、「TD-28 / TD-30 / TD-32 時点のテストクラス分類・棚卸し結果を記録した過去分析スナップショット」であることを明確化した
+- `docs/archive/static-test/test-classification-analysis.md` の冒頭に位置づけを追記し、「TD-28 / TD-30 / TD-32 時点のテストクラス分類・棚卸し結果を記録した過去分析スナップショット」であることを明確化した
 - 現在の静的テスト（docs-contract test / ソーステキスト静的確認テスト）の追加・維持・削除判断は `static-test-guidelines.md`（TD-73）を主たる基準とし、既存静的テストの現時点の棚卸しは TD-73 を前提にした後続レビューである `static-test-inventory-review.md`（TD-74）を参照することを明記した
 - 同文書は削除せず、過去の分類・整理の判断経緯を確認する参考資料として残す。§12 の新規テスト追加先判定ガイドは受け皿一覧の参考として引き続き利用できる（テストクラス命名・集約の規範は `nestsuite-development-guidelines.md` 側にあることを明記）
 - `docs/README.md` の development/ 一覧で同文書の分類を「現行」から「履歴（過去分析スナップショット）」へ変更し、未掲載だった `static-test-guidelines.md` を「現行」として追加した
@@ -351,7 +358,7 @@
 
 ## v2.16.25 — TD-74: 既存静的テスト棚卸しレビュー
 
-- `docs/planning/static-test-inventory-review.md` を追加し、既存静的テスト（22 ファイル・約 250 メソッド）を TD-73 のガイドラインを基準に棚卸しした
+- `docs/archive/static-test/static-test-inventory-review.md` を追加し、既存静的テスト（22 ファイル・約 250 メソッド）を TD-73 のガイドラインを基準に棚卸しした
 - 各テスト群を「維持 / helper 化 / 挙動テスト化 / 削除候補 / 要追加確認」に分類し、判断理由と次アクションを整理した
 - 過去に CI を壊した形（bare ID 検索・CRLF 依存・範囲リテラル固定）は helper 化で解消済みであり、緊急の削除・修正対象はないことを確認した
 - 最大の課題はバージョンごとに増える存在確認テストの増加構造であり、(version, id) データ駆動化を最優先の次工程候補とした
@@ -468,7 +475,7 @@
 - **TD-63 として、長大化していたテストクラスをシナリオ単位・責務単位で分割した。** `NoteNestFormatSchemaRegressionTests`（973 行・57 件）を `NoteNestFormatSchemaVersionTests` / `NoteNestFormatStructureTests` / `NoteNestFormatRoundTripTests` / `NoteNestFormatTimestampAndStarTests` / `NoteNestFormatExportTests` へ、`ChatNestWorkspaceViewModelTests`（667 行・55 件）を `ChatNestMessageEditingTests` / `ChatNestExportAndCopyTests` / `ChatNestTimestampAndExportCommandTests` / `ChatNestMessageReorderTests` / `ChatNestWorkspaceFeatureRecordsTests` へ、`NestSuiteShellWorkspaceLaunchTests`（772 行・61 件）を `NestSuiteShellNoteNestLaunchTests` / `NestSuiteShellChatNestLaunchTests` / `NestSuiteShellIdeaNestLaunchTests` / `NestSuiteShellStartupTabPolicyTests` / `NestSuiteShellOpenCommonTests` / `NestSuiteShellSaveFlowTests` へ、それぞれ分割した。
 - **テスト内容の削減ではなく、失敗時の探索コスト低減を目的とした。** 分割前後でテストメソッド数（57 / 55 / 61 件）・テスト名・期待値は変更していない。3 クラスとも分割後の合計件数が分割前と一致することを確認済み。
 - **既存テストの削除・skip 化はしていない。** 分割は using / namespace / private helper の移動のみで、Arrange/Act/Assert の内容は変更していない。
-- **production code の仕様変更はしていない。** テストファイルの再編成のみで、`NestSuite` / `NestSuite.Tests` 以外のプロダクションコードは変更していない。関連する開発者向けドキュメント（`docs/development/test-classification-analysis.md` の新規テスト追加先判定ガイド、`nestsuite-shell-partials.md`、`save-flow-duplication.md`、`classic-code-contraction.md`）のクラス名参照も分割後の名前へ更新した。
+- **production code の仕様変更はしていない。** テストファイルの再編成のみで、`NestSuite` / `NestSuite.Tests` 以外のプロダクションコードは変更していない。関連する開発者向けドキュメント（`docs/archive/static-test/test-classification-analysis.md` の新規テスト追加先判定ガイド、`nestsuite-shell-partials.md`、`save-flow-duplication.md`、`classic-code-contraction.md`）のクラス名参照も分割後の名前へ更新した。
 - **保存形式 / schema / wrapper / session 変更なし。** NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion` `1.0`、Workspace 保存形式、session 形式はいずれも変更していない。外部依存追加なし。net48_test 再開なし。
 
 ## v2.16.12 — RJ-10: M2見送り・タスク縮退方針整理
@@ -1390,7 +1397,7 @@
 - **`ShellUxTests` / `UiSmokeTD23Tests` を削除し、Shell UX 静的確認と UI smoke 構造確認を `NestSuiteShellTests` へ集約した。**
 - **`V140RegressionTests` / `V141FeatureTests` / `V146RegressionTests` を削除し、NoteNest 保存形式・主要回帰フロー確認を `FormatSchemaRegressionTests` へ集約した。**
 - **テストクラス分類・整理を最終再分析し、4分類（クラス単位 / 機能単位 / シナリオ・回帰 / ドキュメント・ルール固定）へ整理完了した。**
-- **新規参画者向けの追加先判定ガイドを `docs/development/test-classification-analysis.md` に追加した。**
+- **新規参画者向けの追加先判定ガイドを `docs/archive/static-test/test-classification-analysis.md` に追加した。**
 - **テストクラス数 94 → 86 に削減（前回修正後の 91 から追加で 5 クラス削減。TD-28 起点の累計では 96 → 86）。変更前から増加なし。テストロジックの意味変更なし。**
 - **backlog ID はテストクラス名ではなく、移動先クラス内のコメント・メソッド名・docs 対応表で追跡する。**
 - **アプリ本体の挙動変更なし。UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。**
@@ -1401,7 +1408,7 @@
 - **CH-8 (ShowTimestamps) / CH-9 (ExportConversationCommand) / CH-13 (MoveMessage) テストを `ChatNestWorkspaceViewModelTests` へ移動した。**
 - **CH-9 (BuildMarkdownConversation) / CH-14 (BuildPlainTextConversation) テストを新規 `ChatNestExportFormatterTests` へ移動した。**
 - **テストクラス数 96 → 94 に削減。テストメソッド数は変化なし（全メソッドを移動）。**
-- **`docs/development/test-classification-analysis.md` §9 に v2.10.17 対応記録を追記した。**
+- **`docs/archive/static-test/test-classification-analysis.md` §9 に v2.10.17 対応記録を追記した。**
 - **アプリ本体の挙動変更なし。UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
 
 ## v2.10.16 — TD-30 テストクラス乱立抑制・集約方針の明文化
@@ -1410,7 +1417,7 @@
 - **新規テストは既存テストクラスへの追加を優先する方針を明記した。**
 - **`CH8CH14Tests`・`TD25Tests`・`V2103Tests` のような課題番号・バージョン中心の命名を避ける方針を明記した。**
 - **backlog ID はコメントまたは `Trait("Backlog", "...")` で追跡する方針を明記した。**
-- **`docs/development/test-classification-analysis.md` §8 に v2.10.16 対応記録（追補）を追記した。**
+- **`docs/archive/static-test/test-classification-analysis.md` §8 に v2.10.16 対応記録（追補）を追記した。**
 - **`TestClassificationAnalysisTests.cs` に TD-30 ルール固定テスト 5 件を追加した（既存クラスへ追加し、新規テストクラスを作成しないことでルールを実践）。**
 - **既存テストクラスの大規模リネーム・移動・統合は未実施。テストロジック変更なし。**
 - **アプリ本体の挙動変更なし。UI 変更なし。保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
@@ -1420,14 +1427,14 @@
 - **TD-29: 各機能テストクラスに散在していた `NoteNestSchemaVersion_Remains_1_4_1` メソッド（20 ファイル）を削除し、`ApplicationVersionTests.cs` に集約した。**
 - **`NoteNestSchemaVersion_IsNotTested_InOtherTestClasses` テストを追加し、再散在を自動検出できるようにした。**
 - **`docs/development/nestsuite-development-guidelines.md` §7 に SchemaVersion テスト集約ルールを追記した。**
-- **`docs/development/test-classification-analysis.md` §7 に v2.10.15 対応記録（追補）を追記した。**
+- **`docs/archive/static-test/test-classification-analysis.md` §7 に v2.10.15 対応記録（追補）を追記した。**
 - **アプリ本体の挙動変更なし。UI 変更なし。**
 - **保存形式変更なし。session 形式変更なし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
 
 ## v2.10.14 — TD-28 テストクラス分類・整理方針の一次分析
 
 - **TD-28: テストクラス分類・整理方針の一次分析を追加した。**
-- **`docs/development/test-classification-analysis.md` を新規作成した。**
+- **`docs/archive/static-test/test-classification-analysis.md` を新規作成した。**
 - **NestSuite.Tests 配下の全テストクラス・全テストメソッドを分類した。**
 - **テストクラス命名方針を `docs/development/nestsuite-development-guidelines.md` に追記した。**
 - **テストクラスのリネーム・削除・統合は未実施。**

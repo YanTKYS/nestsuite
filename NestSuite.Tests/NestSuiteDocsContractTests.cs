@@ -15,7 +15,7 @@ public class NestSuiteDocsContractTests
     // ═══════════════════════════════════════════════════════════════════
     // データ駆動: release notes / backlog 存在確認 (TD-75a, v2.16.26)
     //
-    // v2.16.25 TD-74 の棚卸しレビュー（docs/planning/static-test-inventory-review.md）
+    // v2.16.25 TD-74 の棚卸しレビュー（docs/archive/static-test/static-test-inventory-review.md）
     // で、バージョンごとに同形の [Fact] が増え続ける構造が最大の課題と整理された。
     // 以下の 3 種類は「機械的な存在確認だけ」のテストであり、[Theory] + MemberData に
     // 集約した。検証内容（どの version / id を確認していたか）は元の個別 Fact から
@@ -84,6 +84,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.17.3", "docs-inventory-and-archive-policy.md", "docs-inventory-and-archive-policy.md" };
         yield return new object[] { "v2.17.4", "TD-79", "TD-79" };
         yield return new object[] { "v2.17.5", "TD-80", "TD-80" };
+        yield return new object[] { "v2.17.6", "TD-81", "TD-81" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -196,6 +197,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-78" };
         yield return new object[] { "TD-79" };
         yield return new object[] { "TD-80" };
+        yield return new object[] { "TD-81" };
         yield return new object[] { "M17" };
     }
 
@@ -228,6 +230,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { 78 };
         yield return new object[] { 79 };
         yield return new object[] { 80 };
+        yield return new object[] { 81 };
     }
 
     [Theory]
@@ -685,7 +688,7 @@ public class NestSuiteDocsContractTests
     public void StaticTestInventoryReview_ExistsAndMentionsClassifications()
     {
         // 文言完全一致ではなく、5 分類の重要語句の存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "static-test-inventory-review.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "static-test-inventory-review.md");
         Assert.True(File.Exists(path), $"static-test-inventory-review.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("維持", text);
@@ -746,7 +749,7 @@ public class NestSuiteDocsContractTests
     public void StaticTestDeletionCandidateReview_ExistsAndMentionsJudgments()
     {
         // 文言完全一致ではなく、4 分類と「削除・skip を行っていない」旨の重要語句確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "static-test-deletion-candidate-review.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "static-test-deletion-candidate-review.md");
         Assert.True(File.Exists(path), $"static-test-deletion-candidate-review.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("Delete candidate", text);
@@ -776,7 +779,7 @@ public class NestSuiteDocsContractTests
     [Fact]
     public void StaticTestDeletionCandidateReview_MentionsTD75eImplementationResult()
     {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "static-test-deletion-candidate-review.md"));
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "archive", "static-test", "static-test-deletion-candidate-review.md"));
         Assert.Contains("実施結果", text);
         Assert.Contains("TD-75e", text);
     }
@@ -802,7 +805,7 @@ public class NestSuiteDocsContractTests
     {
         // 文言完全一致ではなく、読込経路・採用案・TOCTOU・kind 検証・後続実装・
         // production code 未変更の重要語句の存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md");
         Assert.True(File.Exists(path), $"nestsuite-double-read-design-review.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("読込経路一覧", text);
@@ -822,7 +825,7 @@ public class NestSuiteDocsContractTests
         // TD-59a-2 の安全性補足: path と解析済み内容の対応保証・同種ファイル間の取り違え・
         // IsSameFile・test seam（読込 delegate）の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("path と解析済み内容の対応保証", text);
         Assert.Contains("同種ファイル間の取り違え", text);
         Assert.Contains("IsSameFile", text);
@@ -849,7 +852,7 @@ public class NestSuiteDocsContractTests
     {
         // §19 実施結果: 基盤 API 実装済み・FileService/Shell/session 未切替の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果", text);
         Assert.Contains("ReadFromFile", text);
         Assert.Contains("TryPrepareOpen", text);
@@ -879,7 +882,7 @@ public class NestSuiteDocsContractTests
         // §20 実施結果: LoadPrepared 実装済み・安全性テスト実施済み・Shell/session 未切替の
         // 重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果（TD-59b-2", text);
         Assert.Contains("LoadPrepared", text);
         Assert.Contains("OpenPrepared", text);
@@ -906,7 +909,7 @@ public class NestSuiteDocsContractTests
     {
         // §21 実施結果: レガシー拡張子ガード補完済み・Shell/session 未切替の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果（TD-59b-2-2", text);
         Assert.Contains("レガシー", text);
         Assert.Contains("拡張子", text);
@@ -935,7 +938,7 @@ public class NestSuiteDocsContractTests
         // §22 実施結果: OpenContext・TryPrepareOpen・LoadPrepared・FromResolvedKind・
         // TD-59b-4 への言及の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果（TD-59b-3", text);
         Assert.Contains("OpenContext", text);
         Assert.Contains("TryPrepareOpen", text);
@@ -978,7 +981,7 @@ public class NestSuiteDocsContractTests
         // §23 実施結果: SessionRestoreTarget・OpenContext・TryPrepareOpen・detectKind 撤去・
         // 旧 path loader 撤去・TD-59 未完了の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果（TD-59b-4", text);
         Assert.Contains("SessionRestoreTarget", text);
         Assert.Contains("OpenContext", text);
@@ -1030,7 +1033,7 @@ public class NestSuiteDocsContractTests
         // §24 実施結果: IsPathCompatibleWithResolvedKind・SavedWorkspaceStateUpdater/
         // SyncNoteNestTabForViewModel の非読込化・TD-59 完了の重要語句確認に留める。
         var text = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "nestsuite-double-read-design-review.md"));
+            RepoRoot, "docs", "archive", "completed-designs", "nestsuite-double-read-design-review.md"));
         Assert.Contains("実施結果（TD-59b-5", text);
         Assert.Contains("IsPathCompatibleWithResolvedKind", text);
         Assert.Contains("SavedWorkspaceStateUpdater", text);

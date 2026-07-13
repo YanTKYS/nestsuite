@@ -31,7 +31,7 @@
 | `save-flow-duplication.md` | IdeaNest / ChatNest 保存フロー重複 設計メモ（TD-34 / TD-45） | 現行 |
 | `sqlite-index-feasibility.md` | LT-2 SQLite 補助インデックス feasibility spike（TD-54） | 現行 |
 | `static-test-guidelines.md` | 静的テスト（docs-contract / ソーステキスト確認）の持続可能性ガイドライン（TD-73） | **現行** |
-| `test-classification-analysis.md` | テストクラス分類・棚卸しの過去分析スナップショット（TD-28 / TD-30 / TD-32。現在の静的テスト判断は `static-test-guidelines.md` を優先） | 履歴 |
+| `docs/archive/static-test/test-classification-analysis.md` | テストクラス分類・棚卸しの過去分析スナップショット（TD-28 / TD-30 / TD-32。現在の静的テスト判断は `static-test-guidelines.md` を優先） | 履歴 |
 | `workspace-file-extension-unification.md` | Workspace ファイル拡張子 `.nestsuite` 統一（FM-1） | **現行** |
 
 ### testing/（テスト・リリース確認）
@@ -73,7 +73,7 @@
 
 ### archive/（履歴保管）
 
-`docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に、完了済み統合計画は [`archive/completed-designs/`](archive/completed-designs/) に、完了済み移行記録は [`archive/migrations/`](archive/migrations/) に保管する。
+`docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に、完了済み統合計画・設計レビューは [`archive/completed-designs/`](archive/completed-designs/) に、完了済み移行記録は [`archive/migrations/`](archive/migrations/) に、static-test 系履歴は [`archive/static-test/`](archive/static-test/) に保管する。
 
 ### operations/（配布・運用）
 
