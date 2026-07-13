@@ -48,6 +48,22 @@ public class NoteWorkspaceViewModelTests
         Assert.Equal("Loaded", Assert.Single(workspace.Notebooks).Title);
     }
 
+    [Fact]
+    public void ReassigningExistingNotebookAndNoteValuesDoesNotRaiseChanged()
+    {
+        var workspace = new NoteWorkspaceViewModel();
+        var notebook = workspace.AddNotebook("NB");
+        var note = workspace.AddNote(notebook, "Note")!;
+        var changeCount = 0;
+        workspace.Changed += (_, _) => changeCount++;
+
+        notebook.Title = "NB";
+        note.Title = "Note";
+        note.Content = "";
+
+        Assert.Equal(0, changeCount);
+    }
+
     // ── L11: ノート複製 ───────────────────────────────────────────────────────
 
     [Fact]

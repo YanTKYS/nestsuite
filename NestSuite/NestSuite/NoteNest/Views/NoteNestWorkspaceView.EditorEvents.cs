@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using NestSuite.Services;
 using NestSuite.ViewModels;
 
 namespace NestSuite.Views;
@@ -22,11 +23,11 @@ public partial class NoteNestWorkspaceView
             ViewModel.MarkerClickCommand.Execute(m);
     }
 
-    private void InsertMarker(string markerText) => InsertTextAtCaret($"{markerText} ");
+    private void InsertMarker(string markerType) => InsertTextAtCaret($"[{markerType}] ");
 
-    private void InsertTodo_Click(object sender, RoutedEventArgs e)  => InsertMarker("[TODO]");
-    private void InsertFixme_Click(object sender, RoutedEventArgs e) => InsertMarker("[FIXME]");
-    private void InsertNote_Click(object sender, RoutedEventArgs e)  => InsertMarker("[NOTE]");
+    private void InsertTodo_Click(object sender, RoutedEventArgs e)  => InsertMarker(MarkerTypeNames.Todo);
+    private void InsertFixme_Click(object sender, RoutedEventArgs e) => InsertMarker(MarkerTypeNames.Fixme);
+    private void InsertNote_Click(object sender, RoutedEventArgs e)  => InsertMarker(MarkerTypeNames.Note);
 
     private void OpenNoteLink_Click(object sender, RoutedEventArgs e) => TryOpenNoteLink();
 

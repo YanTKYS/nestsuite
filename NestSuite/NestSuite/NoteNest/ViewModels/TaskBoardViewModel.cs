@@ -11,9 +11,9 @@ public sealed class TaskBoardViewModel
     {
         TaskGroups = new ObservableCollection<TaskGroupViewModel>
         {
-            new("今日のタスク", "today"),
-            new("今週のタスク", "week"),
-            new("バックログ", "backlog"),
+            new("今日のタスク", TaskGroupKeys.Today),
+            new("今週のタスク", TaskGroupKeys.Week),
+            new("バックログ", TaskGroupKeys.Backlog),
         };
     }
 
@@ -43,17 +43,17 @@ public sealed class TaskBoardViewModel
                 task.PropertyChanged -= TaskPropertyChanged;
                 group.RemoveTask(task);
             }
-        LoadGroup("today", tasks.Today);
-        LoadGroup("week", tasks.Week);
-        LoadGroup("backlog", tasks.Backlog);
+        LoadGroup(TaskGroupKeys.Today, tasks.Today);
+        LoadGroup(TaskGroupKeys.Week, tasks.Week);
+        LoadGroup(TaskGroupKeys.Backlog, tasks.Backlog);
         Loaded?.Invoke(this, EventArgs.Empty);
     }
 
     public TaskCollection BuildModel() => new()
     {
-        Today = GetGroup("today").Tasks.Select(task => task.Model).ToList(),
-        Week = GetGroup("week").Tasks.Select(task => task.Model).ToList(),
-        Backlog = GetGroup("backlog").Tasks.Select(task => task.Model).ToList(),
+        Today = GetGroup(TaskGroupKeys.Today).Tasks.Select(task => task.Model).ToList(),
+        Week = GetGroup(TaskGroupKeys.Week).Tasks.Select(task => task.Model).ToList(),
+        Backlog = GetGroup(TaskGroupKeys.Backlog).Tasks.Select(task => task.Model).ToList(),
     };
 
     public TaskViewModel? AddTask(string groupKey, string title)

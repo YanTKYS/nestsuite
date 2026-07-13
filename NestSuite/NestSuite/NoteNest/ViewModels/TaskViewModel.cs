@@ -13,13 +13,23 @@ public class TaskViewModel : BaseViewModel
     public string Title
     {
         get => _model.Title;
-        set { _model.Title = value; OnPropertyChanged(); }
+        set
+        {
+            if (_model.Title == value) return;
+            _model.Title = value;
+            OnPropertyChanged();
+        }
     }
 
     public bool IsCompleted
     {
         get => _model.IsCompleted;
-        set { _model.IsCompleted = value; OnPropertyChanged(); }
+        set
+        {
+            if (_model.IsCompleted == value) return;
+            _model.IsCompleted = value;
+            OnPropertyChanged();
+        }
     }
 
     public string Comment
@@ -27,6 +37,7 @@ public class TaskViewModel : BaseViewModel
         get => _model.Comment;
         set
         {
+            if (_model.Comment == value) return;
             _model.Comment = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasComment));
@@ -38,13 +49,23 @@ public class TaskViewModel : BaseViewModel
     public TaskPriority Priority
     {
         get => _model.Priority;
-        set { _model.Priority = value; OnPropertyChanged(); }
+        set
+        {
+            if (_model.Priority == value) return;
+            _model.Priority = value;
+            OnPropertyChanged();
+        }
     }
 
     public DateTime? DueDate
     {
         get => _model.DueDate;
-        set { _model.DueDate = value; OnPropertyChanged(); }
+        set
+        {
+            if (_model.DueDate == value) return;
+            _model.DueDate = value;
+            OnPropertyChanged();
+        }
     }
 
     public string? LinkedNoteId
@@ -52,6 +73,7 @@ public class TaskViewModel : BaseViewModel
         get => _model.LinkedNoteId;
         set
         {
+            if (_model.LinkedNoteId == value) return;
             _model.LinkedNoteId = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasRelatedNote));

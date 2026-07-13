@@ -34,12 +34,12 @@ public sealed class MarkerPanelViewModel : BaseViewModel
         get
         {
             var filtered = Markers.Where(marker =>
-                (marker.Type == "TODO" && FilterTodo) ||
-                (marker.Type == "FIXME" && FilterFixme) ||
-                (marker.Type == "NOTE" && FilterNote));
+                (marker.Type == MarkerTypeNames.Todo && FilterTodo) ||
+                (marker.Type == MarkerTypeNames.Fixme && FilterFixme) ||
+                (marker.Type == MarkerTypeNames.Note && FilterNote));
             return SortOrderIndex switch
             {
-                1 => filtered.OrderBy(marker => TypeOrder(marker.Type)).ThenBy(marker => marker.NoteTitle).ThenBy(marker => marker.LineNumber),
+                1 => filtered.OrderBy(marker => MarkerTypeNames.SortOrder(marker.Type)).ThenBy(marker => marker.NoteTitle).ThenBy(marker => marker.LineNumber),
                 2 => filtered.OrderBy(marker => marker.NoteTitle).ThenBy(marker => marker.LineNumber),
                 3 => filtered.OrderBy(marker => marker.LineNumber),
                 _ => filtered,
@@ -64,9 +64,9 @@ public sealed class MarkerPanelViewModel : BaseViewModel
         foreach (var marker in _extractor.Extract(note.Content, note.Title))
         {
             Markers.Add(new MarkerViewModel(marker, note));
-            if (marker.Type == "TODO") _todoCount++;
-            else if (marker.Type == "FIXME") _fixmeCount++;
-            else if (marker.Type == "NOTE") _noteCount++;
+            if (marker.Type == MarkerTypeNames.Todo) _todoCount++;
+            else if (marker.Type == MarkerTypeNames.Fixme) _fixmeCount++;
+            else if (marker.Type == MarkerTypeNames.Note) _noteCount++;
         }
         OnPropertyChanged(nameof(MarkerCount));
         OnPropertyChanged(nameof(ProjectMarkerSummary));
@@ -81,6 +81,4 @@ public sealed class MarkerPanelViewModel : BaseViewModel
         OnPropertyChanged(nameof(FilteredMarkers));
         OnPropertyChanged(nameof(FilteredMarkerCountText));
     }
-
-    private static int TypeOrder(string type) => type switch { "TODO" => 0, "FIXME" => 1, "NOTE" => 2, _ => 99 };
 }

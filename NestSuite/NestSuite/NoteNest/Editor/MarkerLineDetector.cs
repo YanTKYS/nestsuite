@@ -1,3 +1,5 @@
+using NestSuite.Services;
+
 namespace NestSuite.NoteNest.Editor;
 
 public enum LineHighlightKind { Todo, Fixme, Note, NoteLink }
@@ -37,9 +39,9 @@ public static class MarkerLineDetector
     {
         ReadOnlySpan<char> span = text.AsSpan(offset, length);
         ReadOnlySpan<char> trimmed = TrimLeadingSpacesAndTabs(span);
-        if (StartsWithBracketedMarker(trimmed, "FIXME")) return LineHighlightKind.Fixme;
-        if (StartsWithBracketedMarker(trimmed, "TODO"))  return LineHighlightKind.Todo;
-        if (StartsWithBracketedMarker(trimmed, "NOTE"))  return LineHighlightKind.Note;
+        if (StartsWithBracketedMarker(trimmed, MarkerTypeNames.Fixme)) return LineHighlightKind.Fixme;
+        if (StartsWithBracketedMarker(trimmed, MarkerTypeNames.Todo))  return LineHighlightKind.Todo;
+        if (StartsWithBracketedMarker(trimmed, MarkerTypeNames.Note))  return LineHighlightKind.Note;
         if (span.IndexOf("[[", StringComparison.Ordinal) >= 0) return LineHighlightKind.NoteLink;
         return null;
     }
