@@ -1,7 +1,7 @@
 # 静的テスト削除候補レビュー
 
 > 作成: v2.16.30 TD-75d
-> 前提: `docs/development/static-test-guidelines.md`（TD-73）、`docs/planning/static-test-inventory-review.md`（TD-74）
+> 前提: `docs/development/static-test-guidelines.md`（TD-73）、`docs/archive/static-test/static-test-inventory-review.md`（TD-74）
 > 本レビューは削除候補ごとの**判断のみ**を行う。**テストの削除・skip は 1 件も行っていない。**
 > 実削除は、本レビューの判断に基づき次回以降の別タスク（ユーザー承認の上）で行う。
 

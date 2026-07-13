@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.14.12）
+# NestSuite リリース前確認チェックリスト（v2.17.8）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。

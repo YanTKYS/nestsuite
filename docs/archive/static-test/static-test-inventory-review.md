@@ -17,7 +17,7 @@
 ## 背景
 
 - v2.16.23 / TD-73 で `docs/development/static-test-guidelines.md` を制定し、静的テストの推奨・非推奨パターンを整理したが、既存静的テストの棚卸しは未実施だった。
-- なお、テスト全体の分類は過去に `docs/development/test-classification-analysis.md`（TD-28 / TD-30 / TD-32）で実施済みである。本レビューはその後増えた静的テストに対象を絞り、TD-73 ガイドラインを判定基準として再棚卸しするものである。
+- なお、テスト全体の分類は過去に `docs/archive/static-test/test-classification-analysis.md`（TD-28 / TD-30 / TD-32）で実施済みである。本レビューはその後増えた静的テストに対象を絞り、TD-73 ガイドラインを判定基準として再棚卸しするものである。
 - NestSuite のテストは CI（Windows ランナー、net8.0-windows）で WPF の `Window` を直接インスタンス化できないため、Shell partial / XAML / PowerShell スクリプトについては静的確認が現実的な最終手段になる場面がある。この前提はガイドライン §1 のとおり維持する。
 
 ## 分類方針

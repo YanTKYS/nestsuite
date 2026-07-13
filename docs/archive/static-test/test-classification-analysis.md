@@ -9,7 +9,7 @@
 > 現在の静的テスト（docs-contract test / ソーステキスト静的確認テスト）の追加・維持・削除判断は、
 > `docs/development/static-test-guidelines.md`（v2.16.23 TD-73）を主たる基準とする。
 > 既存静的テストの現時点の棚卸しは、TD-73 ガイドラインを前提にした後続レビューである
-> `docs/planning/static-test-inventory-review.md`（v2.16.25 TD-74）を参照すること。
+> `docs/archive/static-test/static-test-inventory-review.md`（v2.16.25 TD-74）を参照すること。
 >
 > なお、テストクラスの命名・集約方針（backlog ID / version 番号だけのクラス名を作らない等）は
 > `nestsuite-development-guidelines.md` に現行ルールとして定められている。本文書 §12 の
@@ -1656,7 +1656,7 @@ backlog ID はテストクラス名ではなく、移動先クラス内のコメ
 - 既存テストクラスに追加すると責務が不自然に広がる。
 - 対象クラス名、対象責務名、または回帰対象が明確である。
 - クラス名に backlog ID、version番号、実装時期だけを使っていない。
-- `docs/development/test-classification-analysis.md` のこの判定ガイドに照らして、既存受け皿がないことを説明できる。
+- `docs/archive/static-test/test-classification-analysis.md` のこの判定ガイドに照らして、既存受け皿がないことを説明できる。
 
 ### 12.4 禁止例
 

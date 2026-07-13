@@ -239,7 +239,7 @@ Temp タブは固定タブのため、ピン留め操作の対象外です。
 ## 今後の方向性
 
 - `--classic-notenest` ルートは v1.19.3 で削除済みです
-- v2.0.1 リリース後に GitHub リポジトリ名を `notenest` から `nestsuite` へ変更予定です（[repository-rename.md](../operations/repository-rename.md) 参照）
+- v2.0.1 リリース後に GitHub リポジトリ名を `notenest` から `nestsuite` へ変更予定です（[repository-rename.md](../archive/migrations/repository-rename.md) 参照）
 
 ---
 
