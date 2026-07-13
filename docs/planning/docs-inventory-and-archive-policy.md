@@ -1,7 +1,7 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.3  
-> 対象: `docs/` 配下の Markdown 文書  
+> version: v2.17.4
+> 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
 ---
@@ -30,6 +30,7 @@
 | Canonical | 現在の設計・開発・運用で正本として参照する文書 | 設計・実装・運用判断では最優先する。内容の現行追従更新対象。 |
 | Active Reference | 正本ではないが、現在の開発・判断で補助的に参照する文書 | Canonical を補足する調査、実装背景、責務索引、互換経緯として参照する。 |
 | Archive Candidate | 現行仕様の正本ではないが、設計経緯・完了済みレビュー・検証記録として保持価値がある文書 | 次回以降、リンク・テスト影響を確認して `docs/archive/` へ移設する候補。 |
+| Archived | archive 配下へ移設済みで、現行仕様の正本ではない履歴文書 | 現行判断では Canonical 文書、`docs/backlog.md`、`docs/release-notes.md` を優先する。 |
 | Delete Candidate | 重複、陳腐化、または別文書へ完全移管済みで、将来的な削除を検討できる文書 | 今回は削除しない。削除前に参照元、docs-contract、release notes、backlog 影響を再確認する。 |
 
 ---
@@ -40,7 +41,7 @@
 |---|---|---|---|---|---|
 | `docs/README.md` | Canonical | docs 全体の入口 | 開発者・設計者 | 文書探索の起点 | 維持。archive 方針へのリンク追加は次回検討。 |
 | `docs/backlog.md` | Canonical | 未着手・保留・見送り課題の正本 | 開発者・設計者・release notes | 現行 backlog 管理の正本 | 維持。docs archive 移設課題は通常 backlog として管理。 |
-| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.3 を追加。 |
+| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.4 を追加。 |
 | `docs/development/nestsuite-development-guidelines.md` | Canonical | 実装者向け恒久規約 | 実装プロンプト・release checklist | 開発ルールの正本 | 維持。 |
 | `docs/development/nestsuite-designer-guidelines.md` | Canonical | 設計者向け恒久規約 | 設計・引継ぎ・実装プロンプト | 設計側ルールの正本 | 維持。 |
 | `docs/architecture/schema-versioning-policy.md` | Canonical | schema bump と互換読み込み方針 | 開発ガイド・backlog・schema tests | 保存形式変更時の正本 | 維持。 |
@@ -83,16 +84,16 @@
 | `docs/integration/nestsuite-preparation.md` | Archive Candidate | NestSuite 対応準備メモ | release notes | 完了済み準備記録 | `docs/archive/migrations/` 候補。 |
 | `docs/migration/README.md` | Active Reference | migration 配下の入口 | 開発者 | 配下文書が残る間は入口として必要 | 配下移設時に扱いを再判定。 |
 | `docs/migration/nestsuite-default-startup-plan.md` | Archive Candidate | 既定起動化の完了済み移行計画 | release notes | 実装済み移行記録 | `docs/archive/migrations/` 候補。 |
-| `docs/planning/expert-review-closeout.md` | Archive Candidate | expert review 完了記録 | docs-contract・release notes | v2.17.0 で完了済み。ただしテスト固定あり | 第一候補。移設時は docs-contract 更新必須。 |
-| `docs/planning/expert-proposals-2026-06.md` | Archive Candidate | 有識者提案整理 | closeout・review 群 | 特別進行の履歴 | expert-review 群と同時移設候補。 |
-| `docs/planning/review1-fable5.md` | Archive Candidate | review1 記録 | closeout・release notes | 完了済みレビュー | 第一候補。 |
-| `docs/planning/review2-fable5.md` | Archive Candidate | review2 記録 | closeout・release notes | 完了済みレビュー | 第一候補。 |
-| `docs/planning/review3-fable5.md` | Archive Candidate | review3 記録 | closeout・release notes | 完了済みレビュー | 第一候補。 |
-| `docs/planning/review4-fable5.md` | Archive Candidate | review4 / LT-9 UI 設計レビュー | backlog LT-9・closeout | トリガー待ち判断の根拠を含む | 移設する場合は backlog LT-9 リンク更新。 |
-| `docs/planning/review5-fable5.md` | Archive Candidate | LT-9 フェーズ2設計レビュー | backlog LT-9・closeout | トリガー待ち判断の根拠を含む | 移設する場合は backlog LT-9 リンク更新。 |
-| `docs/planning/review6-fable5.md` | Archive Candidate | 高リスク課題再評価 | closeout・release notes | 完了済みレビュー | 第一候補。 |
-| `docs/planning/review6-fable5-2.md` | Archive Candidate | SH-36 下書き保護補完 | closeout・release notes | 完了済みレビュー | 第一候補。 |
-| `docs/planning/review6-fable5-3.md` | Archive Candidate | SH-36 復元後ライフサイクル補完 | closeout・release notes | 完了済みレビュー | 第一候補。 |
+| `docs/archive/expert-review/expert-review-closeout.md` | Archived | expert review 完了記録 | docs-contract・release notes | v2.17.0 で完了済み。ただしテスト固定あり | TD-79 で移設済み。docs-contract は新パスを確認する。 |
+| `docs/archive/expert-review/expert-proposals-2026-06.md` | Archived | 有識者提案整理 | closeout・review 群 | 特別進行の履歴 | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review1-fable5.md` | Archived | review1 記録 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review2-fable5.md` | Archived | review2 記録 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review3-fable5.md` | Archived | review3 記録 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review4-fable5.md` | Archived | review4 / LT-9 UI 設計レビュー | backlog LT-9・closeout | トリガー待ち判断の根拠を含む | TD-79 で移設済み。backlog LT-9 は新パスを参照。 |
+| `docs/archive/expert-review/review5-fable5.md` | Archived | LT-9 フェーズ2設計レビュー | backlog LT-9・closeout | トリガー待ち判断の根拠を含む | TD-79 で移設済み。backlog LT-9 は新パスを参照。 |
+| `docs/archive/expert-review/review6-fable5.md` | Archived | 高リスク課題再評価 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review6-fable5-2.md` | Archived | SH-36 下書き保護補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
+| `docs/archive/expert-review/review6-fable5-3.md` | Archived | SH-36 復元後ライフサイクル補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
 | `docs/planning/nestsuite-double-read-design-review.md` | Archive Candidate | `.nestsuite` 二重読込解消レビュー | backlog TD-59・release notes | TD-59 完了済みの詳細記録 | expert-review 後、completed-designs へ移設候補。 |
 | `docs/planning/static-test-inventory-review.md` | Archive Candidate | 静的テスト棚卸しレビュー | docs-contract コメント・release notes | TD-74 完了済みレビュー | static-test 系として移設候補。 |
 | `docs/planning/static-test-deletion-candidate-review.md` | Archive Candidate | 静的テスト削除候補レビュー | release notes | 対応済みレビュー記録 | static-test 系として移設候補。 |
@@ -187,34 +188,28 @@ archive 配下の文書は、次の方針で扱う。
 
 ## 7. 実移設の優先候補
 
-### 第1候補: expert review 文書群
+### TD-79完了: expert review 文書群
 
-対象候補:
+次の文書群は v2.17.4 / TD-79 で `docs/archive/expert-review/` へ移設済みである。
 
-- `docs/planning/expert-review-closeout.md`
-- `docs/planning/expert-proposals-2026-06.md`
-- `docs/planning/review1-fable5.md`
-- `docs/planning/review2-fable5.md`
-- `docs/planning/review3-fable5.md`
-- `docs/planning/review4-fable5.md`
-- `docs/planning/review5-fable5.md`
-- `docs/planning/review6-fable5.md`
-- `docs/planning/review6-fable5-2.md`
-- `docs/planning/review6-fable5-3.md`
+- `docs/archive/expert-review/expert-review-closeout.md`
+- `docs/archive/expert-review/expert-proposals-2026-06.md`
+- `docs/archive/expert-review/review1-fable5.md`
+- `docs/archive/expert-review/review2-fable5.md`
+- `docs/archive/expert-review/review3-fable5.md`
+- `docs/archive/expert-review/review4-fable5.md`
+- `docs/archive/expert-review/review5-fable5.md`
+- `docs/archive/expert-review/review6-fable5.md`
+- `docs/archive/expert-review/review6-fable5-2.md`
+- `docs/archive/expert-review/review6-fable5-3.md`
 
-理由:
+移設後の注意:
 
-- v2.17.0 で特別進行が完了済み
-- `expert-review-closeout` から review1〜review6 の完了状態を追跡できる
-- 現行仕様の正本ではなく、レビュー・検証履歴として保持する性格が強い
+- `NestSuite.Tests/NestSuiteDocsContractTests.cs` は `docs/archive/expert-review/expert-review-closeout.md` のパスと主要語句を確認する
+- `docs/backlog.md` の LT-9 は `docs/archive/expert-review/review4-fable5.md` / `docs/archive/expert-review/review5-fable5.md` へ到達できる状態を維持する
+- archive 文書は現行仕様の正本ではなく、現在の課題状態は `docs/backlog.md`、完了履歴は `docs/release-notes.md` を優先する
 
-注意:
-
-- `NestSuite.Tests/NestSuiteDocsContractTests.cs` が `docs/planning/expert-review-closeout.md` のパスと主要語句を固定しているため、移設時はテストを最小限更新する
-- `docs/backlog.md` の LT-9 は `review4-fable5.md` / `review5-fable5.md` を参照しているため、リンク更新が必要
-- release notes の過去リンクは GitHub 上のリンク切れリスクを考慮する
-
-### 第2候補: 完了済み integration / migration 計画
+### 次の第1候補: 完了済み integration / migration 計画
 
 対象候補:
 
@@ -230,7 +225,7 @@ archive 配下の文書は、次の方針で扱う。
 - 実装済み・移行済みの計画が中心
 - 現行仕様の正本ではなく履歴としての価値が中心
 
-### 第3候補: 完了済み spike / static-test レビュー
+### 次の第2候補: 完了済み spike / static-test レビュー
 
 対象候補:
 
@@ -261,13 +256,6 @@ archive 配下の文書は、次の方針で扱う。
 ---
 
 ## 9. 次回作業案
-
-### v2.17.4: expert review 文書の archive 移設
-
-- `docs/archive/expert-review/` を作成する
-- review1〜review6、expert proposals、expert closeout を同一単位で移設する
-- `NestSuiteDocsContractTests`、backlog LT-9、release notes の参照を最小限更新する
-- 内容改訂は行わず、移設とリンク修正に限定する
 
 ### v2.17.5: 完了済み integration / migration 計画の archive 移設
 

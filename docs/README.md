@@ -69,9 +69,11 @@
 
 ### planning/（提案・構想整理）
 
-| ファイル | 内容 | 分類 |
-|----------|------|------|
-| `expert-proposals-2026-06.md` | 有識者提案整理メモ（2026-06） | 参照メモ |
+現在の planning 文書は、進行中の棚卸し・設計確認を置く。完了済み expert review 文書は `docs/archive/expert-review/` へ移設済み。
+
+### archive/（履歴保管）
+
+`docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に保管する。
 
 ### operations/（配布・運用）
 
