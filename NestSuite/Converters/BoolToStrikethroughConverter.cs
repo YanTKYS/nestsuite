@@ -10,5 +10,5 @@ public class BoolToStrikethroughConverter : IValueConverter
         => value is true ? TextDecorations.Strikethrough : null!;
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
+        => Binding.DoNothing;
 }

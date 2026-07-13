@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Data;
 using NestSuite.Converters;
 using Xunit;
 
@@ -25,5 +26,12 @@ public class HasNoTasksToRowHeightConverterTests
 
         Assert.True(result.IsStar);
         Assert.Equal(2, result.Value);
+    }
+
+    // TD-77 (v2.17.9): one-way 表示専用のため ConvertBack は例外ではなく Binding.DoNothing を返す。
+    [Fact]
+    public void ConvertBack_ReturnsBindingDoNothing()
+    {
+        Assert.Same(Binding.DoNothing, _converter.ConvertBack(null!, typeof(bool), null!, null!));
     }
 }

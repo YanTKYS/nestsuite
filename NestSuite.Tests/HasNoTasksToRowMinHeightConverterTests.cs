@@ -1,3 +1,4 @@
+using System.Windows.Data;
 using NestSuite.Converters;
 using Xunit;
 
@@ -23,5 +24,12 @@ public class HasNoTasksToRowMinHeightConverterTests
         var result = (double)_converter.Convert(false, typeof(double), null!, null!);
 
         Assert.Equal(100.0, result);
+    }
+
+    // TD-77 (v2.17.9): one-way 表示専用のため ConvertBack は例外ではなく Binding.DoNothing を返す。
+    [Fact]
+    public void ConvertBack_ReturnsBindingDoNothing()
+    {
+        Assert.Same(Binding.DoNothing, _converter.ConvertBack(null!, typeof(bool), null!, null!));
     }
 }
