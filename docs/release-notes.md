@@ -7,6 +7,20 @@
 
 ---
 
+## v2.17.4 — TD-79 expert review文書のarchive移設
+
+- **TD-79: expert review 文書群を `docs/archive/expert-review/` へ移設した。** v2.17.0 で完了した expert review 特別進行の closeout、expert proposals、review1〜review6 関連文書を、ファイル名を変えずに archive 配下へ移した。
+- `docs/archive/README.md` と `docs/archive/expert-review/README.md` を追加し、archive は現行仕様の正本ではなく、Canonical 文書・backlog・release notes を優先する方針を明記した。
+- backlog、release notes、docs-contract、LT-9 参照を新しい archive パスへ更新した。文書内容の現行化・再編集は行っていない。
+- production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
+## v2.17.3 — docs棚卸し・archive方針策定
+
+- **TD-78: docs 全体を棚卸しした。** Canonical / Active Reference / Archive Candidate / Delete Candidate の 4 区分で分類した。
+- `docs/planning/docs-inventory-and-archive-policy.md` を追加し、現在の正本文書一覧、archive 運用方針、archive 文書の扱い、実移設時のリスクを整理した。
+- 即時の大量削除・大量移設は行わず、次回以降の実移設候補として expert review 文書群、完了済み integration / migration 計画、static-test / spike 系レビューを優先順付きで整理した。
+- production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
 ## v2.17.2 — ChatNest Converter の軽量化と backlog 提案追加
 
 - ChatNest の発言者表示 Converter で、背景色・アクセント色・配置の判定を `SpeakerVisualPalette` に集約した。呼び出しごとの `SolidColorBrush` 生成をやめ、凍結済み Brush を共有するようにした。
@@ -25,7 +39,7 @@
 
 ## v2.17.0 — エキスパートレビュー対応の総点検・回帰確認・通常backlog復帰
 
-- review1〜review6 対応を総点検し、対応状況を `docs/planning/expert-review-closeout.md`（expert-review-closeout）へ整理した。完了済み・通常 backlog・トリガー待ちを分類し、v2.17.0 をもってエキスパート対応フェーズを完了した。
+- review1〜review6 対応を総点検し、対応状況を `docs/archive/expert-review/expert-review-closeout.md`（expert-review-closeout）へ整理した。完了済み・通常 backlog・トリガー待ちを分類し、v2.17.0 をもってエキスパート対応フェーズを完了した。
 - SH-36、TD-76、M17 と各回帰修正の実装・テスト・文書を確認した。session・`.bak`・複数 open 失敗・`.nestsuite` 二重読込解消・draft 書込/復元/隔離・M17 検索強調の主要契約を総点検した。
 - 4 Workspace（NoteNest / IdeaNest / ChatNest / TempNest）の基本回帰は既存テスト・contract と総点検文書で確認した。実機確認はこの環境では未実施のため、マージ前に必要に応じて GitHub Actions と実機で確認する。
 - 新機能追加なし、UI 仕様変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。
@@ -118,7 +132,7 @@
 
 ## v2.16.42 — review6-fable5-3: SH-36復元後ライフサイクル設計補完
 
-- **production code の変更はなし**。review6-fable5-2（v2.16.41）の追加レビュー。SH-36 の復元「後」のライフサイクルに残っていた 4 つの実装前欠陥を補完した。成果物は `docs/planning/review6-fable5-3.md`（**SH-36 実装時の最新の正本**。-2・初版は履歴として保持し、冒頭に訂正注記を追加）
+- **production code の変更はなし**。review6-fable5-2（v2.16.41）の追加レビュー。SH-36 の復元「後」のライフサイクルに残っていた 4 つの実装前欠陥を補完した。成果物は `docs/archive/expert-review/review6-fable5-3.md`（**SH-36 実装時の最新の正本**。-2・初版は履歴として保持し、冒頭に訂正注記を追加）
 - **復元成功後に pair を即削除する問題を修正した**: review6-fable5-2 の「復元成功 pair を削除し次 tick（最大 30 秒後）で再作成」では、復元直後の再クラッシュで同じ内容を二度失う保護空白が生じる。**復元 = 下書きの消費（削除）ではなく、下書きライフサイクルへの再接続**へ転換し、下書きファイル名の tabId（GUID-N 形式。検証つき `TryGetTabId` で抽出）を復元タブの `NestSuiteDocumentTab.Id` へ引き継ぎ、pair を保持したまま通常ライフサイクル（次 tick で同一 pair 上書き・SaveAs/閉鎖/正常終了で削除）に合流させる
 - **ID 衝突時（防御経路）**: 新 Id で復元 → 新 pair を即時書込 → 書込成功確認後に旧 pair 削除。旧 pair の先行削除・復元内容の黙殺・既存タブ上書きは禁止と確定した
 - **復元後の VM 側 dirty を確定した**: タブ record の `IsModified=true` だけでは、IdeaNest `LoadFromWorkspace`（`HasChanges=false`）・ChatNest `LoadMessages`（`IsDirty=false`）により VM が clean のままになり、復元タブが次 tick の下書き候補から外れ、タブ dirty 同期で record 側も false へ戻り得る。専用読込 API（NoteNest `OpenProjectSnapshotAsUntitled` / IdeaNest `LoadFromWorkspaceAsDraft` / ChatNest `LoadMessagesAsDraft`）が復元直後に `FilePath == null`・`tab.IsModified == true`・VM 固有 dirty == true・候補判定 true を事後条件として保証する（確定済みメッセージだけの ChatNest 下書きでも `IsDirty=true`）。既存の clean 読込契約（`LoadFromWorkspace` / `LoadMessages` / 通常 Open）は変更しない
@@ -131,7 +145,7 @@
 
 ## v2.16.41 — review6-fable5-2: SH-36下書き保護の設計補完
 
-- **production code の変更はなし**。review6-fable5（v2.16.40）で確定した SH-36（無題タブの下書き自動保存）の初期設計に対する、期間限定エキスパートの追加設計レビュー。成果物は `docs/planning/review6-fable5-2.md`（実装時はこれを正とする）
+- **production code の変更はなし**。review6-fable5（v2.16.40）で確定した SH-36（無題タブの下書き自動保存）の初期設計に対する、期間限定エキスパートの追加設計レビュー。成果物は `docs/archive/expert-review/review6-fable5-2.md`（実装時はこれを正とする）
 - **review6 初期設計の中心的な不足を修正した**: ChatNest の下書き snapshot 源を `vm.MessageModels` としていたが、これは確定済みメッセージのみで、未送信の `InputText`・入力時の `SelectedSpeaker`・インライン編集中の `EditingText` を含まない。このまま実装すると「下書きファイルはあるが利用者が打っていた文章が入っていない」状態になるため、実装前に設計を補完した
 - 3 Workspace の「未保存内容」を A（保存モデルに含まれる）/ B（下書き専用状態として保護）/ C（対象外）に棚卸しした。NoteNest はエディタが編集のたびにモデルへ書き戻すため全コンテンツが A。IdeaNest は確定カード・設定（検索語含む）が A、`PreviewIdeaWindow`（作成・編集ダイアログ）内の未確定入力は参照不能のため **明示的に対象外（C）** とし「全入力保護」という表現を撤回・限定した。ChatNest は `InputText`・`SelectedSpeaker`・編集中テキスト + 対象メッセージ ID を B として保護する
 - 下書き候補判定を Workspace ごとの dirty 源（NoteNest = `IsModified` / IdeaNest = `HasChanges` / ChatNest = `HasUnsavedChanges`）で確定した。SH-33 自動保存が ChatNest で `IsDirty` を使うのと逆の選択であり、理由（保存で解消されない一時状態こそ下書きの保護対象）を記録した
@@ -146,7 +160,7 @@
 
 ## v2.16.40 — review6-fable5: TD-59完了後の高リスク・高効果設計課題再評価
 
-- **production code の変更はなし**。TD-59 完了（v2.16.39）後の全体を対象とした、期間限定エキスパートによる設計・優先順位レビュー。成果物は `docs/planning/review6-fable5.md`
+- **production code の変更はなし**。TD-59 完了（v2.16.39）後の全体を対象とした、期間限定エキスパートによる設計・優先順位レビュー。成果物は `docs/archive/expert-review/review6-fable5.md`
 - backlog 全候補（SH / TN / L・M・H / ID / CH / LK / LT / RJ）、review1〜review5 の既決事項、`nestsuite-double-read-design-review.md`、および現行 production code / テストを再評価した。review1〜review5 で閉じた指摘の再発・別経路は確認されず、既決事項（session 保護方式・`.bak` 意味論・Tabs[] 正本・WorkspaceKind ヒント非信頼等）はすべて維持と再判定した
 - 現在すぐ対応すべき重大リスクはないと判定した。データ保護マトリクスで唯一開いている穴は「無題・未保存タブのクラッシュ時全損」（自動保存 SH-33 の意図的対象外・session 対象外・未保存確認は正常終了のみ）で、既定起動タブが無題 NoteNest であるため露出が広い
 - **通常実装候補を 3 件に絞った**: 第 1 候補 = **SH-36**（無題タブの下書き自動保存。新規採番し backlog へ追加。既存 `.nestsuite` wrapper 形式のまま `%APPDATA%` 配下へ下書きを書き、異常終了後の起動時に MessageBox 1 枚で復元する 2 段階実装 = v2.16.41 SH-36a / v2.16.42 SH-36b）、第 2 候補 = **TD-76**（静的テスト再肥大化の整理: docs-contract の TD-59 系 Fact のデータ駆動集約 + `SessionTabMapperTests` の Shell 境界スキャン分離。着手時に採番）、第 3 候補 = **M17**（検索結果のマッチ箇所ハイライト。純粋な分割 helper + Run バインドで実装、Attached Behavior 不使用）
@@ -485,7 +499,7 @@
 
 ## v2.16.8 — L20 + L8: `.bak` 復元導線の追加
 
-- **L20 として、読込失敗メッセージに `.bak` 復元の可能性を追記した。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-5 の指摘どおり、破損・形式不正・JSON 読込失敗など `.bak` からの手動復元が意味を持つ失敗（`FileErrorMessages.ForLoad` の `JsonException`、`FileErrorMessages.ForKindDetectionFailure` の `InvalidFormat`）に限り、短い案内を追記した。読込対象パスが分かる呼び出し元では、同じ場所に `.bak` が実在するかを確認し、見つかった場合はファイル名を含めて案内する。ファイル不存在・権限エラー・スキーマが新しすぎる等、`.bak` が助けにならない失敗には追記していない。
+- **L20 として、読込失敗メッセージに `.bak` 復元の可能性を追記した。** エキスパートレビュー `docs/archive/expert-review/review1-fable5.md` の R-5 の指摘どおり、破損・形式不正・JSON 読込失敗など `.bak` からの手動復元が意味を持つ失敗（`FileErrorMessages.ForLoad` の `JsonException`、`FileErrorMessages.ForKindDetectionFailure` の `InvalidFormat`）に限り、短い案内を追記した。読込対象パスが分かる呼び出し元では、同じ場所に `.bak` が実在するかを確認し、見つかった場合はファイル名を含めて案内する。ファイル不存在・権限エラー・スキーマが新しすぎる等、`.bak` が助けにならない失敗には追記していない。
 - **L8 として、ヘルプメニューに「バックアップ復元ガイド(_B)」を追加した。** `BackupRestoreGuideProvider` に案内文言を集約し、`BackupRestoreGuideDialog`（`ShortcutHelpDialog` と同じ簡易ダイアログ形式）で表示する。手順（対象ファイルを閉じる → 元ファイルを別名へ退避 → `.bak` をコピー → 拡張子を戻す → 開けるか確認）と、`project.notenest` を例にした具体手順、`.bak` が最後の手動保存時点の内容であるという注意書きを含む。
 - **`.bak` は「最後の手動保存時点の復元候補」として案内している。** v2.16.6 TD-64 で自動保存は `.bak` を更新しなくなった前提のうえで、その意味論を利用者向けに言い換えたもの。
 - **自動復元・自動コピー・自動リネーム・複数世代化・復元ウィザードは対象外。** 案内のみで、`.bak` の実ファイル操作はいずれも利用者の明示操作に委ねる。
@@ -493,7 +507,7 @@
 
 ## v2.16.7 — TD-65: session 復元失敗 entry の持ち越し・破損 session 診断
 
-- **TD-65 として、session 復元に失敗した entry を黙って消さないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md` の R-2/R-3 の指摘どおり、従来は復元できなかったタブが次回終了時の `SaveSession` で `_tabs`（現在開いているタブ）のみから再構築され、session から静かに消えていた。復元失敗 entry（`SessionTabMapper.CreateRestoreTargets` が返す `failures`）を Shell 側で保持し（`_pendingSessionRestoreEntries`）、`SaveSession` で現在開いているタブと重複しない範囲で既存の `Tabs[]` / `FilePaths` 形式のまま持ち越すようにした。
+- **TD-65 として、session 復元に失敗した entry を黙って消さないようにした。** エキスパートレビュー `docs/archive/expert-review/review1-fable5.md` の R-2/R-3 の指摘どおり、従来は復元できなかったタブが次回終了時の `SaveSession` で `_tabs`（現在開いているタブ）のみから再構築され、session から静かに消えていた。復元失敗 entry（`SessionTabMapper.CreateRestoreTargets` が返す `failures`）を Shell 側で保持し（`_pendingSessionRestoreEntries`）、`SaveSession` で現在開いているタブと重複しない範囲で既存の `Tabs[]` / `FilePaths` 形式のまま持ち越すようにした。
 - **「次回起動時にも再試行します」という通知文言が実挙動と一致するようになった。** 復元失敗の通知（`NotifyRestoreFailures`）は理由ごとの短いメッセージのみを列挙する形にし、実際には持ち越さない失敗を示唆する固定の補足文（「破損とは限りません」等）は外した。
 - **FileNotFound（ファイルが見つからない）も黙殺しないようにした。** 従来は存在しないファイルは通知なし・持ち越しなしで無条件スキップしていたが、ネットワークドライブ未接続・USB 未挿入・移動済みなど恒久的な喪失とは限らないため、他の復元失敗と同様に通知・持ち越し対象にした。メッセージも「移動または削除された可能性があります」から、外部/ネットワークドライブや移動済みファイルの確認を促す文言に変更した。
 - **破損した `session.json` を ErrorLog に記録し、可能であれば `.corrupt` へ退避するようにした。** `NestSuiteSessionStateService.Load()` の読込失敗は従来 `catch { return new(); }` で完全に黙殺されていた。ErrorLog（Error のみ）への記録を追加し、元ファイルを `session.json.corrupt`（既に存在する場合は日時付き名）へ退避する。退避に失敗しても ErrorLog に記録するのみで、アプリ起動は継続する。session は利用者データではなく作業状態のため、破損時に空 session として初期化する既存方針は維持している。
@@ -502,7 +516,7 @@
 
 ## v2.16.6 — TD-64: 自動保存では `.bak` を更新しない
 
-- **TD-64 として、自動保存時に `.bak` を更新しないようにした。** エキスパートレビュー `docs/planning/review1-fable5.md`（R-1）の指摘どおり、従来は自動保存（30 秒間隔）も手動保存と同じ `WriteAllTextWithBackup` を通っており、誤操作状態が正本と `.bak` の両方へ短時間で伝播しうる構造だった。自動保存経路のみバックアップなしの atomic write に切り替え、`.bak` を「手動保存時点の復元候補」として扱えるようにした。
+- **TD-64 として、自動保存時に `.bak` を更新しないようにした。** エキスパートレビュー `docs/archive/expert-review/review1-fable5.md`（R-1）の指摘どおり、従来は自動保存（30 秒間隔）も手動保存と同じ `WriteAllTextWithBackup` を通っており、誤操作状態が正本と `.bak` の両方へ短時間で伝播しうる構造だった。自動保存経路のみバックアップなしの atomic write に切り替え、`.bak` を「手動保存時点の復元候補」として扱えるようにした。
 - **手動保存 / 名前を付けて保存 / Save All では従来どおり `.bak` を作成・更新する。** `ProjectFileService.Save` / `IdeaNestFileService.Save` / `ChatNestFileService.Save`（および内部の `IdeaNestWorkspaceService.Save` / `WriteJson`）に `createBackup`（既定 `true`）を追加し、既定値は既存呼び出しをすべて手動保存扱いのまま維持した。自動保存経路（`AutoSaveTab` → `AutoSaveNoteNestTab` / `TrySaveIdeaNestToPath` / `TrySaveChatNestToPath`）だけが `createBackup: false` を明示的に渡す。
 - **自動保存の atomic write（tmp 経由の安全な書き込み・tmp cleanup）は維持している。** 変更したのは「`.bak` を作るかどうか」のみで、書き込み自体の安全性は変えていない。自動保存の実行間隔・dirty 判定・失敗時の挙動も変更していない。
 - **`.bak` の複数世代化・復元 UI・読込失敗メッセージへの `.bak` 言及は今回対象外。** L8 / L20 は別 PR で扱う。
@@ -1214,7 +1228,7 @@
 - **`docs/design/` の履歴文書 5 件（notenest-editor-textbox-dependencies.md / notenest-editor-adapter-design.md / notenest-editor-host-design.md / notenest-editor-h0-reassessment.md / review-gemini.md）に `[履歴文書]` 冒頭注記を追加した。**
 - **`docs/operations/repository-rename.md` に `[完了済み]` 注記を追加した（v2.0.1 で完了済みのリポジトリ名変更手順）。**
 - **`docs/operations/operation-note.md` に `[履歴文書]` 注記を追加した（NoteNest v1.5.4 時代の運用メモ）。**
-- **`docs/planning/expert-proposals-2026-06.md` に `[参照メモ]` 注記を追加した（採用済み提案は backlog に移転済み）。**
+- **`docs/archive/expert-review/expert-proposals-2026-06.md` に `[参照メモ]` 注記を追加した（採用済み提案は backlog に移転済み）。**
 - **アプリ本体の挙動変更なし。UI 変更なし。保存処理・session 処理変更なし。**
 - **保存形式変更なし。session 形式変更なし。schema bumpなし。NoteNest schema `1.4.1` 維持。外部依存追加なし。**
 
@@ -1534,7 +1548,7 @@
 
 ## v2.10.1 — 有識者提案整理・backlog 反映
 
-- **有識者提案を NestSuite 方針に沿って整理した。** 短期採用候補・段階的採用候補・長期構想・当面対象外の 4 段階に分類した。`docs/planning/expert-proposals-2026-06.md` として提案整理メモを新規作成した。
+- **有識者提案を NestSuite 方針に沿って整理した。** 短期採用候補・段階的採用候補・長期構想・当面対象外の 4 段階に分類した。`docs/archive/expert-review/expert-proposals-2026-06.md` として提案整理メモを新規作成した。
 - **`docs/backlog.md` に短期採用候補を追加した。** M15（マーカー / タスクの一括コピー）・CH-14（ChatNest 会話の整形コピー）を短期採用候補として新規追加した。SH-19（ショートカット一覧）・SH-20（すべて保存）・L15（文字数・行数表示）は既登録のため重複追記なし。
 - **段階的採用候補 TN-7 / LK-5 / ID-13 / SH-24 / TD-23 を backlog に新規追加した。** TempNest スロット投入・横断クイック投入・IdeaNest 簡易統計・クイックスイッチャー強化・UI スモークテスト拡大を v2.11 以降の候補として整理した（注: 提案書 TD-18 は backlog で完了済み欠番のため TD-23 として採番）。
 - **長期構想・当面対象外を明示した。** クロス Workspace 検索・ナレッジグラフ・Day / Week Review などを長期構想として、AI 要約・クラウド同期・共同編集・プラグイン基盤などを当面対象外として `docs/backlog.md` に整理した。

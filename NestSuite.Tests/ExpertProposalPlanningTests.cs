@@ -7,7 +7,7 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// v2.10.1: 有識者提案整理・docs 整合の回帰テスト。
-/// docs/planning/expert-proposals-2026-06.md と docs/backlog.md の存在・内容を確認する。
+/// docs/archive/expert-review/expert-proposals-2026-06.md と docs/backlog.md の存在・内容を確認する。
 /// </summary>
 public class ExpertProposalPlanningTests
 {
@@ -18,7 +18,7 @@ public class ExpertProposalPlanningTests
     [Fact]
     public void PlanningDoc_ExpertProposals_Exists()
     {
-        var path = Path.Combine(RepoRoot, "docs", "planning", "expert-proposals-2026-06.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "expert-review", "expert-proposals-2026-06.md");
         Assert.True(File.Exists(path), $"Planning doc not found: {path}");
     }
 
