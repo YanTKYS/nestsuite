@@ -7,6 +7,13 @@
 
 ---
 
+## v2.17.2 — ChatNest Converter の軽量化と backlog 提案追加
+
+- ChatNest の発言者表示 Converter で、背景色・アクセント色・配置の判定を `SpeakerVisualPalette` に集約した。呼び出しごとの `SolidColorBrush` 生成をやめ、凍結済み Brush を共有するようにした。
+- 表示専用 Converter の `ConvertBack` は例外送出ではなく `Binding.DoNothing` を返すようにし、誤って双方向評価された場合の binding 例外リスクを下げた。
+- `docs/backlog.md` に、今回のコードベース走査に基づく提案として SH-37（認知負荷軽減）、TD-77（技術的負債解消）、CH-18（UI/UX改善）を追記した。
+- production 保存処理変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし、既存テスト削除・skip なし。
+
 ## v2.17.1 — 設計者向けガイドライン新設
 
 - `docs/development/nestsuite-designer-guidelines.md` を新設した。NestSuite の設計者・課題整理担当者・実装プロンプト作成者・レビュー方針作成者・引継ぎ担当者が共通して守る恒久規約を、開発者向けガイドラインと同程度の粒度で整理した。
