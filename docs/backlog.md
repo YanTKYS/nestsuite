@@ -178,6 +178,7 @@ TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-78 は v2.17.3、T
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | TD-77 | WPF Converter の無変換方向と共有リソースの整理 | one-way 表示用 Converter の `ConvertBack` が例外送出になっている箇所や、呼び出しごとに Brush 等を生成する箇所を棚卸し、`Binding.DoNothing` と凍結済み共有リソースへ段階的に統一する。ChatNest 発言者 Converter は先行整理済み。技術的負債を減らし、XAML binding の例外リスクと描画時割り当てを抑える | B |
+| TD-79 | expert review 文書の archive 移設 | `docs/planning/docs-inventory-and-archive-policy.md` の第1候補に基づき、review1〜review6、expert proposals、expert closeout を `docs/archive/expert-review/` へ移設する。内容改訂は行わず、Markdownリンク・docs-contract・backlog LT-9 の参照更新に限定する | B |
 
 ---
 
