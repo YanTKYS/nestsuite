@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.6
+> version: v2.17.7
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|---|
 | `docs/README.md` | Canonical | docs 全体の入口 | 開発者・設計者 | 文書探索の起点 | 維持。archive 方針へのリンク追加は次回検討。 |
 | `docs/backlog.md` | Canonical | 未着手・保留・見送り課題の正本 | 開発者・設計者・release notes | 現行 backlog 管理の正本 | 維持。docs archive 移設課題は通常 backlog として管理。 |
-| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.6 を追加。 |
+| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.7 を追加。 |
 | `docs/development/nestsuite-development-guidelines.md` | Canonical | 実装者向け恒久規約 | 実装プロンプト・release checklist | 開発ルールの正本 | 維持。 |
 | `docs/development/nestsuite-designer-guidelines.md` | Canonical | 設計者向け恒久規約 | 設計・引継ぎ・実装プロンプト | 設計側ルールの正本 | 維持。 |
 | `docs/architecture/schema-versioning-policy.md` | Canonical | schema bump と互換読み込み方針 | 開発ガイド・backlog・schema tests | 保存形式変更時の正本 | 維持。 |
@@ -65,8 +65,8 @@
 | `docs/development/workspace-xaml-structure.md` | Active Reference | XAML 構成索引 | workspace 実装者 | 現行 XAML 探索補助 | 維持。 |
 | `docs/development/notenest-task-reduction-policy.md` | Active Reference | タスク機能縮退方針 | RJ-10・NoteNest 実装 | 現行判断根拠 | 維持。 |
 | `docs/development/compatibility-identifiers-audit.md` | Active Reference | 互換識別子棚卸し | backlog LT-3 | 互換維持判断の補助 | 維持。 |
-| `docs/development/workspace-file-extension-unification.md` | Archive Candidate | `.nestsuite` 拡張子統一の完了経緯 | backlog FM-1・release notes | 実装済み移行記録 | `docs/archive/completed-designs/` または `migrations/` 候補。 |
-| `docs/development/classic-code-contraction.md` | Archive Candidate | Classic 残存コード縮退記録 | 開発ガイド・release notes | 完了済み旧資産整理 | `docs/archive/legacy-notenest/` 候補。 |
+| `docs/archive/migrations/workspace-file-extension-unification.md` | Archived | `.nestsuite` 拡張子統一の完了経緯 | backlog FM-1・release notes | 実装済み移行記録。現行仕様の正本は実装・schema policy・backlog・release notes | TD-82 で移設済み。旧拡張子互換や wrapper 仕様は現行正本を優先。 |
+| `docs/archive/legacy-notenest/classic-code-contraction.md` | Archived | Classic 残存コード縮退記録 | 開発ガイド・release notes | 完了済み旧資産整理。Classic 経路復活の正本ではない | TD-82 で移設済み。現行判断は開発ガイド・実装・release notes を優先。 |
 | `docs/development/save-flow-duplication.md` | Active Reference | 保存フロー重複メモ | TD 候補・実装者 | 未解消の設計負債の参考 | 維持。 |
 | `docs/development/sqlite-index-feasibility.md` | Active Reference | SQLite 補助インデックス feasibility | backlog LT-2 | 保留中の採用条件が backlog で現役 | 維持。 |
 | `docs/archive/static-test/test-classification-analysis.md` | Archived | テスト分類一次分析 | static test 方針・release notes | 方針化済みの一次分析 | TD-81 で移設済み。現行正本は `docs/development/static-test-guidelines.md`。 |
@@ -217,14 +217,25 @@ Completed designs:
 - archive 文書だけを根拠にテストを削除・復活・追加しない
 - `.nestsuite` 二重読込解消の現行仕様は、実装、`docs/backlog.md`、`docs/release-notes.md` を優先する
 
-### 次の候補: 旧NoteNest・完了済み設計文書のarchive再分類
+### TD-82完了: 旧NoteNest・完了済み設計文書のarchive再分類
+
+次の 2 文書は v2.17.7 / TD-82 で正本性を再確認し、archive へ移設済みである。
+
+- `docs/archive/legacy-notenest/classic-code-contraction.md`
+- `docs/archive/migrations/workspace-file-extension-unification.md`
+
+判断理由:
+
+- Classic 残存コード縮退記録は完了済み履歴であり、現行 NestSuite / NoteNest Workspace の正本ではない
+- `.nestsuite` 拡張子統一記録は FM-1 完了済み移行記録であり、現行の wrapper / schema / 互換判断は実装、`docs/architecture/schema-versioning-policy.md`、`docs/backlog.md`、`docs/release-notes.md` を優先する
+- いずれも archive 文書だけを根拠に Classic 経路復活、旧機能復活、旧拡張子互換削除、保存形式変更を行わない
+
+### 次の候補: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
 候補を一度に大量移設せず、次回以降は 1〜2 件程度に絞って扱う。
 
 優先候補:
 
-- `docs/development/classic-code-contraction.md`
-- `docs/development/workspace-file-extension-unification.md`
 - `docs/design/notenest-editor-h0-reassessment.md`
 - `docs/operations/operation-note.md`
 - `docs/integration/README.md` / `docs/migration/README.md` の削除可否再判定
@@ -247,9 +258,8 @@ Completed designs:
 
 ## 9. 次回作業案
 
-### v2.17.7: 旧NoteNest・完了済み設計文書のarchive再分類
+### v2.17.8: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
-- `docs/development/classic-code-contraction.md` と旧 NoteNest 系履歴の archive 先を確定する
-- 完了済み editor / extension 設計文書を、`completed-designs` へ移すか現状維持するか再判定する
-- `docs/integration/README.md` / `docs/migration/README.md` は、空入口として残すか Delete Candidate として扱うかを個別判断する
-- Delete Candidate の即削除は行わない
+- `docs/design/notenest-editor-h0-reassessment.md` を archive へ移せるか、現行 editor 方針の参照価値が残るかを再確認する
+- `docs/operations/operation-note.md`、`docs/integration/README.md`、`docs/migration/README.md` は Delete Candidate として削除可能か、archive へ残すべきかを個別判断する
+- Delete Candidate の即削除は行わず、削除する場合は別 version で行う

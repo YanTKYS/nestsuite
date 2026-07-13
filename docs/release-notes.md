@@ -7,6 +7,13 @@
 
 ---
 
+## v2.17.7 — TD-82 旧NoteNest・完了済み設計文書のarchive再分類
+
+- **TD-82: 2 文書の正本性・archive 可否を再確認した。** `classic-code-contraction.md` は旧 NoteNest Classic 残存コード縮退の完了済み履歴、`workspace-file-extension-unification.md` は `.nestsuite` 拡張子統一の完了済み移行記録であり、現行仕様の正本ではないと判断した。
+- archive 可能と判断した 2 文書のみを移設した。`classic-code-contraction.md` は `docs/archive/legacy-notenest/` へ、`workspace-file-extension-unification.md` は `docs/archive/migrations/` へ、ファイル名を変えずに移した。
+- `docs/archive/legacy-notenest/README.md` を追加し、`docs/archive/migrations/README.md` に拡張子統一記録を含むことを短く追記した。関連リンクと docs 棚卸し結果を更新した。
+- 文書内容の全面改訂は行っていない。production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
 ## v2.17.6 — TD-81 static-test・spike系文書のarchive移設
 
 - **TD-81: static-test・spike系文書を archive へ移設した。** 完了済みの静的テスト棚卸し、分類分析、削除候補レビューを `docs/archive/static-test/` へ移し、`.nestsuite` 二重読込レビューを `docs/archive/completed-designs/` へ移設した。
@@ -759,7 +766,7 @@
 
 ## v2.14.13 — TD-61: NoteNest Classic 残存コードの棚卸しと縮退
 
-- **TD-61: NoteNest Classic / 旧単独起動時代の残存コードを棚卸しし、現行コードと誤読されやすい部分を縮退した。** 機能追加ではなく整理タスクであり、現行 NestSuite の動作は変更していない。棚卸しと判断根拠は新規 `docs/development/classic-code-contraction.md` に記録した。
+- **TD-61: NoteNest Classic / 旧単独起動時代の残存コードを棚卸しし、現行コードと誤読されやすい部分を縮退した。** 機能追加ではなく整理タスクであり、現行 NestSuite の動作は変更していない。棚卸しと判断根拠は新規 `docs/archive/legacy-notenest/classic-code-contraction.md` に記録した。
 - **削除したコード（現行ビルド対象から除外）**: 旧 `MainViewModel` 側の自動保存機構を撤去した。具体的には `MainViewModel._autoSaveTimer`（5 分間隔 `DispatcherTimer`）とその生成・`Start()`・`Dispose()` での停止、`AutoSaveTimer_Tick`、`MainViewModel.AutoSave()`、`MainViewModel.IsAutoSaveEnabled` プロパティおよび `_isAutoSaveEnabled` フィールドを削除した。`IsAutoSaveEnabled` は現行コードのどこからも `true` に設定されず `AutoSave()` が常に早期 return する完全なデッドコードで、v2.14.12 SH-33 で追加した Shell 側自動保存と二重に存在して誤読要因になっていた。
 - **旧 `MainViewModel` の AutoSave は現行コードではなく、削除済みである。** 現行の自動保存は Shell 側の `NestSuiteShellWindow.AutoSave.cs`（SH-33、30 秒間隔・全 Workspace 共通）と `AutoSaveCandidatePolicy` が担う。この機構には一切変更を加えていない。
 - **参照退避したコード**: 撤去した旧自動保存コードの撤去前スナップショットを `reference/legacy/MainViewModel.AutoSave.legacy.cs.txt`（`.cs.txt` = 暗黙 Compile 対象外）として残し、`reference/legacy/README.md` に「現行コードではない」旨を明記した。
@@ -937,7 +944,7 @@
 - **最近ファイル / session は `.nestsuite` を自然に扱える**（パス保存 + `TryGetKind` 集約のため追加変更なし）。開けない形式のエラーメッセージ 2 箇所に `.nestsuite` を追記した。
 - **ファイル関連付け（ProgId）は変更していない**（LT-3 / TD-55 方針）。`.nestsuite` のダブルクリック起動は未登録であり、将来 3 箇所同期（app + PowerShell スクリプト 2 本）で追加する。制限として docs に明記した。
 - **テストを追加した**: `NestSuiteWorkspaceEnvelopeTests`（新規: wrapper round-trip・必須項目欠落・未知プロパティ許容・種別不一致・破損 JSON）、各 FileServiceTests の `.nestsuite` round-trip と種別不一致、`NestSuiteDocumentTabTests` の内容ベース種別判定、`SavedWorkspaceStateUpdaterTests` / `SessionTabMapperTests` の `.nestsuite` パス対応。既存テストの削除・期待値変更なし。
-- **`docs/development/workspace-file-extension-unification.md` を新規作成した。**
+- **`docs/archive/migrations/workspace-file-extension-unification.md` を新規作成した。**
 - **backlog: FM-1 を実装済み（欠番）とし、LT-1 を「統合コンテナ形式」として本件との違いを明記する形に整理した。**
 - **session 形式変更なし。既存 schema bumpなし。NoteNest schema `1.4.1` 維持。`.ideanest` / `.chatnest` の保存内容変更なし。外部依存追加なし。**
 
