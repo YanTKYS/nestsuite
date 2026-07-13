@@ -1,6 +1,6 @@
 # NestSuite docs
 
-この docs には、現行開発で参照する文書と、移行期・統合検証期の履歴文書が含まれる。  
+この docs には、現行開発で参照する文書と、移行期・統合検証期の履歴文書が含まれる。
 現行の開発方針は `docs/development/nestsuite-development-guidelines.md` を最優先とすること。
 
 ---
@@ -73,7 +73,7 @@
 
 ### archive/（履歴保管）
 
-`docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に保管する。
+`docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に、完了済み統合計画は [`archive/completed-designs/`](archive/completed-designs/) に、完了済み移行記録は [`archive/migrations/`](archive/migrations/) に保管する。
 
 ### operations/（配布・運用）
 
@@ -81,21 +81,20 @@
 |----------|------|------|
 | `file-association.md` | ファイル関連付けの設定手順 | 現行 |
 | `operation-note.md` | 運用上の注意（NoteNest v1.5.4 時代のメモ） | 履歴 |
-| `repository-rename.md` | リポジトリ名変更手順（v2.0.1 で完了済み） | 履歴 |
 
 ### integration/（統合設計 — 履歴）
 
-v1.8〜v1.9 時代の Workspace 統合・複数ファイルタブ設計。実装は完了済み。  
-詳細は [`docs/integration/README.md`](integration/README.md) を参照。
+v1.8〜v1.9 時代の Workspace 統合・複数ファイルタブ設計は `docs/archive/completed-designs/` へ移設済み。
+旧入口として [`docs/integration/README.md`](integration/README.md) を残している。
 
 ### migration/（移行計画 — 履歴）
 
-v1.11〜v1.19 時代の NestSuite 既定起動化・`--classic-notenest` 削除計画。移行は完了済み。  
-詳細は [`docs/migration/README.md`](migration/README.md) を参照。
+v1.11〜v1.19 時代の NestSuite 既定起動化・`--classic-notenest` 削除計画は `docs/archive/migrations/` へ移設済み。
+旧入口として [`docs/migration/README.md`](migration/README.md) を残している。
 
 ---
 
 ## 履歴文書について
 
-履歴文書は、当時の判断理由を残すためのものであり、現行方針を上書きしない。  
+履歴文書は、当時の判断理由を残すためのものであり、現行方針を上書きしない。
 現行の開発方針は `docs/development/nestsuite-development-guidelines.md` を優先すること。

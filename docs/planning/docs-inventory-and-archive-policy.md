@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.4
+> version: v2.17.5
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -19,7 +19,7 @@
 - 今後の文書追加・移設・削除判断の基準を整備する
 - archive への実移設を安全に進めるための対象範囲を確定する
 
-**この棚卸しは即時削除や大量移設を目的としない。** v2.17.3 では分類と方針策定を優先し、実移設は行わない。
+**この棚卸しは即時削除や大量移設を目的としない。** v2.17.3 で分類と方針を策定し、v2.17.4 以降は優先度の高い文書群から小さな単位で移設している。
 
 ---
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|---|
 | `docs/README.md` | Canonical | docs 全体の入口 | 開発者・設計者 | 文書探索の起点 | 維持。archive 方針へのリンク追加は次回検討。 |
 | `docs/backlog.md` | Canonical | 未着手・保留・見送り課題の正本 | 開発者・設計者・release notes | 現行 backlog 管理の正本 | 維持。docs archive 移設課題は通常 backlog として管理。 |
-| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.4 を追加。 |
+| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.5 を追加。 |
 | `docs/development/nestsuite-development-guidelines.md` | Canonical | 実装者向け恒久規約 | 実装プロンプト・release checklist | 開発ルールの正本 | 維持。 |
 | `docs/development/nestsuite-designer-guidelines.md` | Canonical | 設計者向け恒久規約 | 設計・引継ぎ・実装プロンプト | 設計側ルールの正本 | 維持。 |
 | `docs/architecture/schema-versioning-policy.md` | Canonical | schema bump と互換読み込み方針 | 開発ガイド・backlog・schema tests | 保存形式変更時の正本 | 維持。 |
@@ -75,15 +75,15 @@
 | `docs/testing/nestsuite-release-checklist-history.md` | Active Reference | release checklist 変更履歴 | release checklist | 現行チェックリストの補足 | 維持。 |
 | `docs/testing/test-scenarios.md` | Active Reference | 手動・統合テスト観点 | release checklist | 一部古いが確認観点として有用 | 維持。古い表記は別課題で整理。 |
 | `docs/operations/file-association.md` | Canonical | ファイル関連付け運用 | release / 配布作業 | 現行運用手順 | 維持。 |
-| `docs/operations/repository-rename.md` | Archive Candidate | リポジトリ名変更手順 | 過去移行時 | 完了済み運用記録 | `docs/archive/migrations/` 候補。 |
+| `docs/archive/migrations/repository-rename.md` | Archived | リポジトリ名変更手順 | 過去移行時・release notes | 完了済み運用記録 | TD-80 で移設済み。現在の運用手順は `docs/operations/` を優先。 |
 | `docs/operations/operation-note.md` | Delete Candidate | 旧 NoteNest v1.5.4 運用メモ | 参照なし想定 | 現行 NestSuite 運用正本ではなく内容が古い | 削除前に参照元確認。旧履歴価値が必要なら archive へ。 |
-| `docs/integration/README.md` | Canonical | integration 配下の入口 | 開発者 | integration 文書の探索起点 | 維持。ただし配下移設時に更新。 |
-| `docs/integration/ideanest-save-load-plan.md` | Archive Candidate | IdeaNest 保存・読込実装済み計画 | release notes | 完了済み統合計画 | `docs/archive/completed-designs/` 候補。 |
-| `docs/integration/nestsuite-multi-file-tabs-plan.md` | Archive Candidate | 同一ツール複数ファイル対応計画 | release notes | 完了済み統合計画 | `docs/archive/completed-designs/` 候補。 |
-| `docs/integration/nestsuite-notenest-multi-file-plan.md` | Archive Candidate | NoteNest 複数ファイルタブ計画 | release notes | 完了済み統合計画 | `docs/archive/completed-designs/` 候補。 |
-| `docs/integration/nestsuite-preparation.md` | Archive Candidate | NestSuite 対応準備メモ | release notes | 完了済み準備記録 | `docs/archive/migrations/` 候補。 |
-| `docs/migration/README.md` | Active Reference | migration 配下の入口 | 開発者 | 配下文書が残る間は入口として必要 | 配下移設時に扱いを再判定。 |
-| `docs/migration/nestsuite-default-startup-plan.md` | Archive Candidate | 既定起動化の完了済み移行計画 | release notes | 実装済み移行記録 | `docs/archive/migrations/` 候補。 |
+| `docs/integration/README.md` | Delete Candidate | integration 配下の旧入口 | 開発者 | 配下の個別文書は TD-80 で archive へ移設済み | 今回は削除しない。次回以降、空入口として残す必要性を再判定。 |
+| `docs/archive/completed-designs/ideanest-save-load-plan.md` | Archived | IdeaNest 保存・読込実装済み計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
+| `docs/archive/completed-designs/nestsuite-multi-file-tabs-plan.md` | Archived | 同一ツール複数ファイル対応計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
+| `docs/archive/completed-designs/nestsuite-notenest-multi-file-plan.md` | Archived | NoteNest 複数ファイルタブ計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
+| `docs/archive/completed-designs/nestsuite-preparation.md` | Archived | NestSuite 対応準備メモ | release notes | 完了済み準備記録 | TD-80 で移設済み。 |
+| `docs/migration/README.md` | Delete Candidate | migration 配下の旧入口 | 開発者 | 配下の個別文書は TD-80 で archive へ移設済み | 今回は削除しない。次回以降、空入口として残す必要性を再判定。 |
+| `docs/archive/migrations/nestsuite-default-startup-plan.md` | Archived | 既定起動化の完了済み移行計画 | release notes | 実装済み移行記録 | TD-80 で移設済み。 |
 | `docs/archive/expert-review/expert-review-closeout.md` | Archived | expert review 完了記録 | docs-contract・release notes | v2.17.0 で完了済み。ただしテスト固定あり | TD-79 で移設済み。docs-contract は新パスを確認する。 |
 | `docs/archive/expert-review/expert-proposals-2026-06.md` | Archived | 有識者提案整理 | closeout・review 群 | 特別進行の履歴 | TD-79 で移設済み。 |
 | `docs/archive/expert-review/review1-fable5.md` | Archived | review1 記録 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
@@ -94,7 +94,7 @@
 | `docs/archive/expert-review/review6-fable5.md` | Archived | 高リスク課題再評価 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
 | `docs/archive/expert-review/review6-fable5-2.md` | Archived | SH-36 下書き保護補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
 | `docs/archive/expert-review/review6-fable5-3.md` | Archived | SH-36 復元後ライフサイクル補完 | closeout・release notes | 完了済みレビュー | TD-79 で移設済み。 |
-| `docs/planning/nestsuite-double-read-design-review.md` | Archive Candidate | `.nestsuite` 二重読込解消レビュー | backlog TD-59・release notes | TD-59 完了済みの詳細記録 | expert-review 後、completed-designs へ移設候補。 |
+| `docs/planning/nestsuite-double-read-design-review.md` | Archive Candidate | `.nestsuite` 二重読込解消レビュー | backlog TD-59・release notes | TD-59 完了済みの詳細記録 | static-test / spike 系と同じ次候補として移設検討。 |
 | `docs/planning/static-test-inventory-review.md` | Archive Candidate | 静的テスト棚卸しレビュー | docs-contract コメント・release notes | TD-74 完了済みレビュー | static-test 系として移設候補。 |
 | `docs/planning/static-test-deletion-candidate-review.md` | Archive Candidate | 静的テスト削除候補レビュー | release notes | 対応済みレビュー記録 | static-test 系として移設候補。 |
 
@@ -156,7 +156,7 @@
 docs/archive/
 ```
 
-v2.17.3 では実移設を行わないため、`docs/archive/` は先行作成しない。実移設時に必要な最小限のフォルダーだけを作成する。
+`docs/archive/` は v2.17.4 で作成済み。今後も、対象文書群を実際に移設する version で必要な最小限のサブフォルダーだけを作成する。
 
 想定する分類例は次の通りである。
 
@@ -190,42 +190,31 @@ archive 配下の文書は、次の方針で扱う。
 
 ### TD-79完了: expert review 文書群
 
-次の文書群は v2.17.4 / TD-79 で `docs/archive/expert-review/` へ移設済みである。
+expert review 文書群は v2.17.4 / TD-79 で `docs/archive/expert-review/` へ移設済みである。
 
-- `docs/archive/expert-review/expert-review-closeout.md`
-- `docs/archive/expert-review/expert-proposals-2026-06.md`
-- `docs/archive/expert-review/review1-fable5.md`
-- `docs/archive/expert-review/review2-fable5.md`
-- `docs/archive/expert-review/review3-fable5.md`
-- `docs/archive/expert-review/review4-fable5.md`
-- `docs/archive/expert-review/review5-fable5.md`
-- `docs/archive/expert-review/review6-fable5.md`
-- `docs/archive/expert-review/review6-fable5-2.md`
-- `docs/archive/expert-review/review6-fable5-3.md`
+### TD-80完了: 完了済み integration / migration 計画
+
+次の文書群は v2.17.5 / TD-80 で archive へ移設済みである。
+
+Completed designs:
+
+- `docs/archive/completed-designs/ideanest-save-load-plan.md`
+- `docs/archive/completed-designs/nestsuite-multi-file-tabs-plan.md`
+- `docs/archive/completed-designs/nestsuite-notenest-multi-file-plan.md`
+- `docs/archive/completed-designs/nestsuite-preparation.md`
+
+Migrations:
+
+- `docs/archive/migrations/nestsuite-default-startup-plan.md`
+- `docs/archive/migrations/repository-rename.md`
 
 移設後の注意:
 
-- `NestSuite.Tests/NestSuiteDocsContractTests.cs` は `docs/archive/expert-review/expert-review-closeout.md` のパスと主要語句を確認する
-- `docs/backlog.md` の LT-9 は `docs/archive/expert-review/review4-fable5.md` / `docs/archive/expert-review/review5-fable5.md` へ到達できる状態を維持する
-- archive 文書は現行仕様の正本ではなく、現在の課題状態は `docs/backlog.md`、完了履歴は `docs/release-notes.md` を優先する
+- `docs/integration/README.md` と `docs/migration/README.md` は、配下の個別文書が archive へ移ったことを示す旧入口として残す
+- 現在の配布・運用手順は `docs/operations/` 配下の Canonical 文書を優先する
+- archive 文書だけを根拠に過去の統合計画・移行手順を再実装または再適用しない
 
-### 次の第1候補: 完了済み integration / migration 計画
-
-対象候補:
-
-- `docs/integration/ideanest-save-load-plan.md`
-- `docs/integration/nestsuite-multi-file-tabs-plan.md`
-- `docs/integration/nestsuite-notenest-multi-file-plan.md`
-- `docs/integration/nestsuite-preparation.md`
-- `docs/migration/nestsuite-default-startup-plan.md`
-- `docs/operations/repository-rename.md`
-
-理由:
-
-- 実装済み・移行済みの計画が中心
-- 現行仕様の正本ではなく履歴としての価値が中心
-
-### 次の第2候補: 完了済み spike / static-test レビュー
+### 次の第1候補: 完了済み spike / static-test レビュー
 
 対象候補:
 
@@ -256,12 +245,6 @@ archive 配下の文書は、次の方針で扱う。
 ---
 
 ## 9. 次回作業案
-
-### v2.17.5: 完了済み integration / migration 計画の archive 移設
-
-- `docs/archive/completed-designs/` または `docs/archive/migrations/` を必要分だけ作成する
-- 実装済み integration 計画と移行計画を移設する
-- `docs/integration/README.md` / `docs/migration/README.md` の役割を再判定する
 
 ### v2.17.6: static-test / spike 系レビューの archive 移設
 
