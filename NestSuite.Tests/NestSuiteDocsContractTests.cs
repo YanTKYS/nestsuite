@@ -80,6 +80,10 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.16.51", "M17-1", "M17-1" };
         yield return new object[] { "v2.17.0", "expert-review-closeout", "expert-review-closeout" };
         yield return new object[] { "v2.17.1", "nestsuite-designer-guidelines.md", "nestsuite-designer-guidelines.md" };
+        yield return new object[] { "v2.17.3", "TD-78", "TD-78" };
+        yield return new object[] { "v2.17.3", "docs-inventory-and-archive-policy.md", "docs-inventory-and-archive-policy.md" };
+        yield return new object[] { "v2.17.4", "TD-79", "TD-79" };
+        yield return new object[] { "v2.17.5", "TD-80", "TD-80" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -134,7 +138,7 @@ public class NestSuiteDocsContractTests
     [Fact]
     public void ExpertReviewCloseoutDoc_ExistsAndMentionsKeyContracts()
     {
-        var path = Path.Combine(RepoRoot, "docs", "planning", "expert-review-closeout.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "expert-review", "expert-review-closeout.md");
 
         Assert.True(File.Exists(path), $"expert-review-closeout.md not found: {path}");
 
@@ -189,6 +193,9 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-73" };
         yield return new object[] { "TD-75" };
         yield return new object[] { "TD-76" };
+        yield return new object[] { "TD-78" };
+        yield return new object[] { "TD-79" };
+        yield return new object[] { "TD-80" };
         yield return new object[] { "M17" };
     }
 
@@ -218,6 +225,9 @@ public class NestSuiteDocsContractTests
         yield return new object[] { 74 };
         yield return new object[] { 75 };
         yield return new object[] { 76 };
+        yield return new object[] { 78 };
+        yield return new object[] { 79 };
+        yield return new object[] { 80 };
     }
 
     [Theory]
@@ -313,7 +323,7 @@ public class NestSuiteDocsContractTests
     {
         var releaseNotes = TestPaths.ReadReleaseNotes();
         var backlog = TestPaths.ReadBacklog();
-        var planning = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-3.md"));
+        var planning = File.ReadAllText(Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5-3.md"));
 
         foreach (var term in new[] { "v2.16.43", "SH-36a", "下書き", "ChatNest", "sidecar", "HashMismatch", "隔離", "SH-36b" })
             Assert.Contains(term, releaseNotes + backlog + planning);
@@ -1050,7 +1060,7 @@ public class NestSuiteDocsContractTests
     public void Review6Doc_ExistsAndMentionsKeySections()
     {
         // 文言完全一致ではなく、章立ての重要語句と結論系キーワードの存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5.md");
         Assert.True(File.Exists(path), $"review6-fable5.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("総評", text);
@@ -1094,7 +1104,7 @@ public class NestSuiteDocsContractTests
     public void Review6_2Doc_ExistsAndMentionsKeySections()
     {
         // 文言完全一致ではなく、章立ての重要語句の存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-2.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5-2.md");
         Assert.True(File.Exists(path), $"review6-fable5-2.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("総評", text);
@@ -1108,7 +1118,7 @@ public class NestSuiteDocsContractTests
     public void Review6Doc_PointsToReview6_2_AsAuthoritativeForSH36()
     {
         // 初期設計（review6）と補完後設計（review6-fable5-2）の関係が review6 側に記録されている。
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5.md"));
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5.md"));
         Assert.Contains("review6-fable5-2", text);
         Assert.Contains("正とする", text);
     }
@@ -1136,7 +1146,7 @@ public class NestSuiteDocsContractTests
     public void Review6_3Doc_ExistsAndMentionsKeySections()
     {
         // 文言完全一致ではなく、章立ての重要語句の存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-3.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5-3.md");
         Assert.True(File.Exists(path), $"review6-fable5-3.md not found: {path}");
         var text = File.ReadAllText(path);
         Assert.Contains("総評", text);
@@ -1152,7 +1162,7 @@ public class NestSuiteDocsContractTests
     {
         // review6-fable5-2 の冒頭注記が最新正本（review6-fable5-3）を参照している
         // （本文の初期判断は履歴として保持したまま）。
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "planning", "review6-fable5-2.md"));
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "archive", "expert-review", "review6-fable5-2.md"));
         Assert.Contains("review6-fable5-3", text);
         Assert.Contains("正とする", text);
     }

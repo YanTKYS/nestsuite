@@ -62,5 +62,5 @@ https://github.com/YanTKYS/nestsuite.git
 
 ## 参考
 
-- [docs/release-notes.md](../release-notes.md) — v2.0.1 リリースノート
-- [docs/backlog.md](../backlog.md) — リポジトリ名変更方針
+- [docs/release-notes.md](../../release-notes.md) — v2.0.1 リリースノート
+- [docs/backlog.md](../../backlog.md) — リポジトリ名変更方針

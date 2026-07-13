@@ -66,7 +66,7 @@ SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | SH-24 | タブのクイックスイッチャー強化 | タブ過多時のキーボード検索・切替補助。既存の `Ctrl+Tab` やオーバーフロー一覧（SH-6）との関係を整理してから検討する | C |
-| SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | InvalidFormat / AccessDenied / SchemaVersionTooNew は TD-70 の解除対象外であり、恒久的に解消されない場合は毎起動で復元失敗通知が出続ける。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する。**FAQ / ユーザーガイドへの間接経路案内は v2.16.22 で反映済み。** 解除対象拡張・個別解除は LT-9 フェーズ2 に吸収する。**ただし LT-9 フェーズ2 自体はトリガー成立まで実装しない（review5-fable5.md）。** | C |
+| SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | InvalidFormat / AccessDenied / SchemaVersionTooNew は TD-70 の解除対象外であり、恒久的に解消されない場合は毎起動で復元失敗通知が出続ける。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する。**FAQ / ユーザーガイドへの間接経路案内は v2.16.22 で反映済み。** 解除対象拡張・個別解除は LT-9 フェーズ2 に吸収する。**ただし LT-9 フェーズ2 自体はトリガー成立まで実装しない（`docs/archive/expert-review/review5-fable5.md`）。** | C |
 | SH-37 | Shell 操作の現在地サマリー表示 | タブ数・未保存タブ数・復元失敗の保留有無・下書き復元候補など、利用者が判断に迷いやすい状態をステータスバーまたはヘルプ内の軽量サマリーに集約する。複数の通知・メニュー・タブ状態を横断して確認する必要を減らし、認知負荷を下げる。保存形式変更なし | B |
 
 ---
@@ -171,13 +171,14 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5 で完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 **TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了した。全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` 読込は 1 回、保存後内部状態同期（`SavedWorkspaceStateUpdater`）・NoteNest ViewModel タブ同期（`SyncNoteNestTabForViewModel`）は 0 回になった。既に判定済み・信頼できる WorkspaceKind とファイルパスの組み合わせをファイル I/O なしで確認する `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind` を追加し、保存直後・ViewModel 同期の内部経路はこれと `FromResolvedKind` へ切り替えた（利用者が任意のファイルを開く入口は引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。詳細な実装経緯は `docs/release-notes.md`（v2.16.32〜v2.16.39）と `docs/planning/nestsuite-double-read-design-review.md` を参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | TD-77 | WPF Converter の無変換方向と共有リソースの整理 | one-way 表示用 Converter の `ConvertBack` が例外送出になっている箇所や、呼び出しごとに Brush 等を生成する箇所を棚卸し、`Binding.DoNothing` と凍結済み共有リソースへ段階的に統一する。ChatNest 発言者 Converter は先行整理済み。技術的負債を減らし、XAML binding の例外リスクと描画時割り当てを抑える | B |
+| TD-81 | static-test・spike系文書のarchive移設 | `docs/planning/docs-inventory-and-archive-policy.md` の次候補に基づき、static-test 棚卸し・削除候補レビュー、テスト分類一次分析、`.nestsuite` 二重読込解消レビューなどの完了済み spike / review 文書を archive へ移設する。内容改訂は行わず、リンク・docs-contract 参照更新に限定する | B |
 
 ---
 
@@ -197,7 +198,7 @@ TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。詳細は `docs/relea
 | LT-6 | クロス Workspace 双方向リンク / 全文検索 | Workspace をまたいだリンクと全文検索インデックス | インデックス設計・スキーマ変更を伴う。LT-2 の実現後に再評価する |
 | LT-7 | ナレッジグラフ | ノート・カード・発言のグラフ可視化 | LT-5 / LT-6 が前提。UI / UX 設計コストが大きい |
 | LT-8 | Day / Week Review | 日次・週次のレビュービュー | タスク・マーカーの期限機能が前提 |
-| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。review4-fable5.md の設計レビューに基づき段階的に扱う: **フェーズ1** = SH-34（v2.16.21 実装済み）として、復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。review5-fable5.md の設計レビューで実装時の確定方針を固めた: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行 SH-34 の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した（review4-fable5.md、review5-fable5.md で再確認）。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（review5-fable5.md、いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、v2.16.22 のユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること（詳細: `docs/design/design-decisions.md` §56） |
+| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。`docs/archive/expert-review/review4-fable5.md` の設計レビューに基づき段階的に扱う: **フェーズ1** = SH-34（v2.16.21 実装済み）として、復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。`docs/archive/expert-review/review5-fable5.md` の設計レビューで実装時の確定方針を固めた: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行 SH-34 の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した（`docs/archive/expert-review/review4-fable5.md`、`docs/archive/expert-review/review5-fable5.md` で再確認）。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（`docs/archive/expert-review/review5-fable5.md`、いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、v2.16.22 のユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること（詳細: `docs/design/design-decisions.md` §56） |
 | LT-10 | テンプレート機能 | ノート・カード・会話のテンプレートを定義して新規作成時に適用する | スキーマ変更・UI 設計・保存場所の方針整理が必要 |
 | LT-11 | パフォーマンス自己診断 | 大量ノート・カード・発言時の応答性を計測・表示する | **開発者向け計測基盤は v2.13.9 TD-56 で整備済み**（`NestSuite.Tests/Performance/`、環境変数ゲートで通常 CI に影響なし。`docs/development/performance-measurement.md` 参照）。利用者向け自己診断 UI は未実装。実利用で性能課題が実際に観測され、本基盤の数値で裏づけられた場合に UI 化を再検討する |
 | LT-12 | ErrorLogService ローテーション | ログファイルのサイズ上限・日付切り替えによるローテーション | **最小実装済み（v2.14.0 TD-57）**: サイズベースローテーション（1MB・3世代）を `ErrorLogRotation` として実装。Error のみ記録する方針・ログ保存先は維持。UI・設定画面は未実装。将来ログ量や保持方針が問題になった場合は `docs/development/error-log-policy.md` の見直し観点に従って再検討する |
