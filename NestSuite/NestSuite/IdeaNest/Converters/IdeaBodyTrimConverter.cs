@@ -18,5 +18,5 @@ public class IdeaBodyTrimConverter : IMultiValueConverter
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
+        => new object[] { Binding.DoNothing, Binding.DoNothing };
 }

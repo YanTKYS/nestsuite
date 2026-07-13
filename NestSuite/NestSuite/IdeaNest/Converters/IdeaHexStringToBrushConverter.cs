@@ -14,7 +14,9 @@ public class IdeaHexStringToBrushConverter : IValueConverter
             try
             {
                 var color = (Color)ColorConverter.ConvertFromString(s);
-                return new SolidColorBrush(color);
+                var brush = new SolidColorBrush(color);
+                brush.Freeze();
+                return brush;
             }
             catch
             {
@@ -25,5 +27,5 @@ public class IdeaHexStringToBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
+        => Binding.DoNothing;
 }

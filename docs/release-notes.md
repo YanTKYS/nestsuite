@@ -7,6 +7,16 @@
 
 ---
 
+## v2.17.9 — TD-77 WPF Converterの無変換方向と共有リソースの整理
+
+- **TD-77: リポジトリ内の WPF Converter 11 件（`IValueConverter` / `IMultiValueConverter`）を棚卸しした。** 対象は Shell・NoteNest・IdeaNest・ChatNest・TempNest・共通 UI リソース（`NestSuite/Converters/`）。
+- one-way 表示専用と確認できた 9 件で、`ConvertBack` の `throw new NotSupportedException()` を `Binding.DoNothing`（`IdeaBodyTrimConverter` は `IMultiValueConverter` のため各ソースに対応する `Binding.DoNothing` の配列）へ変更した: `BoolToStrikethroughConverter`、`HasNoTasksToRowHeightConverter`、`HasNoTasksToRowMinHeightConverter`、`WorkspaceKindToAccentBrushConverter`、`IdeaBoolToVisibilityConverter`、`IdeaStringIsEmptyToVisibilityConverter`、`IdeaColorNameToBrushConverter`、`IdeaHexStringToBrushConverter`、`IdeaBodyTrimConverter`。
+- `WorkspaceKindToAccentBrushConverter`（WorkspaceKind ごとのアクセント色）と `IdeaColorNameToBrushConverter`（固定 8 色パレット）は、`Convert` 呼び出しごとに生成していた `SolidColorBrush` を凍結済み static 共有インスタンスへ変更した。`IdeaHexStringToBrushConverter` は入力（任意の hex 文字列）が可変で静的共有はできないため、生成した `Brush` をその場で `Freeze()` する対応に留めた。
+- `RadioConverter`・`BoolToVisibilityConverter`・ChatNest 発言者 Converter 群（`SpeakerBackgroundConverter` 等）は変更していない。前者2つは既存の逆変換ロジックが正しい two-way 対応、後者は v2.16.x 時点で既に凍結済み共有 Brush と `Binding.DoNothing` を実装済みの先行整理（今回はこのパターンを参考にした）。
+- XAML の binding mode は既定値（`Visibility`/`Background`/`Height` 等はいずれも既定 OneWay）を確認した上で変更していない。表示・書戻し動作は変更していない。
+- `WorkspaceKindToAccentBrushConverterTests.cs`・`BoolToStrikethroughConverterTests.cs`・`IdeaNestConvertersTests.cs` を新規追加し、`HasNoTasksToRowHeightConverterTests.cs`・`HasNoTasksToRowMinHeightConverterTests.cs` に `ConvertBack` の回帰を追加した。既存テストの削除・skip はしていない。
+- 保存形式・schema・session.json・draft 形式の変更なし。UI の見た目・操作仕様の変更なし。外部依存追加なし。
+
 ## v2.17.8 — TD-82-1 workspace-file-extension-unificationの正本性補正
 
 - **TD-82-1: `workspace-file-extension-unification.md` の正本性を再評価した。** TD-82（v2.17.7）で `docs/archive/migrations/` へ移設した本文書は、完了済み移行履歴だけでなく、現行の `.nestsuite` wrapper・保存・読込・legacy互換仕様（1タブ1ファイル、`formatVersion 1.0`、`workspaceKind` 判定、wrapper/payload schema 分離、legacy 拡張子互換、保存先拡張子による保存形式決定、`.nestsuite.bak` バックアップ方針）をまとめており、production コードおよび Canonical 文書から継続参照されると判断し、`docs/development/workspace-file-extension-unification.md` へ戻した（ファイル名は変更していない）。

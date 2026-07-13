@@ -14,5 +14,5 @@ public class HasNoTasksToRowHeightConverter : IValueConverter
         => value is true ? new GridLength(0, GridUnitType.Auto) : new GridLength(2, GridUnitType.Star);
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
+        => Binding.DoNothing;
 }
