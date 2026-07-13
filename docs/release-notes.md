@@ -7,6 +7,15 @@
 
 ---
 
+## v2.17.8 — TD-82-1 workspace-file-extension-unificationの正本性補正
+
+- **TD-82-1: `workspace-file-extension-unification.md` の正本性を再評価した。** TD-82（v2.17.7）で `docs/archive/migrations/` へ移設した本文書は、完了済み移行履歴だけでなく、現行の `.nestsuite` wrapper・保存・読込・legacy互換仕様（1タブ1ファイル、`formatVersion 1.0`、`workspaceKind` 判定、wrapper/payload schema 分離、legacy 拡張子互換、保存先拡張子による保存形式決定、`.nestsuite.bak` バックアップ方針）をまとめており、production コードおよび Canonical 文書から継続参照されると判断し、`docs/development/workspace-file-extension-unification.md` へ戻した（ファイル名は変更していない）。
+- docs 棚卸し（`docs/planning/docs-inventory-and-archive-policy.md`）の分類を Archived から Active Reference へ変更した。
+- production コード（`NestSuite/Services/NestSuiteWorkspaceEnvelope.cs` のコメント）、`docs/architecture/schema-versioning-policy.md`、`docs/backlog.md`（FM-1 参照）、`docs/README.md` の参照を新しい `docs/development/` パスへ更新した。`docs/archive/migrations/README.md` から本文書を含む旨の記述を削除した。
+- 文書本文にあった「TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は未実装のまま」という古い記述を、当時（v2.14.7 SH-31 時点）は未実装だった旨を明示したうえで、TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了済みであることを短く追記する形へ最小補正した。詳細は release notes（v2.16.32〜v2.16.39）と `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を参照。
+- それ以外の本文の全面改訂・新しい仕様文書の作成は行っていない。保存形式・wrapper・schema・legacy互換の仕様自体は変更していない。
+- production コード変更なし（コメントのみ更新）、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
 ## v2.17.7 — TD-82 旧NoteNest・完了済み設計文書のarchive再分類
 
 - **TD-82: 2 文書の正本性・archive 可否を再確認した。** `classic-code-contraction.md` は旧 NoteNest Classic 残存コード縮退の完了済み履歴、`workspace-file-extension-unification.md` は `.nestsuite` 拡張子統一の完了済み移行記録であり、現行仕様の正本ではないと判断した。

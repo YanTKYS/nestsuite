@@ -164,14 +164,14 @@ L8・L20 は v2.16.8 で実装済み（欠番）。詳細は `docs/release-notes
 スキーマ変更を伴う実装は `docs/architecture/schema-versioning-policy.md` の方針に従うこと（v2.10.2 整備）。
 
 SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧 FM-2 より移管）。  
-**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/archive/migrations/workspace-file-extension-unification.md` 参照）。
+**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/development/workspace-file-extension-unification.md` 参照）。
 **FM-3**（`.nestsuite` のファイル関連付け追加）は v2.14.6 で実装済み（欠番。`docs/operations/file-association.md` 参照）。
 
 ---
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5、TD-81 は v2.17.6、TD-82 は v2.17.7 で完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5、TD-81 は v2.17.6、TD-82 は v2.17.7、TD-82-1 は v2.17.8 で完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 **TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了した。全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` 読込は 1 回、保存後内部状態同期（`SavedWorkspaceStateUpdater`）・NoteNest ViewModel タブ同期（`SyncNoteNestTabForViewModel`）は 0 回になった。既に判定済み・信頼できる WorkspaceKind とファイルパスの組み合わせをファイル I/O なしで確認する `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind` を追加し、保存直後・ViewModel 同期の内部経路はこれと `FromResolvedKind` へ切り替えた（利用者が任意のファイルを開く入口は引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。詳細な実装経緯は `docs/release-notes.md`（v2.16.32〜v2.16.39）と `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を参照。
 
