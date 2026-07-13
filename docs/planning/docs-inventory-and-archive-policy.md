@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.7
+> version: v2.17.8
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|---|
 | `docs/README.md` | Canonical | docs 全体の入口 | 開発者・設計者 | 文書探索の起点 | 維持。archive 方針へのリンク追加は次回検討。 |
 | `docs/backlog.md` | Canonical | 未着手・保留・見送り課題の正本 | 開発者・設計者・release notes | 現行 backlog 管理の正本 | 維持。docs archive 移設課題は通常 backlog として管理。 |
-| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.7 を追加。 |
+| `docs/release-notes.md` | Canonical | 完了済み変更履歴の正本 | 開発者・テスト・backlog | version と完了履歴の正本 | 維持。v2.17.8 を追加。 |
 | `docs/development/nestsuite-development-guidelines.md` | Canonical | 実装者向け恒久規約 | 実装プロンプト・release checklist | 開発ルールの正本 | 維持。 |
 | `docs/development/nestsuite-designer-guidelines.md` | Canonical | 設計者向け恒久規約 | 設計・引継ぎ・実装プロンプト | 設計側ルールの正本 | 維持。 |
 | `docs/architecture/schema-versioning-policy.md` | Canonical | schema bump と互換読み込み方針 | 開発ガイド・backlog・schema tests | 保存形式変更時の正本 | 維持。 |
@@ -65,7 +65,7 @@
 | `docs/development/workspace-xaml-structure.md` | Active Reference | XAML 構成索引 | workspace 実装者 | 現行 XAML 探索補助 | 維持。 |
 | `docs/development/notenest-task-reduction-policy.md` | Active Reference | タスク機能縮退方針 | RJ-10・NoteNest 実装 | 現行判断根拠 | 維持。 |
 | `docs/development/compatibility-identifiers-audit.md` | Active Reference | 互換識別子棚卸し | backlog LT-3 | 互換維持判断の補助 | 維持。 |
-| `docs/archive/migrations/workspace-file-extension-unification.md` | Archived | `.nestsuite` 拡張子統一の完了経緯 | backlog FM-1・release notes | 実装済み移行記録。現行仕様の正本は実装・schema policy・backlog・release notes | TD-82 で移設済み。旧拡張子互換や wrapper 仕様は現行正本を優先。 |
+| `docs/development/workspace-file-extension-unification.md` | Active Reference | `.nestsuite` wrapper・保存・読込・legacy互換仕様の補助正本 | production コード・schema policy・backlog FM-1・release notes | 完了済み移行履歴だけでなく、現行の wrapper・保存・読込・互換仕様（1タブ1ファイル、`formatVersion 1.0`、`workspaceKind`、wrapper/payload schema 分離、legacy 拡張子互換）を保持しており、production コードおよび Canonical 文書から継続参照される。TD-82-1（v2.17.8）で `docs/development/` へ再分類した | 維持。将来 Canonical なファイル形式文書へ仕様を分離できた場合にのみ再 archive を検討する。 |
 | `docs/archive/legacy-notenest/classic-code-contraction.md` | Archived | Classic 残存コード縮退記録 | 開発ガイド・release notes | 完了済み旧資産整理。Classic 経路復活の正本ではない | TD-82 で移設済み。現行判断は開発ガイド・実装・release notes を優先。 |
 | `docs/development/save-flow-duplication.md` | Active Reference | 保存フロー重複メモ | TD 候補・実装者 | 未解消の設計負債の参考 | 維持。 |
 | `docs/development/sqlite-index-feasibility.md` | Active Reference | SQLite 補助インデックス feasibility | backlog LT-2 | 保留中の採用条件が backlog で現役 | 維持。 |
@@ -230,6 +230,21 @@ Completed designs:
 - `.nestsuite` 拡張子統一記録は FM-1 完了済み移行記録であり、現行の wrapper / schema / 互換判断は実装、`docs/architecture/schema-versioning-policy.md`、`docs/backlog.md`、`docs/release-notes.md` を優先する
 - いずれも archive 文書だけを根拠に Classic 経路復活、旧機能復活、旧拡張子互換削除、保存形式変更を行わない
 
+**補正: `workspace-file-extension-unification.md` は TD-82-1（v2.17.8）で正本性を再評価し、`docs/development/` へ戻した。理由は下記 TD-82-1完了 節を参照。**
+
+### TD-82-1完了: workspace-file-extension-unification.md の正本性補正
+
+`docs/archive/migrations/workspace-file-extension-unification.md` は v2.17.8 / TD-82-1 で `docs/development/workspace-file-extension-unification.md` へ戻し、分類を Archived から Active Reference へ変更した。
+
+判断理由:
+
+- 完了済み移行履歴だけでなく、現行の wrapper・保存・読込・legacy互換仕様（1タブ1ファイル、`.nestsuite` wrapper `formatVersion 1.0`、`workspaceKind` による種別判定、wrapper schema と payload schema の分離、legacy 拡張子の読込・上書き保存互換、保存先拡張子による保存形式決定、`.nestsuite.bak` バックアップ方針、wrapper 互換変更時の責務境界、legacy 拡張子互換を無期限維持する方針）を保持している
+- production コード（`NestSuiteWorkspaceEnvelope.cs`）および Canonical 文書（`docs/architecture/schema-versioning-policy.md`、`docs/backlog.md`）から継続参照される
+- 現行仕様の正本ではない archive に、production コードおよび Canonical 文書から参照される文書を置く状態を解消するため、現行仕様の補助正本として `docs/development/` 配下に置く
+- 将来、Canonical なファイル形式文書へ仕様を分離できた場合にのみ再 archive を検討する
+
+TD-82（v2.17.7）で archive へ移設した判断自体は、当時の完了済み移行記録としての性質のみに着目したものであり、production コード・Canonical 文書からの継続参照という観点が抜けていた。TD-82-1 はこれを補正するものであり、TD-82 の履歴・欠番は取り消さない。
+
 ### 次の候補: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
 候補を一度に大量移設せず、次回以降は 1〜2 件程度に絞って扱う。
@@ -258,7 +273,9 @@ Completed designs:
 
 ## 9. 次回作業案
 
-### v2.17.8: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
+> v2.17.8 は TD-82-1（`workspace-file-extension-unification.md` の正本性補正）を優先実施した。以下の editor設計・旧入口README再判定は次回以降へ持ち越す。
+
+### 次回: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
 - `docs/design/notenest-editor-h0-reassessment.md` を archive へ移せるか、現行 editor 方針の参照価値が残るかを再確認する
 - `docs/operations/operation-note.md`、`docs/integration/README.md`、`docs/migration/README.md` は Delete Candidate として削除可能か、archive へ残すべきかを個別判断する

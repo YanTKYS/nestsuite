@@ -40,7 +40,7 @@
 
 ## 読めない `.nestsuite` の扱い（v2.14.7 SH-31）
 
-種別判定失敗は理由（`WorkspaceKindDetectionFailure`）を保持し無言スキップしない。セッション復元はまとめて 1 回通知する（session から削除しない・次回起動時に再試行される）。pipe / 起動引数 / 最近使ったファイルは理由別の文言で通知する。最近使ったファイルからの削除は未対応拡張子のみ（既存挙動を維持）。破損と断定しない。`payloadSchemaVersion` の too-new（現行より新しい）は種別判定段階でも検出する（FM-4 と同じ文言）。TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は未実装のまま。
+種別判定失敗は理由（`WorkspaceKindDetectionFailure`）を保持し無言スキップしない。セッション復元はまとめて 1 回通知する（session から削除しない・次回起動時に再試行される）。pipe / 起動引数 / 最近使ったファイルは理由別の文言で通知する。最近使ったファイルからの削除は未対応拡張子のみ（既存挙動を維持）。破損と断定しない。`payloadSchemaVersion` の too-new（現行より新しい）は種別判定段階でも検出する（FM-4 と同じ文言）。TD-59（`.nestsuite` オープン時の二重読込・二重パース解消）は、本文執筆時点（v2.14.7 SH-31）では未実装だった。**その後 TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了済み。** 詳細は `docs/release-notes.md`（v2.16.32〜v2.16.39）および `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を参照。
 
 ```text
 1. .notenest / .ideanest / .chatnest → 拡張子から直接（legacy、従来どおり）

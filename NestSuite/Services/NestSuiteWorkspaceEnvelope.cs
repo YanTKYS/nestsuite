@@ -9,7 +9,7 @@ namespace NestSuite.Services;
 /// `.nestsuite` は 1 つの Workspace（NoteNest / IdeaNest / ChatNest）を表すラッパーで、
 /// 複数 Workspace を格納する統合コンテナではない（1タブ1ファイルを維持）。
 /// wrapper 自体の formatVersion と payload 側の schema version は分離して管理する。
-/// 方針は docs/archive/migrations/workspace-file-extension-unification.md 参照。
+/// 方針は docs/development/workspace-file-extension-unification.md 参照。
 /// </summary>
 public static class NestSuiteWorkspaceEnvelope
 {
