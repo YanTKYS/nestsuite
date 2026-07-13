@@ -389,7 +389,7 @@ private static bool ResolveDraftDirtyState(tab, session);   // §4 の表
 
 ## 18. review6・backlogへの反映
 
-- `docs/planning/review6-fable5.md` の冒頭注記に「SH-36 の実装は review6-fable5-2 を正とする」旨を追記（履歴は保持・本文は書き換えない）
+- `docs/archive/expert-review/review6-fable5.md` の冒頭注記に「SH-36 の実装は review6-fable5-2 を正とする」旨を追記（履歴は保持・本文は書き換えない）
 - `docs/backlog.md` の SH-36 行を本書の確定設計（保護対象の限定表現・sidecar + hash・隔離・Yes/No/Cancel・a/b 分割 = v2.16.42/43）に合わせて更新（詳細は本書へ委譲）
 - 後続バージョン: `v2.16.42 / SH-36a` → `v2.16.43 / SH-36b` → `v2.16.44 / TD-76` → `v2.16.45 / M17`（review6 の当初案から 1 つずつ繰り下げ）
 

@@ -19,7 +19,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_Exists()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
 
         Assert.True(File.Exists(path), $"analysis document not found: {path}");
     }
@@ -27,7 +27,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_ContainsFiveClassifications()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("クラス単位テスト", text);
@@ -40,7 +40,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_ContainsClassificationTable()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("| テストクラス | テストメソッド | 分類 | 対象クラス / 対象機能 | 関連ID | 備考 |", text);
@@ -107,7 +107,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_ContainsTD30Supplement()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("TD-30", text);
@@ -139,7 +139,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_ContainsTD32FinalReanalysis()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("v2.10.18 最終再分析", text);
@@ -176,7 +176,7 @@ public class TestClassificationAnalysisTests
     [Fact]
     public void AnalysisDocument_ContainsTestAdditionDecisionGuide()
     {
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("新規テスト追加先判定ガイド", text);
@@ -196,7 +196,7 @@ public class TestClassificationAnalysisTests
         // 現在の静的テスト判断基準（static-test-guidelines.md）・現時点の棚卸しレビュー
         // （static-test-inventory-review.md）への参照があることを確認する。
         // 文言完全一致ではなく、重要語句の存在確認に留める。
-        var path = Path.Combine(RepoRoot, "docs", "development", "test-classification-analysis.md");
+        var path = Path.Combine(RepoRoot, "docs", "archive", "static-test", "test-classification-analysis.md");
         var text = File.ReadAllText(path);
 
         Assert.Contains("過去分析スナップショット", text);

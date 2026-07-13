@@ -14,4 +14,4 @@
 |----------|------|--------------|
 | `MainViewModel.AutoSave.legacy.cs.txt` | NoteNest Classic（旧単独起動）時代の `MainViewModel` 内自動保存 | v2.14.13 TD-61 で撤去。現行の自動保存は `NestSuite/NestSuite/NestSuiteShellWindow.AutoSave.cs`（SH-33） |
 
-詳細な棚卸し・判断根拠は `docs/development/classic-code-contraction.md` を参照。
+詳細な棚卸し・判断根拠は `docs/archive/legacy-notenest/classic-code-contraction.md` を参照。

@@ -316,7 +316,7 @@ TD-59 実装過程で追加・変更されたコード（`WorkspaceFileOpenConte
 
 ## 16. エキスパートレビュー対応フェーズ完了（v2.17.0）
 
-- review1〜review6 の総点検を実施した。詳細は `docs/planning/expert-review-closeout.md` を参照する。
+- review1〜review6 の総点検を実施した。詳細は `docs/archive/expert-review/expert-review-closeout.md` を参照する。
 - SH-36、TD-76、M17 を完了状態として確認した。
 - LT-9 フェーズ2は review5 のトリガー待ち方針を維持し、v2.17.0 では実装しない。
 - エキスパート起点の特別進行を完了し、以後は通常 backlog へ復帰する。
