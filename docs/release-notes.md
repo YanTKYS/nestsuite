@@ -7,6 +7,13 @@
 
 ---
 
+## v2.17.3 — docs棚卸し・archive方針策定
+
+- **TD-78: docs 全体を棚卸しした。** Canonical / Active Reference / Archive Candidate / Delete Candidate の 4 区分で分類した。
+- `docs/planning/docs-inventory-and-archive-policy.md` を追加し、現在の正本文書一覧、archive 運用方針、archive 文書の扱い、実移設時のリスクを整理した。
+- 即時の大量削除・大量移設は行わず、次回以降の実移設候補として expert review 文書群、完了済み integration / migration 計画、static-test / spike 系レビューを優先順付きで整理した。
+- production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし、net48_test 再開なし。
+
 ## v2.17.2 — ChatNest Converter の軽量化と backlog 提案追加
 
 - ChatNest の発言者表示 Converter で、背景色・アクセント色・配置の判定を `SpeakerVisualPalette` に集約した。呼び出しごとの `SolidColorBrush` 生成をやめ、凍結済み Brush を共有するようにした。
