@@ -42,6 +42,104 @@ public class MainViewModelPartialTests
         Assert.False(main.AddNoteToNotebook(nb, "Existing"));
     }
 
+    // ── TN-3 (v2.18.0): CreateNoteFromTransfer ──────────────────────────
+
+    [Fact]
+    public void CreateNoteFromTransfer_AddsNoteToFirstNotebook_WithBodyAsIs()
+    {
+        var main = new MainViewModel();
+        var firstNotebook = main.Notebooks.First();
+        var countBefore = firstNotebook.Notes.Count;
+
+        var note = main.CreateNoteFromTransfer("最初の行\n本文2行目");
+
+        Assert.NotNull(note);
+        Assert.Equal("最初の行\n本文2行目", note!.Content);
+        Assert.Equal(countBefore + 1, firstNotebook.Notes.Count);
+        Assert.Contains(note, firstNotebook.Notes);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_GeneratesTitleFromFirstNonEmptyLine()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("タイトル候補\n本文");
+        Assert.Equal("タイトル候補", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_LeadingBlankLines_SkipsToFirstNonEmptyLine()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("\n\n本文のみ");
+        Assert.Equal("本文のみ", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_WhitespaceOnlyContent_UsesFallbackTitle()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("\n\n   \n\t");
+        Assert.Equal("TempNestから昇格", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_LongTitleLine_TruncatesWithEllipsis()
+    {
+        var main = new MainViewModel();
+        var longLine = new string('あ', 60);
+        var note = main.CreateNoteFromTransfer(longLine);
+        Assert.Equal(new string('あ', 40) + "…", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_SelectsCreatedNote()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("選択確認\n本文");
+        Assert.Same(note, main.SelectedNote);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_SetsStatusMessage()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("ステータス確認\n本文");
+        Assert.Contains(note!.Title, main.StatusMessage);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_DuplicateTitle_AppendsNumberSuffix()
+    {
+        var main = new MainViewModel();
+        var nb = main.Notebooks.First();
+        main.Notes.AddNote(nb, "重複タイトル");
+
+        var note = main.CreateNoteFromTransfer("重複タイトル\n本文");
+
+        Assert.Equal("重複タイトル (2)", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_DoesNotAddMarkersOrStar()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("普通の断片\n本文のみ");
+        Assert.False(note!.IsStarred);
+        Assert.False(note.HasMarkers);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_CreatesExactlyOneNote()
+    {
+        var main = new MainViewModel();
+        var countBefore = main.AllNotes.Count();
+
+        main.CreateNoteFromTransfer("1件のみ\n本文");
+
+        Assert.Equal(countBefore + 1, main.AllNotes.Count());
+    }
+
     [Fact]
     public void RenameNote_ValidName_ReturnsTrueAndUpdatesTitle()
     {

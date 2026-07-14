@@ -208,6 +208,14 @@ public sealed class DialogService
     public bool Confirm(string message, string title = "確認", MessageBoxImage icon = MessageBoxImage.Question) =>
         MessageBox.Show(_owner, message, title, MessageBoxButton.YesNo, icon) == MessageBoxResult.Yes;
 
+    /// <summary>
+    /// TN-3: 既定ボタンを「いいえ」にした確認ダイアログ。安全側（変更しない）を既定にしたい場面に使う。
+    /// TempNest 昇格後の元スロット消去確認で、既定を「残す」にするために使用する。
+    /// </summary>
+    public bool ConfirmWithSafeDefault(string message, string title) =>
+        MessageBox.Show(_owner, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No)
+            == MessageBoxResult.Yes;
+
     private string? SelectSaveFilePath(string filter, string defaultExtension, string defaultFileName)
     {
         var dialog = new SaveFileDialog

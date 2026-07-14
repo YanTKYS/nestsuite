@@ -525,6 +525,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var vm = new TempNestWorkspaceViewModel();
         vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnTempNestPropertyChanged;
+        WireTempNestPromotion(vm);
         return vm;
     }
 
