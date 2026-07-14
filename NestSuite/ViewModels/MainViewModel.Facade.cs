@@ -66,6 +66,16 @@ public partial class MainViewModel
     public bool HasSelectedNote => _editor.SelectedNote != null;
     public bool HasAnyNotes => _notes.AllNotes.Any();
 
+    // L23: 空状態での次操作ガイド表示条件。優先順位はノートブック > ノート > タスク/マーカーの順で、
+    // 上位が空の間は下位の案内を重複表示しない（docs/design/nestsuite-attractiveness-direction.md 4.5節）。
+    public bool HasNotebooks => _notes.Notebooks.Count > 0;
+    public bool ShowNotebookEmptyState => !HasNotebooks;
+    public bool ShowNoteEmptyState => HasNotebooks && IsNoteListEmpty;
+    public bool HasAnyMarkers => _markers.MarkerCount > 0;
+    public bool HasNoMarkers => !HasAnyMarkers;
+    public bool ShowTaskEmptyState => HasAnyNotes && HasNoTasks;
+    public bool ShowMarkerEmptyState => HasAnyNotes && HasNoMarkers;
+
     /// <summary>v2.16.10 SH-30: Markdown エクスポート（選択ノート対象）の無効理由ツールチップ。</summary>
     public string MarkdownExportSelectedNoteTooltip =>
         NestSuite.Services.ShellCommandTooltipProvider.MarkdownExportSelectedNoteTooltip(HasSelectedNote);

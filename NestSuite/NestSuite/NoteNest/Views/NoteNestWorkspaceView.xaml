@@ -262,13 +262,34 @@
 
                 </TreeView.Resources>
             </TreeView>
-            <TextBlock Text="＋ で最初のノートを作成"
+            <!-- L23: ノートブック0件の空状態案内。ノートブックがある場合はノート側の案内へ優先を譲る -->
+            <TextBlock AutomationProperties.AutomationId="NoteNest.EmptyState.Notebooks"
+                       AutomationProperties.Name="NoteNest.EmptyState.Notebooks"
                        Foreground="{DynamicResource MutedFg}"
                        FontSize="12"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
+                       Margin="16,0"
                        IsHitTestVisible="False"
-                       Visibility="{Binding IsNoteListEmpty, Converter={StaticResource BoolToVis}}"/>
+                       Visibility="{Binding ShowNotebookEmptyState, Converter={StaticResource BoolToVis}}">
+                ノートブックがありません<LineBreak/>「+ ノートブック」から最初のノートブックを作成できます
+            </TextBlock>
+            <!-- L23: ノートブックはあるがノートが0件の場合の空状態案内。ノートブック0件時は上と重複表示しない -->
+            <TextBlock AutomationProperties.AutomationId="NoteNest.EmptyState.Notes"
+                       AutomationProperties.Name="NoteNest.EmptyState.Notes"
+                       Foreground="{DynamicResource MutedFg}"
+                       FontSize="12"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="16,0"
+                       IsHitTestVisible="False"
+                       Visibility="{Binding ShowNoteEmptyState, Converter={StaticResource BoolToVis}}">
+                ノートがありません<LineBreak/>「+ ノート」から書き始められます
+            </TextBlock>
             </Grid>
 
             <!-- Bottom toolbar -->
@@ -532,12 +553,16 @@
 
                 <!-- タスクが1件もない場合: 空欄を大きく見せず、マーカー利用への一言のみ表示。
                      外側 RowDefinition が Auto へ縮むため、この行のみで完結させる -->
+                <!-- L23: ノートが1件もない間はタスク案内を出さない（ノート・ノートブック側の案内を優先） -->
                 <TextBlock Grid.Row="0"
+                           AutomationProperties.AutomationId="NoteNest.EmptyState.Tasks"
+                           AutomationProperties.Name="NoteNest.EmptyState.Tasks"
                            Text="作業ポイントは本文の TODO / FIXME で管理できます。"
                            Foreground="{DynamicResource FaintFg}" FontSize="11"
                            TextWrapping="Wrap"
                            Margin="12,10"
-                           Visibility="{Binding HasNoTasks, Converter={StaticResource BoolToVis}}"/>
+                           IsHitTestVisible="False"
+                           Visibility="{Binding ShowTaskEmptyState, Converter={StaticResource BoolToVis}}"/>
 
                 <!-- Tasks header（互換表示。新規作成ボタンは表示しない） -->
                 <Border Grid.Row="0"
@@ -788,6 +813,22 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
+
+                        <!-- L23: ノートはあるがマーカーが0件の場合の空状態案内。ノートが1件もない間は表示しない -->
+                        <TextBlock Grid.Row="2"
+                                   AutomationProperties.AutomationId="NoteNest.EmptyState.Markers"
+                                   AutomationProperties.Name="NoteNest.EmptyState.Markers"
+                                   Foreground="{DynamicResource MutedFg}"
+                                   FontSize="12"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="16,0"
+                                   IsHitTestVisible="False"
+                                   Visibility="{Binding ShowMarkerEmptyState, Converter={StaticResource BoolToVis}}">
+                            マーカーはありません<LineBreak/>本文の [TODO] [FIXME] [NOTE] がここに表示されます
+                        </TextBlock>
 
                         <!-- Project-wide marker summary -->
                         <Border Grid.Row="3"

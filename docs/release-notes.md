@@ -7,6 +7,19 @@
 
 ---
 
+## v2.18.1 — L23 空状態での次操作ガイド
+
+- **L23: NoteNest のノートブック一覧・ノート一覧・タスク一覧・マーカー一覧が空の場合に、短い次操作ガイドを追加した。** 空白の意味を推測させず、実際に存在する操作（「+ ノートブック」「+ ノート」ボタン）や実際の仕様（本文の `[TODO]` `[FIXME]` `[NOTE]` マーカー）へだけ誘導する。
+- ノートブックが 0 件のときは「ノートブックがありません／「+ ノートブック」から最初のノートブックを作成できます」を表示する。ノートブックが 1 件以上ある場合は表示しない。
+- ノートブックはあるがノートが 0 件のときは「ノートがありません／「+ ノート」から書き始められます」を表示する。ノートブックが 0 件の間はこちらを表示せず、重複案内を避ける（優先順位: ノートブック空 > ノート空）。
+- タスク一覧は、既存の互換表示用ヒント（「作業ポイントは本文の TODO / FIXME で管理できます。」）の表示条件を、ノートが 1 件以上あり、かつ既存タスクが 0 件の場合に限定した。タスク機能は縮退方針（TD-52）のため、タスク作成を促す文言は追加していない。
+- マーカー一覧が 0 件のときは「マーカーはありません／本文の `[TODO]` `[FIXME]` `[NOTE]` がここに表示されます」を表示する。ノートが 1 件もない間はタスク・マーカーいずれの案内も表示しない（ノートブック・ノート側の案内を優先し、同時に多数の空状態文が出ないようにする）。
+- 表示条件は `MainViewModel` の派生プロパティ（`HasNotebooks` / `ShowNotebookEmptyState` / `ShowNoteEmptyState` / `ShowTaskEmptyState` / `HasAnyMarkers` / `HasNoMarkers` / `ShowMarkerEmptyState`）として実装し、既存の `NoteChangeCoordinator` / `WorkspaceChangeCoordinator` の通知経路に乗せた。空状態専用のサービスやタイマー、保存対象の新しいフラグは追加していない。
+- 表示は既存一覧と同じ領域内に `IsHitTestVisible="False"` の `TextBlock`（`MutedFg` / `FaintFg` 等の既存 DynamicResource）で重ね描画し、一覧のスクロール・選択・右クリック・右ペインの折りたたみ操作を妨げない。新しいテーマ色・イラスト・アニメーションは追加していない。
+- `AutomationProperties.AutomationId` / `Name` として `NoteNest.EmptyState.Notebooks` / `.Notes` / `.Tasks` / `.Markers` を付与した。
+- NoteNest 以外（IdeaNest・ChatNest・TempNest）の空状態改善、NestSuite ホーム（SH-37）は今回実装していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session 形式の変更なし。外部依存追加なし。
+
 ## v2.18.0 — TN-3 TempNestスロット本文のNoteNest新規ノートへの昇格
 
 - **TN-3: TempNest の各スロットに「NoteNestへ昇格」操作を追加した。** 魅力向上方針
