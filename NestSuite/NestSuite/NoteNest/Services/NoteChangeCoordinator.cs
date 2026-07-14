@@ -30,6 +30,13 @@ public sealed class NoteChangeCoordinator
             nameof(MainViewModel.IsNoteListEmpty),
             nameof(MainViewModel.HasAnyNotes),
             nameof(MainViewModel.MarkdownExportAllNotesTooltip),
+            nameof(MainViewModel.HasNotebooks),
+            nameof(MainViewModel.ShowNotebookEmptyState),
+            nameof(MainViewModel.ShowNoteEmptyState),
+            nameof(MainViewModel.ShowTaskEmptyState),
+            nameof(MainViewModel.HasAnyMarkers),
+            nameof(MainViewModel.HasNoMarkers),
+            nameof(MainViewModel.ShowMarkerEmptyState),
         ]));
     }
 }

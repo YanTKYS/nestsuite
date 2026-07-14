@@ -320,7 +320,66 @@ public class NestSuiteShellXamlTests
         Assert.Contains("ToolTipService.ShowOnDisabled=\"True\"", src);
     }
 
+    // ── L23 (v2.18.1): 空状態での次操作ガイド ─────────────────────────────
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_HasAllFourEmptyStateElements()
+    {
+        var src = ReadNoteNestWorkspaceViewXaml();
+        Assert.Contains("NoteNest.EmptyState.Notebooks", src);
+        Assert.Contains("NoteNest.EmptyState.Notes", src);
+        Assert.Contains("NoteNest.EmptyState.Tasks", src);
+        Assert.Contains("NoteNest.EmptyState.Markers", src);
+    }
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_EmptyStateElements_BindToExpectedShowProperties()
+    {
+        var src = ReadNoteNestWorkspaceViewXaml();
+        Assert.Contains("Binding ShowNotebookEmptyState", src);
+        Assert.Contains("Binding ShowNoteEmptyState", src);
+        Assert.Contains("Binding ShowTaskEmptyState", src);
+        Assert.Contains("Binding ShowMarkerEmptyState", src);
+    }
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_EmptyStateElements_DoNotBlockHitTesting()
+    {
+        // 空状態案内は一覧のスクロール・選択・右クリックを妨げないよう IsHitTestVisible=False とする。
+        var src = ReadNoteNestWorkspaceViewXaml();
+        var occurrences = System.Text.RegularExpressions.Regex.Matches(src, "IsHitTestVisible=\"False\"").Count;
+        Assert.True(occurrences >= 4, $"IsHitTestVisible=\"False\" が期待より少ない（{occurrences}件）");
+    }
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_StillHasAddNotebookAndAddNoteButtons()
+    {
+        // 空状態案内の追加後も、既存の追加操作（ボタン）が失われていないことを確認する。
+        var src = ReadNoteNestWorkspaceViewXaml();
+        Assert.Contains("NoteNest.AddNotebookButton", src);
+        Assert.Contains("NoteNest.AddNoteButton", src);
+        Assert.Contains("Click=\"AddNotebook_Click\"", src);
+        Assert.Contains("Click=\"AddNote_Click\"", src);
+    }
+
+    [Fact]
+    public void NoteNestWorkspaceViewXaml_StillHasNotebookTreeAndTaskAndMarkerLists()
+    {
+        // 空状態案内の追加後も、既存の一覧（TreeView・タスク・マーカー）が削除されていないことを確認する。
+        var src = ReadNoteNestWorkspaceViewXaml();
+        Assert.Contains("NoteNest.NotebookTree", src);
+        Assert.Contains("Binding TaskGroups", src);
+        Assert.Contains("Binding FilteredMarkers", src);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
+
+    private string ReadNoteNestWorkspaceViewXaml()
+    {
+        var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.xaml");
+        Assert.True(File.Exists(path), $"NoteNestWorkspaceView.xaml not found: {path}");
+        return File.ReadAllText(path);
+    }
 
     private string ReadShellXaml()
     {
