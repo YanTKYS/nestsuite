@@ -77,4 +77,7 @@ public static class ShellCommandTooltipProvider
     public const string KeyboardShortcutsTooltip  = "キーボードショートカット一覧を表示します";
     public const string BackupRestoreGuideTooltip = "バックアップからの復元手順を表示します";
     public const string FileAssociationTooltip    = "ファイルの関連付けを設定します";
+
+    /// <summary>SH-37: 現在の状態サマリー（読み取り専用）を表示するメニュー項目の説明。</summary>
+    public const string StateSummaryTooltip = "開いているタブ数など、現在の状態を表示します";
 }

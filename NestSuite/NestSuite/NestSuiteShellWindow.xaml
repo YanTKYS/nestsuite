@@ -154,6 +154,12 @@
                           AutomationProperties.Name="Shell.BackupRestoreGuideMenuItem"
                           ToolTip="{x:Static svc:ShellCommandTooltipProvider.BackupRestoreGuideTooltip}"
                           Click="MenuBackupRestoreGuide_Click"/>
+                <!-- SH-37: 利用者が任意に開く読み取り専用の現在地サマリー。常設ステータスバー表示ではない。 -->
+                <MenuItem Header="現在の状態(_S)"
+                          AutomationProperties.AutomationId="Shell.StateSummaryMenuItem"
+                          AutomationProperties.Name="Shell.StateSummaryMenuItem"
+                          ToolTip="{x:Static svc:ShellCommandTooltipProvider.StateSummaryTooltip}"
+                          Click="MenuShowStateSummary_Click"/>
                 <Separator/>
                 <MenuItem Header="ファイル関連付けの設定(_A)..."
                           ToolTip="{x:Static svc:ShellCommandTooltipProvider.FileAssociationTooltip}"

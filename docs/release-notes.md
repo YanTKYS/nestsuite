@@ -7,6 +7,18 @@
 
 ---
 
+## v2.18.3 — SH-37 Shell操作の現在地サマリー表示
+
+- **SH-37: メニュー「ヘルプ」から任意に開ける、Shellの現在の状態を確認する読み取り専用サマリー「現在の状態」を追加した。** 常設のステータスバー表示・ダッシュボードではなく、利用者が必要なときだけ開く軽量ダイアログ。
+- 表示項目は次の5つ: 開いているタブ数（`_tabs.Count`。TempNest固定タブも含め、既存Shellの「タブ数」定義をそのまま使用）、未保存タブ数（既存の終了確認と同じ判定 `GetUnsavedCloseConfirmationTargets()` を再利用。NoteNest: `tab.IsModified`、IdeaNest: `vm.HasChanges`、ChatNest: `vm.HasUnsavedChanges`）、復元を保留している項目数（既存の `_pendingSessionRestoreEntries`）、下書き復元候補数（既存の `DraftStore.ListDraftFiles()` から、現在開いているタブ自身の自動保存下書きを除いた件数）、TempNest入力済みスロット数（TN-3と同じ基準 `!string.IsNullOrWhiteSpace(slot.Body)`。タイトルのみは数えない）。
+- ダイアログを開いた時点の状態を1回だけ収集して表示する。自動更新タイマー・PropertyChanged常時購読・バックグラウンド監視は行わない。閉じて再度開けば最新値になる。
+- 件数0は「0件」（TempNestは「0スロット」）で統一表示し、「なし」への切り替えはしない。下書き復元候補の取得に失敗した場合のみ「取得できません」と表示し、通常表示時にはログを残さない。
+- 操作は「閉じる」のみ。保留項目の解除・下書き復元の開始・未保存タブの一括保存・タブ一覧展開・設定変更など、状態確認以外の操作導線は追加していない。Esc・Enter・Alt+F4で閉じられる。
+- 集計ロジックのうち、Shellのタブ・セッション管理から独立した部分（TempNestスロット判定・下書き復元候補の除外計算）を `ShellStateSummaryCalculator` として切り出した。既存DynamicResource（`PrimaryTextBrush`/`SecondaryTextBrush`）でテーマに追従し、固定色・警告色は使用していない。
+- テスト: `ShellStateSummaryCalculatorTests.cs` を新規追加し、TempNestスロット判定（本文あり/空文字/空白のみ/タイトルのみ/4スロット/複数混在）と下書き復元候補の除外計算（0件/複数件/自タブ除外/不正パス無視）を検証した。XAML静的確認（メニュー到達性・5項目・閉じるボタンのみ・編集可能TextBox不使用・DynamicResource使用・IsCancel）を追加した。既存テストの削除・skipはしていない。
+- backlog: SH-37を完了済み欠番としてbacklog.mdから削除した。SH-35・SH-24・LT-9は変更していない。NestSuiteホームの新規backlog追加も行っていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・各Workspace保存形式の変更なし。外部依存追加なし。
+
 ## v2.18.2 — ID-15 IdeaNest 新規カード作成後の位置フィードバック
 
 - **ID-15: IdeaNest で新規カードを作成した直後に、追加されたカードの位置がその場で分かるようにした。** 「操作した結果が、その場で分かる」体験を実現する。

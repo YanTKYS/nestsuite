@@ -1,0 +1,77 @@
+<Window x:Class="NestSuite.Dialogs.ShellStateSummaryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="現在の状態"
+        Width="340" SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Foreground="{DynamicResource PrimaryTextBrush}"
+        AutomationProperties.AutomationId="Shell.StateSummaryDialog"
+        AutomationProperties.Name="Shell.StateSummaryDialog">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="現在の状態" FontSize="15" FontWeight="Bold"/>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="開いているタブ"
+                       Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,6"/>
+            <TextBlock x:Name="OpenTabsValue" Grid.Row="0" Grid.Column="1"
+                       AutomationProperties.AutomationId="Shell.StateSummary.OpenTabs"
+                       AutomationProperties.Name="Shell.StateSummary.OpenTabs"
+                       Margin="0,0,0,6"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="未保存タブ"
+                       Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,6"/>
+            <TextBlock x:Name="UnsavedTabsValue" Grid.Row="1" Grid.Column="1"
+                       AutomationProperties.AutomationId="Shell.StateSummary.UnsavedTabs"
+                       AutomationProperties.Name="Shell.StateSummary.UnsavedTabs"
+                       Margin="0,0,0,6"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="復元を保留している項目"
+                       Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,6"/>
+            <TextBlock x:Name="PendingRestoreValue" Grid.Row="2" Grid.Column="1"
+                       AutomationProperties.AutomationId="Shell.StateSummary.PendingRestore"
+                       AutomationProperties.Name="Shell.StateSummary.PendingRestore"
+                       Margin="0,0,0,6"/>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="下書き復元候補"
+                       Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,6"/>
+            <TextBlock x:Name="DraftRecoveryValue" Grid.Row="3" Grid.Column="1"
+                       AutomationProperties.AutomationId="Shell.StateSummary.DraftRecovery"
+                       AutomationProperties.Name="Shell.StateSummary.DraftRecovery"
+                       Margin="0,0,0,6"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="TempNest入力済み"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock x:Name="TempNestSlotsValue" Grid.Row="4" Grid.Column="1"
+                       AutomationProperties.AutomationId="Shell.StateSummary.TempNestSlots"
+                       AutomationProperties.Name="Shell.StateSummary.TempNestSlots"/>
+        </Grid>
+
+        <Button Grid.Row="4" Content="閉じる" Width="88" HorizontalAlignment="Right"
+                IsCancel="True" IsDefault="True"
+                AutomationProperties.AutomationId="Shell.StateSummary.CloseButton"
+                AutomationProperties.Name="Shell.StateSummary.CloseButton"
+                Click="Close_Click"/>
+    </Grid>
+</Window>

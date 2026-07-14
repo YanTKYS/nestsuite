@@ -372,7 +372,65 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Binding FilteredMarkers", src);
     }
 
+    // ── SH-37 (v2.18.3): Shell操作の現在地サマリー表示 ────────────────────
+
+    [Fact]
+    public void ShellXaml_HelpMenu_HasStateSummaryMenuItem()
+    {
+        var src = ReadShellXaml();
+        Assert.Contains("Shell.StateSummaryMenuItem", src);
+        Assert.Contains("現在の状態", src);
+        Assert.Contains("Click=\"MenuShowStateSummary_Click\"", src);
+        Assert.Contains("ShellCommandTooltipProvider.StateSummaryTooltip", src);
+    }
+
+    [Fact]
+    public void StateSummaryDialogXaml_HasAllFiveItemsAndCloseButtonOnly()
+    {
+        var xaml = ReadStateSummaryDialogXaml();
+        Assert.Contains("Shell.StateSummary.OpenTabs", xaml);
+        Assert.Contains("Shell.StateSummary.UnsavedTabs", xaml);
+        Assert.Contains("Shell.StateSummary.PendingRestore", xaml);
+        Assert.Contains("Shell.StateSummary.DraftRecovery", xaml);
+        Assert.Contains("Shell.StateSummary.TempNestSlots", xaml);
+        Assert.Contains("Shell.StateSummary.CloseButton", xaml);
+        Assert.Contains("Shell.StateSummaryDialog", xaml);
+
+        // 操作ボタンは閉じるのみ（Buttonは1個だけ）。
+        var buttonCount = System.Text.RegularExpressions.Regex.Matches(xaml, "<Button\\b").Count;
+        Assert.Equal(1, buttonCount);
+    }
+
+    [Fact]
+    public void StateSummaryDialogXaml_DoesNotUseEditableTextBox()
+    {
+        var xaml = ReadStateSummaryDialogXaml();
+        Assert.DoesNotContain("<TextBox", xaml);
+    }
+
+    [Fact]
+    public void StateSummaryDialogXaml_UsesThemeDynamicResources()
+    {
+        var xaml = ReadStateSummaryDialogXaml();
+        Assert.Contains("DynamicResource PrimaryTextBrush", xaml);
+        Assert.Contains("DynamicResource SecondaryTextBrush", xaml);
+    }
+
+    [Fact]
+    public void StateSummaryDialogXaml_CloseButtonIsCancelForEscAndAltF4()
+    {
+        var xaml = ReadStateSummaryDialogXaml();
+        Assert.Contains("IsCancel=\"True\"", xaml);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────
+
+    private string ReadStateSummaryDialogXaml()
+    {
+        var path = Path.Combine(RepoRoot, "NestSuite", "Dialogs", "ShellStateSummaryDialog.xaml");
+        Assert.True(File.Exists(path), $"ShellStateSummaryDialog.xaml not found: {path}");
+        return File.ReadAllText(path);
+    }
 
     private string ReadNoteNestWorkspaceViewXaml()
     {
