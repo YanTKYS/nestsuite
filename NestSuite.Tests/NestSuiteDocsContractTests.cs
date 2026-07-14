@@ -88,6 +88,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.17.7", "TD-82", "TD-82" };
         yield return new object[] { "v2.17.8", "TD-82-1", "TD-82-1" };
         yield return new object[] { "v2.17.9", "TD-77", "TD-77" };
+        yield return new object[] { "v2.17.10", "nestsuite-attractiveness-direction.md", "nestsuite-attractiveness-direction.md" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -623,6 +624,33 @@ public class NestSuiteDocsContractTests
         Assert.Contains("CRLF", text);
         Assert.Contains("bare", text);
         Assert.Contains("helper", text);
+    }
+
+    // ── nestsuite-attractiveness-direction.md: 魅力向上方針文書 (v2.17.10) ──
+
+    [Fact]
+    public void AttractivenessDirectionDoc_ExistsAndStatesItsPositioning()
+    {
+        var path = Path.Combine(RepoRoot, "docs", "design", "nestsuite-attractiveness-direction.md");
+
+        Assert.True(File.Exists(path), $"nestsuite-attractiveness-direction.md not found: {path}");
+
+        var text = File.ReadAllText(path);
+        // 文言完全一致ではなく、確定仕様・実装計画ではないという位置づけと、
+        // 主要な方向性（再発見・Workspace間の流れ・避ける方向・実装時の原則・TN-3）の
+        // 記載有無だけを確認する。
+        Assert.Contains("確定仕様", text);
+        Assert.Contains("実装計画ではない", text);
+        Assert.Contains("TN-3", text);
+        Assert.Contains("避ける方向", text);
+        Assert.Contains("実装時の原則", text);
+    }
+
+    [Fact]
+    public void AttractivenessDirectionDoc_IsReachableFromDocsReadme()
+    {
+        var docsReadme = File.ReadAllText(Path.Combine(RepoRoot, "docs", "README.md"));
+        Assert.Contains("nestsuite-attractiveness-direction.md", docsReadme);
     }
 
     // ── LT-9: フェーズ2設計判断の backlog 反映 ────────────────────────────

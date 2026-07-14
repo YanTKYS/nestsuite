@@ -7,6 +7,14 @@
 
 ---
 
+## v2.17.10 — nestsuite-attractiveness-direction.md 魅力向上方針文書の追加
+
+- 認知負荷軽減を主要テーマとした改善がおおむね達成できたことを踏まえ、次の中期テーマ候補として `docs/design/nestsuite-attractiveness-direction.md` を新規追加した。
+- 文書は確定仕様・実装計画ではなく、backlog 項目選定の判断材料・設計方針であることを冒頭に明記した。再発見、Workspace 間の明示的な流れ、振り返り、成果物化、軽い楽しさと愛着の 5 方向性と、避ける方向（AI 機能・自動連携・クラウド同期等）、実装時の原則を整理した。
+- 最初の具体候補として TN-3（TempNest スロット本文の NoteNest 新規ノートへの昇格）を第1候補に位置づけたが、backlog.md 側の TN-3 は変更していない（優先度・状態とも既存のまま）。
+- `docs/README.md` / `docs/design/README.md` に本文書への導線を追加した。
+- 今回は機能実装を行っていない。production コード変更なし、UI 変更なし、保存形式変更なし、session.json 変更なし、Workspace 保存形式変更なし、NoteNest schema 変更なし、wrapper 変更なし、draft format 変更なし。外部依存追加なし。backlog の状態変更なし。
+
 ## v2.17.9 — TD-77 WPF Converterの無変換方向と共有リソースの整理
 
 - **TD-77: リポジトリ内の WPF Converter 11 件（`IValueConverter` / `IMultiValueConverter`）を棚卸しした。** 対象は Shell・NoteNest・IdeaNest・ChatNest・TempNest・共通 UI リソース（`NestSuite/Converters/`）。
