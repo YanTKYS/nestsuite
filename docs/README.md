@@ -72,6 +72,11 @@
 
 現在の planning 文書は、進行中の棚卸し・設計確認を置く。完了済み expert review 文書は `docs/archive/expert-review/` へ移設済み。
 
+| ファイル | 内容 | 分類 |
+|----------|------|------|
+| `review7-fable5.md` | エキスパートレビュー7: 魅力向上フェーズ（v2.18.0〜v2.18.3）の総点検と次期優先候補評価（v2.18.4） | **現行** |
+| `docs-inventory-and-archive-policy.md` | docs 棚卸し・archive 方針（TD-78） | 現行 |
+
 ### archive/（履歴保管）
 
 `docs/archive/` は現行仕様の正本ではない。expert review 特別進行の完了済み文書は [`archive/expert-review/`](archive/expert-review/) に、完了済み統合計画・設計レビューは [`archive/completed-designs/`](archive/completed-designs/) に、完了済み移行記録は [`archive/migrations/`](archive/migrations/) に、static-test 系履歴は [`archive/static-test/`](archive/static-test/) に、旧 NoteNest Classic 履歴は [`archive/legacy-notenest/`](archive/legacy-notenest/) に保管する。
