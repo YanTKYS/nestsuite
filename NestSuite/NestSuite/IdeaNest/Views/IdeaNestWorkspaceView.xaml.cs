@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using NestSuite.IdeaNest.ViewModels;
 
 namespace NestSuite.IdeaNest.Views;
@@ -24,6 +25,7 @@ public partial class IdeaNestWorkspaceView : UserControl
     }
 
     private IdeaNestWorkspaceViewModel? Workspace => DataContext as IdeaNestWorkspaceViewModel;
+    private IdeaNestWorkspaceViewModel? _wiredWorkspace;
 
     public IdeaNestWorkspaceView()
     {
@@ -42,6 +44,32 @@ public partial class IdeaNestWorkspaceView : UserControl
     private void ConfigureWorkspace()
     {
         Workspace?.SetOwnerResolver(() => Window.GetWindow(this));
+
+        // ID-15: DataContext が切り替わった場合に、以前の Workspace の購読を残さない。
+        if (!ReferenceEquals(_wiredWorkspace, Workspace))
+        {
+            if (_wiredWorkspace != null) _wiredWorkspace.ScrollRequested -= OnCardScrollRequested;
+            _wiredWorkspace = Workspace;
+            if (_wiredWorkspace != null) _wiredWorkspace.ScrollRequested += OnCardScrollRequested;
+        }
+    }
+
+    /// <summary>
+    /// ID-15: 新規カード作成直後の一時的なスクロール要求を、コンテナ生成後に一度だけ処理する。
+    /// 固定時間の待機や再試行タイマーは使わず、DispatcherPriority.Loaded で 1 回だけ実行する。
+    /// </summary>
+    private void OnCardScrollRequested(object? sender, IdeaCardViewModel card)
+    {
+        if (!ReferenceEquals(sender, Workspace)) return; // 既に切り替わった Workspace からの遅延通知は無視する
+
+        Dispatcher.BeginInvoke(
+            () =>
+            {
+                if (!ReferenceEquals(sender, Workspace)) return;
+                if (CardsItemsControl.ItemContainerGenerator.ContainerFromItem(card) is FrameworkElement container)
+                    container.BringIntoView();
+            },
+            DispatcherPriority.Loaded);
     }
 
     private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)

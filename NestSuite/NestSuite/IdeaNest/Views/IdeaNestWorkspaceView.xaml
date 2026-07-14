@@ -392,7 +392,7 @@
                   MouseDown="OnCardAreaMouseDown">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,12"
                               Visibility="{Binding ShowEmptyState, Converter={StaticResource IdeaBoolToVisInverse}}">
-                    <ItemsControl ItemsSource="{Binding VisibleCards}">
+                    <ItemsControl x:Name="CardsItemsControl" ItemsSource="{Binding VisibleCards}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal" />
@@ -415,6 +415,12 @@
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsArchived}" Value="True">
                                                     <Setter Property="Opacity" Value="0.86" />
+                                                </DataTrigger>
+                                                <!-- ID-15: 新規カード作成後の位置フィードバック（一時選択）。既存の
+                                                     キーボードフォーカス強調（IdeaAccentBrush）と同じアクセント色を再利用する。 -->
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource IdeaAccentBrush}" />
+                                                    <Setter Property="BorderThickness" Value="2" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
