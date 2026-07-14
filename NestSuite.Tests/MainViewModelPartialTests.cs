@@ -68,10 +68,18 @@ public class MainViewModelPartialTests
     }
 
     [Fact]
-    public void CreateNoteFromTransfer_BlankFirstLine_UsesFallbackTitle()
+    public void CreateNoteFromTransfer_LeadingBlankLines_SkipsToFirstNonEmptyLine()
     {
         var main = new MainViewModel();
         var note = main.CreateNoteFromTransfer("\n\n本文のみ");
+        Assert.Equal("本文のみ", note!.Title);
+    }
+
+    [Fact]
+    public void CreateNoteFromTransfer_WhitespaceOnlyContent_UsesFallbackTitle()
+    {
+        var main = new MainViewModel();
+        var note = main.CreateNoteFromTransfer("\n\n   \n\t");
         Assert.Equal("TempNestから昇格", note!.Title);
     }
 
