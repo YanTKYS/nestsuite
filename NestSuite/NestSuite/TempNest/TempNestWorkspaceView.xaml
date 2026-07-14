@@ -31,10 +31,16 @@
                             AutomationProperties.Name="TempNest.Slot1.CopyButton"
                             Command="{Binding Slot1.CopyBodyCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
-                    <Button Content="クリア" Padding="8,3" FontSize="11"
+                    <Button Content="クリア" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot1.ClearButton"
                             AutomationProperties.Name="TempNest.Slot1.ClearButton"
                             Command="{Binding Slot1.ClearCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="NoteNestへ昇格" Padding="8,3" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot1.PromoteButton"
+                            AutomationProperties.Name="TempNest.Slot1.PromoteButton"
+                            ToolTip="スロットの本文を新規NoteNestノートへ転送します"
+                            Command="{Binding Slot1.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -110,10 +116,16 @@
                             AutomationProperties.Name="TempNest.Slot2.CopyButton"
                             Command="{Binding Slot2.CopyBodyCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
-                    <Button Content="クリア" Padding="8,3" FontSize="11"
+                    <Button Content="クリア" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot2.ClearButton"
                             AutomationProperties.Name="TempNest.Slot2.ClearButton"
                             Command="{Binding Slot2.ClearCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="NoteNestへ昇格" Padding="8,3" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot2.PromoteButton"
+                            AutomationProperties.Name="TempNest.Slot2.PromoteButton"
+                            ToolTip="スロットの本文を新規NoteNestノートへ転送します"
+                            Command="{Binding Slot2.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -189,10 +201,16 @@
                             AutomationProperties.Name="TempNest.Slot3.CopyButton"
                             Command="{Binding Slot3.CopyBodyCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
-                    <Button Content="クリア" Padding="8,3" FontSize="11"
+                    <Button Content="クリア" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot3.ClearButton"
                             AutomationProperties.Name="TempNest.Slot3.ClearButton"
                             Command="{Binding Slot3.ClearCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="NoteNestへ昇格" Padding="8,3" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot3.PromoteButton"
+                            AutomationProperties.Name="TempNest.Slot3.PromoteButton"
+                            ToolTip="スロットの本文を新規NoteNestノートへ転送します"
+                            Command="{Binding Slot3.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -268,10 +286,16 @@
                             AutomationProperties.Name="TempNest.Slot4.CopyButton"
                             Command="{Binding Slot4.CopyBodyCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
-                    <Button Content="クリア" Padding="8,3" FontSize="11"
+                    <Button Content="クリア" Padding="8,3" Margin="0,0,4,0" FontSize="11"
                             AutomationProperties.AutomationId="TempNest.Slot4.ClearButton"
                             AutomationProperties.Name="TempNest.Slot4.ClearButton"
                             Command="{Binding Slot4.ClearCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="NoteNestへ昇格" Padding="8,3" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot4.PromoteButton"
+                            AutomationProperties.Name="TempNest.Slot4.PromoteButton"
+                            ToolTip="スロットの本文を新規NoteNestノートへ転送します"
+                            Command="{Binding Slot4.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">

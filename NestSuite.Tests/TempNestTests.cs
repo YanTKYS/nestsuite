@@ -315,4 +315,219 @@ public class TempNestTests
     // CH-13 は実際の完了バージョンである (v2.10.9, CH-13) として移設し、
     // ChatNestWorkspaceFeatureRecordsTests 側の同一チェックと重複していたぶんを統合した）。
     // 検証内容は変えていない。
+
+    // ── TN-3 (v2.18.0): PromoteToNoteCommand CanExecute ──────────────────
+
+    [Fact]
+    public void PromoteToNoteCommand_EmptyBody_IsDisabled()
+    {
+        var slot = new TempNestSlotViewModel();
+        Assert.False(slot.PromoteToNoteCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_WhitespaceOnlyBody_IsDisabled()
+    {
+        var slot = new TempNestSlotViewModel { Body = "   \r\n\t " };
+        Assert.False(slot.PromoteToNoteCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_NonEmptyBody_IsEnabled()
+    {
+        var slot = new TempNestSlotViewModel { Body = "断片" };
+        Assert.True(slot.PromoteToNoteCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_DisabledWhilePromoting()
+    {
+        var slot = new TempNestSlotViewModel { Body = "断片" };
+        var reentrantCanExecute = true;
+        slot.PromoteRequested = s =>
+        {
+            reentrantCanExecute = slot.PromoteToNoteCommand.CanExecute(null);
+            return false;
+        };
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.False(reentrantCanExecute);
+        Assert.True(slot.PromoteToNoteCommand.CanExecute(null));
+    }
+
+    // ── TN-3: PromoteRequested 呼び出し・元スロットの保持/消去 ─────────────
+
+    [Fact]
+    public void PromoteRequested_DefaultsToNull()
+    {
+        var slot = new TempNestSlotViewModel();
+        Assert.Null(slot.PromoteRequested);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_InvokesPromoteRequestedWithSelf()
+    {
+        var slot = new TempNestSlotViewModel { Body = "断片" };
+        TempNestSlotViewModel? received = null;
+        slot.PromoteRequested = s => { received = s; return false; };
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Same(slot, received);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_ResultTrue_ClearsSlot()
+    {
+        var slot = new TempNestSlotViewModel { Title = "タイトル", Body = "断片" };
+        slot.PromoteRequested = _ => true;
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Equal("", slot.Title);
+        Assert.Equal("", slot.Body);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_ResultFalse_KeepsSlotContent()
+    {
+        var slot = new TempNestSlotViewModel { Title = "タイトル", Body = "断片" };
+        slot.PromoteRequested = _ => false;
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Equal("タイトル", slot.Title);
+        Assert.Equal("断片", slot.Body);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_ResultNull_KeepsSlotContent_AndNoFeedback()
+    {
+        var slot = new TempNestSlotViewModel { Title = "タイトル", Body = "断片" };
+        slot.PromoteRequested = _ => null;
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Equal("タイトル", slot.Title);
+        Assert.Equal("断片", slot.Body);
+        Assert.False(slot.HasFeedback);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_ResultNonNull_ShowsPromotedFeedback()
+    {
+        var slot = new TempNestSlotViewModel { Body = "断片" };
+        slot.PromoteRequested = _ => false;
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Equal("NoteNestへ昇格しました", slot.FeedbackMessage);
+        Assert.True(slot.HasFeedback);
+    }
+
+    [Fact]
+    public void PromoteToNoteCommand_Execute_WhenPromoteRequestedIsNull_DoesNothing()
+    {
+        var slot = new TempNestSlotViewModel { Title = "タイトル", Body = "断片" };
+
+        slot.PromoteToNoteCommand.Execute(null);
+
+        Assert.Equal("タイトル", slot.Title);
+        Assert.Equal("断片", slot.Body);
+        Assert.False(slot.HasFeedback);
+    }
+
+    // ── TN-3: PromotedNoteTitleGenerator ──────────────────────────────────
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_UsesFirstNonEmptyLine()
+    {
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate("最初の行\n2行目");
+        Assert.Equal("最初の行", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_SkipsLeadingBlankLines()
+    {
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate("\n\n  \n本題の行\n続き");
+        Assert.Equal("本題の行", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_TrimsWhitespaceAroundLine()
+    {
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate("   前後に空白がある行   \n続き");
+        Assert.Equal("前後に空白がある行", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_EmptyContent_ReturnsFallback()
+    {
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate("");
+        Assert.Equal("TempNestから昇格", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_WhitespaceOnlyContent_ReturnsFallback()
+    {
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate("   \n\t\n   ");
+        Assert.Equal("TempNestから昇格", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_LongLine_TruncatesWithEllipsis()
+    {
+        var longLine = new string('あ', 60);
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate(longLine);
+        Assert.Equal(new string('あ', 40) + "…", title);
+    }
+
+    [Fact]
+    public void PromotedNoteTitleGenerator_LineAtMaxLength_DoesNotTruncate()
+    {
+        var line = new string('あ', 40);
+        var title = NestSuite.Services.PromotedNoteTitleGenerator.Generate(line);
+        Assert.Equal(line, title);
+    }
+
+    // ── TN-3: TempNestWorkspaceView.xaml 静的確認 ─────────────────────────
+    // 各スロットから昇格操作へ到達できること、既存のコピー・クリア操作を失っていないことを
+    // XAML文字列の存在確認だけで最小限に検証する（表現の細部までは固定しない）。
+
+    [Fact]
+    public void TempNestWorkspaceView_Xaml_HasPromoteButtonForEachSlot()
+    {
+        var xaml = ReadTempNestWorkspaceViewXaml();
+        for (var i = 1; i <= 4; i++)
+        {
+            Assert.Contains($"TempNest.Slot{i}.PromoteButton", xaml);
+            Assert.Contains($"Slot{i}.PromoteToNoteCommand", xaml);
+        }
+    }
+
+    [Fact]
+    public void TempNestWorkspaceView_Xaml_StillHasCopyAndClearButtonsForEachSlot()
+    {
+        var xaml = ReadTempNestWorkspaceViewXaml();
+        for (var i = 1; i <= 4; i++)
+        {
+            Assert.Contains($"TempNest.Slot{i}.CopyButton", xaml);
+            Assert.Contains($"TempNest.Slot{i}.ClearButton", xaml);
+            Assert.Contains($"Slot{i}.CopyBodyCommand", xaml);
+            Assert.Contains($"Slot{i}.ClearCommand", xaml);
+        }
+    }
+
+    private static string ReadTempNestWorkspaceViewXaml()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "NestSuite.Tests.csproj")))
+            dir = dir.Parent;
+
+        Assert.NotNull(dir);
+        var path = Path.Combine(dir!.Parent!.FullName, "NestSuite", "NestSuite", "TempNest", "TempNestWorkspaceView.xaml");
+        Assert.True(File.Exists(path), $"TempNestWorkspaceView.xaml not found: {path}");
+        return File.ReadAllText(path);
+    }
 }

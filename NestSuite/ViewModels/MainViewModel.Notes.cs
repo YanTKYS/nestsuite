@@ -1,3 +1,5 @@
+using NestSuite.Services;
+
 namespace NestSuite.ViewModels;
 
 public partial class MainViewModel
@@ -45,6 +47,36 @@ public partial class MainViewModel
         if (!_notes.DeleteNote(note)) return;
         ClearTaskLinksToNoteIds(new[] { note.Id });
         if (SelectedNote == note) ClearEditor();
+    }
+
+    /// <summary>
+    /// TN-3: TempNest スロット本文を新規ノートとして追加する。
+    /// タイトルは <see cref="PromotedNoteTitleGenerator"/> で本文から生成し、既存ノートと重複する場合は
+    /// 連番を付与して一意化する。本文はそのまま設定し、タグ・マーカー・スター等は追加しない。
+    /// 対象ノートブックが存在しない場合（空プロジェクト）は新規ノートブックを作成する。
+    /// </summary>
+    public NoteViewModel? CreateNoteFromTransfer(string content)
+    {
+        var notebook = _notes.Notebooks.FirstOrDefault() ?? _notes.AddNotebook("ノート");
+        var title = MakeUniqueNoteTitle(PromotedNoteTitleGenerator.Generate(content));
+
+        var note = _notes.AddNote(notebook, title);
+        if (note == null) return null;
+
+        note.Content = content;
+        SelectNote(note);
+        StatusMessage = $"ノート「{note.Title}」を追加しました。";
+        return note;
+    }
+
+    private string MakeUniqueNoteTitle(string baseTitle)
+    {
+        if (!NoteNameExists(baseTitle)) return baseTitle;
+        for (var n = 2; ; n++)
+        {
+            var candidate = $"{baseTitle} ({n})";
+            if (!NoteNameExists(candidate)) return candidate;
+        }
     }
 
     public NoteViewModel? DuplicateNote(NoteViewModel source)

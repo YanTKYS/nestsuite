@@ -7,6 +7,42 @@
 
 ---
 
+## v2.18.0 — TN-3 TempNestスロット本文のNoteNest新規ノートへの昇格
+
+- **TN-3: TempNest の各スロットに「NoteNestへ昇格」操作を追加した。** 魅力向上方針
+  （`docs/design/nestsuite-attractiveness-direction.md`）の最初の具体機能であり、「断片を正式な
+  ノートへ育てる」体験を実現する。TempNest と NoteNest を自動連携するものではなく、利用者が
+  明示的にボタンを押した場合のみ、対象スロットの本文を新規 NoteNest タブの新規ノートへ転送する。
+- 転送は新規未保存 NoteNest タブを 1 件作成し、その中に新規ノートを 1 件作成して本文をそのまま
+  設定する（Markdown 変換・改行再整形・タグ抽出・TODO 抽出・日時追記・AI による要約補正は行わない）。
+  タイトルは本文の最初の空でない行から生成し（`PromotedNoteTitleGenerator`）、40 文字を超える場合は
+  既存の省略表示と同じ「…」で切り詰め、空でない行が取得できない場合は「TempNestから昇格」を使う。
+  既存ノートとタイトルが重複する場合は連番（例:「タイトル (2)」）で一意化する。
+- 作成した NoteNest タブは既存の新規タブ作成導線（`NestSuiteTabFactory.CreateUntitled` /
+  `CreateSessionForTab`）をそのまま再利用し、独自の ViewModel・Window 構築は行っていない。作成後は
+  そのタブをアクティブ化する。
+- 転送成功後、TempNest の元スロットを消去するか確認するダイアログを表示する（既定選択は安全側の
+  「残す」）。ダイアログを閉じた場合も「残す」として扱う。NoteNest タブ作成・新規ノート作成・本文設定の
+  いずれかに失敗した場合は昇格全体を失敗として扱い、TempNest の元スロットは変更しない。失敗時は
+  作成しかけの NoteNest タブ・セッションをロールバックし、`ErrorLogService` へ記録したうえで利用者へ
+  簡潔に通知する。単なる空スロット操作はエラーとして記録しない。
+- 連続クリック対策として、昇格処理中は対象スロットの操作を無効化する（他スロットには影響しない）。
+- 責務は Shell（`NestSuiteShellWindow.TempNestPromotion.cs`）が新規タブ作成・転送調整・タブ選択・
+  通知・確認を担当し、TempNest（`TempNestSlotViewModel`）は昇格要求の発行と成功後の元スロット消去のみ、
+  NoteNest（`MainViewModel.CreateNoteFromTransfer`）は新規ノート作成とタイトル・本文設定のみを行う。
+  TempNestSlotViewModel は NoteNest の内部構造を直接操作しない。
+- TN-7・LK-2・LK-3・ChatNest → IdeaNest・IdeaNest → NoteNest・NoteNest → ChatNest 等、他の
+  Workspace 間転送は今回実装していない。既存 NoteNest タブへの投入・転送先タブ選択 UI・複数スロット
+  一括昇格・双方向リンク・転送履歴管理も対象外。
+- テスト: `PromotedNoteTitleGenerator` のタイトル生成規則、`TempNestSlotViewModel.PromoteToNoteCommand`
+  の実行可否・二重実行防止・元スロットの保持/消去、`MainViewModel.CreateNoteFromTransfer` の転送内容・
+  重複タイトル処理、`TempNestWorkspaceView.xaml` の昇格ボタン・既存コピー/クリア操作の存在を確認する
+  テストを追加した。既存テストの削除・skip はしていない。
+- backlog: TN-3 を完了済み欠番として backlog.md から削除し、TN-4・TN-7・LK-2・LK-3 等の他項目の
+  優先度は変更していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・
+  `draftFormatVersion 1.0`・session 形式の変更なし。外部依存追加なし。
+
 ## v2.17.10 — nestsuite-attractiveness-direction.md 魅力向上方針文書の追加
 
 - 認知負荷軽減を主要テーマとした改善がおおむね達成できたことを踏まえ、次の中期テーマ候補として `docs/design/nestsuite-attractiveness-direction.md` を新規追加した。
