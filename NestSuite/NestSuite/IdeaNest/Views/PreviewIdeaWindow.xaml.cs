@@ -23,6 +23,13 @@ public partial class PreviewIdeaWindow : Window
 
     private IdeaCardViewModel CurrentCard => _cards[_currentIndex];
 
+    /// <summary>
+    /// ID-15: 新規作成モードでこのダイアログが実際に作成したカードのインスタンス。
+    /// キャンセル（内容未入力のまま閉じた）または作成失敗の場合は null のまま。
+    /// タイトルや一覧位置からの推測ではなく、<see cref="_onCommitAdd"/> の戻り値をそのまま保持する。
+    /// </summary>
+    public IdeaCardViewModel? AddedCard => _addedCard;
+
     // Existing-card mode
     public PreviewIdeaWindow(
         IReadOnlyList<IdeaCardViewModel> cards,

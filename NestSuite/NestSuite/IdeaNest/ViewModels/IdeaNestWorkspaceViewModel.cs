@@ -163,6 +163,31 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public int VisibleCount => VisibleCards.Count;
     public int VisibleCardCount => VisibleCount;
 
+    private IdeaCardViewModel? _selectedCard;
+
+    /// <summary>
+    /// ID-15: 新規カード作成後の位置フィードバック専用の一時選択。
+    /// 複数選択（ID-5）の先行実装ではなく、保存対象にも含めない単一選択。
+    /// </summary>
+    public IdeaCardViewModel? SelectedCard
+    {
+        get => _selectedCard;
+        private set
+        {
+            if (ReferenceEquals(_selectedCard, value)) return;
+            if (_selectedCard != null) _selectedCard.IsSelected = false;
+            _selectedCard = value;
+            if (_selectedCard != null) _selectedCard.IsSelected = true;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>
+    /// ID-15: 新規カード作成直後の一時的なスクロール要求。View がコンテナ生成後に
+    /// BringIntoView を実行するために購読する。一覧の再構築だけでは発火しない。
+    /// </summary>
+    public event EventHandler<IdeaCardViewModel>? ScrollRequested;
+
     public string CountText
     {
         get
@@ -275,6 +300,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         CardDisplay.PropertyChanged -= OnSubVmPropertyChanged;
         Filter.PropertyChanged     -= OnSubVmPropertyChanged;
         TagPanel.PropertyChanged   -= OnSubVmPropertyChanged;
+        ScrollRequested = null;
     }
 
     private void RaiseCountAndEmptyStateChanged()
@@ -306,6 +332,32 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
             Owner = _ui.Owner,
         };
         dlg.ShowDialog();
+
+        ApplyNewCardPositionFeedback(dlg.AddedCard);
+    }
+
+    /// <summary>
+    /// ID-15: 新規カード作成後の位置フィードバック。作成カードは <see cref="PreviewIdeaWindow.AddedCard"/>
+    /// （<see cref="CardOperationsService.CommitAdd"/> の戻り値そのもの）で明示的に識別し、
+    /// タイトルや一覧位置からは推測しない。表示対象判定は既存の <see cref="VisibleCards"/>
+    /// （<see cref="RefreshVisible"/> 済み）をそのまま基準にし、フィルター条件を再判定しない。
+    /// UI（PreviewIdeaWindow のモーダル表示）を介さずに単体テストできるよう public にしている。
+    /// </summary>
+    public void ApplyNewCardPositionFeedback(IdeaCardViewModel? created)
+    {
+        // キャンセル（内容未入力）または作成失敗時は、選択・スクロール・通知のいずれも行わない。
+        if (created == null) return;
+
+        if (VisibleCards.Contains(created))
+        {
+            SelectedCard = created;
+            ScrollRequested?.Invoke(this, created);
+        }
+        else
+        {
+            // 表示対象外: フィルター・検索・アーカイブ条件を変更せず、その旨だけ短く通知する。
+            ShowStatus("カードを追加しました。現在の絞り込み条件では表示されていません");
+        }
     }
 
     private void PreviewIdea(IdeaCardViewModel? card)
@@ -448,6 +500,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     private void ReloadFromWorkspace()
     {
+        // ID-15: 再構築で AllCards が総入れ替えされるため、旧カードへの選択・スクロール要求を残さない。
+        SelectedCard = null;
         _cardOps = CreateCardOps();
         AllCards.Clear();
         foreach (var idea in _workspace.Ideas)

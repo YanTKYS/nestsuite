@@ -55,6 +55,19 @@ public class IdeaCardViewModel : IdeaNestViewModelBase
     public DateTime CreatedAt => Model.CreatedAt;
     public DateTime UpdatedAt => Model.UpdatedAt;
 
+    private bool _isSelected;
+
+    /// <summary>
+    /// ID-15: 新規カード作成後の位置フィードバック専用の一時選択状態。
+    /// <see cref="Model"/>（Idea、保存対象）には反映しない表示専用フラグで、
+    /// 単一の情報源は <see cref="IdeaNestWorkspaceViewModel.SelectedCard"/>。
+    /// </summary>
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { if (_isSelected != value) { _isSelected = value; OnPropertyChanged(); } }
+    }
+
     public string DisplayTitle
     {
         get
