@@ -56,6 +56,7 @@
 |----------|------|------|
 | `nestsuite-known-limitations.md` | NestSuite 既知の制約 | 現行 |
 | `design-decisions.md` | 設計判断の背景と理由（v0.2.0 以降の累積） | 現行 |
+| `nestsuite-attractiveness-direction.md` | 認知負荷軽減後の価値向上・魅力向上の中期方針 | 現行 |
 | `notenest-editor-*.md`（4件） | エディタ TextBox 設計・H0 系列（v2.5.x 完了済み） | 履歴 |
 | `review-gemini.md` | ソースコードレビューレポート（NoteNest 時代・外部レビュー） | 履歴 |
 

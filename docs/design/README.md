@@ -12,6 +12,7 @@
 |------|------|
 | `nestsuite-known-limitations.md` | NestSuite 既知の制約 |
 | `design-decisions.md` | 設計判断の背景と理由（v0.2.0 以降の累積記録） |
+| `nestsuite-attractiveness-direction.md` | 認知負荷軽減後の価値向上・魅力向上の中期方針。確定仕様・実装計画ではなく backlog 判断材料 |
 
 ### 履歴
 
