@@ -93,6 +93,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.18.1", "L23", "L23" };
         yield return new object[] { "v2.18.2", "ID-15", "ID-15" };
         yield return new object[] { "v2.18.3", "SH-37", "SH-37" };
+        yield return new object[] { "v2.18.4", "review7-fable5", "review7-fable5" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -1116,6 +1117,39 @@ public class NestSuiteDocsContractTests
         Assert.Contains("LT-9", text);
         Assert.Contains("結論", text);
         Assert.Contains("production code の変更は行っていない", text);
+    }
+
+    // ── review7-fable5: 魅力向上フェーズ（v2.18.0〜v2.18.3）の総点検 ──────────
+
+    [Fact]
+    public void Review7Doc_ExistsAndMentionsKeySections()
+    {
+        // 文言完全一致ではなく、章立て・severity 定義・対象機能・次期候補・結論の
+        // 重要語句の存在確認に留める（TD-73 ガイドライン）。
+        var path = Path.Combine(RepoRoot, "docs", "planning", "review7-fable5.md");
+        Assert.True(File.Exists(path), $"review7-fable5.md not found: {path}");
+        var text = File.ReadAllText(path);
+        Assert.Contains("Executive summary", text);
+        Assert.Contains("Blocking", text);
+        Assert.Contains("Observation", text);
+        foreach (var feature in new[] { "TN-3", "L23", "ID-15", "SH-37" })
+            Assert.Contains(feature, text);
+        foreach (var candidate in new[] { "M19", "M18", "TN-7", "L24" })
+            Assert.Contains(candidate, text);
+        Assert.Contains("次に着手すべき 1 件", text);
+        Assert.Contains("production code の変更は行っていない", text);
+    }
+
+    [Fact]
+    public void Review7_BacklogRecordsFollowUpItemsWithoutClosingExisting()
+    {
+        // REV7-1 / REV7-2 の追跡項目（SH-38 / L25）が open item として追加され、
+        // レビューだけで既存項目が完了扱いになっていないことを確認する。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.Contains("| SH-38 |", backlog);
+        Assert.Contains("| L25 |", backlog);
+        Assert.Contains("| SH-35 |", backlog);
+        Assert.Contains("| L24 |", backlog);
     }
 
     [Fact]
