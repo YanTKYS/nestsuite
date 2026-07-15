@@ -15,6 +15,15 @@ public sealed class NoteWorkspaceViewModel
     public NoteWorkspaceViewModel() => Notebooks.CollectionChanged += CollectionChanged;
 
     public event EventHandler? Changed;
+
+    /// <summary>
+    /// L25 (review7-fable5 REV7-2): <see cref="Load"/> 完了後に 1 回だけ発火する。
+    /// <see cref="Changed"/> はデータ変更（未保存化）を伴う通知だが、ファイル読込は利用者編集ではないため
+    /// 別イベントとして分離する。<c>NestSuite.Services.NoteChangeCoordinator</c> はこれを購読し、
+    /// 空状態表示等の派生プロパティだけを isDataChanged=false で通知する。
+    /// </summary>
+    public event EventHandler? Reloaded;
+
     public ObservableCollection<NotebookViewModel> Notebooks { get; } = new();
     public IEnumerable<NoteViewModel> AllNotes => Notebooks.SelectMany(notebook => notebook.Notes);
 
@@ -31,6 +40,8 @@ public sealed class NoteWorkspaceViewModel
         {
             _suppressChanged = false;
         }
+
+        Reloaded?.Invoke(this, EventArgs.Empty);
     }
 
     public List<Notebook> BuildModels() => Notebooks.Select(notebook => new Notebook

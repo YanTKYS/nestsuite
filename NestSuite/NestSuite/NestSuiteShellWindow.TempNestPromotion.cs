@@ -74,7 +74,20 @@ public partial class NestSuiteShellWindow
             return null;
         }
 
-        ActivateTab(tab);
+        // SH-38 (review7-fable5 REV7-1): CreateNoteFromTransfer 中の IsModified 変化により
+        // OnNoteNestSessionPropertyChanged 経由の SyncNoteNestTabForViewModel が ReplaceTab を
+        // 実行し、_tabs 内の tab record は既に新しいインスタンスへ置き換わっている。
+        // 古い tab をそのまま ActivateTab へ渡すとタブストリップの選択表示が一致しないため、
+        // ID から現在の tab record を再取得してから使う（TabDetach と同じ再解決パターン）。
+        var currentTab = _tabs.FirstOrDefault(t => t.Id == tab.Id);
+        if (currentTab == null)
+        {
+            RollbackFailedNoteNestPromotion(tab, vm);
+            _dialogs.ShowError("NoteNestへの昇格に失敗しました。", "NoteNestへ昇格");
+            return null;
+        }
+
+        ActivateTab(currentTab);
         SaveSessionAfterTabChange();
 
         return _dialogs.ConfirmWithSafeDefault(

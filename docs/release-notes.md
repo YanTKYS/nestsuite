@@ -7,6 +7,16 @@
 
 ---
 
+## v2.18.5 — SH-38 + L25 エキスパートレビュー7 指摘対応
+
+- **エキスパートレビュー7（`docs/planning/review7-fable5.md`）で確認された Medium 指摘 2 件（REV7-1 / REV7-2）を修正した。** どちらも表示上の不整合であり、保存形式・データ処理の変更はない。
+- **SH-38（REV7-1）: TN-3 昇格直後のタブ選択表示の不整合を修正した。** `PromoteTempNestSlotToNoteNest` は `CreateNoteFromTransfer` 呼び出し中に発生する `IsModified` 変化で `_tabs` 内のタブ record が `ReplaceTab` により置き換わるため、直前に取得した `tab` をそのまま `ActivateTab` へ渡すとタブストリップの選択表示が新規タブへ移らなかった。`ActivateTab` 呼び出し直前に `_tabs.FirstOrDefault(t => t.Id == tab.Id)` で現在の record を再取得するよう修正した（`RollbackFailedNoteNestPromotion` が既に使っていた Id 再解決パターンを再利用）。再取得に失敗した場合は昇格失敗として扱い、成功ダイアログを出さずロールバック（登録済みタブ・セッション・ViewModel の取り消し）してからエラーダイアログを表示する。
+- **L25（REV7-2）: 既存 NoteNest タブで別ファイルを開いた直後の空状態ガイド更新漏れを修正した。** `NoteWorkspaceViewModel.Load` は内部の一括再構築中の通知を抑制するため `Changed` を発火しないが、完了後も何も発火しないため `HasNotebooks` 等の派生プロパティが古い表示のまま残っていた。`Load` 完了後に 1 回だけ発火する新しい `Reloaded` イベントを追加し、`NoteChangeCoordinator` がこれを購読して空状態等の派生プロパティ（`Changed` と共通の 1 つのプロパティ名リストを再利用）を `isDataChanged: false` で通知するようにした。既存の `Changed` は「データ変更（未保存化）」の意味を保ったまま変更していないため、ファイル読込は `IsModified` を変化させない。
+- テスト: `NoteChangeCoordinatorTests.cs` に `Load` → `Reloaded` → `Changed(isDataChanged: false)` の経路と、通知時点でマーカー件数が最新であることを確認するテストを追加した。`NoteNestEmptyStateTests.cs` に、ファイル読込（`SaveToPath` / `OpenFileAtStartup` の実ファイル往復）による「ノートブック・ノートあり→なし」「なし→あり」「ノートブックあり・ノートなし」の3方向、`IsModified` が変化しないこと、空状態プロパティの通知が読込完了後に1回だけ発火することを検証するテストを追加した。SH-38 はタブ選択表示という Shell レベルの挙動であり、既存方針（`NestSuiteShellWindow` は直接構築してのユニットテスト対象にしない）に従い、修正はコードレビューと手動確認で検証した。既存テストの削除・skip はしていない。
+- backlog: SH-38・L25 を完了済み欠番として backlog.md から削除した。M19・M18・TN-7・L24 の状態・優先度、LT-9 フェーズ2/3、SH-35 は変更していない。REV7-3・REV7-4 は今回対応しておらず、新規 backlog 追加も行っていない。
+- `docs/planning/review7-fable5.md` は過去レビュー時点の記録として本文を変更せず、末尾に「SH-38およびL25はv2.18.5で対応済み。」の追記のみ行った。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session 形式・各 Workspace 保存形式の変更なし。外部依存追加なし。
+
 ## v2.18.4 — review7-fable5 魅力向上フェーズの総点検と次期優先候補の評価
 
 - **エキスパートレビュー7（`docs/planning/review7-fable5.md`）を実施した。** v2.18.0（TN-3）・v2.18.1（L23）・v2.18.2（ID-15）・v2.18.3（SH-37）を横断点検し、Shell 責務・Workspace 境界・一時状態・イベント購読・データ保護・UX・テスト構成・docs 整合を評価した。**production コードは変更していない。**
