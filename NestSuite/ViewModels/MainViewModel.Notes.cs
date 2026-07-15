@@ -7,6 +7,9 @@ public partial class MainViewModel
     public void SelectNote(NoteViewModel note)
     {
         _editor.SelectNote(note);
+        // M14: 選択切替は「入力中」ではない明示的な区切りのため、更新日順の表示へ
+        // 直近の編集結果を反映する自然なタイミングとして表示順を再計算する。
+        _notes.RefreshDisplayOrder();
     }
 
     public void AddNotebookWithTitle(string title)

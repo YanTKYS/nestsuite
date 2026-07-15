@@ -56,6 +56,24 @@ public partial class MainViewModel
         set => _editor.EditingTaskRelatedNote = value;
     }
     public bool HasEditingTaskRelatedNote => _editor.HasEditingTaskRelatedNote;
+
+    /// <summary>
+    /// M14: 左ペインのノート一覧表示順（作成順・更新日順・タイトル順）。アプリ全体で1つの
+    /// 表示設定として扱われ、Shell（NestSuiteShellWindow）が UiSettings.NoteSortMode との同期と
+    /// 開いている全 NoteNest タブへの伝播を担う（<c>EditorFontFamily</c> と同様のパターン）。
+    /// 保存データ（Notebooks/Notes のコレクション順）には影響しない。
+    /// </summary>
+    public NoteSortMode NoteSortMode
+    {
+        get => _notes.SortMode;
+        set
+        {
+            if (_notes.SortMode == value) return;
+            _notes.SortMode = value;
+            OnPropertyChanged();
+        }
+    }
+
     public ObservableCollection<NotebookViewModel> Notebooks => _notes.Notebooks;
     public ObservableCollection<TaskGroupViewModel> TaskGroups => _tasks.TaskGroups;
     public string TotalIncompleteTaskCountText => _tasks.TotalIncompleteTaskCountText;

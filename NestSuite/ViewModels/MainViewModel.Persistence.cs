@@ -104,6 +104,8 @@ public partial class MainViewModel
         {
             _lifecycle.Save(path, createBackup);
             StatusMessage = $"保存しました: {System.IO.Path.GetFileName(path)}";
+            // M14: 保存完了は明示的な区切りのため、更新日順の表示へ最新の編集結果を反映する。
+            _notes.RefreshDisplayOrder();
             return true;
         }
         catch (Exception ex)

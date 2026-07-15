@@ -66,6 +66,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // NoteNestEditorFontFamily を移行元として使う（ResolveWorkspaceEditorFontFamily 参照）。
         _workspaceEditorFontFamily = UiSettingsService.ValidateWorkspaceEditorFontFamily(
             UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));
+        // M14: 左ペインのノート一覧表示順。既定は作成順。不正値は UiSettingsService 側で正規化済み。
+        _noteSortMode = uiSettings.NoteSortMode;
 
         InitializeComponent();
         // v2.16.5 SH-28: 一時通知（保存・エクスポート・コピー等の完了メッセージ）は
@@ -99,6 +101,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             { "Consolas", WorkspaceFontConsolasMenuItem },
         };
         UpdateWorkspaceFontMenuChecks();
+
+        // M14: NoteNest ノートの並び順メニュー（表示 > ノートの並び順）の選択状態初期化。
+        UpdateNoteSortModeMenuChecks();
 
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
@@ -424,6 +429,48 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             menuItem.IsChecked = family == _workspaceEditorFontFamily;
     }
 
+    /// <summary>
+    /// M14: 表示 > ノートの並び順 メニューのクリックハンドラ。NoteNest を開いていない状態でも
+    /// 呼び出せる（本文フォントメニューと同じ理由）。変更元 Workspace が存在しないため、
+    /// <see cref="PropagateNoteSortMode"/> は除外なし（全 NoteNest セッション対象）で呼ぶ。
+    /// </summary>
+    private void MenuNoteSortMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (!Enum.TryParse<NoteSortMode>((string)((FrameworkElement)sender).Tag, out var mode))
+            mode = NoteSortMode.Created;
+        PropagateNoteSortMode(mode, exclude: null);
+    }
+
+    /// <summary>M14: 現在のノート並び順をメニューのチェック状態へ反映する。</summary>
+    private void UpdateNoteSortModeMenuChecks()
+    {
+        NoteSortModeCreatedMenuItem.IsChecked = _noteSortMode == NoteSortMode.Created;
+        NoteSortModeUpdatedMenuItem.IsChecked = _noteSortMode == NoteSortMode.Updated;
+        NoteSortModeTitleMenuItem.IsChecked = _noteSortMode == NoteSortMode.Title;
+    }
+
+    /// <summary>
+    /// M14: NoteNest のノート並び順設定を、変更元以外の全 NoteNest セッションへ伝播し
+    /// ui-settings.json（NoteSortMode）へ永続化する。Workspace ファイル本体・session・draft形式へは
+    /// 一切保存しない。<paramref name="exclude"/> は <see cref="PropagateWorkspaceEditorFontFamily"/> と
+    /// 同じ意味（変更元 Workspace の ViewModel を二重適用しないため。メニュー起点の呼び出しでは null）。
+    /// </summary>
+    private void PropagateNoteSortMode(NoteSortMode mode, object? exclude)
+    {
+        _noteSortMode = mode;
+        foreach (var s in _sessionManager.Sessions)
+        {
+            if (exclude != null && ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
+            if (s.WorkspaceViewModel is MainViewModel otherNoteVm)
+                otherNoteVm.NoteSortMode = mode;
+        }
+        var uiSvc = new UiSettingsService();
+        var ui = uiSvc.Load();
+        ui.NoteSortMode = mode;
+        uiSvc.Save(ui);
+        UpdateNoteSortModeMenuChecks();
+    }
+
     // ── v1.7.3: ファイル単位タブ管理 ─────────────────────────────────────
 
     /// <summary>NestSuite 起動時のデフォルト選択ツール ID。</summary>
@@ -457,6 +504,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     // L22: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定（旧 _noteNestEditorFontFamily）。
     private string _workspaceEditorFontFamily = UiSettingsService.DefaultWorkspaceEditorFontFamily;
     private bool _suppressFontSizePropagation;
+    // M14: NoteNest 左ペインのノート一覧表示順。アプリ全体で1つ、WorkspaceEditorFontFamily と同じ
+    // 伝播・永続化パターン（PropagateNoteSortMode 参照）。保存データの並び順には影響しない。
+    private NoteSortMode _noteSortMode = NoteSortMode.Created;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
     private int? _tabDropTargetIndex;
@@ -500,6 +550,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         WireNoteNestViewCallbacks(vm, WorkspaceView);
         vm.EditorFontSize = _noteNestEditorFontSize;
         vm.EditorFontFamily = _workspaceEditorFontFamily;
+        vm.NoteSortMode = _noteSortMode;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }

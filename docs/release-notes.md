@@ -7,6 +7,20 @@
 
 ---
 
+## v2.18.9 — M14 NoteNestノートの並び替え
+
+- **M14: NoteNest左ペインのノート一覧へ、表示順の切替（作成順・更新日順・タイトル順）を追加した。** ノートデータの保存順は変更せず、表示専用の派生状態として実装した。M13（ドラッグ＆ドロップによる手動並び替え・`order`フィールド永続化）は先行実装していない。
+- **作成順（既定値）**: 現行の`NotebookViewModel.Notes`コレクション順をそのまま表示する。作成日時の再計算はしない。
+- **更新日順**: 更新日時の降順。同値または不正値（既定値相当）は元のコレクション順へ安定的にフォールバックする（`UpdatedAt`→`CreatedAt`→元順）。現在時刻を推測で補完しない。
+- **タイトル順**: `StringComparer.CurrentCultureIgnoreCase`による昇順。同名の場合は元のコレクション順を維持する。
+- UI配置は表示メニュー配下「ノートの並び順」（作成順／更新日順／タイトル順のチェック式サブメニュー）とし、NoteNestを開いていなくても変更できる（既存の「本文フォント」メニューと同じ設計）。
+- 表示専用コレクション`NotebookViewModel.DisplayNotes`を新設し、保存対象の`Notes`は変更しない。並び替えは`Move`のみで反映し`Reset`（Clear）は使わないため、選択状態・展開状態を壊さない。
+- 再評価は、SortMode変更・Workspace読込・ノート追加/削除/移動/複製・タイトル確定（名前変更ダイアログ）・保存完了・ノート選択切替時にのみ行う。本文・タイトルの1文字入力ごとには再ソートしない。
+- 並び替えモードは`UiSettings.NoteSortMode`としてアプリ全体で1つ保存する（Workspaceファイル・session・draft形式へは追加しない）。既定値は作成順。不正・未知の値は作成順へ正規化する（M19の復旧経路はそのまま維持）。開いている全NoteNestタブ・新規タブ・session復元タブ・detached windowへ一貫して反映される（`WorkspaceEditorFontFamily`と同じ伝播パターン）。
+- テスト: `NoteSortModeTests.cs`（新規）で、`NoteSortService`の並び替えロジック（作成順・更新日順・フォールバック・タイトル順・大文字小文字・同値時の安定性）、`NotebookViewModel.RefreshDisplayOrder`（Move専用でReset未使用・選択維持・追加削除の同期）、`NoteWorkspaceViewModel.SortMode`（トリガー網羅・入力中の非再ソート）、`UiSettingsService`（既定値・正規化・保存復元）、`MainViewModel.NoteSortMode`（未保存化しないこと・選択切替時の反映）を確認した。`M14NoteSortModeXamlTests.cs`（新規）でメニューの静的UI契約を確認した。既存テストの削除・skipはしていない。
+- backlog: M14を完了済み欠番としてbacklog.mdから削除した。M13は完了扱いにせず優先度も変更していない。L4・L10・M15・M18の状態は変更していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・NoteNestの既存保存形式・Notebook/Noteの保存順・Task/Marker/Link形式の変更なし。外部依存追加なし。
+
 ## v2.18.8 — ID-14 IdeaNestカラーフィルタチップへのカード枚数表示
 
 - **ID-14: IdeaNestのカラーフィルタチップへ、その色が何枚のカードに使われているかを表示した。** 過去に自分で決めた色分けの使い方を思い出しやすくし、カードの再発見を助ける。色への固定的な意味付け・統計画面・グラフ・新しい色カテゴリの追加はしていない。IdeaNest単体アプリとしての新規機能拡張ではなく、既存カラーフィルタ領域内で完結する改善に限定した。

@@ -141,6 +141,33 @@
                               IsCheckable="True"
                               Click="MenuWorkspaceFont_Click"/>
                 </MenuItem>
+                <!-- M14: NoteNest 左ペインのノート一覧表示順。NoteNest を開いていなくても変更できるよう
+                     本文フォントと同様にメニューバーへ置く。保存データの並び順は変更しない。 -->
+                <MenuItem Header="ノートの並び順(_O)"
+                          AutomationProperties.AutomationId="Shell.NoteSortModeMenu"
+                          AutomationProperties.Name="Shell.NoteSortModeMenu">
+                    <MenuItem x:Name="NoteSortModeCreatedMenuItem"
+                              Header="作成順"
+                              Tag="Created"
+                              IsCheckable="True"
+                              AutomationProperties.AutomationId="NoteNest.SortMode.Created"
+                              AutomationProperties.Name="NoteNest.SortMode.Created"
+                              Click="MenuNoteSortMode_Click"/>
+                    <MenuItem x:Name="NoteSortModeUpdatedMenuItem"
+                              Header="更新日順"
+                              Tag="Updated"
+                              IsCheckable="True"
+                              AutomationProperties.AutomationId="NoteNest.SortMode.Updated"
+                              AutomationProperties.Name="NoteNest.SortMode.Updated"
+                              Click="MenuNoteSortMode_Click"/>
+                    <MenuItem x:Name="NoteSortModeTitleMenuItem"
+                              Header="タイトル順"
+                              Tag="Title"
+                              IsCheckable="True"
+                              AutomationProperties.AutomationId="NoteNest.SortMode.Title"
+                              AutomationProperties.Name="NoteNest.SortMode.Title"
+                              Click="MenuNoteSortMode_Click"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <!-- v2.16.10 SH-30: 常時有効なヘルプ項目は「無効理由」ではなく短い説明のみを付ける -->
