@@ -257,17 +257,26 @@
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="Background" Value="Transparent" />
                                 <Setter Property="Cursor" Value="Hand" />
-                                <Setter Property="ToolTip" Value="{Binding DisplayName}" />
+                                <Setter Property="ToolTip" Value="{Binding TooltipText}" />
+                                <Setter Property="AutomationProperties.Name" Value="{Binding AutomationName}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ListBoxItem">
-                                            <Border x:Name="Ring" Width="22" Height="22" CornerRadius="11"
-                                                    Background="Transparent"
-                                                    BorderBrush="Transparent" BorderThickness="2"
-                                                    Padding="2">
-                                                <Ellipse Fill="{Binding Name, Converter={StaticResource IdeaColorNameToBrush}}"
-                                                         Stroke="#D1D5DB" StrokeThickness="1" />
-                                            </Border>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border x:Name="Ring" Width="22" Height="22" CornerRadius="11"
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent" BorderThickness="2"
+                                                        Padding="2">
+                                                    <Ellipse Fill="{Binding Name, Converter={StaticResource IdeaColorNameToBrush}}"
+                                                             Stroke="#D1D5DB" StrokeThickness="1" />
+                                                </Border>
+                                                <!-- ID-14: 色フィルタチップへのカード枚数表示（保存しない派生値） -->
+                                                <TextBlock Text="{Binding Count}"
+                                                           FontSize="10"
+                                                           Foreground="{DynamicResource IdeaTextSecondaryBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="1,0,2,0" />
+                                            </StackPanel>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="Ring" Property="BorderBrush" Value="#FFE4D2" />

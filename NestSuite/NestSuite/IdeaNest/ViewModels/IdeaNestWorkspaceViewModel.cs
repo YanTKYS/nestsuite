@@ -628,7 +628,21 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         VisibleCards.Clear();
         foreach (var c in ordered) VisibleCards.Add(c);
 
+        RefreshColorCounts();
         RaiseCountAndEmptyStateChanged();
         RandomPreviewCommand.RaiseCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// ID-14: 色フィルタチップの件数を、現在の検索・タグ・アーカイブ条件を反映し
+    /// 色フィルタ自身は除外した集合から再計算する。カード追加・削除・色変更・アーカイブ・
+    /// 検索語やタグの変更・Workspace再読込など、<see cref="RefreshVisible"/> が呼ばれる
+    /// すべての経路で自動的に更新される。
+    /// </summary>
+    private void RefreshColorCounts()
+    {
+        var counts = Filter.ComputeColorCounts(AllCards);
+        foreach (var item in ColorItems)
+            item.Count = counts.TryGetValue(item.Name, out var count) ? count : 0;
     }
 }
