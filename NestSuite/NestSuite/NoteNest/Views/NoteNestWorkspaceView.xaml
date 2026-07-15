@@ -465,13 +465,22 @@
                             Style="{StaticResource IconButton}" FontSize="11.5"
                             Margin="4,0,0,0"
                             Visibility="{Binding HasEditingTaskRelatedNote, Converter={StaticResource BoolToVis}}"/>
+                    <!-- L24: ノートブック名付き一覧・絞り込みで選ぶ補助ボタン。既存 ComboBox は維持する -->
+                    <Button DockPanel.Dock="Right" Content="選択..."
+                            Click="PickRelatedNote_Click"
+                            Style="{StaticResource IconButton}" FontSize="11.5"
+                            Margin="4,0,0,0"
+                            AutomationProperties.AutomationId="Task.RelatedNotePickerButton"
+                            AutomationProperties.Name="Task.RelatedNotePickerButton"/>
                     <TextBlock Text="関連ノート：" FontSize="11.5" Foreground="{DynamicResource MutedFg}"
                                VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
                     <ComboBox ItemsSource="{Binding RelatedNoteChoices}"
                               SelectedItem="{Binding EditingTaskRelatedNote, Mode=TwoWay}"
                               DisplayMemberPath="Title"
                               FontSize="11.5"
-                              VerticalAlignment="Center"/>
+                              VerticalAlignment="Center"
+                              AutomationProperties.AutomationId="Task.RelatedNoteComboBox"
+                              AutomationProperties.Name="Task.RelatedNoteComboBox"/>
                 </DockPanel>
             </Border>
 

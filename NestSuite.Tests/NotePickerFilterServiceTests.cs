@@ -102,4 +102,49 @@ public class NotePickerFilterServiceTests
     {
         Assert.False(NotePickerFilterService.TitleMatchesFilter("Meeting Notes", "xyz"));
     }
+
+    // ── L24: ItemMatchesFilter（ノート名・ノートブック名・結合表示文字列） ────
+
+    [Fact]
+    public void ItemMatchesFilter_EmptyFilter_ReturnsTrue()
+    {
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("庁内DX", "端末更新", ""));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_MatchesByNoteTitle()
+    {
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("庁内DX", "端末更新", "端末"));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_MatchesByNotebookTitle()
+    {
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("庁内DX", "端末更新", "庁内"));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_CaseInsensitive()
+    {
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("Meeting", "Notes", "MEETING"));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_PartialMatch()
+    {
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("会議", "7月定例会", "定例"));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_NoMatch_ReturnsFalse()
+    {
+        Assert.False(NotePickerFilterService.ItemMatchesFilter("庁内DX", "端末更新", "xyz"));
+    }
+
+    [Fact]
+    public void ItemMatchesFilter_MatchesByNotebookTitleEvenIfNoteTitleDoesNotContainFilter()
+    {
+        // ノート名だけでは一致しないが、ノートブック名では一致する場合も候補として残す。
+        Assert.True(NotePickerFilterService.ItemMatchesFilter("個人メモ", "確認事項", "個人"));
+    }
 }

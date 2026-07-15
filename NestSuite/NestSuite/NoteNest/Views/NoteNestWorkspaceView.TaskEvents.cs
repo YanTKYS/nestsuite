@@ -77,19 +77,37 @@ public partial class NoteNestWorkspaceView
             ShowInfo("関連ノートが見つかりません。");
     }
 
+    // L24: ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
+    // 絞り込み）を再利用する。保存値は従来どおり SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
+    // 文字列入力・保存形式は変更しない。
     private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
     {
         var task = GetContextMenuDataContext<TaskViewModel>(sender);
         if (task == null) return;
-        var input = Host.ShowInput("関連ノートを設定", "ノート名を入力してください:");
-        if (string.IsNullOrWhiteSpace(input)) return;
-        var noteTitle = input.Trim();
-        var note = ViewModel.FindNoteByTitle(noteTitle);
-        if (note == null)
-        {
-            ShowError($"ノート「{noteTitle}」が見つかりません。");
-            return;
-        }
+        PickAndSetRelatedNote(task, ViewModel.FindNoteById(task.LinkedNoteId));
+    }
+
+    private void PickRelatedNote_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.EditingTask is not { } task) return;
+        PickAndSetRelatedNote(task, ViewModel.EditingTaskRelatedNote);
+    }
+
+    private void PickAndSetRelatedNote(TaskViewModel task, NoteViewModel? currentRelatedNote)
+    {
+        var items = ViewModel.Notebooks
+            .SelectMany(nb => nb.Notes.Select(n => (NotebookTitle: nb.Title, Note: n)))
+            .ToList();
+        if (items.Count == 0) { ShowInfo("関連付けできるノートがありません。"); return; }
+
+        var note = Host.PickNote(
+            items,
+            preselect: currentRelatedNote,
+            selectFirstWhenNoMatch: false,
+            windowTitle: "関連ノートの選択",
+            promptText: "関連付けるノートを選択してください:");
+        if (note == null) return;
+
         ViewModel.SetTaskRelatedNote(task, note);
     }
 

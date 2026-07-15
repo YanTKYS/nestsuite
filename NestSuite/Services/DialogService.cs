@@ -23,10 +23,15 @@ public sealed class DialogService
         return dialog.ShowDialog() == true ? dialog.ResultText : null;
     }
 
-    public NoteViewModel? PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes)
+    public NoteViewModel? PickNote(
+        IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes,
+        NoteViewModel? preselect = null,
+        bool selectFirstWhenNoMatch = true,
+        string? windowTitle = null,
+        string? promptText = null)
     {
         var items = notes.Select(note => new NotePickerItem(note.NotebookTitle, note.Note));
-        var dialog = new NotePickerDialog(items) { Owner = _owner };
+        var dialog = new NotePickerDialog(items, preselect, selectFirstWhenNoMatch, windowTitle, promptText) { Owner = _owner };
         return dialog.ShowDialog() == true ? dialog.SelectedNote : null;
     }
 

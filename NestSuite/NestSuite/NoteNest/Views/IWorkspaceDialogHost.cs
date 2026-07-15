@@ -35,8 +35,18 @@ public interface IWorkspaceDialogHost
     /// <summary>情報メッセージダイアログを表示する。</summary>
     void ShowInfo(string message, string title = "情報");
 
-    /// <summary>ノート選択ダイアログを表示し、選択されたノートを返す。キャンセル時は null。</summary>
-    NoteViewModel? PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes);
+    /// <summary>
+    /// ノート選択ダイアログを表示し、選択されたノートを返す。キャンセル時は null。
+    /// L24: <paramref name="preselect"/> と厳密一致するノートがあれば初期選択する。一致しない場合、
+    /// <paramref name="selectFirstWhenNoMatch"/> が true なら従来どおり先頭候補を選択する
+    /// （既定 true。ノートリンク挿入など、選択なしから開始する既存呼び出しの挙動を変えないため）。
+    /// </summary>
+    NoteViewModel? PickNote(
+        IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes,
+        NoteViewModel? preselect = null,
+        bool selectFirstWhenNoMatch = true,
+        string? windowTitle = null,
+        string? promptText = null);
 
     /// <summary>リンク切れチェックを実行してダイアログを表示する。「このノートへ移動」が選択されたときソースノートを返す。それ以外は null。</summary>
     NoteViewModel? CheckBrokenLinks(IEnumerable<NoteViewModel> allNotes);
