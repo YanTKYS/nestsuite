@@ -39,7 +39,16 @@ public sealed class ProjectLifecycleService
         _recentFiles = recentFiles ?? new RecentFilesService();
     }
 
-    public void InitializeRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.Load());
+    /// <summary>
+    /// M19: 最近使ったファイルの履歴を読み込む。読込失敗時の復旧結果は呼び出し側（<c>MainViewModel</c>）
+    /// へ返し、利用者への一時通知判断はそちらへ委ねる（このサービス層は View/Shell を参照しない）。
+    /// </summary>
+    public RecentFilesLoadResult InitializeRecentFiles()
+    {
+        var result = _recentFiles.LoadWithRecovery();
+        _session.ReplaceRecentFiles(result.Files);
+        return result;
+    }
 
     public void ClearRecentFiles() => _session.ReplaceRecentFiles(_recentFiles.ClearAndGetUpdatedList());
 

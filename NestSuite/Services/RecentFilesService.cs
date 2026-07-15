@@ -17,14 +17,31 @@ public class RecentFilesService
         _dataPath = dataPath ?? DefaultDataPath;
     }
 
-    public List<string> Load()
+    public List<string> Load() => LoadWithRecovery().Files;
+
+    /// <summary>
+    /// M19: 読込結果に加え、破損ファイルの退避結果（発生した場合のみ）を返す。
+    /// ファイル不存在は正常な初期状態として扱い、<see cref="RecentFilesLoadResult.Recovery"/> は null のまま。
+    /// 呼び出し側（<c>ProjectLifecycleService.InitializeRecentFiles</c>）はこれを見て、
+    /// 利用者への一時通知を判断する。
+    /// </summary>
+    public RecentFilesLoadResult LoadWithRecovery()
     {
+        if (!File.Exists(_dataPath)) return new RecentFilesLoadResult([], null);
+
         try
         {
-            if (!File.Exists(_dataPath)) return [];
-            return JsonSerializer.Deserialize<List<string>>(File.ReadAllText(_dataPath)) ?? [];
+            var files = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(_dataPath)) ?? [];
+            return new RecentFilesLoadResult(files, null);
         }
-        catch { return []; }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("RecentFilesLoad", ex, filePath: _dataPath);
+            var recovery = FileRecoveryHelper.QuarantineCorruptFile(_dataPath);
+            if (!recovery.Succeeded && recovery.Exception != null)
+                ErrorLogService.Log("RecentFilesCorruptFileBackup", recovery.Exception, filePath: _dataPath);
+            return new RecentFilesLoadResult([], recovery);
+        }
     }
 
     public IReadOnlyList<string> Add(string filePath)
@@ -39,8 +56,9 @@ public class RecentFilesService
             WriteAtomically(updated);
             return updated;
         }
-        catch
+        catch (Exception ex)
         {
+            ErrorLogService.Log("RecentFilesSave", ex, filePath: _dataPath);
             return persisted;
         }
     }
@@ -53,8 +71,9 @@ public class RecentFilesService
             if (File.Exists(_dataPath)) File.Delete(_dataPath);
             return [];
         }
-        catch
+        catch (Exception ex)
         {
+            ErrorLogService.Log("RecentFilesSave", ex, filePath: _dataPath);
             return persisted;
         }
     }
@@ -70,8 +89,9 @@ public class RecentFilesService
             WriteAtomically(updated);
             return updated;
         }
-        catch
+        catch (Exception ex)
         {
+            ErrorLogService.Log("RecentFilesSave", ex, filePath: _dataPath);
             return persisted;
         }
     }
@@ -80,3 +100,8 @@ public class RecentFilesService
     private void WriteAtomically(IReadOnlyList<string> files) =>
         AtomicFileWriter.WriteAllTextWithRandomTemp(_dataPath, JsonSerializer.Serialize(files));
 }
+
+/// <summary>M19: <see cref="RecentFilesService.LoadWithRecovery"/> の結果。</summary>
+/// <param name="Files">読込に成功した履歴、または失敗時の空リスト。</param>
+/// <param name="Recovery">読込に失敗し破損ファイル退避を試みた場合のみ設定される。正常時・ファイル不存在時は null。</param>
+public sealed record RecentFilesLoadResult(List<string> Files, CorruptFileRecoveryResult? Recovery);

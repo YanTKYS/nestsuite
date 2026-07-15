@@ -27,7 +27,15 @@ public partial class MainViewModel : BaseViewModel, IDisposable
         _changeCoordinator.Changed += WorkspaceChanged;
         _session.PropertyChanged += SessionPropertyChanged;
         _lifecycle = new ProjectLifecycleService(_session, _notes, _tasks, _markers, _editor);
-        _lifecycle.InitializeRecentFiles();
+        var recentFilesResult = _lifecycle.InitializeRecentFiles();
+        // M19: 読込失敗（破損 JSON・IO 例外等）を検出した場合のみ、既存の一時ステータス通知
+        // （StatusMessage）で 1 回だけ知らせる。ファイル不存在・正常読込では通知しない。
+        if (recentFilesResult.Recovery != null)
+        {
+            _session.StatusMessage = recentFilesResult.Recovery.Succeeded
+                ? "最近使ったファイルの履歴を読み込めなかったため、破損ファイルを退避して履歴を初期化しました。"
+                : "最近使ったファイルの履歴を読み込めなかったため、履歴を初期化しました。";
+        }
 
         OpenRecentCommand          = new RelayCommand(param => { if (param is string path) OpenRecentFile(path); });
         ClearRecentFilesCommand     = new RelayCommand(_ => ClearRecentFiles());

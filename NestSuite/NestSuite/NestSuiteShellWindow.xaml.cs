@@ -54,7 +54,10 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _dialogs = new DialogService(this);
 
         // テーマを InitializeComponent 前に適用（DynamicResource が正しい値に解決されるよう）
-        var uiSettings = _uiSettingsService.Load();
+        // M19: 読込失敗（破損 JSON・IO 例外等）時は破損ファイルを退避し既定値で継続する。
+        // 通知（ShowStatusNotification）は _transientStatus 生成後まで遅延させる。
+        var uiSettingsResult = _uiSettingsService.LoadWithRecovery();
+        var uiSettings = uiSettingsResult.Settings;
         _currentTheme = UiSettingsService.NormalizeTheme(uiSettings.Theme);
         _themeService.Apply(_currentTheme);
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
@@ -72,6 +75,17 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         // （SourceInitialized 以前は HWND が存在せず DwmSetWindowAttribute を呼べないため）
         SourceInitialized += (_, _) => ApplyTitleBarTheme(_currentTheme);
         UpdateThemeMenuChecks();
+
+        // M19: UI設定の読込失敗を復旧した場合のみ、起動中に1回だけ非モーダル通知する。
+        // 正常時・ファイル不存在時は通知しない。
+        if (uiSettingsResult.Recovery != null)
+        {
+            ShowStatusNotification(
+                uiSettingsResult.Recovery.Succeeded
+                    ? "  |  UI設定を読み込めなかったため、破損ファイルを退避して既定値で起動しました。"
+                    : "  |  UI設定を読み込めなかったため、既定値で起動しました。",
+                durationMs: 4000);
+        }
 
         // v2.14.18 SH: Workspace 共通フォント種類メニュー（表示 > 本文フォント）の選択状態初期化。
         _workspaceFontMenuItems = new Dictionary<string, MenuItem>(StringComparer.Ordinal)
