@@ -112,8 +112,10 @@ public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost
     void IWorkspaceDialogHost.ShowInfo(string message, string title)
         => _dialogs.ShowInfo(message, title);
 
-    NoteViewModel? IWorkspaceDialogHost.PickNote(IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes)
-        => _dialogs.PickNote(notes);
+    NoteViewModel? IWorkspaceDialogHost.PickNote(
+        IEnumerable<(string NotebookTitle, NoteViewModel Note)> notes,
+        NoteViewModel? preselect, bool selectFirstWhenNoMatch, string? windowTitle, string? promptText)
+        => _dialogs.PickNote(notes, preselect, selectFirstWhenNoMatch, windowTitle, promptText);
 
     NoteViewModel? IWorkspaceDialogHost.CheckBrokenLinks(IEnumerable<NoteViewModel> allNotes)
         => _dialogs.CheckBrokenLinks(allNotes);

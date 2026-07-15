@@ -97,6 +97,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.18.5", "SH-38", "SH-38" };
         yield return new object[] { "v2.18.5", "L25", "L25" };
         yield return new object[] { "v2.18.6", "M19", "M19" };
+        yield return new object[] { "v2.18.7", "L24", "L24" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -221,6 +222,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "SH-38" };
         yield return new object[] { "L25" };
         yield return new object[] { "M19" };
+        yield return new object[] { "L24" };
     }
 
     [Theory]
@@ -1149,12 +1151,11 @@ public class NestSuiteDocsContractTests
     [Fact]
     public void Review7_BacklogDoesNotChangeUnrelatedItems()
     {
-        // REV7-1 / REV7-2 の追跡項目（SH-38 / L25）は v2.18.5 で完了済み欠番となった
-        // （Backlog_DoesNotContainCompletedIdAsOpenItem で別途確認）。
-        // ここでは、その対応が SH-35 / L24 等の無関係な既存項目を変化させていないことを確認する。
+        // REV7-1 / REV7-2 の追跡項目（SH-38 / L25）は v2.18.5 で、L24 は v2.18.7 で
+        // それぞれ完了済み欠番となった（Backlog_DoesNotContainCompletedIdAsOpenItem で別途確認）。
+        // ここでは、その対応が SH-35 等の無関係な既存項目を変化させていないことを確認する。
         var backlog = TestPaths.ReadBacklog();
         Assert.Contains("| SH-35 |", backlog);
-        Assert.Contains("| L24 |", backlog);
     }
 
     [Fact]
