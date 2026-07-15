@@ -7,6 +7,19 @@
 
 ---
 
+## v2.18.6 — M19 UI設定・最近使ったファイルの復旧経路
+
+- **M19: UI設定（`ui-settings.json`）・最近使ったファイル（NoteNest内部の`recent-files.json`）の読込失敗時に、例外を握り潰して既定値へ戻すだけだった経路へ、最小の復旧経路を追加した。** `review7-fable5.md` §5.1 の推奨最小実装範囲どおり、対象は `UiSettingsService.Load` / `RecentFilesService.Load` のみ。正常時の読込・保存形式・利用者操作は変更していない。
+- 読込に失敗した場合（不正JSON・必須構造の読込失敗・IO例外・`UnauthorizedAccessException`等のアクセス失敗）は、元ファイルを同一ディレクトリ内で `<元ファイル名>.corrupt-yyyyMMdd-HHmmss` へ退避し（同名衝突時は `-1`, `-2`, ... で回避）、既定値（UI設定）または空履歴（最近使ったファイル）で継続する。ファイルが存在しない場合は正常な初回起動・初期状態として扱い、退避・通知・ErrorLog記録のいずれも行わない。
+- 退避処理は新規の小さな共通ヘルパー `FileRecoveryHelper.QuarantineCorruptFile`（退避先パス生成・衝突回避・ファイル移動・結果返却のみ）へ切り出した。設定サービス統合・session/draft復旧との共通化・汎用バックアップ基盤・リトライ管理・UI通知・ErrorLog出力は行わない。退避に失敗した場合も元ファイルは削除せず、アプリの起動・継続は妨げない。
+- 復旧が発生した場合のみ、既存の一時ステータス通知方式で起動中に1回だけ非モーダル通知する。UI設定はShellの`ShowStatusNotification`（ステータスバー、自動で消える）、最近使ったファイルはNoteNest `MainViewModel`の既存`StatusMessage`を使い、新しい通知基盤は追加していない。退避が成功した場合は「破損ファイルを退避して」の文言を含め、退避に失敗した場合は既定値・履歴初期化のみの文言にする。
+- ErrorLogには読込失敗時の元例外（`UiSettingsLoad` / `RecentFilesLoad`）と、退避に失敗した場合はその例外（`UiSettingsCorruptFileBackup` / `RecentFilesCorruptFileBackup`）を記録する。保存失敗についても、現行の完全黙殺から原因不明を避けるため`UiSettingsSave` / `RecentFilesSave`としてErrorLogのみ追加した（再試行・保存キュー・モーダル警告等は追加していない）。正常時・ファイル不存在時はログを出力しない。
+- `UiSettingsService`はテスト可能性のため、`RecentFilesService`と同様にコンストラクタでデータパスを注入できるようにした（省略時は従来どおり`%APPDATA%\NoteNest\ui-settings.json`を使い、挙動は不変）。
+- テスト: `FileRecoveryHelperTests.cs`（退避命名・衝突回避・ファイル移動・元ファイル不存在時の失敗結果・退避失敗時に元ファイルを残すことを確認）を新規追加。`UiSettingsServiceTests.cs` / `RecentFilesServiceTests.cs`に、正常読込・ファイル不存在時の非復旧・不正JSON時の既定値/空リスト化・退避ファイルの存在・復旧後の正常保存・JSON形式不変を確認するテストを追加。`ProjectLifecycleServiceTests.cs`に`InitializeRecentFiles`の復旧結果伝播テストを追加。既存テストの削除・skipはしていない。
+- backlog: M19を完了済み欠番としてbacklog.mdから削除した。M18・TN-7・L24の状態・優先度、LT-9フェーズ2・3、SH-35は変更していない。設定サービス統合等の新規backlog追加も行っていない。
+- `docs/planning/review7-fable5.md`は本文を変更せず、末尾に「M19はv2.18.6で対応済み。」の追記のみ行った。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・各Workspace保存形式・UI設定/最近使ったファイルの既存JSON形式の変更なし。外部依存追加なし。
+
 ## v2.18.5 — SH-38 + L25 エキスパートレビュー7 指摘対応
 
 - **エキスパートレビュー7（`docs/planning/review7-fable5.md`）で確認された Medium 指摘 2 件（REV7-1 / REV7-2）を修正した。** どちらも表示上の不整合であり、保存形式・データ処理の変更はない。

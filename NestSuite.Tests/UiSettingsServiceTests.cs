@@ -94,4 +94,107 @@ public class UiSettingsServiceTests : IDisposable
 
         Assert.False(File.Exists(_path + ".tmp"));
     }
+
+    // ── M19: 読込失敗時の復旧経路 ────────────────────────────────────────────
+
+    [Fact]
+    public void Load_NormalFile_ReadsAsExpected_LikeBefore()
+    {
+        var service = new UiSettingsService(_path);
+        SaveViaProductionPattern(_path, new UiSettings { LastSearchText = "既存どおり", Theme = AppTheme.Dark });
+
+        var settings = service.Load();
+
+        Assert.Equal("既存どおり", settings.LastSearchText);
+        Assert.Equal(AppTheme.Dark, settings.Theme);
+    }
+
+    [Fact]
+    public void Load_FileDoesNotExist_ReturnsDefault_NoRecovery()
+    {
+        var service = new UiSettingsService(_path);
+
+        var result = service.LoadWithRecovery();
+
+        Assert.Null(result.Recovery);
+        Assert.Equal(new UiSettings().LastSearchText, result.Settings.LastSearchText);
+    }
+
+    [Fact]
+    public void Load_InvalidJson_ReturnsDefaultSettings()
+    {
+        var service = new UiSettingsService(_path);
+        File.WriteAllText(_path, "{ not valid json");
+
+        var settings = service.Load();
+
+        Assert.Equal(new UiSettings().LastSearchText, settings.LastSearchText);
+    }
+
+    [Fact]
+    public void Load_InvalidJson_QuarantinesOriginalFile_BackupFileExists()
+    {
+        var service = new UiSettingsService(_path);
+        File.WriteAllText(_path, "{ not valid json");
+
+        var result = service.LoadWithRecovery();
+
+        Assert.NotNull(result.Recovery);
+        Assert.True(result.Recovery!.Succeeded);
+        Assert.False(File.Exists(_path));
+        Assert.True(File.Exists(result.Recovery.BackupPath));
+        Assert.Contains(".corrupt-", result.Recovery.BackupPath);
+    }
+
+    [Fact]
+    public void Load_InvalidJson_DoesNotThrow_ReturnsRecoveryResult()
+    {
+        var service = new UiSettingsService(_path);
+        File.WriteAllText(_path, "not json at all {{{");
+
+        var exception = Record.Exception(() => service.LoadWithRecovery());
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Load_AfterQuarantine_CanSaveNormallyToOriginalPath()
+    {
+        var service = new UiSettingsService(_path);
+        File.WriteAllText(_path, "{ not valid json");
+        service.LoadWithRecovery();
+
+        service.Save(new UiSettings { LastSearchText = "復旧後の保存" });
+
+        var reloaded = service.Load();
+        Assert.Equal("復旧後の保存", reloaded.LastSearchText);
+    }
+
+    [Fact]
+    public void Load_NormalFile_IsNeverQuarantined()
+    {
+        var service = new UiSettingsService(_path);
+        SaveViaProductionPattern(_path, new UiSettings { LastSearchText = "正常" });
+
+        var result = service.LoadWithRecovery();
+
+        Assert.Null(result.Recovery);
+        Assert.True(File.Exists(_path));
+        Assert.Empty(Directory.GetFiles(_tempDir, "*.corrupt-*"));
+    }
+
+    [Fact]
+    public void Load_InvalidJson_DoesNotChangeJsonFormat_SaveStillProducesValidJson()
+    {
+        var service = new UiSettingsService(_path);
+        File.WriteAllText(_path, "{ not valid json");
+        service.LoadWithRecovery();
+
+        service.Save(new UiSettings { LastSearchText = "x" });
+
+        var reloadedRaw = File.ReadAllText(_path);
+        var reloaded = JsonSerializer.Deserialize<UiSettings>(reloadedRaw);
+        Assert.NotNull(reloaded);
+        Assert.Equal("x", reloaded!.LastSearchText);
+    }
 }

@@ -104,6 +104,38 @@ public class ProjectLifecycleServiceTests : IDisposable
         Assert.Empty(context.Session.RecentFiles);
     }
 
+    // ── M19: 最近使ったファイル履歴の読込失敗からの復旧経路 ─────────────────
+
+    [Fact]
+    public void InitializeRecentFiles_NormalFile_NoRecovery_SessionGetsFiles()
+    {
+        var recentFiles = new RecentFilesService(Path.Combine(_directory, "recent.json"));
+        Directory.CreateDirectory(_directory);
+        recentFiles.Add(Path.Combine(_directory, "existing.notenest"));
+        var context = CreateContext(recentFiles);
+
+        var result = context.Lifecycle.InitializeRecentFiles();
+
+        Assert.Null(result.Recovery);
+        Assert.Contains(context.Session.RecentFiles, f => f.FullPath == Path.Combine(_directory, "existing.notenest"));
+    }
+
+    [Fact]
+    public void InitializeRecentFiles_CorruptFile_ReturnsRecovery_SessionGetsEmptyHistory()
+    {
+        Directory.CreateDirectory(_directory);
+        var dataPath = Path.Combine(_directory, "recent.json");
+        File.WriteAllText(dataPath, "{ not a list");
+        var context = CreateContext(new RecentFilesService(dataPath));
+
+        var result = context.Lifecycle.InitializeRecentFiles();
+
+        Assert.NotNull(result.Recovery);
+        Assert.True(result.Recovery!.Succeeded);
+        Assert.Empty(context.Session.RecentFiles);
+        Assert.False(File.Exists(dataPath));
+    }
+
     // ── v2.16.35 TD-59b-2: OpenPrepared（設計文書 §8.6） ────────────────────
 
     [Fact]

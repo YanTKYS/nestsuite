@@ -127,20 +127,46 @@ public class UiSettingsService
     public static AppTheme NormalizeTheme(AppTheme theme) =>
         Enum.IsDefined(typeof(AppTheme), theme) ? theme : AppTheme.Light;
 
-    private static readonly string DataPath =
+    private static readonly string DefaultDataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "ui-settings.json");
 
-    public UiSettings Load()
+    private readonly string _dataPath;
+
+    /// <summary>
+    /// M19: <paramref name="dataPath"/> は読込失敗時の破損ファイル退避テスト用。
+    /// 省略時は従来どおり <c>%APPDATA%\NoteNest\ui-settings.json</c> を使う（挙動不変）。
+    /// </summary>
+    public UiSettingsService(string? dataPath = null)
     {
+        _dataPath = dataPath ?? DefaultDataPath;
+    }
+
+    public UiSettings Load() => LoadWithRecovery().Settings;
+
+    /// <summary>
+    /// M19: 読込結果に加え、破損ファイルの退避結果（発生した場合のみ）を返す。
+    /// ファイル不存在は正常な初回起動として扱い、<see cref="UiSettingsLoadResult.Recovery"/> は null のまま。
+    /// 呼び出し側（Shell 起動処理）はこれを見て、利用者への一時通知を判断する。
+    /// </summary>
+    public UiSettingsLoadResult LoadWithRecovery()
+    {
+        if (!File.Exists(_dataPath)) return new UiSettingsLoadResult(new UiSettings(), null);
+
         try
         {
-            if (!File.Exists(DataPath)) return new();
-            var settings = JsonSerializer.Deserialize<UiSettings>(File.ReadAllText(DataPath)) ?? new();
+            var settings = JsonSerializer.Deserialize<UiSettings>(File.ReadAllText(_dataPath)) ?? new UiSettings();
             settings.Theme = NormalizeTheme(settings.Theme);
-            return settings;
+            return new UiSettingsLoadResult(settings, null);
         }
-        catch { return new(); }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("UiSettingsLoad", ex, filePath: _dataPath);
+            var recovery = FileRecoveryHelper.QuarantineCorruptFile(_dataPath);
+            if (!recovery.Succeeded && recovery.Exception != null)
+                ErrorLogService.Log("UiSettingsCorruptFileBackup", recovery.Exception, filePath: _dataPath);
+            return new UiSettingsLoadResult(new UiSettings(), recovery);
+        }
     }
 
     public void Save(UiSettings settings)
@@ -150,8 +176,16 @@ public class UiSettingsService
             // v2.14.10 TD-60: tmp 経由の atomic write 化。File.WriteAllText の既定エンコーディング
             // （BOM なし UTF-8）を維持するため Encoding.UTF8（BOM あり）ではなく明示的に指定する。
             var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = false });
-            AtomicFileWriter.WriteAllText(DataPath, json, new UTF8Encoding(false));
+            AtomicFileWriter.WriteAllText(_dataPath, json, new UTF8Encoding(false));
         }
-        catch { }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("UiSettingsSave", ex, filePath: _dataPath);
+        }
     }
 }
+
+/// <summary>M19: <see cref="UiSettingsService.LoadWithRecovery"/> の結果。</summary>
+/// <param name="Settings">読込に成功した設定、または失敗時の既定設定。</param>
+/// <param name="Recovery">読込に失敗し破損ファイル退避を試みた場合のみ設定される。正常時・ファイル不存在時は null。</param>
+public sealed record UiSettingsLoadResult(UiSettings Settings, CorruptFileRecoveryResult? Recovery);
