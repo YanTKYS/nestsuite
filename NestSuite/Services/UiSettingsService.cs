@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using NestSuite.Models;
+using NestSuite.ViewModels;
 
 namespace NestSuite.Services;
 
@@ -47,6 +48,12 @@ public class UiSettings
     public double? PreviewIdeaWindowHeight { get; set; }
     public double? PreviewIdeaWindowLeft { get; set; }
     public double? PreviewIdeaWindowTop { get; set; }
+
+    /// <summary>
+    /// M14: NoteNest 左ペインのノート一覧表示順。Workspace ファイルへは保存しない、
+    /// アプリ全体で1つの UI 設定。既定値は作成順（現行の表示順を維持）。
+    /// </summary>
+    public NoteSortMode NoteSortMode { get; set; } = NoteSortMode.Created;
 }
 
 public class UiSettingsService
@@ -127,6 +134,10 @@ public class UiSettingsService
     public static AppTheme NormalizeTheme(AppTheme theme) =>
         Enum.IsDefined(typeof(AppTheme), theme) ? theme : AppTheme.Light;
 
+    /// <summary>M14: 不正・未知の値は既定の作成順へ正規化する。</summary>
+    public static NoteSortMode NormalizeNoteSortMode(NoteSortMode mode) =>
+        Enum.IsDefined(typeof(NoteSortMode), mode) ? mode : NoteSortMode.Created;
+
     private static readonly string DefaultDataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "ui-settings.json");
@@ -157,6 +168,7 @@ public class UiSettingsService
         {
             var settings = JsonSerializer.Deserialize<UiSettings>(File.ReadAllText(_dataPath)) ?? new UiSettings();
             settings.Theme = NormalizeTheme(settings.Theme);
+            settings.NoteSortMode = NormalizeNoteSortMode(settings.NoteSortMode);
             return new UiSettingsLoadResult(settings, null);
         }
         catch (Exception ex)

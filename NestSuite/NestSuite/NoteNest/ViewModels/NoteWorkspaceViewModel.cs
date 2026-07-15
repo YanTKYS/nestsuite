@@ -11,8 +11,37 @@ public sealed class NoteWorkspaceViewModel
     private readonly HashSet<NotebookViewModel> _trackedNotebooks = new();
     private readonly HashSet<NoteViewModel> _trackedNotes = new();
     private bool _suppressChanged;
+    private NoteSortMode _sortMode = NoteSortMode.Created;
 
     public NoteWorkspaceViewModel() => Notebooks.CollectionChanged += CollectionChanged;
+
+    /// <summary>
+    /// M14: 左ペインの表示順。既定は作成順（<see cref="NotebookViewModel.Notes"/> のコレクション順）。
+    /// 変更時は全ノートブックの <see cref="NotebookViewModel.DisplayNotes"/> を即時再計算する。
+    /// アプリ全体で1つの表示設定として扱う（呼び出し側の <c>MainViewModel.NoteSortMode</c> 経由で
+    /// UiSettings と同期する。保存データ・Workspace ファイルへは反映しない）。
+    /// </summary>
+    public NoteSortMode SortMode
+    {
+        get => _sortMode;
+        set
+        {
+            if (_sortMode == value) return;
+            _sortMode = value;
+            RefreshDisplayOrder();
+        }
+    }
+
+    /// <summary>
+    /// M14: 現在の <see cref="SortMode"/> で全ノートブックの表示順を再計算する。ノート追加・削除・
+    /// 移動・複製・Workspace 読込・保存完了・選択切替・タイトル確定など、明示的なタイミングでのみ
+    /// 呼ぶ（本文・タイトルの1文字入力ごとには呼ばない。呼び出し側の責務）。
+    /// </summary>
+    public void RefreshDisplayOrder()
+    {
+        foreach (var notebook in Notebooks)
+            notebook.RefreshDisplayOrder(_sortMode);
+    }
 
     public event EventHandler? Changed;
 
@@ -41,6 +70,7 @@ public sealed class NoteWorkspaceViewModel
             _suppressChanged = false;
         }
 
+        RefreshDisplayOrder();
         Reloaded?.Invoke(this, EventArgs.Empty);
     }
 
@@ -63,6 +93,7 @@ public sealed class NoteWorkspaceViewModel
     {
         var notebook = new NotebookViewModel(new Notebook { Title = title });
         Notebooks.Add(notebook);
+        notebook.RefreshDisplayOrder(_sortMode);
         return notebook;
     }
 
@@ -82,13 +113,20 @@ public sealed class NoteWorkspaceViewModel
         var note = new NoteViewModel(model);
         notebook.Notes.Add(note);
         notebook.Model.Notes.Add(model);
+        notebook.RefreshDisplayOrder(_sortMode);
         return note;
     }
 
+    /// <summary>
+    /// M14: タイトル変更は名前変更ダイアログ経由の明示的な1回確定であり、本文入力のような
+    /// 1文字ごとの通知ではないため、成功時に表示順を再計算してよい。
+    /// </summary>
     public bool RenameNote(NoteViewModel note, string newTitle)
     {
         if (NoteNameExists(newTitle, note)) return false;
         note.Title = newTitle;
+        var notebook = FindNotebookOf(note);
+        notebook?.RefreshDisplayOrder(_sortMode);
         return true;
     }
 
@@ -103,6 +141,7 @@ public sealed class NoteWorkspaceViewModel
         if (notebook == null) return false;
         notebook.Notes.Remove(note);
         notebook.Model.Notes.Remove(note.Model);
+        notebook.RefreshDisplayOrder(_sortMode);
         return true;
     }
 
@@ -122,6 +161,7 @@ public sealed class NoteWorkspaceViewModel
         var copy = new NoteViewModel(model);
         notebook.Notes.Add(copy);
         notebook.Model.Notes.Add(model);
+        notebook.RefreshDisplayOrder(_sortMode);
         return copy;
     }
 
@@ -149,6 +189,8 @@ public sealed class NoteWorkspaceViewModel
         sourceNotebook.Model.Notes.Remove(note.Model);
         targetNotebook.Notes.Add(note);
         targetNotebook.Model.Notes.Add(note.Model);
+        sourceNotebook.RefreshDisplayOrder(_sortMode);
+        targetNotebook.RefreshDisplayOrder(_sortMode);
         return true;
     }
 
@@ -226,6 +268,7 @@ public sealed class NoteWorkspaceViewModel
         var target = index + offset;
         if (index < 0 || target < 0 || target >= notebook.Notes.Count) return false;
         notebook.Notes.Move(index, target);
+        notebook.RefreshDisplayOrder(_sortMode);
         return true;
     }
 

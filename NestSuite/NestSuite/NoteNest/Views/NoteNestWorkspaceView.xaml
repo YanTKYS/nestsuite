@@ -185,8 +185,10 @@
                 <TreeView.Resources>
 
                     <!-- ── Notebook template ── -->
+                    <!-- M14: DisplayNotes は表示専用の並び替え済みコレクション。保存対象・「上に移動/下に移動」
+                         等の実データ操作は引き続き NotebookViewModel.Notes（作成順の実データ）を使う。 -->
                     <HierarchicalDataTemplate DataType="{x:Type vm:NotebookViewModel}"
-                                              ItemsSource="{Binding Notes}">
+                                              ItemsSource="{Binding DisplayNotes}">
                         <TextBlock Text="{Binding Title}"
                                    FontWeight="SemiBold" FontSize="12.5"
                                    Padding="2,1" ToolTip="{Binding Title}"
