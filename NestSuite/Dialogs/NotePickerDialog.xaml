@@ -60,7 +60,7 @@
                        Text="該当するノートはありません"
                        IsHitTestVisible="False"
                        FontSize="12"
-                       Foreground="Gray"
+                       Foreground="{DynamicResource MutedFg}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Top"
                        Margin="0,20,0,0"

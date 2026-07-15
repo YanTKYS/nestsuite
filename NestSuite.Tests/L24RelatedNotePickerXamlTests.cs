@@ -41,12 +41,14 @@ public class L24RelatedNotePickerXamlTests
     }
 
     [Fact]
-    public void NotePickerDialog_UsesDynamicResourceForListAndFilterBox_NoNewFixedColors()
+    public void NotePickerDialog_EmptyStateText_UsesDynamicResource_NotFixedColor()
     {
         var src = ReadNotePickerDialogXaml();
-        // OK ボタンの既存アクセント色以外に、新規の固定色（Brush定数）は追加していない。
-        Assert.Contains("NoteFilterBox", src);
-        Assert.Contains("NoteList", src);
+        // L24 で追加した空状態テキストは、新規の固定色を追加せず既存の補助文字色 DynamicResource を使う。
+        Assert.Contains("x:Name=\"EmptyStateText\"", src);
+        var emptyStateBlock = ExtractElement(src, "EmptyStateText");
+        Assert.Contains("Foreground=\"{DynamicResource MutedFg}\"", emptyStateBlock);
+        Assert.DoesNotContain("Foreground=\"Gray\"", emptyStateBlock);
     }
 
     [Fact]
@@ -55,6 +57,16 @@ public class L24RelatedNotePickerXamlTests
         var src = ReadNotePickerDialogXaml();
         Assert.Contains("該当するノートはありません", src);
         Assert.Contains("EmptyStateText", src);
+    }
+
+    private static string ExtractElement(string xaml, string name)
+    {
+        var nameMarker = $"x:Name=\"{name}\"";
+        var nameIndex = xaml.IndexOf(nameMarker, StringComparison.Ordinal);
+        Assert.True(nameIndex >= 0, $"'{nameMarker}' not found in XAML");
+        var start = xaml.LastIndexOf('<', nameIndex);
+        var end = xaml.IndexOf("/>", nameIndex, StringComparison.Ordinal);
+        return xaml.Substring(start, end - start);
     }
 
     [Fact]
