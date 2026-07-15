@@ -1,3 +1,4 @@
+using NestSuite.Models;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 using Xunit;
@@ -59,5 +60,46 @@ public class NoteChangeCoordinatorTests
         Assert.True(moved);
         Assert.NotNull(published);
         Assert.Contains(nameof(MainViewModel.CurrentNotebookName), published.PropertyNames);
+    }
+
+    // L25 (review7-fable5 REV7-2): NoteWorkspaceViewModel.Load 完了後に Reloaded が発火し、
+    // NoteChangeCoordinator は空状態等の派生プロパティを isDataChanged=false で 1 回だけ通知する。
+    // データ変更として扱われないため MainViewModel.IsModified を変化させない。
+    [Fact]
+    public void LoadReloadsPublishSemanticPropertiesOnce_WithoutDataChangedFlag()
+    {
+        var notes = new NoteWorkspaceViewModel();
+        var markers = new MarkerPanelViewModel(new MarkerExtractorService());
+        var coordinator = new NoteChangeCoordinator(notes, markers);
+        var published = new List<WorkspaceChangeEventArgs>();
+        coordinator.Changed += (_, change) => published.Add(change);
+
+        notes.Load(new[]
+        {
+            new Notebook { Title = "NB", Notes = new() { new Note { Title = "N" } } },
+        });
+
+        var change = Assert.Single(published);
+        Assert.False(change.IsDataChanged);
+        Assert.Contains(nameof(MainViewModel.HasNotebooks), change.PropertyNames);
+        Assert.Contains(nameof(MainViewModel.ShowNotebookEmptyState), change.PropertyNames);
+        Assert.Contains(nameof(MainViewModel.ShowNoteEmptyState), change.PropertyNames);
+    }
+
+    [Fact]
+    public void LoadRefreshesMarkerCount_BeforePublishingChange()
+    {
+        var notes = new NoteWorkspaceViewModel();
+        var markers = new MarkerPanelViewModel(new MarkerExtractorService());
+        var coordinator = new NoteChangeCoordinator(notes, markers);
+        var markerCountAtPublish = -1;
+        coordinator.Changed += (_, _) => markerCountAtPublish = markers.MarkerCount;
+
+        notes.Load(new[]
+        {
+            new Notebook { Title = "NB", Notes = new() { new Note { Title = "N", Content = "[TODO] やること" } } },
+        });
+
+        Assert.Equal(1, markerCountAtPublish);
     }
 }

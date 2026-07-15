@@ -9,8 +9,18 @@ namespace NestSuite.Tests;
 /// 新規 MainViewModel はサンプルプロジェクト（ノートブック・ノート・タスク・マーカーいずれも
 /// 1件以上あり）を読み込むため、空状態を作るテストは明示的にクリアしてから検証する。
 /// </summary>
-public class NoteNestEmptyStateTests
+public class NoteNestEmptyStateTests : IDisposable
 {
+    private readonly string _tempDir =
+        Path.Combine(Path.GetTempPath(), "NoteNestEmptyStateTests_" + Guid.NewGuid().ToString("N"));
+
+    public NoteNestEmptyStateTests() => Directory.CreateDirectory(_tempDir);
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir)) Directory.Delete(_tempDir, recursive: true);
+    }
+
     private static void ClearAllNotebooks(MainViewModel main)
     {
         foreach (var notebook in main.Notebooks.ToList())
@@ -261,5 +271,86 @@ public class NoteNestEmptyStateTests
         note.Content = "[TODO] やること";
 
         Assert.Contains(nameof(MainViewModel.ShowMarkerEmptyState), changed);
+    }
+
+    // ── L25 (review7-fable5 REV7-2): ファイル読込直後の空状態表示更新 ──────────
+
+    [Fact]
+    public void OpeningFileWithNotebooksAndNotes_ClearsEmptyStates_WithoutMarkingModified()
+    {
+        var path = Path.Combine(_tempDir, "with-content.notenest");
+        new MainViewModel().SaveToPath(path); // サンプルプロジェクトのまま保存(ノートブック・ノートあり)
+
+        var main = new MainViewModel();
+        ClearAllNotebooks(main);
+        Assert.True(main.ShowNotebookEmptyState);
+
+        var result = main.OpenFileAtStartup(path);
+
+        Assert.True(result);
+        Assert.False(main.ShowNotebookEmptyState);
+        Assert.False(main.ShowNoteEmptyState);
+        Assert.True(main.HasNotebooks);
+        Assert.True(main.HasAnyNotes);
+        Assert.False(main.IsNoteListEmpty);
+        Assert.False(main.IsModified);
+    }
+
+    [Fact]
+    public void OpeningEmptyFile_ShowsNotebookEmptyState_WithoutMarkingModified()
+    {
+        var path = Path.Combine(_tempDir, "empty.notenest");
+        var writer = new MainViewModel();
+        writer.NewProjectCommand.Execute(null);
+        writer.SaveToPath(path);
+
+        var main = new MainViewModel(); // サンプルプロジェクトのまま(空状態は非表示)
+        Assert.False(main.ShowNotebookEmptyState);
+
+        var result = main.OpenFileAtStartup(path);
+
+        Assert.True(result);
+        Assert.True(main.ShowNotebookEmptyState);
+        Assert.False(main.ShowNoteEmptyState);
+        Assert.False(main.HasNotebooks);
+        Assert.False(main.HasAnyNotes);
+        Assert.False(main.IsModified);
+    }
+
+    [Fact]
+    public void OpeningFileWithNotebookButNoNotes_ShowsNoteEmptyState_WithoutMarkingModified()
+    {
+        var path = Path.Combine(_tempDir, "empty-notebook.notenest");
+        var writer = new MainViewModel();
+        writer.NewProjectCommand.Execute(null);
+        writer.Notes.AddNotebook("空のノートブック");
+        writer.SaveToPath(path);
+
+        var main = new MainViewModel();
+
+        var result = main.OpenFileAtStartup(path);
+
+        Assert.True(result);
+        Assert.False(main.ShowNotebookEmptyState);
+        Assert.True(main.ShowNoteEmptyState);
+        Assert.False(main.IsModified);
+    }
+
+    [Fact]
+    public void OpeningFile_PublishesEmptyStatePropertyChanges_ExactlyOnceAfterLoad()
+    {
+        var path = Path.Combine(_tempDir, "notify-once.notenest");
+        var writer = new MainViewModel();
+        writer.NewProjectCommand.Execute(null);
+        writer.SaveToPath(path);
+
+        var main = new MainViewModel();
+        var changed = new List<string?>();
+        main.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        main.OpenFileAtStartup(path);
+
+        Assert.Equal(1, changed.Count(name => name == nameof(MainViewModel.ShowNotebookEmptyState)));
+        Assert.Equal(1, changed.Count(name => name == nameof(MainViewModel.HasNotebooks)));
     }
 }
