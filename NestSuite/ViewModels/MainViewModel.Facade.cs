@@ -47,6 +47,8 @@ public partial class MainViewModel
     public bool IsTaskCommentMode => _editor.IsTaskCommentMode;
     public bool IsNoteEditMode => _editor.IsNoteEditMode;
     public string EditorTitle => _editor.EditorTitle;
+    /// <summary>L24: 関連ノート選択ボタン（タスク編集パネル）が対象タスクを特定するために使う。</summary>
+    public TaskViewModel? EditingTask => _editor.EditingTask;
     public IEnumerable<NoteViewModel> RelatedNoteChoices => _notes.AllNotes;
     public NoteViewModel? EditingTaskRelatedNote
     {
