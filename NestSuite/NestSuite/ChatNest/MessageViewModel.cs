@@ -17,6 +17,7 @@ public class MessageViewModel : INotifyPropertyChanged
     private string _editingText = string.Empty;
     private bool _isSearchCurrent;
     private bool _isDragging;
+    private bool _showDateSeparator;
 
     private readonly Action<MessageViewModel> _onBeginEditRequested;
     private readonly Action<MessageViewModel> _onRequestDelete;
@@ -59,6 +60,25 @@ public class MessageViewModel : INotifyPropertyChanged
         get => _isDragging;
         set { _isDragging = value; OnPropertyChanged(); }
     }
+
+    /// <summary>
+    /// CH-11: このメッセージの直前に日付区切りを表示するか。表示専用の派生状態であり保存しない。
+    /// <see cref="ChatNestWorkspaceViewModel"/> が <c>NestSuite.Services.ChatDateSeparatorService</c> の
+    /// 計算結果を反映する（<see cref="ChatNestWorkspaceViewModel.RefreshDateSeparators"/> 参照）。
+    /// </summary>
+    public bool ShowDateSeparator
+    {
+        get => _showDateSeparator;
+        internal set
+        {
+            if (_showDateSeparator == value) return;
+            _showDateSeparator = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>CH-11: 日付区切りの表示文字列。絶対日付のみ（「今日」「昨日」等の相対表現は使わない）。</summary>
+    public string DateSeparatorText => CreatedAt.ToString("yyyy年M月d日");
 
     public ChatNestRelayCommand BeginEditCommand { get; }
     public ChatNestRelayCommand CommitEditCommand { get; }
