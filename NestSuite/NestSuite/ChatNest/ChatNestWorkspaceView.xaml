@@ -264,13 +264,14 @@
                     </ContextMenu>
                 </StackPanel.ContextMenu>
 
-                <!-- CH-13: ドラッグ並び替えハンドル（ホバーで鮮明、ドラッグで並び替え） -->
+                <!-- CH-13: ドラッグ並び替えハンドル（ホバーで鮮明、ドラッグで並び替え）。CH-16: AutomationProperties.Name を追加 -->
                 <TextBlock Text="⠿"
                            FontSize="14"
                            Cursor="SizeNS"
                            VerticalAlignment="Center"
                            Margin="0,0,4,0"
                            ToolTip="ドラッグして並び替え"
+                           AutomationProperties.Name="ChatNest.DragHandle"
                            PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
@@ -581,44 +582,47 @@
                                    Foreground="{DynamicResource SecondaryTextBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
+                        <!-- CH-16: 常時表示していたショートカットヒント文（「Ctrl + ← / → で切り替え」）は
+                             ShortcutHelpProvider（ヘルプのショートカット一覧）と内容が重複していたため、
+                             各ボタンの Tooltip へ寄せて常時表示の占有を減らす。ショートカット自体は変更しない -->
                         <RadioButton Style="{StaticResource SpeakerToggle}"
                                      AutomationProperties.AutomationId="ChatNest.SpeakerSelf"
                                      AutomationProperties.Name="ChatNest.SpeakerSelf"
+                                     ToolTip="発言者を選択 (Ctrl+← / Ctrl+→ で切替)"
                                      Content="自分"
                                      IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=自分, Mode=TwoWay}"
                                      GroupName="Speaker"/>
                         <RadioButton Style="{StaticResource SpeakerToggle}"
                                      AutomationProperties.AutomationId="ChatNest.SpeakerRefute"
                                      AutomationProperties.Name="ChatNest.SpeakerRefute"
+                                     ToolTip="発言者を選択 (Ctrl+← / Ctrl+→ で切替)"
                                      Content="反論"
                                      IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=反論, Mode=TwoWay}"
                                      GroupName="Speaker"/>
                         <RadioButton Style="{StaticResource SpeakerToggle}"
                                      AutomationProperties.AutomationId="ChatNest.SpeakerSupplement"
                                      AutomationProperties.Name="ChatNest.SpeakerSupplement"
+                                     ToolTip="発言者を選択 (Ctrl+← / Ctrl+→ で切替)"
                                      Content="補足"
                                      IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=補足, Mode=TwoWay}"
                                      GroupName="Speaker"/>
                         <RadioButton Style="{StaticResource SpeakerToggle}"
                                      AutomationProperties.AutomationId="ChatNest.SpeakerConclusion"
                                      AutomationProperties.Name="ChatNest.SpeakerConclusion"
+                                     ToolTip="発言者を選択 (Ctrl+← / Ctrl+→ で切替)"
                                      Content="結論"
                                      IsChecked="{Binding SelectedSpeaker, Converter={StaticResource RadioConverter}, ConverterParameter=結論, Mode=TwoWay}"
                                      GroupName="Speaker"/>
                     </StackPanel>
 
-                    <!-- CH-8: ショートカットヒント + コピー状態テキスト（CH-15: CheckBox/ボタン群を右クリックメニューへ移動） -->
+                    <!-- CH-8: コピー状態テキスト（CH-15: CheckBox/ボタン群を右クリックメニューへ移動。
+                         CH-16: 常時表示のショートカットヒント文を撤去し Tooltip/ヘルプへ整理） -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 VerticalAlignment="Center" Margin="12,0,6,0">
-                        <TextBlock Text="Ctrl + ← / → で切り替え"
-                                   FontSize="10"
-                                   Foreground="{DynamicResource MutedTextBrush}"
-                                   VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding CopyStatusText}"
                                    FontSize="10"
                                    Foreground="{DynamicResource MutedTextBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="12,0,0,0">
+                                   VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Visible"/>
@@ -645,9 +649,12 @@
                             BorderThickness="1"
                             CornerRadius="8"
                             Margin="0,0,10,0">
+                        <!-- CH-16: 送信・改行ショートカットは既存のまま。初回利用時に分かるよう Tooltip / HelpText へ追加 -->
                         <TextBox x:Name="InputBox"
                                  AutomationProperties.AutomationId="ChatNest.InputBox"
                                  AutomationProperties.Name="ChatNest.InputBox"
+                                 AutomationProperties.HelpText="Ctrl+Enterで投稿します。通常のEnterは改行です。"
+                                 ToolTip="Ctrl+Enterで投稿&#x0a;Enterで改行"
                                  Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                                  AcceptsReturn="True"
                                  TextWrapping="Wrap"
@@ -680,6 +687,7 @@
                     <Button Grid.Column="1"
                             AutomationProperties.AutomationId="ChatNest.PostButton"
                             AutomationProperties.Name="ChatNest.PostButton"
+                            ToolTip="投稿 (Ctrl+Enter)"
                             Style="{StaticResource PrimaryButton}"
                             Content="投稿"
                             Width="70"
