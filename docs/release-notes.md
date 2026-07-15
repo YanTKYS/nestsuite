@@ -7,6 +7,19 @@
 
 ---
 
+## v2.18.12 — CH-16 ChatNest 操作の発見性整理
+
+- **CH-16: ChatNestに蓄積した既存操作の入口を棚卸しし、常時表示・Hover/ContextMenu・Tooltip/ヘルプの役割を整理した。** 新しい操作は追加せず、既存操作・ショートカット・ContextMenu項目も削除していない。CH-17（送信前プレビュー）・CH-12（発言者カスタマイズ）は今回実装していない。
+- **棚卸し結果**: 発言者選択・入力欄・送信ボタン・検索の入口（Ctrl+F）は引き続き常時表示・常時利用可能な中心操作として維持した。コピー・編集・削除は既にContextMenu中心、ドラッグ並び替えは既にHover強調（Opacity切替）済みで、過剰な常時表示は見つからなかった。
+- **常時表示の整理**: 発言者選択行に常時表示していたショートカットヒント文「Ctrl + ← / → で切り替え」を撤去した。同内容は既存の`ShortcutHelpProvider`（ヘルプのショートカット一覧、ChatNest分類）に既に記録されており重複導線だったため、各発言者ボタンの`ToolTip`（「発言者を選択 (Ctrl+← / Ctrl+→ で切替)」）へ整理した。コピー状態テキスト（`CopyStatusText`）はそのまま維持した。
+- **Tooltip整理**: 投稿ボタンへ`ToolTip="投稿 (Ctrl+Enter)"`、入力欄へ`ToolTip`（「Ctrl+Enterで投稿／Enterで改行」）と`AutomationProperties.HelpText`を追加した。実装（`ChatNestShortcutPolicy.IsSendShortcut`＝Ctrl+Enterのみ、通常のEnterは改行）と一致する文言のみを使用した。ドラッグハンドルの既存Tooltip（「ドラッグして並び替え」）は維持し、`AutomationProperties.Name`を追加した。
+- **ContextMenu**: 項目の追加・削除・順序変更はしていない。メッセージ本文・発言者ラベル・timestamp上で開き、日付区切り・入力欄では開かない既存の適用範囲も変更していない。
+- **CH-11・CH-18との整合**: 日付区切りの計算ロジック・非保存方針、CH-18で整理したメッセージ間余白・入力欄境界・メッセージ本文境界はいずれも変更していない。補助操作（ドラッグハンドル・Tooltip）が日付区切りより目立つ変更もしていない。
+- **アクセシビリティ**: 既存`AutomationId`はすべて維持した。追加したのは`AutomationProperties.Name`（ドラッグハンドル）と`AutomationProperties.HelpText`（入力欄）のみで、装飾要素をFocusable/TabStopにする変更はしていない。Tab順は変更していない。
+- テスト: `CH16OperationDiscoverabilityXamlTests.cs`（新規）で、常時表示ヒント文の撤去、発言者ボタンのTooltip・既存AutomationId維持、入力欄・投稿ボタンのTooltip/HelpTextが実装と一致すること、ドラッグハンドルの既存Tooltip維持とAutomationProperties.Name追加、既存ContextMenu8項目の維持、日付区切り・入力欄へメッセージ用ContextMenuが付かないこと、新しいToolBar/CommandPaletteを導入していないことを確認した。ViewModel・操作ロジックは変更していないため対応する単体テストの追加はしていない。既存テストの削除・skipはしていない。
+- backlog: CH-16を完了済み欠番としてbacklog.mdから削除した。CH-17・CH-12は未実装のまま、優先度も変更していない。CH-11・CH-18は「再実装済み」等への変更をしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・ChatNestの既存保存形式・timestampの既存保存形式・発言者形式・メッセージの保存順の変更なし。外部依存追加なし。
+
 ## v2.18.11 — CH-18 ChatNest会話一覧の視線誘導改善
 
 - **CH-18: ChatNestの会話一覧の視覚階層を整理し、発言者・メッセージ境界・入力欄を長い会話でも追いやすくした。** 既存操作・発言者の意味/左右配置・保存形式は変更していない。CH-16（操作の発見性整理）・CH-17（送信前プレビュー）は今回実装していない。
