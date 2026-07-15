@@ -202,9 +202,11 @@
                ドラッグ透過は内側のメッセージ用 StackPanel だけへ適用し、区切りへは広げない。 -->
           <StackPanel>
             <!-- CH-11: 日付区切り。表示専用（.chatnest へ保存しない）。選択・右クリック・ドラッグ対象にしない -->
+            <!-- CH-18: 通常のメッセージ間余白（16,3）より一段広い余白にし、日付区切りが会話全体の
+                 タイムラインの節目であることを視覚的に伝える。区切りの計算・保存ロジックは変更しない -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
-                        Margin="0,12,0,6"
+                        Margin="0,16,0,8"
                         Focusable="False"
                         IsHitTestVisible="False"
                         Visibility="{Binding ShowDateSeparator, Converter={StaticResource BoolToVis}}"
@@ -284,10 +286,13 @@
                 </TextBlock>
 
                 <!-- CH-7: 発言者チップ + 時刻 + CH-10 コピーボタン -->
+                <!-- CH-18: 下マージンをわずかに広げ、発言者ラベル行と本文の間に小さな間隔を設ける -->
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Top"
-                            Margin="0,6,7,0">
+                            Margin="0,6,7,4">
                     <!-- CH-7: 発言者ラベルをチップ形状で表示（背景色 + ボーダー + 太字） -->
+                    <!-- CH-18: 本文（FontSize 13）より小さく・太字にすることで、発言者を本文より弱い
+                         視覚階層に保ったまま維持する。色・配置・意味は変更しない -->
                     <Border Background="{Binding Speaker, Converter={StaticResource SpeakerBg}}"
                             BorderBrush="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
                             BorderThickness="1"
@@ -315,9 +320,11 @@
                         CornerRadius="8"
                         Padding="10,6"
                         MaxWidth="460">
+                    <!-- CH-18: 左の発言者アクセント（3px）に加え、上下右も極細（1px）にして
+                         メッセージ本文の境界をわずかに補強する。強い枠線・影は使わない -->
                     <Border.Style>
                         <Style TargetType="Border">
-                            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+                            <Setter Property="BorderThickness" Value="3,1,1,1"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsSearchCurrent}" Value="True">
                                     <Setter Property="BorderThickness" Value="3,2,2,2"/>
@@ -544,8 +551,13 @@
                 Click="ScrollToBottomButton_Click"/>
 
         <!-- ========== INPUT AREA ========== -->
+        <!-- CH-18: 会話一覧との境界を明確にするため、検索バー下端の境界線（BorderThickness="0,0,0,1"）と
+             対になる上端の細い境界線を追加する。既存の DynamicResource（BorderBrush）を再利用し、
+             新しい固定色や太い区切りは追加しない -->
         <Border Grid.Row="2"
                 Background="{DynamicResource ChatInputPanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
                 Padding="16,12,16,14">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.05" BlurRadius="8" ShadowDepth="-2" Direction="90"/>
