@@ -7,6 +7,20 @@
 
 ---
 
+## v2.18.10 — CH-11 ChatNest長い会話の日付区切りヘッダー
+
+- **CH-11: ChatNestの会話一覧へ、日付が変わる位置を示す区切りヘッダーを追加した。** 長い会話を読み返す負荷を減らす。既存の`Message.CreatedAt`（`DateTimeOffset`）を利用し、`.chatnest`保存形式・schemaは変更していない。
+- 先頭メッセージと、直前メッセージから日付（`DateTimeOffset.Date`成分）が変わる位置に区切りを表示する。書式は「2026年7月15日」の絶対日付のみで、「今日」「昨日」等の相対表現は使わない。
+- タイムゾーンは既存のメッセージ時刻表示（`CreatedAt`のStringFormatバインディング。保存値そのまま、追加変換なし）と同じ基準を使う。現在時刻での補完は行わない。
+- ChatNestの検索（CH-5）はメッセージを非表示にせず全件を常時表示したままハイライト・スクロールするだけの機能であるため、日付区切りは検索状態に左右されず常に表示中の全メッセージを基準にする。
+- 表示専用の派生プロパティ`MessageViewModel.ShowDateSeparator`（bool）・`DateSeparatorText`（string）と、純粋な計算処理`ChatDateSeparatorService.ComputeShowSeparator`を追加した。再計算はWorkspace読込・メッセージ追加・削除・ドラッグ並び替え時のみ行い、本文編集だけでは行わない（タイムスタンプ・順序を変えないため）。
+- ドラッグ並び替え（CH-13）後は、並び替え後の表示順のまま区切りを再計算する。timestamp順への自動整列はしない。
+- レイアウトは各メッセージDataTemplateの外側に日付区切り行を追加する方式とし、ContextMenu・検索/選択ハイライト・ドラッグ時の半透明表示は引き続きメッセージ本体側のStackPanelだけに適用した（区切りが選択色にならない、右クリックメニューが開かない）。区切りは`IsHitTestVisible="False"` `Focusable="False"`とし、キーボード操作・自動スクロール（`ScrollToBottom`）・検索結果へのスクロール（`BringIntoView`）を妨げない。
+- 色は既存の`BorderBrush`・`MutedTextBrush`（DynamicResource）を使い、新しい固定色は追加していない。発言者色・メッセージ本文レイアウトは変更していない。
+- テスト: `ChatDateSeparatorTests.cs`（新規）で、`ChatDateSeparatorService`の判定ロジック（先頭・同日・日付変化・年跨ぎ・月跨ぎ・うるう日・非timestamp順での判定・空入力）、`MessageViewModel`の表示形式、`ChatNestWorkspaceViewModel`の再計算タイミング（読込・追加・削除・並び替え・検索非フィルタ）、保存モデルへの混入がないことを確認した。`CH11DateSeparatorXamlTests.cs`（新規）で区切りの静的UI契約（非HitTest・非フォーカス・DynamicResource・選択/検索トリガー非適用・ContextMenu非適用）を確認した。既存テストの削除・skipはしていない。
+- backlog: CH-11を完了済み欠番としてbacklog.mdから削除した。CH-16・CH-18は未実装のまま、優先度も変更していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・ChatNestの既存保存形式・timestampの既存保存形式・メッセージの保存順の変更なし。外部依存追加なし。
+
 ## v2.18.9 — M14 NoteNestノートの並び替え
 
 - **M14: NoteNest左ペインのノート一覧へ、表示順の切替（作成順・更新日順・タイトル順）を追加した。** ノートデータの保存順は変更せず、表示専用の派生状態として実装した。M13（ドラッグ＆ドロップによる手動並び替え・`order`フィールド永続化）は先行実装していない。

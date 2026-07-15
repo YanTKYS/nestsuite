@@ -103,6 +103,7 @@ public class NestSuiteDocsContractTests
         // M14 は v2.18.8 の release notes 内（「M14・M18・TN-7の状態は変更していない」）にも
         // 登場するため、見出し専用の文字列で確認する。
         yield return new object[] { "v2.18.9", "M14", "v2.18.9 — M14" };
+        yield return new object[] { "v2.18.10", "CH-11", "CH-11" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -230,6 +231,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "L24" };
         yield return new object[] { "ID-14" };
         yield return new object[] { "M14" };
+        yield return new object[] { "CH-11" };
     }
 
     [Theory]

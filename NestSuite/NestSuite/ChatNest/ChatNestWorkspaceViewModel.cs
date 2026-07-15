@@ -248,8 +248,22 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         if (newIndex < 0 || newIndex >= Messages.Count) return;
         if (oldIndex == newIndex) return;
         Messages.Move(oldIndex, newIndex);
+        RefreshDateSeparators();
         IsDirty = true;
         WorkspaceModified?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// CH-11: 現在の <see cref="Messages"/> の表示順を基準に、各メッセージの日付区切り表示
+    /// （<see cref="MessageViewModel.ShowDateSeparator"/>）を再計算する。timestamp順への自動整列は
+    /// 行わない（並び替え後の表示順をそのまま使う）。呼び出し側（Load・Post・削除・並び替え）が
+    /// 明示的なタイミングでのみ呼ぶ。本文編集はタイムスタンプ・順序を変えないため呼ばない。
+    /// </summary>
+    private void RefreshDateSeparators()
+    {
+        var flags = ChatDateSeparatorService.ComputeShowSeparator(Messages.Select(m => m.CreatedAt).ToList());
+        for (var i = 0; i < Messages.Count; i++)
+            Messages[i].ShowDateSeparator = flags[i];
     }
 
     public void Clear()
@@ -273,6 +287,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         InputText = string.Empty;
         foreach (var m in messages)
             Messages.Add(CreateMessageViewModel(m));
+        RefreshDateSeparators();
         IsDirty = false;
     }
 
@@ -462,6 +477,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         Messages.Remove(_confirmingDeleteTarget);
         _confirmingDeleteTarget = null;
         IsDeleteConfirmVisible = false;
+        RefreshDateSeparators();
         IsDirty = true;
         WorkspaceModified?.Invoke(this, EventArgs.Empty);
     }
@@ -538,6 +554,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         var text = InputText.Trim();
         if (string.IsNullOrEmpty(text)) return;
         Messages.Add(CreateMessageViewModel(new Message { Speaker = SelectedSpeaker, Text = text }));
+        RefreshDateSeparators();
         InputText = string.Empty;
         IsDirty = true;
         WorkspaceModified?.Invoke(this, EventArgs.Empty);
