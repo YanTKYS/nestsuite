@@ -36,7 +36,13 @@ public partial class NestSuiteShellWindow
         bool QuarantineFailed = false,
         bool CollisionWriteFailed = false);
 
-    private void RestoreDraftsAtStartup()
+    /// <summary>
+    /// 戻り値: SH-40用に、このメソッドの決定（復元・破棄・キャンセル）を反映した後に残る
+    /// 保持中（次回起動時に再確認予定）draft件数。<see cref="ShellStateSummaryCalculator"/>の
+    /// 既存算出（開いているタブの自動保存分を除外する）を、ここで既に列挙済みのdraftPathsに
+    /// そのまま適用するだけで、追加のdraft再走査は行わない。
+    /// </summary>
+    private int RestoreDraftsAtStartup()
     {
         if (!TryListStartupDraftFiles(
                 () => DraftStore.ListDraftFiles(),
@@ -46,11 +52,11 @@ public partial class NestSuiteShellWindow
                     filePath: DraftStore.DefaultRootDirectory),
                 out var draftPaths))
         {
-            return;
+            return 0;
         }
 
         if (draftPaths.Count == 0)
-            return;
+            return 0;
 
         var choice = MessageBox.Show(
             $"前回終了時に保存されていない下書きが {draftPaths.Count} 件見つかりました。\n" +
@@ -66,11 +72,11 @@ public partial class NestSuiteShellWindow
         {
             var discardSummary = DiscardStartupDrafts(draftPaths);
             ShowDraftRestoreSummary(discardSummary);
-            return;
+            return 0; // SH-40: 破棄後は保持中候補なし
         }
 
         if (choice != MessageBoxResult.Yes)
-            return;
+            return CountRetainedDraftCandidates(draftPaths); // キャンセル・保持: 全件が保持中のまま
 
         var summary = new DraftRestoreSummary();
         NestSuiteDocumentTab? lastRestoredTab = null;
@@ -95,7 +101,16 @@ public partial class NestSuiteShellWindow
             ActivateTab(lastRestoredTab);
 
         ShowDraftRestoreSummary(summary);
+        return CountRetainedDraftCandidates(draftPaths);
     }
+
+    /// <summary>
+    /// SH-40: <paramref name="draftPaths"/>（RestoreDraftsAtStartupが既に列挙した結果）と
+    /// 現在開いているタブIDから、SH-37と同じ計算（<see cref="ShellStateSummaryCalculator.CountDraftRecoveryCandidates"/>）
+    /// で保持中候補件数を求める。ファイルシステムへの追加アクセスはしない。
+    /// </summary>
+    private int CountRetainedDraftCandidates(IReadOnlyList<string> draftPaths) =>
+        ShellStateSummaryCalculator.CountDraftRecoveryCandidates(draftPaths, _tabs.Select(t => t.Id));
 
     private static bool TryListStartupDraftFiles(
         Func<IReadOnlyList<string>> listDraftFiles,

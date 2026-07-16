@@ -10,6 +10,13 @@ public partial class NestSuiteShellWindow
     // ── v1.14.0: 最近使ったファイル ──────────────────────────────────────────
 
     /// <summary>
+    /// SH-40: recent filesの最新読込結果をメモリ上に保持し、TempNest上部の「続きから」表示が
+    /// 起動時追加I/Oなしで再利用できるようにする（<see cref="UpdateRecentFilesMenu"/>が
+    /// 呼ばれるたびに更新される。新たな読込経路は追加しない）。
+    /// </summary>
+    private IReadOnlyList<string> _recentFilesCache = [];
+
+    /// <summary>
     /// v1.14.0: 最近使ったファイルメニューを現在のリストで再構築する。
     /// 空の場合は「（履歴なし）」の無効項目を表示する。
     /// </summary>
@@ -17,6 +24,7 @@ public partial class NestSuiteShellWindow
     {
         RecentFilesMenu.Items.Clear();
         var files = _recentFiles.Load();
+        _recentFilesCache = files;
         if (files.Count == 0)
         {
             RecentFilesMenu.Items.Add(new MenuItem { Header = "（履歴なし）", IsEnabled = false });
@@ -35,10 +43,22 @@ public partial class NestSuiteShellWindow
     /// ファイルが見つからない場合は一覧から削除してメニューを更新する。
     /// v1.14.1: 未対応拡張子の場合もエラーダイアログを表示して履歴から削除する。
     /// v1.14.1: 既存タブをアクティブ化する場合も最近ファイルの先頭へ移動する。
+    /// SH-40: 実処理は<see cref="OpenRecentFile"/>へ切り出し、TempNest上部の
+    /// 「続きから」recentリンクと共有する（パネル専用のオープン処理を複製しない）。
     /// </summary>
     private void MenuRecentFile_Click(object sender, RoutedEventArgs e)
     {
         if (((MenuItem)sender).Tag is not string path) return;
+        OpenRecentFile(path);
+    }
+
+    /// <summary>
+    /// SH-40: 最近使ったファイルメニューとTempNest上部の「続きから」recentリンクが共有する
+    /// オープン処理。既存の<c>ShellFileOpenPlanner.Plan</c>経由の判定・通知・最近ファイル更新を
+    /// そのまま使い、ファイル不存在時は一覧から削除したうえでSH-40側の表示も合わせて更新する。
+    /// </summary>
+    private void OpenRecentFile(string path)
+    {
         var decision = ShellFileOpenPlanner.Plan(path, _tabs);
         if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
         {
@@ -47,6 +67,7 @@ public partial class NestSuiteShellWindow
                 "ファイルを開けません");
             _recentFiles.Remove(decision.Path);
             UpdateRecentFilesMenu();
+            RemoveContinueFromRecentItemIfPresent(decision.Path);
             return;
         }
         if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
@@ -61,6 +82,7 @@ public partial class NestSuiteShellWindow
                     "未対応のファイル形式");
                 _recentFiles.Remove(decision.Path);
                 UpdateRecentFilesMenu();
+                RemoveContinueFromRecentItemIfPresent(decision.Path);
                 return;
             }
             _dialogs.ShowError(
