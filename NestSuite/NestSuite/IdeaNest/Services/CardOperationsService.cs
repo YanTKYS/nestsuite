@@ -120,6 +120,22 @@ public class CardOperationsService
         _onRefreshVisible();
     }
 
+    /// <summary>
+    /// ID-6: 削除Undo用。<paramref name="card"/>（削除時と同一インスタンス、新しいIDは発行しない）を
+    /// 正本コレクション・表示用コレクションの両方へ、記録済みの位置（範囲外はクランプ）へ再挿入する。
+    /// 既に存在する場合は重複を避けて何もしない。
+    /// </summary>
+    public void RestoreDeleted(IdeaCardViewModel card, int index)
+    {
+        if (_allCards.Contains(card)) return;
+        var clamped = Math.Max(0, Math.Min(index, _ideas.Count));
+        _ideas.Insert(clamped, card.Model);
+        _allCards.Insert(clamped, card);
+        _onDirty();
+        _onRefreshTags();
+        _onRefreshVisible();
+    }
+
     public void TogglePin(IdeaCardViewModel card)
     {
         card.IsPinned = !card.IsPinned;
@@ -128,9 +144,12 @@ public class CardOperationsService
         _onRefreshVisible();
     }
 
-    public void ToggleArchive(IdeaCardViewModel card)
+    public void ToggleArchive(IdeaCardViewModel card) => SetArchived(card, !card.IsArchived);
+
+    /// <summary>ID-6: アーカイブUndo用。変更前の値へ直接戻すための共通経路。</summary>
+    public void SetArchived(IdeaCardViewModel card, bool isArchived)
     {
-        card.IsArchived = !card.IsArchived;
+        card.IsArchived = isArchived;
         card.Touch();
         _onDirty();
         _onRefreshVisible();

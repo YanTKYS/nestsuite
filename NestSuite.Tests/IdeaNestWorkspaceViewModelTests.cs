@@ -206,6 +206,279 @@ public class IdeaNestWorkspaceViewModelTests
         vm.MarkSaved();
         Assert.False(vm.HasChanges);
     }
+
+    // ── ID-6: 削除・アーカイブのUndo ─────────────────────────────────────────
+
+    [Fact]
+    public void DeleteCard_MakesUndoAvailable_AndUndoRestoresFullCard()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas =
+            [
+                new Idea { Id = "a", Title = "A" },
+                new Idea { Id = "b", Title = "B", Body = "本文", Tags = ["タグ1"], Color = "blue", IsPinned = true },
+                new Idea { Id = "c", Title = "C" },
+            ],
+        });
+        var card = vm.AllCards.Single(c => c.Id == "b");
+        Assert.False(vm.CanUndo);
+
+        vm.CommitDeleteWithUndo(card);
+
+        Assert.True(vm.CanUndo);
+        Assert.DoesNotContain(vm.AllCards, c => c.Id == "b");
+
+        vm.UndoCommand.Execute(null);
+
+        Assert.False(vm.CanUndo);
+        var restored = vm.AllCards.Single(c => c.Id == "b");
+        Assert.Same(card, restored);
+        Assert.Equal("B", restored.Title);
+        Assert.Equal("本文", restored.Body);
+        Assert.Equal("タグ1", restored.Tags.Single());
+        Assert.Equal("blue", restored.Color);
+        Assert.True(restored.IsPinned);
+    }
+
+    [Fact]
+    public void DeleteCard_Undo_DoesNotDuplicate_WhenExecutedOnlyOnce()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "only", Title = "Only" }] });
+        var card = vm.AllCards.Single();
+
+        vm.CommitDeleteWithUndo(card);
+        vm.UndoCommand.Execute(null);
+
+        Assert.Single(vm.AllCards);
+        Assert.False(vm.CanUndo);
+
+        // Undoを2回実行できない（既にクリア済みのため何も起きない）
+        vm.UndoCommand.Execute(null);
+        Assert.Single(vm.AllCards);
+    }
+
+    [Fact]
+    public void DeleteCard_RestoresAtOriginalIndex_WhenNoSortReordering()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Id = "a" }, new Idea { Id = "b" }, new Idea { Id = "c" }],
+        });
+        var card = vm.AllCards[1];
+
+        vm.CommitDeleteWithUndo(card);
+        vm.UndoCommand.Execute(null);
+
+        Assert.Equal(new[] { "a", "b", "c" }, vm.AllCards.Select(c => c.Id));
+    }
+
+    [Fact]
+    public void ArchiveCommand_MakesUndoAvailable_AndUndoRestoresPreviousArchivedState()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1", IsArchived = false }] });
+        var card = vm.AllCards.Single();
+
+        vm.ToggleArchiveCommand.Execute(card);
+        Assert.True(card.IsArchived);
+        Assert.True(vm.CanUndo);
+
+        vm.UndoCommand.Execute(null);
+
+        Assert.False(card.IsArchived);
+        Assert.False(vm.CanUndo);
+        Assert.Equal("アーカイブを元に戻しました", vm.StatusMessage);
+    }
+
+    [Fact]
+    public void UnarchiveCommand_Undo_RestoresArchivedState()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1", IsArchived = true }] });
+        var card = vm.AllCards.Single();
+
+        vm.ToggleArchiveCommand.Execute(card); // アーカイブ解除
+        Assert.False(card.IsArchived);
+
+        vm.UndoCommand.Execute(null);
+
+        Assert.True(card.IsArchived);
+    }
+
+    [Fact]
+    public void OnlyMostRecentOperation_IsUndoable_WhenTwoOperationsHappen()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Id = "cardA" }, new Idea { Id = "cardB", IsArchived = false }],
+        });
+        var cardA = vm.AllCards.Single(c => c.Id == "cardA");
+        var cardB = vm.AllCards.Single(c => c.Id == "cardB");
+
+        vm.CommitDeleteWithUndo(cardA);
+        vm.ToggleArchiveCommand.Execute(cardB);
+
+        vm.UndoCommand.Execute(null);
+
+        // cardBのアーカイブだけが戻り、cardAは削除されたままである
+        Assert.False(cardB.IsArchived);
+        Assert.DoesNotContain(vm.AllCards, c => c.Id == "cardA");
+        Assert.False(vm.CanUndo);
+    }
+
+    [Fact]
+    public void LoadingNewWorkspace_ClearsUndoState_SoOldCardIsNotRestoredIntoNewFile()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "old" }] });
+        var oldCard = vm.AllCards.Single();
+        vm.CommitDeleteWithUndo(oldCard);
+        Assert.True(vm.CanUndo);
+
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "new" }] });
+
+        Assert.False(vm.CanUndo);
+        vm.UndoCommand.Execute(null); // 何も起きないことを確認する
+        Assert.Equal(new[] { "new" }, vm.AllCards.Select(c => c.Id));
+    }
+
+    [Fact]
+    public void DeleteCard_MarksDirty_AndUndoKeepsDataAsPendingSave()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1" }] });
+        var card = vm.AllCards.Single();
+        Assert.False(vm.HasChanges);
+
+        vm.CommitDeleteWithUndo(card);
+        Assert.True(vm.HasChanges);
+
+        vm.UndoCommand.Execute(null);
+
+        // Undo後も通常のカード変更として扱い、保存すれば解消される既存契約を維持する
+        Assert.True(vm.HasChanges);
+        vm.MarkSaved();
+        Assert.False(vm.HasChanges);
+    }
+
+    [Fact]
+    public void UndoHistory_IsNotIncludedInSavedWorkspace()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1" }, new Idea { Id = "card2" }] });
+        var card = vm.AllCards.Single(c => c.Id == "card2");
+
+        vm.CommitDeleteWithUndo(card);
+        var saved = vm.BuildWorkspaceForSave();
+
+        // 保存対象は削除後の状態のみで、Undo履歴由来のプロパティ等は含まれない
+        Assert.Single(saved.Ideas);
+        Assert.Equal("card1", saved.Ideas[0].Id);
+    }
+
+    [Fact]
+    public void TwoViewModels_UndoState_IsIndependent()
+    {
+        var vmA = new IdeaNestWorkspaceViewModel();
+        var vmB = new IdeaNestWorkspaceViewModel();
+        vmA.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "a1" }] });
+        vmB.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "b1" }] });
+
+        vmA.CommitDeleteWithUndo(vmA.AllCards.Single());
+
+        Assert.True(vmA.CanUndo);
+        Assert.False(vmB.CanUndo);
+    }
+
+    [Fact]
+    public void UndoCommand_CanExecute_ReflectsCanUndo()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1" }] });
+        var card = vm.AllCards.Single();
+
+        Assert.False(vm.UndoCommand.CanExecute(null));
+
+        vm.CommitDeleteWithUndo(card);
+
+        Assert.True(vm.UndoCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void ArchiveUndo_DoesNotForceCardIntoView_WhenFilterExcludesIt()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace { Ideas = [new Idea { Id = "card1", IsArchived = false }] });
+        var card = vm.AllCards.Single();
+
+        // アーカイブすると既定フィルタ（アクティブのみ）では一覧から消える
+        vm.ToggleArchiveCommand.Execute(card);
+        Assert.DoesNotContain(vm.VisibleCards, c => c.Id == "card1");
+
+        // 「アクティブのみ」フィルタのままUndo（アーカイブ解除へ戻す）しても、
+        // フィルタ条件は変更せず、対象カードを強制表示しない
+        vm.UndoCommand.Execute(null);
+
+        Assert.False(card.IsArchived);
+        Assert.Contains(vm.VisibleCards, c => c.Id == "card1");
+    }
+
+    [Fact]
+    public void DeleteUndo_RestoresToAllCards_ButNotToVisibleCards_WhenFilterExcludesIt()
+    {
+        var vm = new IdeaNestWorkspaceViewModel();
+        vm.LoadFromWorkspace(new Workspace
+        {
+            Ideas = [new Idea { Id = "card1", Tags = ["A"] }, new Idea { Id = "card2", Tags = ["B"] }],
+        });
+        vm.SelectedTag = "B";
+        var card = vm.AllCards.Single(c => c.Id == "card1");
+        Assert.DoesNotContain(vm.VisibleCards, c => c.Id == "card1"); // タグ絞り込みで最初から非表示
+
+        vm.CommitDeleteWithUndo(card);
+        vm.UndoCommand.Execute(null);
+
+        Assert.Contains(vm.AllCards, c => c.Id == "card1");
+        Assert.DoesNotContain(vm.VisibleCards, c => c.Id == "card1"); // フィルタを無視して強制表示しない
+    }
+
+    // ── CardOperationsService.RestoreDeleted: 単体での安全性確認 ──────────────
+
+    [Fact]
+    public void RestoreDeleted_OutOfRangeIndex_DoesNotThrow_AndAppendsSafely()
+    {
+        var ideas = new List<Idea>();
+        var cards = new ObservableCollection<IdeaCardViewModel>();
+        var svc = new CardOperationsService(ideas, cards, () => { }, () => { }, () => { });
+        var card = svc.CommitAdd(new Idea { Id = "kept", Title = "Kept" })!;
+        svc.CommitDelete(card);
+
+        svc.RestoreDeleted(card, 999);
+
+        Assert.Single(cards);
+        Assert.Same(card, cards[0]);
+        Assert.Single(ideas);
+    }
+
+    [Fact]
+    public void RestoreDeleted_CardAlreadyPresent_DoesNotDuplicate()
+    {
+        var ideas = new List<Idea>();
+        var cards = new ObservableCollection<IdeaCardViewModel>();
+        var svc = new CardOperationsService(ideas, cards, () => { }, () => { }, () => { });
+        var card = svc.CommitAdd(new Idea { Id = "present", Title = "Present" })!;
+
+        // 削除していない（既に存在する）状態で誤って復元を試みても重複させない
+        svc.RestoreDeleted(card, 0);
+
+        Assert.Single(cards);
+        Assert.Single(ideas);
+    }
 }
 
 // ── ID-14: 新規カード初期値・既存カード保持確認 ──────────────────────────────────────────

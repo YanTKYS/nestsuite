@@ -7,6 +7,23 @@
 
 ---
 
+## v2.18.14 — ID-6 IdeaNest 削除・アーカイブのUndo
+
+- **ID-6: IdeaNestでカードを削除・アーカイブ・アーカイブ解除した直後、直前1操作だけを取り消せるようにした。** 「安心して触れる」から「気軽に触れる」への改善が目的で、多段Undo・Redo・編集内容や並び替え・タグ・ピン留め・色変更のUndoは対象外。共通Undo基盤・Shell全体のCtrl+Zは追加していない。
+- **対象操作**: カード削除・アーカイブ・アーカイブ解除の3種。アーカイブとアーカイブ解除は`CardOperationsService.SetArchived`（変更前の値へ戻す共通経路。`ToggleArchive`はこれを呼ぶよう内部整理）で統一的に扱った。
+- **直前1操作のみ**: Undo情報は`IdeaNestWorkspaceViewModel`内のメモリ上state 1件のみで、新しいUndo対象操作（削除・アーカイブ・アーカイブ解除）が発生すると以前の情報を上書きする。Undo実行後は情報を必ずクリアし、Redoは保持しない。
+- **削除の復元**: `CardOperationsService.RestoreDeleted`で、削除時と同一の`IdeaCardViewModel`/`Idea`インスタンス（新しいIDは発行しない）を、記録した位置（範囲外はクランプ、既に存在する場合は重複させない）へ正本コレクション・表示用コレクションの両方へ再挿入する。タイトル・本文・タグ・色・ピン留め・アーカイブ状態を含む全データが保持される。
+- **フィルタ・ソートとの整合**: Undoは表示位置を無理に固定せず、既存の`RefreshVisible`をそのまま使って現在のフィルタ・ソート条件に従って再表示または非表示にする。フィルタ条件を変更してまで対象カードを強制表示することはしない。
+- **選択・スクロール**: ID-15で追加した「表示中の場合だけ選択・スクロールする」既存パターン（`SelectedCard`＋`ScrollRequested`）をUndo後の選択にもそのまま再利用した。新しい複雑なフォーカス制御は追加していない。
+- **Undo導線**: 既存のステータス表示領域（画面下部）へ、Undo可能時だけ表示される「元に戻す」ボタンを追加した（`CanUndo`にバインド）。新しい常設バー・Snackbar基盤は追加していない。ボタンは既存の`IdeaAccentBrush`/`IdeaHoverOverlayBrush`のみを使う軽量スタイル（新規固定色なし）。ToolTip・`AutomationProperties.Name`・既存`AutomationId`命名規則に沿った`IdeaNest.UndoButton`を設定した。
+- **キーボード**: Shell全体やIdeaNest全体のCtrl+Zは追加していない（テキスト編集のUndoとの競合、フォーカス位置による意味変化を避けるため）。Undoはボタン操作のみで提供する。
+- **dirty・自動保存との整合**: 削除・アーカイブでdirtyになる既存契約は変更せず、Undo後も通常のカード変更として扱い、保存対象のまま維持する（保存すれば解消される）。自動保存を停止・延期する仕組みは追加していない。Undoはファイル保存を巻き戻す機能ではなく、メモリ上のデータへ逆操作を行い通常の保存経路で保存する機能である。
+- **境界条件**: 別ファイル読み込み・再読込（`ReloadFromWorkspace`）時にUndo情報を破棄し、古いファイルのカードが新しいファイルへ復元されないようにした。Workspace破棄（`Dispose`）でもUndo情報をクリアする。複数IdeaNestタブはViewModelごとに独立したUndo状態を持つため混線しない。同一ViewModelを共有するdetached windowでも、既存の共有契約のとおり同じUndo状態が反映される。
+- **削除確認ダイアログ**: 既存の`IdeaConfirmWindow`確認ダイアログは維持した。ただしUndoの追加により「削除すると元に戻せません」という説明文が事実と異なるため、「削除直後なら「元に戻す」で取り消せますが、他の操作を行うと元に戻せません。」へ更新した（確認ダイアログの廃止・簡略化・確認なし削除は行っていない）。
+- テスト: `IdeaNestWorkspaceViewModelTests.cs`へ削除・アーカイブ・アーカイブ解除のUndo、直前1操作の上書き、範囲外index・重複カードの安全性、複数タブの独立性、フィルタ非表示時の非強制表示、dirty整合、保存JSONへUndo情報が含まれないことを確認するテストを追加した。`ID6UndoXamlTests.cs`（新規）で、UndoボタンのCommand/Visibility/ToolTip/AutomationProperties・新規固定色なし・Ctrl+Zキーバインド不追加・既存AutomationId維持を静的に確認した。`DeleteIdeaCommand`は既存WPF Window確認ダイアログのためSTA依存で単体テストできない（既存方針どおり）。削除確認を伴わない`CommitDeleteWithUndo`（新規public、ID-15の`ApplyNewCardPositionFeedback`と同じ理由でテスト用に公開）で削除＋Undo登録のロジックを確認した。既存テストの削除・skipはしていない。
+- backlog: ID-6を完了済み欠番としてbacklog.mdから削除した。ID-4・ID-5・ID-7・ID-8・ID-10・ID-12・ID-13は変更していない。AT-1〜AT-5の状態も変更していない。Undoの他Workspace（NoteNest・ChatNest・TempNest）展開やRedo・多段Undoは新規backlogへ追加していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・IdeaNestの既存保存形式の変更なし（Undo情報はメモリ上のみで`.nestsuite`/旧IdeaNest形式/session/draft/UI設定/最近使ったファイル/backup/sidecarのいずれにも含まれない）。外部依存追加なし。
+
 ## v2.18.13 — TD-84 / AT-4 利用者向け文書の鮮度修正・旧チュートリアル資産の死活判定
 
 - **TD-84 / AT-4: README・ユーザーガイド・既知制約文書を現行実装と照合し、不一致を修正した。** 魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-4）で指摘された「最初に読む文書の鮮度」を修正する docs 専用対応。機能追加・UI変更・保存形式変更は行っていない。
