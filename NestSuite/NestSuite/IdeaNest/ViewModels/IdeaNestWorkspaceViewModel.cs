@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -10,6 +11,7 @@ using NestSuite.IdeaNest.Commands;
 using NestSuite.IdeaNest.Models;
 using NestSuite.IdeaNest.Services;
 using NestSuite.IdeaNest.Views;
+using NestSuite.Services;
 
 namespace NestSuite.IdeaNest.ViewModels;
 
@@ -164,9 +166,9 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public ICommand ClearSearchCommand { get; }
     public ICommand ClearColorCommand { get; }
     public ICommand ManageTagsCommand { get; }
-    public ICommand ExportMarkdownCommand { get; }
+    public IdeaNestRelayCommand ExportMarkdownCommand { get; }
     public ICommand CopyCardMarkdownCommand { get; }
-    public ICommand CopyAllMarkdownCommand { get; }
+    public IdeaNestRelayCommand CopyAllMarkdownCommand { get; }
     public ICommand ExportNoteNestCommand { get; }
     public ICommand CopyNoteNestCommand { get; }
     public ICommand ToggleTagPanelCommand { get; }
@@ -265,10 +267,11 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         TagPanel = new TagPanelViewModel(OnTagPanelChanged, tag => SelectedTag = tag);
         TagPanel.PropertyChanged += OnSubVmPropertyChanged;
 
-        // No-op export commands
-        ExportMarkdownCommand   = new IdeaNestRelayCommand(_ => { });
+        // ID-10: 表示中カードのMarkdown出力（保存・コピー）。表示中カードが1件もない場合は無効。
+        ExportMarkdownCommand   = new IdeaNestRelayCommand(_ => ExportVisibleCardsAsMarkdown(), _ => VisibleCards.Count > 0);
         CopyCardMarkdownCommand = new IdeaNestRelayCommand(_ => { });
-        CopyAllMarkdownCommand  = new IdeaNestRelayCommand(_ => { });
+        CopyAllMarkdownCommand  = new IdeaNestRelayCommand(_ => CopyVisibleCardsAsMarkdown(), _ => VisibleCards.Count > 0);
+        // No-op export commands（NoteNest形式は今回のID-10対象外）
         ExportNoteNestCommand   = new IdeaNestRelayCommand(_ => { });
         CopyNoteNestCommand     = new IdeaNestRelayCommand(_ => { });
 
@@ -687,6 +690,64 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     // ── クリップボード・ファイルインポート ────────────────────────────────────
 
+    // ── ID-10: 表示中カードのMarkdown出力 ─────────────────────────────────────
+
+    /// <summary>
+    /// ID-10: 表示中カード（<see cref="VisibleCards"/>）を、現在の表示順のまま Markdown へ変換し
+    /// クリップボードへコピーする。フィルタ・ソート・アーカイブ表示条件の再判定はせず、
+    /// 表示中コレクションをそのままスナップショット化するだけの読み取り専用操作（dirty化しない）。
+    /// </summary>
+    private void CopyVisibleCardsAsMarkdown()
+    {
+        var cards = VisibleCards.ToList();
+        if (cards.Count == 0)
+        {
+            ShowStatus("出力するカードがありません");
+            return;
+        }
+
+        var markdown = IdeaNestMarkdownExporter.Build(cards);
+        try
+        {
+            _ui.SetClipboardText(markdown);
+            ShowStatus($"表示中の{cards.Count}件をMarkdownとしてコピーしました");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("IdeaNestMarkdownCopy", ex, "IdeaNest");
+            _ui.ShowError("Markdownのコピーに失敗しました。");
+        }
+    }
+
+    /// <summary>
+    /// ID-10: 表示中カードを Markdown ファイルとして保存する。保存先はSaveFileDialogで選択させ、
+    /// キャンセル時は何もしない（通知もErrorLog記録もしない）。読み取り専用操作でdirty化しない。
+    /// </summary>
+    private void ExportVisibleCardsAsMarkdown()
+    {
+        var cards = VisibleCards.ToList();
+        if (cards.Count == 0)
+        {
+            ShowStatus("出力するカードがありません");
+            return;
+        }
+
+        var path = _ui.ShowSaveMarkdownDialog("IdeaNest-export.md");
+        if (path == null) return;
+
+        var markdown = IdeaNestMarkdownExporter.Build(cards);
+        try
+        {
+            AtomicFileWriter.WriteAllText(path, markdown, Encoding.UTF8);
+            ShowStatus($"表示中の{cards.Count}件をMarkdownへ保存しました");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("IdeaNestMarkdownExport", ex, "IdeaNest", path);
+            _ui.ShowError("Markdownの保存に失敗しました。");
+        }
+    }
+
     public bool PasteAsNewCard()
     {
         string text;
@@ -754,6 +815,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         RefreshColorCounts();
         RaiseCountAndEmptyStateChanged();
         RandomPreviewCommand.RaiseCanExecuteChanged();
+        ExportMarkdownCommand.RaiseCanExecuteChanged();
+        CopyAllMarkdownCommand.RaiseCanExecuteChanged();
     }
 
     /// <summary>
