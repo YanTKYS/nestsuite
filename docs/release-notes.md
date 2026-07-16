@@ -7,6 +7,17 @@
 
 ---
 
+## v2.18.13 — TD-84 / AT-4 利用者向け文書の鮮度修正・旧チュートリアル資産の死活判定
+
+- **TD-84 / AT-4: README・ユーザーガイド・既知制約文書を現行実装と照合し、不一致を修正した。** 魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-4）で指摘された「最初に読む文書の鮮度」を修正する docs 専用対応。機能追加・UI変更・保存形式変更は行っていない。
+- **README**: NoteNest スキーマ表記を `1.4.1` → `1.4.2` へ修正。Workspace ファイル形式の表からワークスペースごとの独立拡張子表記を整理し、新規保存の標準拡張子が `.nestsuite`（v2.14.1〜、旧 `.notenest`/`.chatnest`/`.ideanest` は互換読み込み）であることを明記。ファイル関連付け説明に `.nestsuite` を追加。NoteNest の自動保存間隔を実装どおり「30 秒間隔」（SH-33 統一 tick）へ修正（旧「5 分間隔」は誤記）。
+- **ユーザーガイド**（`docs/guide/nestsuite-user-guide.md`）: 冒頭説明にTempNestを追加し4 Workspace表記へ修正。起動時説明を「無題NoteNestタブから始まる」→実装どおり「TempNestタブがアクティブ」へ修正。「3ツールとファイル形式」節を「4 Workspaceとファイル形式」へ改め`.nestsuite`統一を反映。Shell横断検索の対象範囲（開いているタブのみ）を新たに明記し、AT-2（将来案）と混同しないよう現状のみを記載。「最後のタブを閉じると無題NoteNestタブが自動作成される」という記載を、実装どおり「TempNestタブがアクティブになる」へ修正。GitHubリポジトリ名変更を「予定」から「完了済み」の記載へ修正。ファイルを開くダイアログの対応拡張子に`.nestsuite`を追加。
+- **既知制約文書**（`docs/design/nestsuite-known-limitations.md`）: ヘッダーをv2.18.13へ更新。解消済み制約（タブ並び替え未対応、ファイル指定起動時はセッション復元しない、NoteNest単体版`MainWindow`の互換ルート残存、NoteNest schema `1.4.1`固定）を削除・修正した。`MainWindow.xaml`等の旧単体アプリ資産は現在コードベースに存在しないことをソースコードで確認した。`.nestsuite`統一・横断検索の対象範囲（開いているタブのみ）を新たに記載した。
+- **旧チュートリアル資産の死活判定**: `TutorialWindow`（XAML・code-behind）・`tutorial.png`・`DialogService.ShowTutorial()`を調査した。現行NestSuiteのメニュー・コードのいずれからも呼び出し元がないことを確認した（`ArchitectureBoundaryTests.cs`内の`"new TutorialWindow"`は禁止パターン一覧の一部であり実際の呼び出しではない）。判定は **B（到達不能だが再利用可能）**: 削除は複数ファイル（XAML/code-behind/画像/csproj Resource定義/DialogService/ArchitectureBoundaryTests）にまたがるため今回は見送り、`docs/development/tutorial-assets-liveness.md`（新規）に現状・判定根拠・将来の対応条件（削除条件・再利用条件）・AT-5（初回空状態の一行ガイド）との関係を記録した。削除・復活はいずれも今回実施していない。
+- backlog: TD-84を完了済み欠番としてbacklog.mdから削除した。旧チュートリアル資産の削除判断を新規 **TD-85**（優先度C、`tutorial-assets-liveness.md`の対応条件成立が着手条件）として追加した。AT-1・AT-2・AT-3・AT-5・ID-6・ID-10は実装しておらず、CH-17等の既存判断も変更していない。
+- テスト: 文書のみの修正のため、既存のdocs-contractテストに影響がないことを確認した（本バージョンの新規文言を固定する静的テストは追加していない）。既存テストの削除・skipはしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・各Workspaceの既存保存形式の変更なし。外部依存追加なし。ソースコード・XAML・UIの変更なし（docsのみ）。
+
 ## v2.18.12 — CH-16 ChatNest 操作の発見性整理
 
 - **CH-16: ChatNestに蓄積した既存操作の入口を棚卸しし、常時表示・Hover/ContextMenu・Tooltip/ヘルプの役割を整理した。** 新しい操作は追加せず、既存操作・ショートカット・ContextMenu項目も削除していない。CH-17（送信前プレビュー）・CH-12（発言者カスタマイズ）は今回実装していない。

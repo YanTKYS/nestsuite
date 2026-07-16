@@ -172,13 +172,14 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-77 は v2.17.9、TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5、TD-81 は v2.17.6、TD-82 は v2.17.7、TD-82-1 は v2.17.8 で完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
+TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-77 は v2.17.9、TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5、TD-81 は v2.17.6、TD-82 は v2.17.7、TD-82-1 は v2.17.8、TD-84 は v2.18.13 で完了済み（欠番）。詳細は `docs/release-notes.md` 参照。
 
 **TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了した。全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` 読込は 1 回、保存後内部状態同期（`SavedWorkspaceStateUpdater`）・NoteNest ViewModel タブ同期（`SyncNoteNestTabForViewModel`）は 0 回になった。既に判定済み・信頼できる WorkspaceKind とファイルパスの組み合わせをファイル I/O なしで確認する `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind` を追加し、保存直後・ViewModel 同期の内部経路はこれと `FromResolvedKind` へ切り替えた（利用者が任意のファイルを開く入口は引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。詳細な実装経緯は `docs/release-notes.md`（v2.16.32〜v2.16.39）と `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | TD-83 | 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定 | `docs/planning/docs-inventory-and-archive-policy.md` の次回候補に基づき、完了済み editor 設計文書、`docs/integration/README.md`、`docs/migration/README.md`、`docs/operations/operation-note.md` の扱いを小さく再判定する。Delete Candidate の即削除は行わない | C |
+| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | `docs/development/tutorial-assets-liveness.md`（TD-84 で作成）の死活判定B（到達不能だが再利用可能）を踏まえ、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述 / `docs/testing/test-scenarios.md` の対応手順を、削除または導線復活のいずれかへ確定する。同文書記載の「将来の対応条件」いずれか成立が着手条件 | C |
 
 ---
 
