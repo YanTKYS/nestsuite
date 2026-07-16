@@ -7,6 +7,24 @@
 
 ---
 
+## v2.18.16 — ID-10 / AT-3 フェーズ1 IdeaNest 表示中カードのMarkdown出力
+
+- **ID-10 / AT-3 フェーズ1: IdeaNestの表示中カードを、現在の表示順のままMarkdownへ変換し、クリップボードコピーとファイル保存の両方で出力できるようにした。** 魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-3「成果物出力の均質化」）のフェーズ1対応で、正式backlog番号はID-10。AT-3全体（他Workspaceを含む導線・語彙の統一）は今回完了していない。
+- **出力対象**: `IdeaNestWorkspaceViewModel.VisibleCards`（フィルタ・検索・アーカイブ表示条件を適用済みの表示中コレクション）を操作開始時にスナップショット化（`VisibleCards.ToList()`）したものだけを対象とした。`AllCards`（全カード）やアーカイブ非表示中のカードは対象外。表示順（ピン留め優先＋現在のソート/シャッフル順）はそのまま用い、エクスポータ内で並び替え・フィルタの再実装はしていない。
+- **出力するカード情報**: タイトル（`DisplayTitle`。空タイトルは既存UIと同じ無題表示、下層の`Idea.Title`自体は変更しない）・本文（改行保持、Markdown記号は本文としてそのままエスケープせず出力）・タグ（カンマ区切り、なしは「タグ: なし」）・色（保存値そのまま、未設定は「色: 既定」）・ピン留め（「あり/なし」）・アーカイブ状態（「あり/なし」、アーカイブのみ表示モードでも判別できるよう明示）。作成日時・更新日時は含めていない。
+- **Markdown形式**: `# IdeaNest エクスポート`の文書見出し＋カードごとの`## タイトル`見出し＋タグ/色/ピン留め/アーカイブの箇条書き＋本文、カード間のみ`---`で区切り（末尾には付けない）。新規に`IdeaNestMarkdownExporter`（`NestSuite.IdeaNest.Services`、WPF非依存の純粋な文字列生成のみ）を追加し、ChatNestの既存エクスポート設計（`ChatNestExportFormatter`の見出し構成）を踏襲した。CSV・JSON・HTML・PDF・Excel出力は実装していない。
+- **操作導線**: 新しいメニュー項目・ボタン・ショートカットは追加していない。`IdeaNestWorkspaceView.xaml`に既存していた「ファイル」→「エクスポート」→「Markdown風テキスト」（`ExportMarkdownCommand`）と「編集」→「表示中カードをMarkdown形式でコピー」（`CopyAllMarkdownCommand`、既存のCtrl+Shift+Cショートカット）の2つの空実装コマンドへ、実際の保存・コピー処理を実装した。カード個別の`CopyCardMarkdownCommand`（コンテキストメニュー）は今回のID-10対象外（表示中カード全体が対象）のため変更していない。
+- **0件時の動作**: 表示中カードが1件もないとき、両コマンドは`CanExecute`がfalseとなり無効化される（`RefreshVisible`実行時に`RaiseCanExecuteChanged`を呼び、フィルタ変更等でも即時反映）。防御的に呼び出された場合もファイル・クリップボードへの出力は行わず、「出力するカードがありません」という短い通知のみ表示する。
+- **クリップボードコピー**: 成功時は「表示中のN件をMarkdownとしてコピーしました」を既存のステータス表示（`ShowStatus`、3秒で自動消去）で通知。失敗時（クリップボード使用中など）は成功通知を出さず、`_ui.ShowError`で簡潔なエラーを表示し、`ErrorLogService.Log("IdeaNestMarkdownCopy", ...)`へErrorとして記録する。カード内容・dirty状態は変更しない。
+- **ファイル保存**: `SaveFileDialog`（フィルタ`Markdownファイル (*.md)|*.md|すべてのファイル (*.*)|*.*`、既定拡張子`.md`、既定ファイル名`IdeaNest-export.md`）を表示し、キャンセル時はファイル作成・通知・ErrorLog記録のいずれも行わない。保存は既存の`AtomicFileWriter.WriteAllText`（UTF-8、ChatNestの外部ファイル出力と同じ呼び出し方でバックアップなし）を使用し、成功時は「表示中のN件をMarkdownへ保存しました」を通知、失敗時はエラー表示と`ErrorLogService.Log("IdeaNestMarkdownExport", ...)`へのError記録を行う。
+- **責務の分離**: Markdown整形（`IdeaNestMarkdownExporter.Build`、静的・WPF非依存・単体テスト可能）、クリップボード操作・SaveFileDialog表示は`IdeaNestWorkspaceUiService`（テストから差し替え可能にするためsealedを解除しvirtual化）を経由する構成とし、全Workspace共通のExportManager・汎用テンプレートエンジン・`IExporter`プラグイン構造・共通ExportWindowは作成していない。
+- **detached window・dirty・自動保存への影響**: コマンドは`IdeaNestWorkspaceViewModel`側に実装しているため、detached windowでも同じコマンドがそのまま機能する。SaveFileDialog・エラー表示のOwner解決は既存の`IdeaNestWorkspaceUiService`のOwnerリゾルバをそのまま利用する。読み取り専用操作としてコピー・保存前後で`HasChanges`・カード内容・更新日時・表示順・選択・フィルタ・検索文字列・ピン留め/アーカイブ状態は変化しない。自動保存の一時停止や新しい保存ロックは追加していない。
+- テスト: `IdeaNestMarkdownExporterTests.cs`（新規）でMarkdown整形（単一/複数カード、区切り、末尾改行の安定性、タイトル見出し化とタイトル内改行の正規化、無題カードのプレースホルダー、本文の改行保持とMarkdown記号の非エスケープ、タグあり/なし、色、ピン留め/アーカイブの表示、本文なしカードの省略、日本語テキストの保持）を確認。`IdeaNestMarkdownExportCommandTests.cs`（新規）で、`IdeaNestWorkspaceUiService`をテスト用に差し替えて実クリップボード・実ダイアログに依存せず、CanExecuteの表示件数連動、0件時の無効化と防御的呼び出し時の非出力、コピー成功/失敗時の通知とdirty不変、保存成功（UTF-8ファイル内容確認）/キャンセル時の非作成、表示中カードのみが対象でフィルタ・アーカイブ非表示カードが含まれないこと、複数ViewModelインスタンス間で表示中カードが混線しないことを確認した。既存テストの削除・skipはしていない。
+- backlog: ID-10を完了済み欠番としてbacklog.mdから削除した（Markdown出力のみで、CSVは今回未実装であることを明記）。ID-4・ID-5・ID-7・ID-8・ID-12・ID-13、AT-1・AT-2は変更していない。AT-3全体は完了とせず、フェーズ2（他Workspaceを含む導線・語彙の統一）は今回のbacklogへ新規追加していない。CSV出力・テンプレート機構・全Workspace共通の出力基盤も新規backlogへ追加していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・IdeaNestの既存保存形式の変更なし（Markdown出力は外部ファイル・クリップボードのみへの読み取り専用出力で、IdeaNestの保存データには一切含まれない）。外部依存追加なし。
+
+---
+
 ## v2.18.15 — SH-39 / AT-5 初回相当の空状態での一行ガイド
 
 - **SH-39 / AT-5: TempNestが初回相当の空状態のときだけ、TempNestへ書き始められること・「＋」から他Workspaceを開始できることを伝える一行ガイドを表示するようにした。** 常設ホーム画面・ウェルカム画面・チュートリアルウィザードは作成していない。魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-5）の対応で、正式backlog番号はSH-39。
