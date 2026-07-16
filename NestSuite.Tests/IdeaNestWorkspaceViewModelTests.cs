@@ -455,7 +455,7 @@ public class IdeaNestWorkspaceViewModelTests
         var ideas = new List<Idea>();
         var cards = new ObservableCollection<IdeaCardViewModel>();
         var svc = new CardOperationsService(ideas, cards, () => { }, () => { }, () => { });
-        var card = svc.CommitAdd(new Idea { Id = "kept" })!;
+        var card = svc.CommitAdd(new Idea { Id = "kept", Title = "Kept" })!;
         svc.CommitDelete(card);
 
         svc.RestoreDeleted(card, 999);
@@ -471,7 +471,7 @@ public class IdeaNestWorkspaceViewModelTests
         var ideas = new List<Idea>();
         var cards = new ObservableCollection<IdeaCardViewModel>();
         var svc = new CardOperationsService(ideas, cards, () => { }, () => { }, () => { });
-        var card = svc.CommitAdd(new Idea { Id = "present" })!;
+        var card = svc.CommitAdd(new Idea { Id = "present", Title = "Present" })!;
 
         // 削除していない（既に存在する）状態で誤って復元を試みても重複させない
         svc.RestoreDeleted(card, 0);
