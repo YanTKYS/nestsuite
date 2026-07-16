@@ -110,6 +110,7 @@ public class NestSuiteDocsContractTests
         // ID-6 は v2.18.2/v2.18.8/v2.18.13 等の release notes 内で「今回は実装していない」対象として
         // 既に言及されているため、見出し専用の文字列で確認する。
         yield return new object[] { "v2.18.14", "ID-6", "v2.18.14 — ID-6" };
+        yield return new object[] { "v2.18.15", "SH-39", "SH-39" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -242,6 +243,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "CH-16" };
         yield return new object[] { "TD-84" };
         yield return new object[] { "ID-6" };
+        yield return new object[] { "SH-39" };
     }
 
     [Theory]

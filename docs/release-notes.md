@@ -7,6 +7,21 @@
 
 ---
 
+## v2.18.15 — SH-39 / AT-5 初回相当の空状態での一行ガイド
+
+- **SH-39 / AT-5: TempNestが初回相当の空状態のときだけ、TempNestへ書き始められること・「＋」から他Workspaceを開始できることを伝える一行ガイドを表示するようにした。** 常設ホーム画面・ウェルカム画面・チュートリアルウィザードは作成していない。魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-5）の対応で、正式backlog番号はSH-39。
+- **表示文言**: 「まずはここへ書き出せます。他のWorkspaceは上の「＋」から始められます。」の1行。新しいボタン・リンクは追加せず、既存のタブ追加「＋」ボタンをテキストで案内するのみ。
+- **表示条件**: TempNestの4スロットすべてが空（既存の`ClearCommand`活性化条件と同じ`IsNullOrEmpty`判定を再利用。空白文字だけの入力は「空でない」扱い）、かつ同一起動中に再開対象（通常タブの追加・復元、起動引数によるファイルオープン、session復元保留 entry）またはTempNest自身への入力がまだ一度もないこと。初回フラグはUI settingsへ追加せず永続化していない。
+- **判定ロジック**: `TempNestSlotViewModel.IsEmpty`（新規、4スロット合成が`TempNestWorkspaceViewModel.IsCompletelyEmpty`）と、表示可否を表す読み取り専用の派生プロパティ`ShouldShowGettingStartedHint`を追加した。Shell・TempNestの責務は分離したまま（TempNestは自分のスロットが空かだけを把握、Shellは通常タブ・session・起動引数の状態を把握）、両者を組み合わせる大規模な責務再編は行っていない。
+- **同一起動中の抑止**: `TempNestWorkspaceViewModel.MarkGettingStartedHintDismissed()`（単発ラッチ、一度真になったら偽へ戻さない）を、(1) TempNest自身への入力時（クリアして再び空になっても再表示しない）、(2) 通常タブが追加されたとき（新規作成・ファイルを開く・session復元・draft復元・TN-3昇格・pipe/二重起動転送のいずれの経路でも、最終的に`_tabs.Add`を通る1箇所の`CollectionChanged`購読で検知）、(3) session復元保留entryが存在するとき、の3経路から呼ぶ。「今後表示しない」設定・閉じるボタンは追加していない。
+- **配置**: TempNestWorkspaceViewの2×2スロット領域の上部に、既存の空状態案内と同じトーン（`IsHitTestVisible="False"`、既存の補助文字色`MutedFg`）で表示する。新しい固定色は追加していない。既存4スロットの操作・レイアウトは変更していない。
+- **起動処理への影響**: 新たなファイルスキャン・recent files全読込・Workspaceファイル解析・session再読込・draft再走査は行っていない。既存の起動処理が既に把握している状態（`_tabs`の内容・`_pendingSessionRestoreEntries`）だけを利用する軽量な判定。
+- **AT-1との境界**: 最近使ったファイル・TempNest残存・draft復元候補等をカード・一覧・パネルとして表示するAT-1「続きから」スタートパネルは実装していない。今回は「再開対象が何もない場合の短い案内」に限定した、将来AT-1へ置き換えられる軽量な表示。
+- **旧TutorialWindowとの関係**: `TutorialWindow`の導線復活・`tutorial.png`の差し替え・旧チュートリアルの削除は行っていない。TD-85（`docs/development/tutorial-assets-liveness.md`記載の削除判断）はトリガー待ちのまま維持する。
+- テスト: `TempNestTests.cs`へ、`IsEmpty`判定（既定値・タイトルのみ・本文のみ・空白文字のみ）、`ShouldShowGettingStartedHint`の表示・非表示条件、クリア後の非再表示、`MarkGettingStartedHintDismissed`の冪等性とPropertyChanged発火、静的UI契約（AutomationId・Visibilityバインディング・IsHitTestVisible・既存DynamicResource使用・固定色不使用・既存4スロットの維持）を確認するテストを追加した。Shellの通常タブ追加検知・復元保留経路はShell（`NestSuiteShellWindow`）の直接構築を伴うため、既存方針どおりユニットテスト対象外とし、コードレビューと実機確認で担保する。既存テストの削除・skipはしていない。
+- backlog: SH-39を完了済み欠番としてbacklog.mdへ反映した（新規追加ではなく、既存の完了済み一覧文への追記）。AT-1・AT-2・AT-3・AT-4・ID-10・TD-85は変更していない。常設ホーム画面・初回チュートリアル拡張の新規backlog追加も行っていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・TempNestの既存保存形式（`tempnest.json`）の変更なし（ガイド表示状態はメモリ上のみでいずれの保存データにも含まれない）。外部依存追加なし。
+
 ## v2.18.14 — ID-6 IdeaNest 削除・アーカイブのUndo
 
 - **ID-6: IdeaNestでカードを削除・アーカイブ・アーカイブ解除した直後、直前1操作だけを取り消せるようにした。** 「安心して触れる」から「気軽に触れる」への改善が目的で、多段Undo・Redo・編集内容や並び替え・タグ・ピン留め・色変更のUndoは対象外。共通Undo基盤・Shell全体のCtrl+Zは追加していない。

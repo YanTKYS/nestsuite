@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Background="{DynamicResource AppBg}" Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="8"/>
             <RowDefinition Height="*"/>
@@ -13,8 +14,20 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- AT-5: 初回相当の空状態でだけ表示する一行ガイド。常設バー・ダイアログ・画像は使わない -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                   Text="まずはここへ書き出せます。他のWorkspaceは上の「＋」から始められます。"
+                   Foreground="{DynamicResource MutedFg}"
+                   FontSize="12"
+                   Margin="0,0,0,8"
+                   TextWrapping="Wrap"
+                   IsHitTestVisible="False"
+                   AutomationProperties.AutomationId="TempNest.GettingStartedHint"
+                   AutomationProperties.Name="まずはここへ書き出せます。他のWorkspaceは上の「＋」から始められます。"
+                   Visibility="{Binding ShouldShowGettingStartedHint, Converter={StaticResource BoolToVis}}"/>
+
         <!-- Slot 1: Top-Left -->
-        <Border Grid.Row="0" Grid.Column="0"
+        <Border Grid.Row="1" Grid.Column="0"
                 BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"
                 CornerRadius="4" Background="{DynamicResource SidebarBg}">
             <DockPanel Margin="10">
@@ -99,7 +112,7 @@
         </Border>
 
         <!-- Slot 2: Top-Right -->
-        <Border Grid.Row="0" Grid.Column="2"
+        <Border Grid.Row="1" Grid.Column="2"
                 BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"
                 CornerRadius="4" Background="{DynamicResource SidebarBg}">
             <DockPanel Margin="10">
@@ -184,7 +197,7 @@
         </Border>
 
         <!-- Slot 3: Bottom-Left -->
-        <Border Grid.Row="2" Grid.Column="0"
+        <Border Grid.Row="3" Grid.Column="0"
                 BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"
                 CornerRadius="4" Background="{DynamicResource SidebarBg}">
             <DockPanel Margin="10">
@@ -269,7 +282,7 @@
         </Border>
 
         <!-- Slot 4: Bottom-Right -->
-        <Border Grid.Row="2" Grid.Column="2"
+        <Border Grid.Row="3" Grid.Column="2"
                 BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"
                 CornerRadius="4" Background="{DynamicResource SidebarBg}">
             <DockPanel Margin="10">

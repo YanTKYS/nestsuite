@@ -17,14 +17,20 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     public string Title
     {
         get => _title;
-        set { if (SetProperty(ref _title, value)) Changed?.Invoke(); }
+        set { if (SetProperty(ref _title, value)) { OnPropertyChanged(nameof(IsEmpty)); Changed?.Invoke(); } }
     }
 
     public string Body
     {
         get => _body;
-        set { if (SetProperty(ref _body, value)) Changed?.Invoke(); }
+        set { if (SetProperty(ref _body, value)) { OnPropertyChanged(nameof(IsEmpty)); Changed?.Invoke(); } }
     }
+
+    /// <summary>
+    /// AT-5: スロットが空かどうか。既存の<see cref="ClearCommand"/>の活性化条件
+    /// （空白文字だけの入力は「空でない」として扱う）と同じ判定を再利用する。
+    /// </summary>
+    public bool IsEmpty => string.IsNullOrEmpty(Title) && string.IsNullOrEmpty(Body);
 
     /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知の文言。空文字なら非表示。</summary>
     public string FeedbackMessage => _feedbackMessage;
@@ -137,6 +143,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
         _body  = slot.Body;
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Body));
+        OnPropertyChanged(nameof(IsEmpty));
     }
 
     public void Dispose()

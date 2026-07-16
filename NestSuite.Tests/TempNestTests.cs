@@ -530,4 +530,170 @@ public class TempNestTests
         Assert.True(File.Exists(path), $"TempNestWorkspaceView.xaml not found: {path}");
         return File.ReadAllText(path);
     }
+
+    // ── AT-5: 初回相当の空状態での一行ガイド ─────────────────────────────────
+
+    [Fact]
+    public void TempNestSlotViewModel_IsEmpty_TrueByDefault()
+    {
+        var slot = new TempNestSlotViewModel();
+        Assert.True(slot.IsEmpty);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_IsEmpty_False_WhenTitleNonEmpty()
+    {
+        var slot = new TempNestSlotViewModel { Title = "メモ" };
+        Assert.False(slot.IsEmpty);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_IsEmpty_False_WhenBodyNonEmpty()
+    {
+        var slot = new TempNestSlotViewModel { Body = "本文" };
+        Assert.False(slot.IsEmpty);
+    }
+
+    [Fact]
+    public void TempNestSlotViewModel_IsEmpty_False_WhenWhitespaceOnly()
+    {
+        // 既存の ClearCommand 活性化条件（IsNullOrEmpty）と同じ判定を再利用しているため、
+        // 空白文字だけの入力は「空でない」として扱われる。
+        var slot = new TempNestSlotViewModel { Title = "   " };
+        Assert.False(slot.IsEmpty);
+    }
+
+    /// <summary>
+    /// AT-5: <see cref="TempNestWorkspaceViewModel"/> は構築時に実ファイル
+    /// （%APPDATA%\NoteNest\tempnest.json）を読み込むため、環境依存を避けて
+    /// <see cref="TempNestSlotViewModel.LoadFromSlot"/>（Changed を発火しない経路）で
+    /// 明示的に空へ揃える。<see cref="TempNestWorkspaceViewModel.MarkGettingStartedHintDismissed"/>
+    /// を誤って呼ばないため。
+    /// </summary>
+    private static TempNestWorkspaceViewModel MakeEmptyTempNestViewModel()
+    {
+        var vm = new TempNestWorkspaceViewModel();
+        foreach (var slot in new[] { vm.Slot1, vm.Slot2, vm.Slot3, vm.Slot4 })
+            slot.LoadFromSlot(new TempNestSlot());
+        return vm;
+    }
+
+    [Fact]
+    public void ShouldShowGettingStartedHint_True_WhenAllSlotsEmpty_AndNotDismissed()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+
+        Assert.True(vm.IsCompletelyEmpty);
+        Assert.True(vm.ShouldShowGettingStartedHint);
+    }
+
+    [Fact]
+    public void ShouldShowGettingStartedHint_False_WhenAnySlotHasTitle()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+
+        vm.Slot2.Title = "タイトルだけ";
+
+        Assert.False(vm.IsCompletelyEmpty);
+        Assert.False(vm.ShouldShowGettingStartedHint);
+    }
+
+    [Fact]
+    public void ShouldShowGettingStartedHint_False_WhenAnySlotHasBody()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+
+        vm.Slot3.Body = "本文だけ";
+
+        Assert.False(vm.IsCompletelyEmpty);
+        Assert.False(vm.ShouldShowGettingStartedHint);
+    }
+
+    [Fact]
+    public void ShouldShowGettingStartedHint_RemainsFalse_AfterClearingSlot_WithinSameSession()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+
+        vm.Slot1.Body = "下書き";
+        Assert.False(vm.ShouldShowGettingStartedHint);
+
+        vm.Slot1.Body = ""; // クリア（再び空になる）
+
+        Assert.True(vm.IsCompletelyEmpty);
+        Assert.False(vm.ShouldShowGettingStartedHint); // 同一起動中は再表示しない
+    }
+
+    [Fact]
+    public void MarkGettingStartedHintDismissed_MakesShouldShowFalse_EvenWhenStillEmpty()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+        Assert.True(vm.ShouldShowGettingStartedHint);
+
+        vm.MarkGettingStartedHintDismissed();
+
+        Assert.True(vm.IsCompletelyEmpty);
+        Assert.False(vm.ShouldShowGettingStartedHint);
+    }
+
+    [Fact]
+    public void MarkGettingStartedHintDismissed_IsIdempotent()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+
+        vm.MarkGettingStartedHintDismissed();
+        vm.MarkGettingStartedHintDismissed();
+
+        Assert.False(vm.ShouldShowGettingStartedHint);
+    }
+
+    [Fact]
+    public void ShouldShowGettingStartedHint_RaisesPropertyChanged_WhenSlotEditedAndWhenDismissed()
+    {
+        using var vm = MakeEmptyTempNestViewModel();
+        var raised = new List<string?>();
+        vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        vm.Slot1.Title = "テスト";
+        Assert.Contains(nameof(TempNestWorkspaceViewModel.ShouldShowGettingStartedHint), raised);
+
+        raised.Clear();
+        vm.MarkGettingStartedHintDismissed();
+        // 既に非表示（Slot1入力で dismiss 済み）のため、再度のdismissでは変化なし＝再通知不要
+        Assert.DoesNotContain(nameof(TempNestWorkspaceViewModel.ShouldShowGettingStartedHint), raised);
+    }
+
+    [Fact]
+    public void TempNestWorkspaceView_Xaml_HasGettingStartedHint_BoundToShouldShowGettingStartedHint()
+    {
+        var xaml = ReadTempNestWorkspaceViewXaml();
+        Assert.Contains("AutomationId=\"TempNest.GettingStartedHint\"", xaml);
+        Assert.Contains("Visibility=\"{Binding ShouldShowGettingStartedHint, Converter={StaticResource BoolToVis}}\"", xaml);
+    }
+
+    [Fact]
+    public void TempNestWorkspaceView_Xaml_GettingStartedHint_IsNotHitTestable_AndUsesExistingMutedForeground()
+    {
+        var xaml = ReadTempNestWorkspaceViewXaml();
+        var idx = xaml.IndexOf("TempNest.GettingStartedHint", StringComparison.Ordinal);
+        Assert.True(idx >= 0);
+        var start = xaml.LastIndexOf('<', idx);
+        var end = xaml.IndexOf("/>", idx, StringComparison.Ordinal);
+        var block = xaml.Substring(start, end - start);
+
+        Assert.Contains("IsHitTestVisible=\"False\"", block);
+        Assert.Contains("Foreground=\"{DynamicResource MutedFg}\"", block);
+        Assert.DoesNotContain("Foreground=\"#", block);
+    }
+
+    [Fact]
+    public void TempNestWorkspaceView_Xaml_StillHasAllFourSlots_AfterAddingHintRow()
+    {
+        // AT-5: ガイド行の追加でスロットのGrid.Row割り当てが壊れていないことを確認する。
+        var xaml = ReadTempNestWorkspaceViewXaml();
+        for (var i = 1; i <= 4; i++)
+        {
+            Assert.Contains($"TempNest.Slot{i}.TitleBox", xaml);
+            Assert.Contains($"TempNest.Slot{i}.BodyBox", xaml);
+        }
+    }
 }

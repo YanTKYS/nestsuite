@@ -124,12 +124,17 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         //         ObservableCollection に後から Add しても WPF の自動選択が発生しない
         TabStrip.ItemsSource = _tabs;
 
+        // AT-5: 通常タブの追加経路を1箇所で検知できるよう、他のタブ追加より前に購読しておく。
+        WireGettingStartedHintTracking();
+
         // v2.6.0: Temp タブは常に存在する固定ピン留めタブ（左端）
         var tempTab = NestSuiteTabFactory.CreateTempTab();
         _tabs.Add(tempTab);
         _sessionManager.Add(CreateSessionForTab(tempTab));
 
         var restoredSession = TryRestoreSession();
+        // AT-5: 復元保留 entry はタブを伴わないため、CollectionChanged 経路と別に確認する。
+        MarkGettingStartedHintDismissedIfRestoreEntriesPending();
         if (StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore(
             restoredSession, _forgotFileNotFoundRestoreFailuresDuringStartup))
         {
