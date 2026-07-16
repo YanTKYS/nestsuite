@@ -305,10 +305,21 @@
                 <TextBlock Grid.Column="0" Text=""
                            Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                            FontSize="12" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}"
-                           Foreground="{DynamicResource IdeaTextSecondaryBrush}"
-                           FontSize="12" VerticalAlignment="Center"
-                           HorizontalAlignment="Right" />
+                <!-- ID-6: 削除・アーカイブ直後だけ「元に戻す」を一時表示する。常設ボタンは追加しない -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource IdeaTextSecondaryBrush}"
+                               FontSize="12" VerticalAlignment="Center" />
+                    <Button Content="元に戻す"
+                            Command="{Binding UndoCommand}"
+                            Visibility="{Binding CanUndo, Converter={StaticResource IdeaBoolToVis}}"
+                            Style="{StaticResource IdeaUndoLinkButtonStyle}"
+                            ToolTip="直前の削除・アーカイブ操作を元に戻します"
+                            AutomationProperties.Name="元に戻す"
+                            AutomationProperties.AutomationId="IdeaNest.UndoButton"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center" />
+                </StackPanel>
             </Grid>
         </Border>
 

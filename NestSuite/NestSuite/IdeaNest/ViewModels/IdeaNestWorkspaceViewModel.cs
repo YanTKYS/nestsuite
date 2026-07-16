@@ -15,6 +15,25 @@ namespace NestSuite.IdeaNest.ViewModels;
 
 public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 {
+    /// <summary>ID-6: 直前1操作だけを対象とするUndoの操作種別。</summary>
+    private enum IdeaNestUndoOperation
+    {
+        Delete,
+        ArchiveStateChange,
+    }
+
+    /// <summary>
+    /// ID-6: 直前1操作分のUndo情報。メモリ上だけに保持し、保存対象（<see cref="BuildWorkspaceForSave"/>）
+    /// には含めない。<see cref="Card"/>は削除・変更対象と同一インスタンス（新しいIDは発行しない）。
+    /// </summary>
+    private sealed class IdeaNestUndoState
+    {
+        public required IdeaNestUndoOperation Operation { get; init; }
+        public required IdeaCardViewModel Card { get; init; }
+        public int Index { get; init; }
+        public bool PreviousArchived { get; init; }
+    }
+
     private Workspace _workspace = new();
     private CardOperationsService _cardOps = null!;
     private TagManagementService _tagMgmt = null!;
@@ -23,6 +42,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     private readonly IdeaNestWorkspaceUiService _ui;
     private bool _hasChanges;
     private bool _disposed;
+    private IdeaNestUndoState? _undoState;
 
     public CardDisplayViewModel CardDisplay { get; }
     public FilterViewModel Filter { get; }
@@ -128,6 +148,9 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         private set => SetField(ref _hasChanges, value);
     }
 
+    /// <summary>ID-6: 直前1操作（削除・アーカイブ・アーカイブ解除）をUndoできる状態か。</summary>
+    public bool CanUndo => _undoState != null;
+
     public ICommand AddIdeaCommand { get; }
     public ICommand EditIdeaCommand { get; }
     public ICommand PreviewIdeaCommand { get; }
@@ -150,6 +173,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     public ICommand SetCardSizeCommand { get; }
     public ICommand SetCardHeightModeCommand { get; }
     public ICommand ReshuffleCommand { get; }
+    public IdeaNestRelayCommand UndoCommand { get; }
 
     public string DisplayName => _workspace.WorkspaceName;
 
@@ -266,6 +290,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         SetCardHeightModeCommand = new IdeaNestRelayCommand(p => CardDisplay.CardHeightMode = p as string ?? "fixed");
         ReshuffleCommand       = new IdeaNestRelayCommand(_ =>
             CardDisplay.Reshuffle(AllCards.Where(c => !c.IsPinned).Select(c => c.Id)));
+        UndoCommand            = new IdeaNestRelayCommand(_ => ExecuteUndo(), _ => CanUndo);
 
         _cardOps = CreateCardOps();
         _tagMgmt = new TagManagementService(
@@ -297,6 +322,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
             _statusClearTimer.Tick -= StatusClearTimer_Tick;
             _statusClearTimer = null;
         }
+        _undoState = null; // ID-6: Workspaceを閉じた後に古いUndoが実行されないようにする
         CardDisplay.PropertyChanged -= OnSubVmPropertyChanged;
         Filter.PropertyChanged     -= OnSubVmPropertyChanged;
         TagPanel.PropertyChanged   -= OnSubVmPropertyChanged;
@@ -391,12 +417,24 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         var ok = IdeaConfirmWindow.ShowOkCancel(
             _ui.Owner,
             "このカードを削除しますか？",
-            $"「{card.DisplayTitle}」を削除します。削除すると元に戻せません。\n\n" +
+            $"「{card.DisplayTitle}」を削除します。削除直後なら「元に戻す」で取り消せますが、" +
+            "他の操作を行うと元に戻せません。\n\n" +
             "不要な場合は、削除ではなくアーカイブ (📥) も検討してください。",
             primaryText: "削除",
             cancelText: "キャンセル");
         if (ok != ConfirmResult.Primary) return;
+        CommitDeleteWithUndo(card);
+    }
+
+    /// <summary>
+    /// ID-6: 削除確認ダイアログ（WPF Window）を介さずに、削除＋Undo登録の一連を単体テストできるよう
+    /// 分離した部分。<see cref="DeleteIdea"/>は確認後にこのメソッドを呼ぶ。
+    /// </summary>
+    public void CommitDeleteWithUndo(IdeaCardViewModel card)
+    {
+        var index = AllCards.IndexOf(card);
         _cardOps.CommitDelete(card);
+        RegisterDeletedCard(card, index);
         ShowStatus("削除しました");
     }
 
@@ -423,8 +461,91 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     private void ToggleArchive(IdeaCardViewModel? card)
     {
         if (card == null) return;
+        var previousArchived = card.IsArchived;
         _cardOps.ToggleArchive(card);
+        RegisterArchiveChange(card, previousArchived);
         ShowStatus(card.IsArchived ? "アーカイブしました" : "アーカイブを解除しました");
+    }
+
+    // ── ID-6: 削除・アーカイブのUndo ─────────────────────────────────────────
+
+    private void RegisterDeletedCard(IdeaCardViewModel card, int index)
+    {
+        _undoState = new IdeaNestUndoState
+        {
+            Operation = IdeaNestUndoOperation.Delete,
+            Card = card,
+            Index = index,
+        };
+        RaiseUndoChanged();
+    }
+
+    private void RegisterArchiveChange(IdeaCardViewModel card, bool previousArchived)
+    {
+        _undoState = new IdeaNestUndoState
+        {
+            Operation = IdeaNestUndoOperation.ArchiveStateChange,
+            Card = card,
+            PreviousArchived = previousArchived,
+        };
+        RaiseUndoChanged();
+    }
+
+    private void ClearUndo()
+    {
+        if (_undoState == null) return;
+        _undoState = null;
+        RaiseUndoChanged();
+    }
+
+    private void RaiseUndoChanged()
+    {
+        OnPropertyChanged(nameof(CanUndo));
+        UndoCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ExecuteUndo()
+    {
+        var state = _undoState;
+        if (state == null) return;
+        // 単発Undo。Redoは保持しないため、実行前に必ずクリアする。
+        _undoState = null;
+
+        switch (state.Operation)
+        {
+            case IdeaNestUndoOperation.Delete:
+                // 対象カードが既に一覧へ存在する場合は重複させず、静かに終了する。
+                if (!AllCards.Contains(state.Card))
+                {
+                    _cardOps.RestoreDeleted(state.Card, state.Index);
+                    ShowStatus("カードを元に戻しました");
+                    SelectRestoredCardIfVisible(state.Card);
+                }
+                break;
+
+            case IdeaNestUndoOperation.ArchiveStateChange:
+                // 対象カードが既に削除・入れ替え等で存在しない場合は、安全に対応付けられないため何もしない。
+                if (AllCards.Contains(state.Card))
+                {
+                    _cardOps.SetArchived(state.Card, state.PreviousArchived);
+                    ShowStatus("アーカイブを元に戻しました");
+                    SelectRestoredCardIfVisible(state.Card);
+                }
+                break;
+        }
+
+        RaiseUndoChanged();
+    }
+
+    /// <summary>
+    /// ID-6: ID-15と同じ「表示中の場合だけ選択・スクロールする」既存パターンを再利用する。
+    /// フィルター条件を変更してまで対象カードを強制表示することはしない。
+    /// </summary>
+    private void SelectRestoredCardIfVisible(IdeaCardViewModel card)
+    {
+        if (!VisibleCards.Contains(card)) return;
+        SelectedCard = card;
+        ScrollRequested?.Invoke(this, card);
     }
 
     // ── 状態管理・設定同期 ────────────────────────────────────────────────────
@@ -502,6 +623,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     {
         // ID-15: 再構築で AllCards が総入れ替えされるため、旧カードへの選択・スクロール要求を残さない。
         SelectedCard = null;
+        // ID-6: 別ファイル読み込み・再読込時は、古いUndo情報（別の正本コレクションを指す）を残さない。
+        ClearUndo();
         _cardOps = CreateCardOps();
         AllCards.Clear();
         foreach (var idea in _workspace.Ideas)
