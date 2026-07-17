@@ -1,6 +1,41 @@
 <UserControl x:Class="NestSuite.TempNest.TempNestWorkspaceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- SH-40: 「続きから」recentリンク用の最小限のリンク風ボタンスタイル。
+             IdeaNest専用リソースは参照せず、既存の汎用DynamicResourceだけを使う。
+             下線＋アクセント色＋ホバー/フォーカス背景で、色だけに依存しない。 -->
+        <Style x:Key="ContinueFromLinkButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     <Grid Background="{DynamicResource AppBg}" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -25,6 +60,60 @@
                    AutomationProperties.AutomationId="TempNest.GettingStartedHint"
                    AutomationProperties.Name="まずはここへ書き出せます。他のWorkspaceは上の「＋」から始められます。"
                    Visibility="{Binding ShouldShowGettingStartedHint, Converter={StaticResource BoolToVis}}"/>
+
+        <!-- SH-40 (AT-1 フェーズ1): 通常タブの復元・作成が一切なかった起動時だけ、
+             recent files上位3件と保持中draft件数を表示する。AT-5とは同一領域で排他表示
+             （ShouldShowContinueFrom/ShouldShowGettingStartedHintが互いに排他になるよう
+             TempNestWorkspaceViewModel側で調整済み）。専用パネル・閉じる操作・手動再表示は持たない。 -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                    Margin="0,0,0,8"
+                    AutomationProperties.AutomationId="TempNest.ContinueFrom"
+                    Visibility="{Binding ShouldShowContinueFrom, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding RetainedDraftCountMessage}"
+                       Foreground="{DynamicResource MutedFg}"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       IsHitTestVisible="False"
+                       AutomationProperties.AutomationId="TempNest.ContinueFrom.DraftHint"
+                       AutomationProperties.Name="{Binding RetainedDraftCountMessage}"
+                       Visibility="{Binding HasRetainedDraftCandidates, Converter={StaticResource BoolToVis}}"/>
+            <WrapPanel Orientation="Horizontal"
+                       Visibility="{Binding HasRecentContinueItems, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="続きから: "
+                           Foreground="{DynamicResource MutedFg}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           IsHitTestVisible="False"/>
+                <ItemsControl ItemsSource="{Binding RecentContinueItems}"
+                              AutomationProperties.AutomationId="TempNest.ContinueFrom.RecentList">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding LeadingSeparator}"
+                                           Foreground="{DynamicResource MutedFg}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                                <Button Command="{Binding OpenCommand}"
+                                        ToolTip="{Binding FilePath}"
+                                        Style="{StaticResource ContinueFromLinkButtonStyle}"
+                                        AutomationProperties.Name="{Binding AutomationName}"
+                                        AutomationProperties.AutomationId="{Binding AutomationId}">
+                                    <TextBlock Text="{Binding FileName}"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="200"/>
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </WrapPanel>
+        </StackPanel>
 
         <!-- Slot 1: Top-Left -->
         <Border Grid.Row="1" Grid.Column="0"

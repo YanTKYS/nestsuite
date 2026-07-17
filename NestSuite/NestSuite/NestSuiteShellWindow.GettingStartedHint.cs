@@ -33,6 +33,9 @@ public partial class NestSuiteShellWindow
         {
             if (tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp) continue;
             MarkGettingStartedHintDismissedIfPresent();
+            // SH-40: 「続きから」も同じ通常タブ追加の到達点で抑止する。AT-5とは別ラッチのため、
+            // 個別に呼ぶ（TempNest自身への入力ではこちらは呼ばない＝フェーズ1方針）。
+            MarkContinueFromDismissedIfPresent();
             return;
         }
     }

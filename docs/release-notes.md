@@ -7,6 +7,26 @@
 
 ---
 
+## v2.18.17 — SH-40 / AT-1 フェーズ1 TempNest上部の「続きから」導線
+
+- **SH-40 / AT-1 フェーズ1: 通常Workspaceのsession復元・起動引数によるファイル指定が一切なかった起動時にだけ、TempNest上部へ「続きから」を表示し、最近使ったファイルを1クリックで再開できるようにした。** 魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-1「続きから」スタートパネル）のフェーズ1対応で、設計根拠は`docs/planning/at1-continue-start-panel-design-review.md`。専用スタートパネル・スタート専用固定タブ・常設ホーム画面は作成していない。AT-1全体（フェーズ2・3）は今回完了していない。
+- **表示位置**: 新しいWindow・パネルは作らず、既存のTempNest上部（AT-5一行ガイドと同じRow 0領域）に表示する。
+- **表示内容**: (1) 最近使ったファイルのMRU順上位3件（ファイル名のみ、フルパスはToolTip）へのリンク、(2) 保持中（次回起動時に確認予定）のdraft件数の受動的な1行案内（「保存されていない下書きがN件あります。次回起動時に確認できます。」）。Workspace種別・アイコン・最終更新日時・親フォルダ・内容プレビュー・ファイル存在状態は表示しない。
+- **表示条件**: TempNestが起動時にアクティブ化される既存分岐（通常Workspaceのsession復元が1件も成功せず、かつ起動引数によるファイル指定もない）と同一条件でだけ「続きから」候補を評価し、recent filesまたは保持中draftが1件以上ある場合にだけ表示する。新しい「初回起動」判定は追加していない。
+- **AT-5との排他**: 「続きから」に表示する候補（recent filesまたはdraft）が1件以上あるときはAT-5の一行ガイドを表示せず、候補が0件のときは既存のAT-5をそのまま表示する（同時表示はしない）。AT-5自身の判定ロジック・文言・既存テストは変更していない。
+- **通常タブ追加後の非表示**: AT-5が既に確立している`_tabs.CollectionChanged`の1箇所の追跡を再利用し、新規作成・ファイルを開く・session復元・draft復元・pipe/二重起動転送のいずれの経路で通常タブが追加されても、同一起動中は「続きから」を再表示しない単発ラッチ（AT-5とは別ラッチ）で抑止する。通常タブをすべて閉じても再表示はしない。
+- **TempNest入力後の扱い**: 設計レビューのフェーズ1方針どおり、TempNestへ入力した後も「続きから」の表示は維持する（AT-5とは異なり、TempNest自身への入力では抑止しない）。
+- **recentリンクの動作**: クリック時は最近使ったファイルメニューと同じ`ShellFileOpenPlanner.Plan`経由のopen経路をそのまま使う（専用のオープン処理は複製していない）。ファイルが存在しない場合は既存のrecent filesメニューと同じ動作（エラー表示・履歴から削除・アプリ継続）を行い、通常タブが追加されなかった場合はパネルの表示項目も更新する。
+- **draft件数の算出**: 起動時に`RestoreDraftsAtStartup`が既に列挙した結果と、SH-37の既存算出ロジック（開いているタブの自動保存分を除外する）をそのまま使い、draft復元・破棄・キャンセルの決定後の最終的な保持中件数を反映する。draft内容・種別・作成日時は表示せず、復元・破棄操作もパネルには追加していない。
+- **起動時追加I/O**: なし。recent filesは`UpdateRecentFilesMenu`が既に読み込んだ結果をメモリ上に保持して再利用し、draft件数も既存の列挙結果から算出するだけで、`File.Exists`・ファイル内容の追加読込・draftディレクトリの再走査・Workspace種別判定は行っていない。
+- **操作**: recentリンクを開く以外の操作（前回アクティブへ移動・draft復元・draft破棄・session再試行・TempNestを開く・新規作成・項目の個別削除・「すべて表示」・閉じるボタン・「今後表示しない」・手動再表示）は追加していない。初期フォーカスも奪わず、既存どおりTempNestスロットへすぐ入力できる。
+- **アクセシビリティ・テーマ**: recentリンクに`AutomationProperties.Name`・`AutomationProperties.AutomationId`（`TempNest.ContinueFrom.Recent1`〜`3`）・ToolTipを設定し、キーボード（Tab/Enter）で操作できる。新しいリンク風スタイル（`ContinueFromLinkButtonStyle`）は下線＋アクセント色＋ホバー/フォーカス背景で色だけに依存せず、既存の`AccentBrush`/`HoverBackgroundBrush`/`MutedFg`のみを使用し新規固定色は追加していない。ライト・ダーク両テーマで確認済み。
+- テスト: `SH40ContinueFromPanelTests.cs`（新規）で、表示条件のPolicy（session復元成功/起動引数ありでの非評価、recent 0〜4件以上の上位3件抽出とMRU順維持）、`TempNestWorkspaceViewModel`の表示用データ・排他状態（recent/draft候補の有無による表示切替、draft文言の単数/複数、AutomationId連番、recentリンクのOpenCommand経由の委譲、項目削除後のAT-5フォールバック、通常タブ追加相当のラッチとその冪等性、TempNest入力では抑止されないフェーズ1方針、AT-5との同時非表示の網羅確認、既存AT-5回帰）、および静的UI契約（AutomationId・ToolTip・AutomationName・閉じるボタン/「今後表示しない」の不在・新規固定色の不在・既存4スロットの維持・横スクロール不使用）を確認した。Shellコンストラクター起因の起動分岐そのもの（`OpenRecentFile`・`RestoreDraftsAtStartup`の戻り値・実際のタブ追加経路）はWPF Window構築を伴うため既存方針どおり単体テスト対象外とし、コードレビューと実機確認で担保する。既存テスト（AT-5等）の削除・skipはしていない。
+- backlog: SH-40を完了済み欠番としてbacklog.mdへ反映した（新規追加ではなく、既存の完了済み一覧文への追記）。AT-2・TD-85は変更していない。AT-5は削除済み扱いにせず、既存のまま維持している。AT-1フェーズ2・3、CSV等の関連拡張は新規backlogへ追加していない。「今後表示しない」設定・Workspace種別表示も新規backlogへ追加していない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・recent files JSON形式・TempNestの既存保存形式（`tempnest.json`）の変更なし（「続きから」の表示状態・ラッチ・recent上位3件・draft件数はメモリ上のみでいずれの保存データにも含まれない）。UI settingsへの新規フィールド追加なし。外部依存追加なし。
+
+---
+
 ## v2.18.16 — ID-10 / AT-3 フェーズ1 IdeaNest 表示中カードのMarkdown出力
 
 - **ID-10 / AT-3 フェーズ1: IdeaNestの表示中カードを、現在の表示順のままMarkdownへ変換し、クリップボードコピーとファイル保存の両方で出力できるようにした。** 魅力向上エキスパートレビュー（`docs/planning/attractiveness-review-2026.md` AT-3「成果物出力の均質化」）のフェーズ1対応で、正式backlog番号はID-10。AT-3全体（他Workspaceを含む導線・語彙の統一）は今回完了していない。

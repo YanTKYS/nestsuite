@@ -148,13 +148,23 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             // （UI 非依存の単体テストで確認できるようにするため）。
             SaveSession();
         }
+        // SH-40 (AT-1 フェーズ1): 「続きから」候補は、通常タブのsession復元が1件も成功せず、
+        // 起動引数によるファイル指定もない起動（= 直後のTempNestアクティブ化分岐と同一条件）でだけ
+        // 評価する。新しい「初回起動」判定は追加せず、既存の起動分岐をそのまま利用する。
+        var shouldEvaluateContinueFrom = ContinueFromPanelPolicy.ShouldEvaluateAtStartup(restoredSession, initialFilePath);
         if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）
             ActivateTab(tempTab);
         }
 
-        RestoreDraftsAtStartup(); // v2.16.46 SH-36b: timer 開始前に無題下書きを復元する
+        // v2.16.46 SH-36b: timer 開始前に無題下書きを復元する。
+        // SH-40: 戻り値は draft ダイアログの決定後（復元・破棄・キャンセル）に残る保持中候補件数
+        // （RestoreDraftsAtStartup が既に列挙した結果から算出、追加の draft 再走査はしない）。
+        var retainedDraftCount = RestoreDraftsAtStartup();
+        if (shouldEvaluateContinueFrom)
+            ApplyContinueFromCandidatesAtStartup(tempTab, retainedDraftCount);
+
         StartAutoSaveTimer(); // v2.14.12 SH-33
     }
 
@@ -596,6 +606,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnTempNestPropertyChanged;
         WireTempNestPromotion(vm);
+        // SH-40: 「続きから」recentリンクのクリックを既存のrecent files openパスへ委譲する。
+        vm.OpenContinueFromRecentRequested = OpenRecentFile;
         return vm;
     }
 
