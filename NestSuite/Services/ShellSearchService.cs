@@ -1,5 +1,7 @@
 using NestSuite.ChatNest;
+using NestSuite.IdeaNest.Models;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.Models;
 using NestSuite.TempNest;
 using NestSuite.ViewModels;
 
@@ -20,15 +22,21 @@ public enum ShellSearchSourceKind
 
 /// <summary>
 /// v2.15.0 SH: 横断検索の 1 件の結果。
-/// <see cref="TabId"/> はクリック時に <c>ActivateTab</c> でジャンプする先を一意に特定するために使う。
+/// <see cref="TabId"/> はクリック時に <c>ActivateTab</c> でジャンプする先を一意に特定するために使う
+/// （開いているタブの結果のみ非 null）。
+/// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ONで得られる未オープン結果は
+/// <see cref="IsUnopened"/> が true になり、<see cref="FilePath"/> でクリック時のopen先を示す
+/// （この場合 <see cref="TabId"/> は null）。
 /// </summary>
 public sealed record ShellSearchResult(
     NestSuiteWorkspaceKind WorkspaceKind,
-    string TabId,
+    string? TabId,
     string TabTitle,
     ShellSearchSourceKind SourceKind,
     string SourceTitle,
-    string PreviewText)
+    string PreviewText,
+    string? FilePath = null,
+    bool IsUnopened = false)
 {
     /// <summary>結果一覧表示用の見出しテキスト（例: "[NoteNest] 開発メモ"）。</summary>
     public string HeaderText => $"[{WorkspaceKindLabel}] {TabTitle}";
@@ -65,6 +73,28 @@ public static class ShellSearchService
 {
     /// <summary>結果件数の上限。これを超える一致がある場合は先頭からこの件数まで切り詰める。</summary>
     public const int MaxResults = 100;
+
+    /// <summary>
+    /// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時に読み込む未オープンrecent filesの上限件数。
+    /// SH-40の表示件数（3件）とは独立の定数。
+    /// </summary>
+    public const int MaxUnopenedRecentFiles = 5;
+
+    /// <summary>
+    /// SH-41: recent filesのMRU順一覧から、現在開いているファイルを除外したうえで上位
+    /// <see cref="MaxUnopenedRecentFiles"/> 件を返す。独自の並べ替え・スコアリングは行わない。
+    /// 同一ファイル判定は既存の <see cref="NestSuiteOpenFilePolicy.IsSameFile"/> を使う。
+    /// </summary>
+    public static IReadOnlyList<string> SelectUnopenedRecentFilePaths(
+        IReadOnlyList<string> recentFiles, IReadOnlyList<string?> openFilePaths)
+    {
+        var candidates = recentFiles
+            .Where(path => !openFilePaths.Any(open => NestSuiteOpenFilePolicy.IsSameFile(open, path)))
+            .ToList();
+        return candidates.Count <= MaxUnopenedRecentFiles
+            ? candidates
+            : candidates.Take(MaxUnopenedRecentFiles).ToList();
+    }
 
     /// <summary>結果を最大 <see cref="MaxResults"/> 件に切り詰めて返す。件数がちょうど上限だっただけなのか、
     /// 実際に切り詰めが発生したのかは呼び出し側から区別できないため、切り詰めの有無を知りたい場合は
@@ -111,6 +141,93 @@ public static class ShellSearchService
         isTruncated = true;
         return results.Take(MaxResults).ToList();
     }
+
+    /// <summary>
+    /// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時、未オープンrecent files
+    /// （<see cref="UnopenedSearchDocument"/>）を対象に検索する。開いているタブ検索
+    /// （<see cref="Search(string, IEnumerable{ShellSearchTabEntry}, out bool)"/>）と同じ一致仕様
+    /// （<see cref="Matches"/>・<see cref="BuildPreview"/>）・検索対象項目を使う。
+    /// <paramref name="maxResults"/> は開いているタブ結果で既に消費した分を差し引いた残り予算
+    /// （全体上限 <see cref="MaxResults"/> の共有）。
+    /// </summary>
+    public static IReadOnlyList<ShellSearchResult> SearchUnopened(
+        string query, IEnumerable<UnopenedSearchDocument> documents, int maxResults, out bool isTruncated)
+    {
+        isTruncated = false;
+        var results = new List<ShellSearchResult>();
+        if (string.IsNullOrEmpty(query) || maxResults <= 0) return results;
+
+        int scanLimit = maxResults + 1;
+        foreach (var doc in documents)
+        {
+            switch (doc.SavedModel)
+            {
+                case Project project:
+                    SearchUnopenedNoteNest(doc, project, query, results, scanLimit);
+                    break;
+                case Workspace workspace:
+                    SearchUnopenedIdeaNest(doc, workspace, query, results, scanLimit);
+                    break;
+                case List<Message> messages:
+                    SearchUnopenedChatNest(doc, messages, query, results, scanLimit);
+                    break;
+            }
+            if (results.Count >= scanLimit) break;
+        }
+
+        if (results.Count <= maxResults) return results;
+
+        isTruncated = true;
+        return results.Take(maxResults).ToList();
+    }
+
+    private static void SearchUnopenedNoteNest(UnopenedSearchDocument doc, Project project, string query, List<ShellSearchResult> results, int scanLimit)
+    {
+        foreach (var notebook in project.Notebooks)
+        {
+            foreach (var note in notebook.Notes)
+            {
+                if (results.Count >= scanLimit) return;
+                if (Matches(note.Title, query))
+                    results.Add(UnopenedResult(doc, ShellSearchSourceKind.NoteTitle, note.Title, Truncate(note.Title)));
+                if (results.Count >= scanLimit) return;
+                if (Matches(note.Content, query))
+                    results.Add(UnopenedResult(doc, ShellSearchSourceKind.NoteBody, note.Title, BuildPreview(note.Content, query)));
+            }
+        }
+    }
+
+    private static void SearchUnopenedIdeaNest(UnopenedSearchDocument doc, Workspace workspace, string query, List<ShellSearchResult> results, int scanLimit)
+    {
+        foreach (var idea in workspace.Ideas)
+        {
+            if (results.Count >= scanLimit) return;
+            if (Matches(idea.Title, query))
+                results.Add(UnopenedResult(doc, ShellSearchSourceKind.CardTitle, idea.Title, Truncate(idea.Title)));
+            if (results.Count >= scanLimit) return;
+            if (Matches(idea.Body, query))
+                results.Add(UnopenedResult(doc, ShellSearchSourceKind.CardBody, idea.Title, BuildPreview(idea.Body, query)));
+            if (results.Count >= scanLimit) return;
+            var matchedTags = idea.Tags.Where(t => Matches(t, query)).ToList();
+            if (matchedTags.Count > 0)
+                results.Add(UnopenedResult(doc, ShellSearchSourceKind.CardTag, idea.Title, "#" + string.Join(" #", matchedTags)));
+        }
+    }
+
+    private static void SearchUnopenedChatNest(UnopenedSearchDocument doc, List<Message> messages, string query, List<ShellSearchResult> results, int scanLimit)
+    {
+        foreach (var message in messages)
+        {
+            if (results.Count >= scanLimit) return;
+            if (Matches(message.Text, query))
+                results.Add(UnopenedResult(doc, ShellSearchSourceKind.ChatMessage, message.Speaker.ToString(), BuildPreview(message.Text, query)));
+        }
+    }
+
+    private static ShellSearchResult UnopenedResult(
+        UnopenedSearchDocument doc, ShellSearchSourceKind sourceKind, string sourceTitle, string previewText) =>
+        new(doc.WorkspaceKind, TabId: null, doc.FileName, sourceKind, sourceTitle, previewText,
+            FilePath: doc.FilePath, IsUnopened: true);
 
     private static void SearchNoteNest(ShellSearchTabEntry tab, MainViewModel vm, string query, List<ShellSearchResult> results, int scanLimit)
     {

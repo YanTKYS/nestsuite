@@ -345,6 +345,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         StopAutoSaveTimer(); // v2.14.12 SH-33
         _transientStatus.Dispose();
         ((IWorkspaceDialogHost)this).CloseFindReplace();
+        // SH-41: 横断検索パネルで進行中の未オープンファイル読込をキャンセルする。
+        _crossSearchViewModel?.Dispose();
         // v2.3.1 TD-1: ウィンドウ終了時に残存する IDisposable VM を Dispose する
         foreach (var s in _sessionManager.Sessions)
         {

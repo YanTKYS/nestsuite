@@ -28,7 +28,16 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        _crossSearchViewModel ??= new ShellSearchPanelViewModel(CollectSearchTabEntries);
+        // SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時の未オープンファイル読込は
+        // Task.Run（バックグラウンド）＋ Dispatcher（UIスレッドへの反映）で行う。
+        // recent files・開いているファイルパスは既存キャッシュ・_tabs をそのまま渡し、
+        // fileExists/readAllText は既定（実File.Exists/File.ReadAllText）のまま注入しない。
+        _crossSearchViewModel ??= new ShellSearchPanelViewModel(
+            CollectSearchTabEntries,
+            getRecentFilePaths: () => _recentFilesCache,
+            getOpenFilePaths: () => _tabs.Select(t => t.FilePath).ToList(),
+            runInBackground: action => Task.Run(action),
+            postToUiThread: action => Dispatcher.Invoke(action));
         CrossSearchPanel.DataContext = _crossSearchViewModel;
         CrossSearchPanel.Visibility = Visibility.Visible;
         CrossSearchBox.Focus();
@@ -57,10 +66,19 @@ public partial class NestSuiteShellWindow
         return entries;
     }
 
-    /// <summary>結果クリック時にジャンプ先タブへ遷移する（タブ選択のみ。Workspace 内ジャンプは今回スコープ外）。</summary>
+    /// <summary>
+    /// 結果クリック時の遷移。開いているタブの結果はタブ選択のみ（Workspace 内ジャンプは今回スコープ外）。
+    /// SH-41: 未オープンrecent filesの結果は、最近使ったファイルメニューと共有する
+    /// <see cref="OpenRecentFile"/> 経由で既存open経路から開く（パネル専用のオープン処理を複製しない）。
+    /// </summary>
     private void CrossSearchResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ListBox listBox || listBox.SelectedItem is not ShellSearchResult result) return;
+        if (result.IsUnopened)
+        {
+            if (result.FilePath != null) OpenRecentFile(result.FilePath);
+            return;
+        }
         var tab = _tabs.FirstOrDefault(t => t.Id == result.TabId);
         if (tab != null) ActivateTab(tab);
     }
