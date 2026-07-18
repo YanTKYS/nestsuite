@@ -118,6 +118,9 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.18.18", "SH-41", "SH-41" };
         yield return new object[] { "v2.18.19", "SH-42", "SH-42" };
         yield return new object[] { "v2.18.20", "TD-86", "TD-86" };
+        // M18 は過去の release notes 内で「状態は変更していない」対象として複数回言及されているため、
+        // 見出し専用の文字列で確認する。
+        yield return new object[] { "v2.18.21", "M18", "v2.18.21 — M18" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -256,6 +259,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "SH-41" };
         yield return new object[] { "SH-42" };
         yield return new object[] { "TD-86" };
+        yield return new object[] { "M18" };
     }
 
     [Theory]
