@@ -420,8 +420,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         var ok = IdeaConfirmWindow.ShowOkCancel(
             _ui.Owner,
             "このカードを削除しますか？",
-            $"「{card.DisplayTitle}」を削除します。削除直後なら「元に戻す」で取り消せますが、" +
-            "他の操作を行うと元に戻せません。\n\n" +
+            $"「{card.DisplayTitle}」を削除します。削除直後なら「元に戻す」で取り消せます。\n" +
+            "次の削除・アーカイブ操作を行うと、以前の操作は元に戻せません。\n\n" +
             "不要な場合は、削除ではなくアーカイブ (📥) も検討してください。",
             primaryText: "削除",
             cancelText: "キャンセル");
