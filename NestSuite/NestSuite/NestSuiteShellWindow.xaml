@@ -255,32 +255,78 @@
                              Foreground="{DynamicResource PrimaryTextBrush}"
                              BorderBrush="{DynamicResource BorderBrush}"
                              Padding="4"/>
+                    <!-- SH-41 (AT-2 フェーズ1): 既定OFF・永続化しない。ON時だけ現在開いていない
+                         recent files上位5件も検索対象に含める。 -->
+                    <CheckBox x:Name="CrossSearchIncludeRecentFilesCheckBox"
+                              Content="最近のファイルも検索"
+                              IsChecked="{Binding IncludeRecentFiles}"
+                              Foreground="{DynamicResource PrimaryTextBrush}"
+                              Margin="0,6,0,0"
+                              ToolTip="開いていない最近使ったファイルも検索対象に含めます"
+                              AutomationProperties.AutomationId="Shell.CrossSearch.IncludeRecentFiles"
+                              AutomationProperties.Name="最近のファイルも検索。開いていない最近使ったファイルも検索対象に含めます"/>
                     <TextBlock Text="{Binding StatusMessage}"
                                Foreground="{DynamicResource MutedFg}"
                                FontSize="11" Margin="0,4,0,0"
                                TextWrapping="Wrap"
                                Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
                 </StackPanel>
-                <ListBox x:Name="CrossSearchResultsList"
-                         AutomationProperties.AutomationId="Shell.CrossSearchResultsList"
-                         AutomationProperties.Name="Shell.CrossSearchResultsList"
-                         ItemsSource="{Binding Results}"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         SelectionChanged="CrossSearchResultsList_SelectionChanged">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="0,5">
-                                <TextBlock Text="{Binding HeaderText}" FontSize="11"
-                                           Foreground="{DynamicResource MutedFg}"/>
-                                <TextBlock Text="{Binding PreviewText}" FontSize="12"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"
-                                           TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <!-- SH-41: 「開いているファイル」グループ。0件のときは見出しごと表示しない。 -->
+                        <TextBlock Text="開いているファイル" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   Margin="0,0,0,2"
+                                   Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}"/>
+                        <ListBox x:Name="CrossSearchResultsList"
+                                 AutomationProperties.AutomationId="Shell.CrossSearchResultsList"
+                                 AutomationProperties.Name="Shell.CrossSearchResultsList"
+                                 ItemsSource="{Binding Results}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}"
+                                 SelectionChanged="CrossSearchResultsList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="{Binding HeaderText}" FontSize="11"
+                                                   Foreground="{DynamicResource MutedFg}"/>
+                                        <TextBlock Text="{Binding PreviewText}" FontSize="12"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <!-- SH-41: 「最近使ったファイル」グループ（未オープンrecent files。ON時のみ）。 -->
+                        <TextBlock Text="最近使ったファイル" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   Margin="0,8,0,2"
+                                   Visibility="{Binding HasUnopenedResults, Converter={StaticResource BoolToVis}}"/>
+                        <ListBox x:Name="CrossSearchUnopenedResultsList"
+                                 AutomationProperties.AutomationId="Shell.CrossSearchUnopenedResultsList"
+                                 AutomationProperties.Name="Shell.CrossSearchUnopenedResultsList"
+                                 ItemsSource="{Binding UnopenedResults}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 Visibility="{Binding HasUnopenedResults, Converter={StaticResource BoolToVis}}"
+                                 SelectionChanged="CrossSearchResultsList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,5" ToolTip="{Binding FilePath}">
+                                        <TextBlock Text="{Binding HeaderText}" FontSize="11"
+                                                   Foreground="{DynamicResource MutedFg}"/>
+                                        <TextBlock Text="{Binding PreviewText}" FontSize="12"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 
