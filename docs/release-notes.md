@@ -7,6 +7,18 @@
 
 ---
 
+## v2.18.21 — M18 NoteNest画面XAMLのペイン別UserControl分割 採否・境界設計レビュー
+
+- **M18: `NoteNestWorkspaceView.xaml`のペイン別UserControl分割について、現行XAML（985行）・コードビハインド8 partial・依存参照・テストを実読したうえで採否を判断する設計レビューを実施した。結論は「見送り（現状維持）」。** 成果物は`docs/planning/notenest-xaml-pane-split-design-review.md`（現行構造・依存関係図・案A〜E比較・将来トリガー成立時の分割境界・実装順・回帰リスク・テスト方針）。分割の実装・XAML移動・UI変更は行っていない。
+- **見送りの根拠**: M18が目的とした「画面修正時に追う範囲の限定」は現行構造で既におおむね達成されている — (1) コードビハインドは責務別8 partial（NoteEvents/FilterEvents/TaskEvents/DragDrop/EditorEvents/LinkEvents/ContextMenuEvents＋本体）へ分割済み、(2) 最も複雑な中央エディタは`NoteEditorHost` UserControlとして抽出済み、(3) XAMLは`═══`区域コメント＋`docs/development/workspace-xaml-structure.md`の領域索引で分離済み。一方、いま分割すると`PlacementTarget.Tag`＋`RelativeSource AncestorType=UserControl`によるContextMenuのDataContext到達（2段トリック）、親Gridが所有するペイン幅・右ペイン開閉機構、リフレクションテストで固定された公開API（`SyncTreeSelection`/`NavigateToLine`等）への委譲層、文字列XAMLテスト3ファイルの追従といった認知負荷・回帰リスクが新たに増え、変更頻度（review7時点から実質増えていない）がコストに見合わない。
+- **将来トリガー成立時の境界を確定**: review7以来の着手条件「対象ペインへの大きな変更が発生した時点で、そのペインだけ段階分割」を維持し、その際の分割境界（第1候補=右ペイン`NoteNestReferencePaneView`: 親DataContext継承・DependencyPropertyゼロ・`TaskItemTemplate`を子Resourcesへ・開閉機構は親に残す／第2候補=左ペイン: `SyncTreeSelection`相当の明示メソッド2つのみ公開／中央=分割不要）・実装順（1 version 1ペイン）・回帰リスク・テスト移行方法（reflectionテスト無変更・文字列テストはhelper集約で期待値不変）をレビュー文書へ確定した。トリガー成立時は新IDを採番して実装する（backlogへの事前追加はしない）。
+- **見送りに伴う代替策**: 実質的な代替策（コードビハインドpartial化・区域コメント・構造索引文書・エディタ抽出）は既に実施済みであることを確認し、追加の便乗整理は行わないと判断した。
+- backlog: M18を見送り判断の完了として未完了一覧から削除し、欠番として記録した（NoteNestセクションの完了済み一覧文へ「設計レビューで見送り」の旨を明記）。将来の実装用IDは事前追加していない。attractiveness-review-2026.mdのトリガー待ち判断とは矛盾せず、同文書は変更していない。
+- コード変更なし（本versionの変更はレビュー文書・backlog・release notes・version・docs整合テストのみ）。UI挙動・レイアウト・フォーカス・ショートカット・AutomationPropertiesはいずれも不変。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・session形式・recent files形式・draft形式・UI settings形式の変更なし。外部依存追加なし。
+
+---
+
 ## v2.18.20 — TD-86 状態管理・データ保護・責務境界の総合アーキテクチャレビュー
 
 - **TD-86: 現行NestSuiteの状態管理・データ保護・責務境界について、状態の正本・状態遷移・所有責務・破棄タイミング・非同期処理の境界を横断確認する総合アーキテクチャレビューを実施した。** 成果物は`docs/planning/state-data-protection-boundary-review.md`（状態の正本一覧・状態遷移図・不変条件・指摘一覧・現状維持判断・将来の実装者向け禁止事項）。
