@@ -122,6 +122,7 @@ public class NestSuiteDocsContractTests
         // 見出し専用の文字列で確認する。
         yield return new object[] { "v2.18.21", "M18", "v2.18.21 — M18" };
         yield return new object[] { "v2.18.22", "TD-88", "v2.18.22 — TD-88" };
+        yield return new object[] { "v2.18.23", "TD-89", "v2.18.23 — TD-89" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -262,6 +263,25 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-86" };
         yield return new object[] { "M18" };
         yield return new object[] { "TD-88" };
+        yield return new object[] { "TD-89" };
+        // ── v2.18.23 TD-89 総点検での見送り・吸収・RJ化（欠番）──
+        yield return new object[] { "SH-24" };
+        yield return new object[] { "TN-4" };
+        yield return new object[] { "TN-7" };
+        yield return new object[] { "M7" };
+        yield return new object[] { "M8" };
+        yield return new object[] { "H3" };
+        yield return new object[] { "ID-5" };
+        yield return new object[] { "ID-13" };
+        yield return new object[] { "CH-17" };
+        yield return new object[] { "LK-1" };
+        yield return new object[] { "LK-5" };
+        yield return new object[] { "LT-1" };
+        yield return new object[] { "LT-5" };
+        yield return new object[] { "LT-7" };
+        yield return new object[] { "LT-8" };
+        yield return new object[] { "LT-10" };
+        yield return new object[] { "LT-12" };
     }
 
     [Theory]
@@ -366,17 +386,27 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_TN7_RemainsOpenItem()
+    public void Backlog_TN7_RecordedAsAbsorbedIntoLK2LK3()
     {
-        // 移設元: ExpertProposalPlanningTests。TN-7 は完了済みではなく現在も open item。
-        Assert.Contains("| TN-7 |", TestPaths.ReadBacklog());
+        // 移設元: ExpertProposalPlanningTests（旧 Backlog_TN7_RemainsOpenItem）。
+        // v2.18.23 TD-89 の総点検で TN-7 は LK-2 / LK-3 へ吸収（欠番）となった。
+        // 実装済み扱いにされず、吸収先とともに欠番として追跡されていることを確認する。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.DoesNotContain("| TN-7 |", backlog);
+        Assert.Contains("TN-7", backlog);
+        Assert.Contains("LK-2 / LK-3 へ吸収", backlog);
     }
 
     [Fact]
-    public void Backlog_LK5_RemainsOpenItem()
+    public void Backlog_LK5_RecordedAsDeclined()
     {
-        // 移設元: ExpertProposalPlanningTests。LK-5 は完了済みではなく現在も open item。
-        Assert.Contains("| LK-5 |", TestPaths.ReadBacklog());
+        // 移設元: ExpertProposalPlanningTests（旧 Backlog_LK5_RemainsOpenItem）。
+        // v2.18.23 TD-89 の総点検で LK-5 は見送り（欠番）となった。
+        // 実装済み扱いにされず、見送り理由つきの欠番として追跡されていることを確認する。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.DoesNotContain("| LK-5 |", backlog);
+        Assert.Contains("LK-5", backlog);
+        Assert.Contains("LK-5（選択テキストの横断クイック投入）は同総点検で見送り", backlog);
     }
 
     // ═══════════════════════════════════════════════════════════════════
