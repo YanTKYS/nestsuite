@@ -7,6 +7,18 @@
 
 ---
 
+## v2.18.20 — TD-86 状態管理・データ保護・責務境界の総合アーキテクチャレビュー
+
+- **TD-86: 現行NestSuiteの状態管理・データ保護・責務境界について、状態の正本・状態遷移・所有責務・破棄タイミング・非同期処理の境界を横断確認する総合アーキテクチャレビューを実施した。** 成果物は`docs/planning/state-data-protection-boundary-review.md`（状態の正本一覧・状態遷移図・不変条件・指摘一覧・現状維持判断・将来の実装者向け禁止事項）。
+- **結論: 現行設計を維持してよい。ブロッキングとなる構造的リスク（Critical/High）は確認されなかった。** dirtyなメモリ内容の優先、保存失敗時のdirty維持（TD-45契約）、共通Open経路への全経路合流（TD-59系）、session復元失敗entryの持ち越し（TD-65/66/69）、SH-40/AT-5の排他、SH-41スナップショットの非正本性、detached windowのVM単一所有をコード読解と既存テストの照合で再確認した。
+- **指摘はLow 4件のみ**（recent files破損時の黙殺復旧がsession/TD-65と非対称、SH-41読込完了とアプリ終了が重なる理論上の競合、ChatNest/IdeaNestタブ閉鎖確認の2択仕様、VM Disposeの多重呼び出し耐性の未網羅）。いずれも文書化のみ・現状維持と判断し、**このversionではコード修正を行っていない**。将来の小修正候補としてrecent files破損時のquarantine+ErrorLog追加（TD-87候補、1 version規模）をレビュー文書へ記録したが、backlogへは追加していない。
+- 対象は`_tabs`/`_sessionManager`/dirty状態/FilePath/WorkspaceKind/recent files/session/復元失敗entry/draft/TempNest/`.bak`/横断検索/SH-41スナップショット/detached window。開く10経路・保存5経路・終了/破棄・session/recent/draft/TempNest整合・非同期cancellationのシナリオを追跡した。
+- LT-9フェーズ2は既存設計・着手条件と矛盾がないことを確認したのみで、再設計・実装候補への昇格はしていない。新機能・フェーズ2・DI導入・大規模リファクタリングは行っていない。
+- コード変更なし（本versionの変更はレビュー文書・backlog・release notes・version・docs整合テストのみ）。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・`draftFormatVersion 1.0`・session形式・recent files形式・TempNest形式・IdeaNest形式・ChatNest形式・UI settings形式の変更なし。外部依存追加なし。
+
+---
+
 ## v2.18.19 — SH-42 魅力向上施策の実機回帰・総点検
 
 - **SH-42: v2.18.13〜v2.18.18で実装した魅力向上施策（TD-84/AT-4・ID-6・SH-39/AT-5・ID-10/AT-3フェーズ1・SH-40/AT-1フェーズ1・SH-41/AT-2フェーズ1）を、起動・再開・検索・編集・出力までの一連の利用体験として回帰点検した。** 新機能は追加していない。詳細な確認内容・結果・未確認事項は`docs/testing/attractiveness-regression-v2.18.19.md`に記録した。
