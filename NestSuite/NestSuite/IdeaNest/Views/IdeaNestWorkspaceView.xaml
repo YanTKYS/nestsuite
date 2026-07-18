@@ -16,7 +16,7 @@
               Visibility="{Binding ShowMenu, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IdeaBoolToVis}}">
             <MenuItem Header="ファイル(_F)">
                 <MenuItem Header="エクスポート(_E)">
-                    <MenuItem Header="Markdown風テキスト(_M)..." Command="{Binding ExportMarkdownCommand}" />
+                    <MenuItem Header="Markdownとして保存(_M)..." Command="{Binding ExportMarkdownCommand}" />
                     <MenuItem Header="NoteNest向けテキスト(_N)..." Command="{Binding ExportNoteNestCommand}" />
                 </MenuItem>
             </MenuItem>

@@ -479,6 +479,22 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Single(cards);
         Assert.Single(ideas);
     }
+
+    // ── v2.18.19 SH-42: 削除確認文言と実際のUndo無効化条件の整合 ────────────
+
+    [Fact]
+    public void DeleteConfirmationText_DoesNotOverclaim_AnyOtherOperationInvalidatesUndo()
+    {
+        // SH-42実機回帰で発見: 実際は「次の削除・アーカイブ操作」でだけUndoが上書きされ、
+        // 編集・フィルタ変更等の「他の操作」では無効化されない。旧文言「他の操作を行うと
+        // 元に戻せません」は実態より広く、誤解を招くため修正した。
+        var path = Path.Combine(TestPaths.RepoRoot, "NestSuite", "NestSuite", "IdeaNest", "ViewModels", "IdeaNestWorkspaceViewModel.cs");
+        var src = File.ReadAllText(path);
+
+        Assert.DoesNotContain("他の操作を行うと元に戻せません", src);
+        Assert.Contains("次の削除・アーカイブ操作を行うと、以前の操作は元に戻せません", src);
+        Assert.Contains("削除直後なら「元に戻す」で取り消せます", src);
+    }
 }
 
 // ── ID-14: 新規カード初期値・既存カード保持確認 ──────────────────────────────────────────

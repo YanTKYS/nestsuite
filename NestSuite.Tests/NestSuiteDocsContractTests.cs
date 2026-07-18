@@ -116,6 +116,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.18.16", "ID-10", "v2.18.16 — ID-10" };
         yield return new object[] { "v2.18.17", "SH-40", "SH-40" };
         yield return new object[] { "v2.18.18", "SH-41", "SH-41" };
+        yield return new object[] { "v2.18.19", "SH-42", "SH-42" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -252,6 +253,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "ID-10" };
         yield return new object[] { "SH-40" };
         yield return new object[] { "SH-41" };
+        yield return new object[] { "SH-42" };
     }
 
     [Theory]
@@ -609,6 +611,18 @@ public class NestSuiteDocsContractTests
         var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
         Assert.DoesNotContain("復元失敗通知のあとに", text);
         Assert.Contains("再試行", text);
+    }
+
+    // ── v2.18.19 SH-42: 魅力向上施策の実機回帰・総点検（docs反映分） ─────────
+
+    [Fact]
+    public void UserGuide_ExplainsContinueFromPanel_AndDistinguishesFromCrossSearch()
+    {
+        // SH-42実機回帰で発見: SH-40「続きから」がuser guideに未記載だったため追記した。
+        // SH-40（ファイル名で再開）とSH-41（内容で検索）の役割の違いも明記する。
+        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
+        Assert.Contains("続きから", text);
+        Assert.Contains("最近のファイルも検索", text);
     }
 
     // ── SH-35-docs: 復元失敗が続く場合の案内追記 ─────────────────────────────
