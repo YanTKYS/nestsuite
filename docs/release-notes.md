@@ -7,6 +7,19 @@
 
 ---
 
+## v2.18.22 — TD-88 主要操作のキーボード完結性・WPFアクセシビリティ横断設計レビュー
+
+- **TD-88: NestSuiteの主要操作（開く・閲覧・編集・保存・Workspace切替・補助機能・終了）がキーボードだけで現実的に完結するかを、Shell・全Workspace・別ウィンドウ・主要ダイアログを横断して確認する設計レビューを実施した。** 成果物は`docs/planning/keyboard-accessibility-cross-review.md`（主要操作シナリオ30件の追跡表・Workspace別評価・横断的な問題・指摘一覧・現状維持判断・ID-4の判断・修正候補のversion分割・将来の実装者向け原則）。
+- **結論: 主要操作はキーボードで完結できる。ブロッキングとなる問題（Blocking/High）は確認されなかった。** メニューは全トップレベルにアクセスキーがあり、タブ切替（Ctrl+Tab/Ctrl+Shift+Tab/Ctrl+1〜9＋TabStripの矢印キー）、保存（Ctrl+S/Ctrl+Shift+S）、各Workspaceの検索（Ctrl+F系＋Escape閉じ）、全ダイアログのIsCancel/IsDefault/初期フォーカスをコード読解で確認した。
+- **指摘はMedium 4件・Low 2件**: Shell横断検索のEscape非対応とフォーカス戻り未指定（K-1）、NoteNest右ペインのマーカー/リンクジャンプ・タスクグループ開閉のマウス専用（K-2/K-3）、ChatNestメッセージ単体操作（編集・削除・単体コピー・並び替え）のマウス専用（K-4）、アイコンのみボタンのAutomationName欠落（K-5）、アクセスキー重複（K-6）。いずれも代替経路があるか補助的操作であり、修正候補は1 version 1目的で8件に分割してレビュー文書へ記録した（backlogへの自動追加はしていない）。
+- **ID-4の判断**: カードはTab到達・フォーカス可視・フッターボタン/ContextMenuで既に操作可能なため、範囲を縮小して「Enterでプレビューを開く」を必須、矢印移動・Spaceピンを任意、Deleteキー即削除を採用しないと確定した。ID-4はbacklogに残し文言のみ更新した。**今回ID-4の実装は行っておらず、本レビューでID-4を完了扱いにもしていない。**
+- **ID採番**: TD-87はv2.18.20とレビュー文書でrecent files quarantine候補として予約済みのため使用せず、次の未使用番号TD-88を採用した（レビュー文書§0に理由を記録）。
+- **実機確認は未実施**（実行環境がLinux CLIでWPF GUI操作不可のため）。テーマ別フォーカス視認性・マウスなし通し運用・高DPI・スクリーンリーダー実挙動は未確認事項としてレビュー文書§10へ分離して記録した。静的確認（XAML・コードビハインド・スタイル・テストの実読）のみで判断している。
+- **プロダクトコード変更なし**（本versionの変更はレビュー文書・backlog・release notes・version・docs整合テストのみ）。極小修正の適用対象（主要操作が完全に不可能な箇所）は存在しなかった。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・session形式・recent files形式・draft形式・TempNest形式・UI settings形式の変更なし。外部依存追加なし。
+
+---
+
 ## v2.18.21 — M18 NoteNest画面XAMLのペイン別UserControl分割 採否・境界設計レビュー
 
 - **M18: `NoteNestWorkspaceView.xaml`のペイン別UserControl分割について、現行XAML（985行）・コードビハインド8 partial・依存参照・テストを実読したうえで採否を判断する設計レビューを実施した。結論は「見送り（現状維持）」。** 成果物は`docs/planning/notenest-xaml-pane-split-design-review.md`（現行構造・依存関係図・案A〜E比較・将来トリガー成立時の分割境界・実装順・回帰リスク・テスト方針）。分割の実装・XAML移動・UI変更は行っていない。
