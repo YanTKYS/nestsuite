@@ -7,6 +7,19 @@
 
 ---
 
+## v2.18.24 — TD-90 保存形式・後方互換・移行・配布境界の総合レビュー
+
+- **TD-90: 現行NestSuiteの保存形式・後方互換・前方互換・マイグレーション・バックアップ・互換識別子・単一EXE配布・ファイル関連付けの境界を横断確認する総合レビューを実施した。** 成果物は`docs/planning/storage-compatibility-migration-distribution-review.md`（保存形式一覧・互換性マトリクス・wrapper/legacy遷移図・未知フィールド評価・schema bump/migration判断表・atomic write/.bak差異・互換識別子・配布境界・別PC移行・必須テストテンプレート・将来の実装者向け禁止事項10項目）。
+- **結論: 現行設計を維持してよい。保存形式・互換性・移行・配布境界に、ブロッキングとなる構造的リスク（Critical/High）は確認されなかった。** 3 Workspace形式と`.nestsuite` wrapperのpayloadは未来schemaを`SchemaVersionGuard`で明示拒否しており「未来版ファイルの再保存による未知フィールド喪失」は遮断済み、全保存はtmp+`File.Replace`のatomic writeで`.bak`失敗は保存失敗になる、dirty解除は保存成功後のみ（TD-45/TD-86）、legacyファイルを開いても自動変換されない、ことをコード読解と既存テストの照合で確認した。
+- **未知field評価**: payload・wrapperとも読込時は無視・再保存で失われるが、「field追加=version bump必須」の採番ルール＋too-new拒否ガードの組で実害なしと分類した。JsonExtensionData等の未知field保持機構は導入しない方針を維持。
+- **legacy/wrapper評価**: 開く10経路はすべて`TryPrepareOpen`へ合流し、読込成功前に元ファイルを変更する経路はない。上書き保存は保存先パスの拡張子で形式が決まりlegacyのまま、形式変更はSave As（既定`.nestsuite`）のみ。
+- **指摘はMedium 2件・Low 4件**: `.nestsuite` wrapperのformatVersion自体に未来版拒否ガードがない（ST-1、修正候補ST-1aを文書記録）、IdeaNestのみ旧versionを厳密一致で明示拒否（ST-2、歴史的差異だが安全・現状維持）、recent files破損の黙殺（ST-3=TD-87登録済み・設計範囲妥当と再確認）、tempnest.json破損時の本文非退避（ST-4、TD-87着手時に同時判断）、ChatNest未知speakerスキップ（ST-5、version bump規律で保護）、archive文書の記述ずれ（ST-6）。**修正候補はレビュー文書へ記録のみでbacklogへ追加していない**（TD-87・M13/ID-8/CH-12行への参照追記のみ）。
+- **プロダクトコード変更なし・schema変更なし・migration実装なし**（本versionの変更はレビュー文書・backlog・release notes・version・docs整合テストのみ）。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest schema（`1.1.4`）・ChatNest file version（`0.4.1`）・`draftFormatVersion 1.0`・session形式・recent files形式・TempNest形式・UI settings形式の変更なし。外部依存追加なし。ファイル関連付け・配布方式の変更なし。
+- 実機でしか確認できない項目（関連付け実動作・EXE差し替え・ネットワークパスの`File.Replace`・旧版実バイナリでの読込）は未確認としてレビュー文書§17へ分離した。
+
+---
+
 ## v2.18.23 — TD-89 長期backlogの採用・見送り・着手トリガー総点検
 
 - **TD-89: `docs/backlog.md` の全未完了項目（39件 = 通常backlog 26 + LT 12 + TD-87予約 1）について、採用・見送り・着手トリガー・実装主体を総点検し、backlogを実際に整理した。** 成果物は`docs/planning/backlog-adoption-trigger-review.md`（分類基準・全項目一覧表・トリガー一覧・LT依存関係図・RJ整理・今後の運用ルール）。
