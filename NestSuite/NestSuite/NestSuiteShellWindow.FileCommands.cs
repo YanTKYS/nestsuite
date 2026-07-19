@@ -19,6 +19,12 @@ public partial class NestSuiteShellWindow
     private void MenuNewNoteNest_Click(object sender, RoutedEventArgs e) => NewNoteNestSession();
     private void MenuNewChatNest_Click(object sender, RoutedEventArgs e)  => NewChatNestSession();
     private void MenuNewIdeaNest_Click(object sender, RoutedEventArgs e)  => NewIdeaNestSession();
+    private void MenuNewText_Click(object sender, RoutedEventArgs e)      => NewTextSession();
+
+    /// <summary>
+    /// v2.19.0 SH-43: 新規 PlainText（無題.txt）タブを作成する。既存の PlainText タブには影響しない。
+    /// </summary>
+    private void NewTextSession() => NewWorkspaceSession(NestSuiteWorkspaceKind.PlainText);
 
     /// <summary>v2.2.0 SH-5: 「＋」ボタンクリック時に NoteNest/IdeaNest/ChatNest 選択メニューを表示する。</summary>
     private void TabAddButton_Click(object sender, RoutedEventArgs e)

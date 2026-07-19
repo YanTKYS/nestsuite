@@ -277,8 +277,10 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TabFactory_FromFilePath_UnknownExtension_Throws()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、
+        // 真に未対応の拡張子（.pdf）へ差し替えた。
         Assert.Throws<ArgumentException>(() =>
-            NestSuiteTabFactory.FromFilePath(@"C:\data\file.txt"));
+            NestSuiteTabFactory.FromFilePath(@"C:\data\file.pdf"));
     }
 
     [Fact]
@@ -301,14 +303,16 @@ public class NestSuiteDocumentTabTests
     // ── NestSuiteWorkspaceKind の全値確認 ───────────────────────────────
 
     [Fact]
-    public void WorkspaceKind_HasThreeValues_NoteNest_ChatNest_IdeaNest()
+    public void WorkspaceKind_HasFiveValues_NoteNest_ChatNest_IdeaNest_Temp_PlainText()
     {
+        // v2.19.0 SH-43: PlainText（.txt）を追加。既存 4 種は変更なし。
         var values = Enum.GetValues<NestSuiteWorkspaceKind>();
-        Assert.Equal(4, values.Length);
+        Assert.Equal(5, values.Length);
         Assert.Contains(NestSuiteWorkspaceKind.NoteNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.ChatNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.IdeaNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.Temp, values);
+        Assert.Contains(NestSuiteWorkspaceKind.PlainText, values);
     }
 
     [Fact]
@@ -616,7 +620,8 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TryGetKind_WithFailure_UnsupportedExtension_ReturnsFalse_AndUnsupportedExtension()
     {
-        var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.txt", out _, out var failure);
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.pdf", out _, out var failure);
 
         Assert.False(result);
         Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);

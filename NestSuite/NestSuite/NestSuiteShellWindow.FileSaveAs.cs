@@ -44,6 +44,23 @@ public partial class NestSuiteShellWindow
         TrySaveChatNestToPath(session, normalizedPath);
     }
 
+    /// <summary>
+    /// v2.19.0 SH-43: 選択中 PlainText タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
+    /// </summary>
+    private void SaveTextFileAs()
+    {
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.PlainText) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        var defaultName = _selectedTab.FilePath != null
+            ? Path.GetFileName(_selectedTab.FilePath)
+            : DefaultTextFileName;
+        var rawPath = _dialogs.SelectPlainTextSavePath(defaultName);
+        if (rawPath == null) return;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.PlainText, normalizedPath)) return;
+        TrySaveTextToPath(session, normalizedPath);
+    }
+
     private void MenuSaveAs_Click(object sender, RoutedEventArgs e)
     {
         switch (_selectedTab?.WorkspaceKind)
@@ -56,6 +73,9 @@ public partial class NestSuiteShellWindow
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
                 SaveIdeaNestFileAs();
+                break;
+            case NestSuiteWorkspaceKind.PlainText:
+                SaveTextFileAs();
                 break;
         }
     }

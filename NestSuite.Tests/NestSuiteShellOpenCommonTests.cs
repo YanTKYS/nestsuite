@@ -56,7 +56,8 @@ public class NestSuiteShellOpenCommonTests
     public void NestSuiteTabFactory_TryGetKind_UnsupportedExtension_ReturnsFalse()
     {
         // v1.10.1: 未対応拡張子は TryGetKind が false を返すことを確認（OpenNestSuiteFile のエラー分岐の前提）
-        Assert.False(NestSuiteTabFactory.TryGetKind("document.txt", out _));
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、この一覧からは外した
+        // （.txt が対応済みであることは PlainTextTabIntegrationTests で別途確認する）。
         Assert.False(NestSuiteTabFactory.TryGetKind("document.docx", out _));
         Assert.False(NestSuiteTabFactory.TryGetKind("noextension", out _));
     }

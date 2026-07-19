@@ -88,6 +88,7 @@ public class NestSuiteMultiFileTabsDesignTests
     [InlineData(".notenest", NestSuiteWorkspaceKind.NoteNest)]
     [InlineData(".chatnest", NestSuiteWorkspaceKind.ChatNest)]
     [InlineData(".ideanest", NestSuiteWorkspaceKind.IdeaNest)]
+    [InlineData(".txt", NestSuiteWorkspaceKind.PlainText)]
     public void ExtensionResolution_IsUnchanged(string ext, NestSuiteWorkspaceKind expected)
     {
         // 拡張子判定の既存挙動が v1.9.0 設計整理で変わっていないことを固定

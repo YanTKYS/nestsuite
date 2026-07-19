@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows.Controls;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.PlainText;
 using NestSuite.Services;
 using NestSuite.TempNest;
 using NestSuite.ViewModels;
@@ -253,5 +254,16 @@ public partial class NestSuiteShellWindow
             sender is TempNestWorkspaceViewModel familyVm &&
             familyVm.ContentFontFamily != _workspaceEditorFontFamily)
             PropagateWorkspaceEditorFontFamily(familyVm.ContentFontFamily, familyVm);
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: PlainText（.txt）タブの IsDirty をタブの IsModified へ同期する。
+    /// ChatNest/IdeaNest の Sync*TabForViewModel と対称な、<see cref="SyncTabModifiedState"/> 共有実装。
+    /// </summary>
+    private void OnPlainTextPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PlainTextWorkspaceViewModel.IsDirty) &&
+            sender is PlainTextWorkspaceViewModel vm)
+            SyncTabModifiedState(vm, vm.IsDirty);
     }
 }

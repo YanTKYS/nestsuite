@@ -5,12 +5,13 @@ using System.Windows.Threading;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.IdeaNest.Views;
+using NestSuite.PlainText;
 using NestSuite.ViewModels;
 using NestSuite.Views;
 
 namespace NestSuite;
 
-/// <summary>v2.9.0 SH-21: NoteNest / IdeaNest / ChatNest タブの別ウィンドウ分離／再統合処理。</summary>
+/// <summary>v2.9.0 SH-21: NoteNest / IdeaNest / ChatNest / PlainText タブの別ウィンドウ分離／再統合処理。</summary>
 public partial class NestSuiteShellWindow
 {
     private readonly Dictionary<string, DetachedWorkspaceWindow> _detachedWindows = new();
@@ -24,6 +25,8 @@ public partial class NestSuiteShellWindow
             DetachIdeaNestTab(tab);
         else if (tab.IsChatNest)
             DetachChatNestTab(tab);
+        else if (tab.IsPlainText)
+            DetachTextTab(tab);
     }
 
     private void TabContextReturnDetached_Click(object sender, RoutedEventArgs e)
@@ -50,6 +53,8 @@ public partial class NestSuiteShellWindow
             ReAttachIdeaNestTab(tabId);
         else if (tab?.IsChatNest == true)
             ReAttachChatNestTab(tabId);
+        else if (tab?.IsPlainText == true)
+            ReAttachTextTab(tabId);
     }
 
     private void DetachNoteNestTab(NestSuiteDocumentTab tab)
@@ -132,6 +137,30 @@ public partial class NestSuiteShellWindow
         detachedWindow.Show();
     }
 
+    /// <summary>v2.19.0 SH-43: PlainText（.txt）タブを別ウィンドウへ分離する。ChatNest と対称な実装。</summary>
+    private void DetachTextTab(NestSuiteDocumentTab tab)
+    {
+        if (_detachedWindows.ContainsKey(tab.Id)) return;
+        if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) return;
+
+        var vm = (PlainTextWorkspaceViewModel)session.WorkspaceViewModel;
+        var view = new PlainTextWorkspaceView { DataContext = vm };
+        var detachedWindow = new DetachedWorkspaceWindow(tab.Id, tab.DisplayName, view) { Owner = this };
+
+        var capturedTabId = tab.Id;
+        var capturedWindow = detachedWindow;
+        detachedWindow.SaveAction = () => SaveTextForTabId(capturedTabId,
+            defaultName => capturedWindow.SelectPlainTextSavePath(defaultName));
+        detachedWindow.OnDetachedClosed = ReAttachTextTab;
+
+        _detachedWindows[tab.Id] = detachedWindow;
+
+        ReplaceTab(tab, tab with { IsDetached = true });
+        ActivateTab(_tabs.First(t => t.Id == tab.Id));
+
+        detachedWindow.Show();
+    }
+
     internal void ReAttachNoteNestTab(string tabId)
     {
         if (!_detachedWindows.ContainsKey(tabId)) return;
@@ -190,6 +219,27 @@ public partial class NestSuiteShellWindow
         // v2.9.4 SH-21: ChatNest の DataContextChanged / event subscription は
         // ChatNestWorkspaceView が自動で管理するため、ActivateTab 経由の再表示で正しく再接続される。
         // IdeaNest のような外部 owner resolver や NoteNest のような view callback の再バインドは不要。
+        var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
+        if (tab != null)
+        {
+            ReplaceTab(tab, tab with { IsDetached = false });
+            tab = _tabs.First(t => t.Id == tabId);
+        }
+
+        if (tab != null && _selectedTab?.Id == tabId)
+            ActivateTab(tab);
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: PlainText の DataContextChanged / event subscription は
+    /// PlainTextWorkspaceView が特別な再配線を必要としないため、ActivateTab 経由の再表示で
+    /// 正しく再接続される（ChatNest と対称）。
+    /// </summary>
+    internal void ReAttachTextTab(string tabId)
+    {
+        if (!_detachedWindows.ContainsKey(tabId)) return;
+        _detachedWindows.Remove(tabId);
+
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {

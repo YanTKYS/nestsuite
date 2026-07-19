@@ -179,6 +179,9 @@ public partial class NestSuiteShellWindow
             case NestSuiteWorkspaceKind.ChatNest:
                 LoadChatNestFileAt(context);
                 break;
+            case NestSuiteWorkspaceKind.PlainText:
+                LoadTextFileAt(context);
+                break;
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(context), context.WorkspaceKind, "対応していない WorkspaceKind です。");

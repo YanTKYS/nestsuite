@@ -101,8 +101,9 @@ public class SessionTabMapperTests
     [Fact]
     public void TryCreateRestoreTarget_UnknownExtension_IsSafeFalse()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var ok = SessionTabMapper.TryCreateRestoreTarget(
-            @"C:\work\unknown.txt",
+            @"C:\work\unknown.pdf",
             out _,
             _ => true);
 
@@ -123,9 +124,11 @@ public class SessionTabMapperTests
     [Fact]
     public void CreateRestoreTargets_FiltersInvalidEntriesWithoutChangingOrder()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、
+        // 「無効エントリとして除外される拡張子」の例は .pdf へ差し替えた。
         var state = new NestSuiteSessionState
         {
-            FilePaths = [@"C:\work\a.notenest", @"C:\work\skip.txt", @"C:\work\b.chatnest"]
+            FilePaths = [@"C:\work\a.notenest", @"C:\work\skip.pdf", @"C:\work\b.chatnest"]
         };
 
         var targets = SessionTabMapper.CreateRestoreTargets(state, path => !path.EndsWith("missing.notenest", StringComparison.Ordinal));
@@ -705,9 +708,10 @@ public class SessionTabMapperTests
     [Fact]
     public void CreateRestoreTargets_UnsupportedExtension_SkipsSilently()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var state = new NestSuiteSessionState
         {
-            FilePaths = [@"C:\work\notes.txt"]
+            FilePaths = [@"C:\work\notes.pdf"]
         };
 
         var targets = SessionTabMapper.CreateRestoreTargets(state, _ => true, out var failures);

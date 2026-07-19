@@ -38,4 +38,11 @@ public enum NestSuiteWorkspaceKind
     /// ファイル型 Workspace ではなく、内部 JSON で管理される。
     /// </summary>
     Temp,
+
+    /// <summary>
+    /// v2.19.0 SH-43: 通常の <c>.txt</c> ファイルを扱う最小プレーンテキスト Workspace。
+    /// Nest ではなく、`.txt` そのものが正本（NestSuite 独自情報は埋め込まない）。
+    /// <c>.nestsuite</c> wrapper へは格納しない。
+    /// </summary>
+    PlainText,
 }

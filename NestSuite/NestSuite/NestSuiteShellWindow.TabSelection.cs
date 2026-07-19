@@ -42,6 +42,29 @@ public partial class NestSuiteShellWindow
                 return;
             }
 
+            // v2.19.0 SH-43: PlainText は Nest ではなく NestSuiteToolRegistry に登録しないため、
+            // TempNest と同様に ToolDefinitions 参照前にここで処理する。
+            if (tab.WorkspaceKind == NestSuiteWorkspaceKind.PlainText)
+            {
+                bool isDetachedText = _detachedWindows.ContainsKey(tab.Id);
+
+                WorkspaceView.Visibility           = Visibility.Collapsed;
+                ChatWorkspaceView.Visibility       = Visibility.Collapsed;
+                IdeaNestWorkspaceView.Visibility   = Visibility.Collapsed;
+                TempNestWorkspaceView.Visibility   = Visibility.Collapsed;
+                PlainTextWorkspaceView.Visibility  = isDetachedText ? Visibility.Collapsed : Visibility.Visible;
+                UnintegratedPlaceholder.Visibility = Visibility.Collapsed;
+                DetachedNoteNestPlaceholder.Visibility = isDetachedText ? Visibility.Visible : Visibility.Collapsed;
+
+                if (!isDetachedText &&
+                    _sessionManager.TryGet(tab.Id, out var textSession) && textSession != null)
+                    PlainTextWorkspaceView.DataContext = textSession.WorkspaceViewModel;
+
+                NestSuiteModeSuffix.Text = "  /  テキスト";
+                RefreshWorkspaceStatus();
+                return;
+            }
+
             var toolId = tab.ToolId;
             var tool = NestSuiteToolRegistry.ToolDefinitions.First(t => t.Id == toolId);
 

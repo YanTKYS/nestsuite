@@ -3,6 +3,7 @@ using System.Windows;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.PlainText;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 
@@ -12,6 +13,68 @@ public partial class NestSuiteShellWindow
 {
     // ファイルを開く処理（ダイアログ選択・重複チェック・起動時読込）を扱う partial。
     // 読込成功後の後処理は WorkspaceFileHelper.cs の RegisterLoadedTab に委譲する。
+
+    /// <summary>
+    /// v2.19.0 SH-43: .txt ファイルを開き、新しい PlainText タブ／Session を作成してロードする。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
+    /// 文字コードを安全に判定できない場合はタブを作らず、元ファイルも変更しない。
+    /// </summary>
+    private void OpenTextFile()
+    {
+        var rawPath = _dialogs.SelectPlainTextOpenPath();
+        if (rawPath == null) return;
+
+        var expectedTabs = _tabs.Where(t => t.WorkspaceKind == NestSuiteWorkspaceKind.PlainText);
+        var decision = ShellFileOpenPlanner.Plan(rawPath, expectedTabs);
+        if (!TryResolveTypedDialogDecision(decision)) return;
+
+        LoadTextFileAt(decision.OpenContext!);
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: probe 済み context から .txt ファイルを読み込みタブを作成する。共通・種別別 Open、
+    /// 起動引数、最近ファイル、pipe、session 復元の読込経路から使用する（他 Workspace と同じ経路）。
+    /// </summary>
+    private void LoadTextFileAt(WorkspaceFileOpenContext context)
+    {
+        try
+        {
+            var result = PlainTextFileService.LoadPrepared(context);
+            var vm = CreatePlainTextViewModel();
+            vm.LoadContent(result);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.PlainText, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
+        }
+        catch (Exception ex)
+        {
+            LogAndShowLoadError("TextLoad", "PlainText", "テキストファイルを開けませんでした。", ex, context.FilePath);
+        }
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: 起動時に .txt ファイルを新しい PlainText タブ／Session として読み込む。
+    /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため）。
+    /// </summary>
+    private void LoadInitialTextFile(WorkspaceFileOpenContext context)
+    {
+        if (TryActivateExistingTab(context.WorkspaceKind, context.FilePath)) return;
+
+        try
+        {
+            var result = PlainTextFileService.LoadPrepared(context);
+            var vm = CreatePlainTextViewModel();
+            vm.LoadContent(result);
+            var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
+            var session = new NestSuiteWorkspaceSession(tab.Id, NestSuiteWorkspaceKind.PlainText, vm, context.FilePath, false);
+            RegisterLoadedTab(tab, session, context.FilePath);
+        }
+        catch (Exception ex)
+        {
+            LogAndShowLoadError("TextLoadInitial", "PlainText", "テキストファイルを開けませんでした。", ex, context.FilePath);
+            EnsureDefaultTab();
+        }
+    }
 
     /// <summary>
     /// v1.9.7: .ideanest ファイルを開き、新しい IdeaNest タブ／Session を作成してロードする。
@@ -212,6 +275,9 @@ public partial class NestSuiteShellWindow
                 break;
             case NestSuiteWorkspaceKind.IdeaNest:
                 LoadInitialIdeaNestFile(context);
+                break;
+            case NestSuiteWorkspaceKind.PlainText:
+                LoadInitialTextFile(context);
                 break;
             default:
                 _dialogs.ShowError(

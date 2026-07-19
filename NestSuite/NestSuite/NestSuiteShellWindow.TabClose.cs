@@ -1,6 +1,7 @@
 using System.Windows;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.ViewModels;
+using NestSuite.PlainText;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 
@@ -89,6 +90,17 @@ public partial class NestSuiteShellWindow
                     _detachedWindows.Remove(tab.Id);
                 }
                 break;
+
+            case NestSuiteWorkspaceKind.PlainText:
+                if (!ConfirmAndResetText(tab)) return false;
+                // v2.19.0 SH-43: PlainText 別ウィンドウが開いていれば閉じる（確認後）
+                if (_detachedWindows.TryGetValue(tab.Id, out var dwText))
+                {
+                    dwText.OnDetachedClosed = null;
+                    dwText.Close();
+                    _detachedWindows.Remove(tab.Id);
+                }
+                break;
         }
 
         // v1.9.1: タブ削除と同時に対応 Session を破棄する
@@ -155,4 +167,39 @@ public partial class NestSuiteShellWindow
                 vm.Dispose();
             }
         });
+
+    /// <summary>
+    /// v2.19.0 SH-43: PlainText タブを閉じる前の確認とリセット。
+    /// 未保存の場合は Save / Discard / Cancel の3択を表示する（NoteNest と対称）。
+    /// 保存を選んだ場合は保存を試み、成功時のみ閉じる。
+    /// 確認後は PropertyChanged 購読を解除し Dispose する。
+    /// </summary>
+    private bool ConfirmAndResetText(NestSuiteDocumentTab tab)
+    {
+        if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) return false;
+
+        var decision = CloseConfirmationService.EvaluateSingle(
+            tab.IsModified,
+            () => MessageBox.Show(
+                this,
+                $"「{tab.DisplayName}」に未保存の変更があります。\n保存して閉じますか？\n（「いいえ」で保存せずに閉じます。「キャンセル」で閉じません。）",
+                "未保存のテキスト",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning) switch
+            {
+                MessageBoxResult.Yes => UnsavedChangeDecision.Save,
+                MessageBoxResult.No  => UnsavedChangeDecision.Discard,
+                _                   => UnsavedChangeDecision.Cancel
+            },
+            () => TrySaveTextForClose(session));
+
+        if (decision == UnsavedChangeDecision.Cancel) return false;
+
+        if (session.WorkspaceViewModel is PlainTextWorkspaceViewModel vm)
+        {
+            vm.PropertyChanged -= OnPlainTextPropertyChanged;
+            vm.Dispose();
+        }
+        return true;
+    }
 }

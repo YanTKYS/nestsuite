@@ -267,6 +267,28 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             }
         }
 
+        // v2.19.0 SH-43: PlainText 未保存確認は NoteNest と同じ Save / Discard / Cancel の3択にする。
+        foreach (var textSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.PlainText).ToList())
+        {
+            var textTab = _tabs.FirstOrDefault(t => t.Id == textSession.TabId);
+            var closeDecision = CloseConfirmationService.EvaluateSingle(
+                textTab?.IsModified == true,
+                () => MessageBox.Show(
+                    this,
+                    $"テキスト「{textTab?.DisplayName ?? "無題"}」に未保存の変更があります。\n終了前に保存しますか？\n（「いいえ」で保存せずに終了します。「キャンセル」で終了しません。）",
+                    "未保存のテキスト",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning) switch
+                {
+                    MessageBoxResult.Yes => UnsavedChangeDecision.Save,
+                    MessageBoxResult.No  => UnsavedChangeDecision.Discard,
+                    _                   => UnsavedChangeDecision.Cancel
+                },
+                () => TrySaveTextForClose(textSession));
+            if (closeDecision == UnsavedChangeDecision.Cancel) { CancelClosingAndRestartAutoSave(e); return; }
+        }
+
         foreach (var tab in _tabs.Where(t => DraftCandidatePolicy.IsSupportedWorkspace(t.WorkspaceKind)).ToList())
             TryDeleteDraftForTab(tab.Id, "DraftDeleteOnClosing");
 
@@ -335,6 +357,14 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             if (!chatVm.HasUnsavedChanges) continue;
             var chatTab = _tabs.FirstOrDefault(t => t.Id == chatSession.TabId);
             targets.Add(new UnsavedCloseTarget(NestSuiteWorkspaceKind.ChatNest, chatTab?.DisplayName ?? "ChatNest"));
+        }
+
+        foreach (var textSession in _sessionManager.Sessions
+            .Where(s => s.WorkspaceKind == NestSuiteWorkspaceKind.PlainText).ToList())
+        {
+            var textTab = _tabs.FirstOrDefault(t => t.Id == textSession.TabId);
+            if (textTab != null && textTab.IsModified)
+                targets.Add(new UnsavedCloseTarget(NestSuiteWorkspaceKind.PlainText, textTab.DisplayName));
         }
 
         return targets;
@@ -545,6 +575,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             NestSuiteWorkspaceKind.ChatNest => CreateChatNestViewModel(),
             NestSuiteWorkspaceKind.IdeaNest => CreateIdeaNestViewModel(),
             NestSuiteWorkspaceKind.Temp     => CreateTempNestViewModel(),
+            NestSuiteWorkspaceKind.PlainText => CreatePlainTextViewModel(),
             _ => throw new ArgumentOutOfRangeException(nameof(tab), tab.WorkspaceKind, null)
         };
         return new NestSuiteWorkspaceSession(tab.Id, tab.WorkspaceKind, vm, tab.FilePath, tab.IsModified);
@@ -610,6 +641,19 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         WireTempNestPromotion(vm);
         // SH-40: 「続きから」recentリンクのクリックを既存のrecent files openパスへ委譲する。
         vm.OpenContinueFromRecentRequested = OpenRecentFile;
+        return vm;
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: PlainText（.txt）タブ用の独立 ViewModel を生成する。新規（無題）タブの
+    /// 初期状態にしておく（ファイル読込経路は Load*FileAt が LoadContent で上書きする）。
+    /// ダイアログ・コールバックの配線は不要（Shell 側 Save/SaveAs が PlainTextFileService を直接呼ぶ）。
+    /// </summary>
+    private NestSuite.PlainText.PlainTextWorkspaceViewModel CreatePlainTextViewModel()
+    {
+        var vm = new NestSuite.PlainText.PlainTextWorkspaceViewModel();
+        vm.InitializeAsNew();
+        vm.PropertyChanged += OnPlainTextPropertyChanged;
         return vm;
     }
 

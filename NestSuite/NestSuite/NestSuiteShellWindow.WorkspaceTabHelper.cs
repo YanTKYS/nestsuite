@@ -32,6 +32,7 @@ public partial class NestSuiteShellWindow
             NestSuiteWorkspaceKind.ChatNest => ChatWorkspaceView,
             NestSuiteWorkspaceKind.IdeaNest => IdeaNestWorkspaceView,
             NestSuiteWorkspaceKind.Temp     => TempNestWorkspaceView,
+            NestSuiteWorkspaceKind.PlainText => PlainTextWorkspaceView,
             _                               => null
         };
         if (target == null) return;

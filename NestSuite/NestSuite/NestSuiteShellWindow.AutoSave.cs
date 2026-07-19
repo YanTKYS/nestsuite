@@ -134,6 +134,8 @@ public partial class NestSuiteShellWindow
                 TrySaveIdeaNestToPath(session, path, showNotification: false, notifyOnError: false, createBackup: false),
             NestSuiteWorkspaceKind.ChatNest =>
                 TrySaveChatNestToPath(session, path, showNotification: false, notifyOnError: false, createBackup: false),
+            NestSuiteWorkspaceKind.PlainText =>
+                TrySaveTextToPath(session, path, showNotification: false, notifyOnError: false, createBackup: false),
             _ => false,
         };
 

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using NestSuite.ChatNest;
 using NestSuite.IdeaNest.Services;
+using NestSuite.PlainText;
 using NestSuite.Services;
 using NestSuite.IdeaNest.ViewModels;
 using NestSuite.ViewModels;
@@ -14,6 +15,8 @@ public partial class NestSuiteShellWindow
     // v2.14.1 FM-1: 新規保存の標準拡張子は .nestsuite（NestSuiteWorkspaceEnvelope.FileExtension）。
     private const string DefaultIdeaNestFileName = "ideas" + NestSuiteWorkspaceEnvelope.FileExtension;
     private const string DefaultChatNestFileName = "chat"  + NestSuiteWorkspaceEnvelope.FileExtension;
+    // v2.19.0 SH-43: PlainText は .nestsuite wrapper を使わないため、既定拡張子は .txt のまま。
+    private const string DefaultTextFileName = "無題" + PlainTextFileService.FileExtension;
 
     /// <summary>
     /// v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体。
@@ -115,6 +118,70 @@ public partial class NestSuiteShellWindow
             TrySaveChatNestToPath(session, _selectedTab.FilePath);
         else
             SaveChatNestFileAs();
+    }
+
+    /// <summary>v2.19.0 SH-43: 指定 Session の PlainText を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    private bool TrySaveTextToPath(NestSuiteWorkspaceSession session, string path) =>
+        TrySaveTextToPath(session, path, showNotification: true);
+
+    /// <summary>
+    /// v2.16.6 TD-64 と同方針: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// 手動保存 / Save All は既定の true のまま。
+    /// </summary>
+    private bool TrySaveTextToPath(
+        NestSuiteWorkspaceSession session, string path, bool showNotification,
+        bool notifyOnError = true, bool createBackup = true)
+    {
+        var vm = (PlainTextWorkspaceViewModel)session.WorkspaceViewModel;
+        return TrySaveWorkspaceToPath(
+            session, path,
+            p => { PlainTextFileService.Save(p, vm.Text, vm.EncodingKind, vm.NewlineKind, createBackup); vm.MarkSaved(); },
+            UpdateTextTabPath,
+            "TextSave", "PlainText", "テキストファイルの保存に失敗しました。",
+            showNotification, notifyOnError);
+    }
+
+    /// <summary>v2.19.0 SH-43: 選択中 PlainText タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    private void SaveTextFile()
+    {
+        if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.PlainText) return;
+        if (!_sessionManager.TryGet(_selectedTab.Id, out var session) || session == null) return;
+        if (_selectedTab.FilePath != null)
+            TrySaveTextToPath(session, _selectedTab.FilePath);
+        else
+            SaveTextFileAs();
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: 別ウィンドウ内の Ctrl+S から呼ばれる（PlainText）。タブ ID を直接受け取り保存する。
+    /// selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
+    /// </summary>
+    internal void SaveTextForTabId(string tabId, Func<string, string?>? selectSavePath = null)
+    {
+        var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
+        if (tab == null || tab.WorkspaceKind != NestSuiteWorkspaceKind.PlainText) return;
+        if (!_sessionManager.TryGet(tabId, out var session) || session == null) return;
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.PlainText,
+            selectSavePath ?? _dialogs.SelectPlainTextSavePath, DefaultTextFileName);
+        if (targetPath == null) return;
+        TrySaveTextToPath(session, targetPath);
+    }
+
+    /// <summary>
+    /// v2.19.0 SH-43: タブ閉鎖・アプリ終了時の PlainText 保存ヘルパー。
+    /// 保存パスがある場合は上書き保存、ない場合は名前を付けて保存ダイアログを表示する。
+    /// 保存成功時のみ true を返す。キャンセル・保存失敗時は false を返す。
+    /// </summary>
+    private bool TrySaveTextForClose(NestSuiteWorkspaceSession session)
+    {
+        if (session.FilePath != null)
+            return TrySaveTextToPath(session, NormalizeFilePath(session.FilePath));
+
+        var rawPath = _dialogs.SelectPlainTextSavePath(DefaultTextFileName);
+        if (rawPath == null) return false;
+        var normalizedPath = NormalizeFilePath(rawPath);
+        if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.PlainText, normalizedPath, session.TabId)) return false;
+        return TrySaveTextToPath(session, normalizedPath);
     }
 
     private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e) => SaveActiveTab();
@@ -219,6 +286,7 @@ public partial class NestSuiteShellWindow
             case NestSuiteWorkspaceKind.NoteNest: SaveNoteNestFile(); break;
             case NestSuiteWorkspaceKind.ChatNest: SaveChatNestFile(); break;
             case NestSuiteWorkspaceKind.IdeaNest: SaveIdeaNestFile(); break;
+            case NestSuiteWorkspaceKind.PlainText: SaveTextFile(); break;
         }
     }
 

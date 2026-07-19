@@ -124,16 +124,33 @@ public sealed class DialogService
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "NestSuite対応ファイル (*.nestsuite;*.notenest;*.chatnest;*.ideanest)|*.nestsuite;*.notenest;*.chatnest;*.ideanest" +
+            // v2.19.0 SH-43: 共通「開く」ダイアログへ .txt を追加する（PlainTextWorkspace として開く）。
+            Filter = "NestSuite対応ファイル (*.nestsuite;*.notenest;*.chatnest;*.ideanest;*.txt)|*.nestsuite;*.notenest;*.chatnest;*.ideanest;*.txt" +
                      "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
                      "|NoteNestファイル (*.notenest)|*.notenest" +
                      "|ChatNestファイル (*.chatnest)|*.chatnest" +
                      "|IdeaNestファイル (*.ideanest)|*.ideanest" +
+                     "|テキスト ファイル (*.txt)|*.txt" +
                      "|すべてのファイル (*.*)|*.*",
             Multiselect = true
         };
         return dialog.ShowDialog(_owner) == true ? dialog.FileNames : [];
     }
+
+    /// <summary>v2.19.0 SH-43: PlainTextWorkspace の「開く」ダイアログ。既定拡張子は .txt。</summary>
+    public string? SelectPlainTextOpenPath()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "テキスト ファイル (*.txt)|*.txt|すべてのファイル (*.*)|*.*",
+            DefaultExt = ".txt"
+        };
+        return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
+    }
+
+    /// <summary>v2.19.0 SH-43: PlainTextWorkspace の「名前を付けて保存」ダイアログ。既定拡張子は .txt。</summary>
+    public string? SelectPlainTextSavePath(string defaultFileName) =>
+        SelectSaveFilePath("テキスト ファイル (*.txt)|*.txt|すべてのファイル (*.*)|*.*", ".txt", defaultFileName);
 
     public string? SelectIdeaNestSavePath(string defaultFileName) =>
         SelectSaveFilePath(
