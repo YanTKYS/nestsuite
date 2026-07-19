@@ -7,6 +7,20 @@
 
 ---
 
+## v2.19.0 — SH-43 `.txt` 対応の最小プレーンテキストWorkspace追加
+
+- **SH-43: 通常の `.txt` ファイルを開き、簡単なプレーンテキスト編集と保存を行える最小限の Workspace（PlainTextWorkspace）を追加した。** 新しい Nest ではなく、通常ファイルを扱う補助 Workspace として実装した（表示名「テキスト」）。`.txt` 本体が正本で、NestSuite 独自情報は埋め込まず `.nestsuite` wrapper へも格納しない。
+- **追加ファイル**: `NestSuite/PlainText/`（`PlainTextEncoding.cs`・`PlainTextFileService.cs`・`PlainTextWorkspaceViewModel.cs`・`PlainTextWorkspaceView.xaml(.cs)`）。既存の `AtomicFileWriter`（atomic write・.bak）を再利用し、独自の保存基盤は作らない。
+- **Open統合**: `NestSuiteWorkspaceKind.PlainText` を追加し、既存の共通 Open 計画（`NestSuiteTabFactory.TryPrepareOpen` → `ShellFileOpenPlanner` → `LoadWorkspaceFileAt`）へ他 3 形式と同じ経路で合流させた。ファイルを開く・起動引数・ファイル関連付け経由の引数・二重起動pipe転送・最近使ったファイル・session復元・SH-40「続きから」のすべてが独自の並行経路を持たず動作する。
+- **編集・保存**: WPF標準TextBox（AcceptsReturn/AcceptsTab/TextWrapping）のみで構成。Ctrl+S/Ctrl+Shift+S/自動保存（新規以外は既存方針どおり定期自動保存、手動保存のみ`.bak`更新）・名前を付けて保存（既定`.txt`）に対応。dirtyはタブの●表示・終了時未保存確認・すべて保存・タブ閉鎖確認（Save/Discard/Cancelの3択、専用ダイアログは新設せず既存MessageBox経路を再利用）へ他Workspaceと同じ方式で統合した。
+- **文字コード**: 外部依存なしでBOMにより判定できる範囲（UTF-8 BOMあり/なし・UTF-16 LE/BE・UTF-32 LE/BE）のみ対応。BOMなしはUTF-8として厳密デコードし、不正なバイト列は置換文字へ変換せず`PlainTextUnsupportedEncodingException`で読込を止め元ファイルは変更しない（Shift_JIS等は初期実装で非対応）。新規ファイルの既定はUTF-8 BOMなし。既存ファイルは読込時に判定した文字コード・BOM有無を維持して保存する。文字コード・改行コード情報は本文・session・recent filesへ永続化せず、開くたびに再判定する。
+- **改行コード**: 単一種類（CRLF/LF/CR）を検出した場合のみ保存時にその種類へ揃える。混在ファイルは編集コントロールが返した内容をそのまま書き込み、意図せず全ファイルを特定の改行コードへ変更しない。
+- **非対象の確認**: Windowsファイル関連付けは追加していない（EXEへの引数渡しでは開ける）。Shell横断検索の本文検索対象へは含めていない（候補列挙・Open経路は`.txt`追加で壊れないことをテストで確認）。未保存新規`.txt`のdraft復元は対象外（`DraftCandidatePolicy`にPlainTextを追加していない）。デバイス移行ZIP・schema変更・migration実装・新規外部依存はいずれも行っていない。
+- **テスト**: 文字コード判定（BOM6種・不正UTF-8・空ファイル）・改行コード判定・atomic write/.bak・dirty契約・Open/タブ統合（TabFactory・SessionTabMapper・AutoSaveCandidatePolicy・NestSuiteOpenFilePolicy）・SH-41候補列挙の安全スキップ・FileAssociation非追加の回帰を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/recent files/draft形式の変更なし。外部依存追加なし。
+
+---
+
 ## v2.18.24 — TD-90 保存形式・後方互換・移行・配布境界の総合レビュー
 
 - **TD-90: 現行NestSuiteの保存形式・後方互換・前方互換・マイグレーション・バックアップ・互換識別子・単一EXE配布・ファイル関連付けの境界を横断確認する総合レビューを実施した。** 成果物は`docs/planning/storage-compatibility-migration-distribution-review.md`（保存形式一覧・互換性マトリクス・wrapper/legacy遷移図・未知フィールド評価・schema bump/migration判断表・atomic write/.bak差異・互換識別子・配布境界・別PC移行・必須テストテンプレート・将来の実装者向け禁止事項10項目）。

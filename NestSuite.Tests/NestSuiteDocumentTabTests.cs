@@ -301,14 +301,16 @@ public class NestSuiteDocumentTabTests
     // ── NestSuiteWorkspaceKind の全値確認 ───────────────────────────────
 
     [Fact]
-    public void WorkspaceKind_HasThreeValues_NoteNest_ChatNest_IdeaNest()
+    public void WorkspaceKind_HasFiveValues_NoteNest_ChatNest_IdeaNest_Temp_PlainText()
     {
+        // v2.19.0 SH-43: PlainText（.txt）を追加。既存 4 種は変更なし。
         var values = Enum.GetValues<NestSuiteWorkspaceKind>();
-        Assert.Equal(4, values.Length);
+        Assert.Equal(5, values.Length);
         Assert.Contains(NestSuiteWorkspaceKind.NoteNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.ChatNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.IdeaNest, values);
         Assert.Contains(NestSuiteWorkspaceKind.Temp, values);
+        Assert.Contains(NestSuiteWorkspaceKind.PlainText, values);
     }
 
     [Fact]

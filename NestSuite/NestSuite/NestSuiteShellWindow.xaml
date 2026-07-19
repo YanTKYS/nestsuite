@@ -7,6 +7,7 @@
         xmlns:chatnest="clr-namespace:NestSuite.ChatNest"
         xmlns:ideanest="clr-namespace:NestSuite.IdeaNest.Views"
         xmlns:tempnest="clr-namespace:NestSuite.TempNest"
+        xmlns:plaintext="clr-namespace:NestSuite.PlainText"
         Title="NestSuite"
         Height="720" Width="1280"
         MinHeight="500" MinWidth="870"
@@ -45,6 +46,11 @@
                               AutomationProperties.AutomationId="Shell.MenuNewChatNest"
                               AutomationProperties.Name="Shell.MenuNewChatNest"
                               Click="MenuNewChatNest_Click"/>
+                    <!-- v2.19.0 SH-43: 通常の .txt を扱う最小プレーンテキスト Workspace。新しい Nest ではない。 -->
+                    <MenuItem Header="新規 テキスト — シンプルなプレーンテキスト編集(_T)"
+                              AutomationProperties.AutomationId="Shell.MenuNewText"
+                              AutomationProperties.Name="Shell.MenuNewText"
+                              Click="MenuNewText_Click"/>
                 </MenuItem>
                 <MenuItem Header="開く(_O)..." Click="MenuOpen_Click"/>
                 <MenuItem x:Name="RecentFilesMenu" Header="最近使ったファイル(_R)">
@@ -373,6 +379,10 @@
                                           AutomationProperties.AutomationId="Shell.TabAddMenuChatNest"
                                           AutomationProperties.Name="Shell.TabAddMenuChatNest"
                                           Click="MenuNewChatNest_Click"/>
+                                <MenuItem Header="新規 テキスト — シンプルなプレーンテキスト編集(_T)"
+                                          AutomationProperties.AutomationId="Shell.TabAddMenuText"
+                                          AutomationProperties.Name="Shell.TabAddMenuText"
+                                          Click="MenuNewText_Click"/>
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
@@ -519,6 +529,11 @@
                                                 AutomationProperties.AutomationId="Shell.TempNestWorkspace"
                                                 AutomationProperties.Name="Shell.TempNestWorkspace"
                                                 Visibility="Collapsed"/>
+                <!-- v2.19.0 SH-43: 通常の .txt を扱う最小プレーンテキスト Workspace（PlainText タブ選択時に表示） -->
+                <plaintext:PlainTextWorkspaceView x:Name="PlainTextWorkspaceView"
+                                                  AutomationProperties.AutomationId="Shell.PlainTextWorkspace"
+                                                  AutomationProperties.Name="Shell.PlainTextWorkspace"
+                                                  Visibility="Collapsed"/>
                 <!-- v2.9.0 SH-21: 別ウィンドウ表示中の NoteNest タブ向けプレースホルダー -->
                 <!-- v2.9.1 SH-21: 説明文と「このタブへ戻す」ボタンを追加 -->
                 <Grid x:Name="DetachedNoteNestPlaceholder" Visibility="Collapsed"

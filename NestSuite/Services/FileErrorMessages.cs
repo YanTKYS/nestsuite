@@ -27,6 +27,9 @@ public static class FileErrorMessages
         // より汎用の分岐（JsonException 等）に巻き込まれないよう先に置く。
         SchemaVersionTooNewException
             => "このファイルは、より新しいバージョンの NestSuite で作成された可能性があります。\n現在のバージョンでは安全に開けません。新しいバージョンの NestSuite で開いてください。",
+        // v2.19.0 SH-43: .txt の文字コードを安全に判定できない場合。元ファイルは変更していない。
+        NestSuite.PlainText.PlainTextUnsupportedEncodingException
+            => "この .txt ファイルの文字コードを判定できませんでした。対応している文字コードは UTF-8（BOMあり/なし）・UTF-16（LE/BE）・UTF-32（LE/BE）です。元のファイルは変更していません。",
         FileNotFoundException or DirectoryNotFoundException
             => "ファイルが見つかりません。移動または削除された可能性があります。",
         UnauthorizedAccessException or SecurityException

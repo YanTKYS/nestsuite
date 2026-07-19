@@ -112,6 +112,9 @@ public sealed record NestSuiteDocumentTab
         NestSuiteWorkspaceKind.ChatNest => NestSuiteToolRegistry.ChatNestToolId,
         NestSuiteWorkspaceKind.IdeaNest => NestSuiteToolRegistry.IdeaNestToolId,
         NestSuiteWorkspaceKind.Temp => "Temp",
+        // v2.19.0 SH-43: PlainText は Nest ではないため NestSuiteToolRegistry に登録しない。
+        // ActivateTab は Temp と同様に ToolId 参照前の早期分岐で処理する（NestSuiteShellWindow.TabSelection.cs）。
+        NestSuiteWorkspaceKind.PlainText => "PlainText",
         _ => throw new ArgumentOutOfRangeException(nameof(WorkspaceKind), WorkspaceKind, null)
     };
 
@@ -133,11 +136,14 @@ public sealed record NestSuiteDocumentTab
     /// <summary>v2.9.4 SH-21: ChatNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsChatNest => WorkspaceKind == NestSuiteWorkspaceKind.ChatNest;
 
+    /// <summary>v2.19.0 SH-43: PlainText タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
+    public bool IsPlainText => WorkspaceKind == NestSuiteWorkspaceKind.PlainText;
+
     /// <summary>v2.9.1 SH-21: 現在別ウィンドウで表示中かどうか。DetachNoteNestTab/ReAttachNoteNestTab で更新する。</summary>
     public bool IsDetached { get; init; }
 
-    /// <summary>v2.9.4 SH-21: 別ウィンドウに分離できるかどうか（NoteNest / IdeaNest / ChatNest かつ未分離）。</summary>
-    public bool IsDetachable => (IsNoteNest || IsIdeaNest || IsChatNest) && !IsDetached;
+    /// <summary>v2.9.4 SH-21: 別ウィンドウに分離できるかどうか（NoteNest / IdeaNest / ChatNest / PlainText かつ未分離）。</summary>
+    public bool IsDetachable => (IsNoteNest || IsIdeaNest || IsChatNest || IsPlainText) && !IsDetached;
 
     /// <summary>
     /// v2.8.9: UI Automation 用 AutomationId。TempNest 固定タブのみ設定し、他は空文字。
@@ -155,6 +161,7 @@ public sealed record NestSuiteDocumentTab
         NestSuiteWorkspaceKind.ChatNest => "💬 ",
         NestSuiteWorkspaceKind.IdeaNest => "💡 ",
         NestSuiteWorkspaceKind.Temp     => "",
+        NestSuiteWorkspaceKind.PlainText => "📄 ",
         _ => ""
     };
 
@@ -178,6 +185,7 @@ public sealed record NestSuiteDocumentTab
                 NestSuiteWorkspaceKind.ChatNest => "ChatNest",
                 NestSuiteWorkspaceKind.IdeaNest => "IdeaNest",
                 NestSuiteWorkspaceKind.Temp     => "TempNest",
+                NestSuiteWorkspaceKind.PlainText => "テキスト",
                 _ => "不明"
             };
 

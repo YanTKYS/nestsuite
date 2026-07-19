@@ -1,0 +1,26 @@
+<UserControl x:Class="NestSuite.PlainText.PlainTextWorkspaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="PlainText.WorkspaceRoot"
+             AutomationProperties.Name="PlainText.WorkspaceRoot">
+    <!-- v2.19.0 SH-43: 最小プレーンテキスト編集 Workspace。単一の TextBox のみで構成する。
+         ステータスバー・行番号・列番号・文字数・改行コード選択・文字コード選択 UI は追加しない。 -->
+    <Grid Background="{DynamicResource AppBg}">
+        <TextBox x:Name="EditorBox"
+                 AutomationProperties.AutomationId="PlainText.EditorBox"
+                 AutomationProperties.Name="PlainText.EditorBox"
+                 Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Background="Transparent"
+                 Foreground="{DynamicResource AppFg}"
+                 CaretBrush="{DynamicResource AppFg}"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 BorderThickness="0"
+                 Padding="16,12"
+                 VerticalContentAlignment="Top"
+                 SpellCheck.IsEnabled="False"/>
+    </Grid>
+</UserControl>

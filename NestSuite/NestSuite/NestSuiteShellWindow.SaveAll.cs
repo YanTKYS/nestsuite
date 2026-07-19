@@ -61,6 +61,7 @@ public partial class NestSuiteShellWindow
             NestSuiteWorkspaceKind.NoteNest  => TrySaveNoteNestForSaveAll(tab, session),
             NestSuiteWorkspaceKind.IdeaNest  => TrySaveIdeaNestForSaveAll(tab, session),
             NestSuiteWorkspaceKind.ChatNest  => TrySaveChatNestForSaveAll(tab, session),
+            NestSuiteWorkspaceKind.PlainText => TrySaveTextForSaveAll(tab, session),
             _                                => SaveAllTabResult.Failed,
         };
     }
@@ -114,6 +115,17 @@ public partial class NestSuiteShellWindow
             _dialogs.SelectChatNestSavePath, DefaultChatNestFileName);
         if (targetPath == null) return SaveAllTabResult.Cancelled;
         return TrySaveChatNestToPath(session, targetPath, showNotification: false)
+            ? SaveAllTabResult.Saved
+            : SaveAllTabResult.Failed;
+    }
+
+    /// <summary>v2.19.0 SH-43: 保存実体を TrySaveTextToPath へ委譲する（IdeaNest/ChatNest と対称）。</summary>
+    private SaveAllTabResult TrySaveTextForSaveAll(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
+    {
+        var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.PlainText,
+            _dialogs.SelectPlainTextSavePath, DefaultTextFileName);
+        if (targetPath == null) return SaveAllTabResult.Cancelled;
+        return TrySaveTextToPath(session, targetPath, showNotification: false)
             ? SaveAllTabResult.Saved
             : SaveAllTabResult.Failed;
     }

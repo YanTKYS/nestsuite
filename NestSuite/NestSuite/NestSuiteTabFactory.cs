@@ -35,6 +35,10 @@ public static class NestSuiteTabFactory
             [NestSuiteWorkspaceKind.NoteNest] = ProjectFileService.FileExtension,
             [NestSuiteWorkspaceKind.ChatNest] = ChatNest.ChatNestFileService.FileExtension,
             [NestSuiteWorkspaceKind.IdeaNest] = IdeaNest.Services.IdeaNestFileService.FileExtension,
+            // v2.19.0 SH-43: .txt は他の 3 形式と異なり .nestsuite wrapper へは格納しない
+            // （IsPayloadSchemaTooNew の対象外・envelope kind マッピングも追加しない）が、
+            // 拡張子 → WorkspaceKind の判定・タブ生成は同じ ExtensionByKind 経路を共有する。
+            [NestSuiteWorkspaceKind.PlainText] = PlainText.PlainTextFileService.FileExtension,
         };
 
     /// <summary>
