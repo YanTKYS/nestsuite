@@ -277,8 +277,10 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TabFactory_FromFilePath_UnknownExtension_Throws()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、
+        // 真に未対応の拡張子（.pdf）へ差し替えた。
         Assert.Throws<ArgumentException>(() =>
-            NestSuiteTabFactory.FromFilePath(@"C:\data\file.txt"));
+            NestSuiteTabFactory.FromFilePath(@"C:\data\file.pdf"));
     }
 
     [Fact]
@@ -618,7 +620,8 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TryGetKind_WithFailure_UnsupportedExtension_ReturnsFalse_AndUnsupportedExtension()
     {
-        var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.txt", out _, out var failure);
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.pdf", out _, out var failure);
 
         Assert.False(result);
         Assert.Equal(WorkspaceKindDetectionFailure.UnsupportedExtension, failure);

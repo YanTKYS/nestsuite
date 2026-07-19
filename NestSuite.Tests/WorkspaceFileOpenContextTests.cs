@@ -85,10 +85,11 @@ public class WorkspaceFileOpenContextTests
     [Fact]
     public void TryPrepareOpen_UnsupportedExtension_Fails_WithZeroReadCalls()
     {
+        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var readCalls = 0;
 
         var success = NestSuiteTabFactory.TryPrepareOpen(
-            @"C:\data\file.txt", out _, out var failure,
+            @"C:\data\file.pdf", out _, out var failure,
             fileExists: _ => true,
             readAllText: _ => { readCalls++; return "unused"; });
 

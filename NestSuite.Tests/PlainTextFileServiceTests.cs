@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 using NestSuite;
 using NestSuite.PlainText;
@@ -48,10 +49,18 @@ public class PlainTextFileServiceTests : IDisposable
         Assert.Equal(PlainTextEncodingKind.Utf8NoBom, result.EncodingKind);
     }
 
+    /// <summary>
+    /// <see cref="Encoding.GetBytes(string)"/> は BOM を含まない（BOM は <see cref="Encoding.GetPreamble"/>
+    /// で別途取得し、書込み側が明示的に付与するもの）。テストで BOM つきバイト列を再現するため、
+    /// preamble を手動で連結する。
+    /// </summary>
+    private static byte[] WithBom(Encoding encoding, string text) =>
+        encoding.GetPreamble().Concat(encoding.GetBytes(text)).ToArray();
+
     [Fact]
     public void DecodeBytes_Utf8Bom_StripsBomAndDetectsKind()
     {
-        var bytes = new UTF8Encoding(true).GetBytes("テスト");
+        var bytes = WithBom(new UTF8Encoding(true), "テスト");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal("テスト", result.Text);
         Assert.Equal(PlainTextEncodingKind.Utf8Bom, result.EncodingKind);
@@ -61,7 +70,7 @@ public class PlainTextFileServiceTests : IDisposable
     [Fact]
     public void DecodeBytes_Utf16LE_StripsBomAndDetectsKind()
     {
-        var bytes = new UnicodeEncoding(bigEndian: false, byteOrderMark: true).GetBytes("abc");
+        var bytes = WithBom(new UnicodeEncoding(bigEndian: false, byteOrderMark: true), "abc");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal("abc", result.Text);
         Assert.Equal(PlainTextEncodingKind.Utf16LE, result.EncodingKind);
@@ -70,7 +79,7 @@ public class PlainTextFileServiceTests : IDisposable
     [Fact]
     public void DecodeBytes_Utf16BE_StripsBomAndDetectsKind()
     {
-        var bytes = new UnicodeEncoding(bigEndian: true, byteOrderMark: true).GetBytes("abc");
+        var bytes = WithBom(new UnicodeEncoding(bigEndian: true, byteOrderMark: true), "abc");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal("abc", result.Text);
         Assert.Equal(PlainTextEncodingKind.Utf16BE, result.EncodingKind);
@@ -79,7 +88,7 @@ public class PlainTextFileServiceTests : IDisposable
     [Fact]
     public void DecodeBytes_Utf32LE_StripsBomAndDetectsKind()
     {
-        var bytes = new UTF32Encoding(bigEndian: false, byteOrderMark: true).GetBytes("abc");
+        var bytes = WithBom(new UTF32Encoding(bigEndian: false, byteOrderMark: true), "abc");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal("abc", result.Text);
         Assert.Equal(PlainTextEncodingKind.Utf32LE, result.EncodingKind);
@@ -88,7 +97,7 @@ public class PlainTextFileServiceTests : IDisposable
     [Fact]
     public void DecodeBytes_Utf32BE_StripsBomAndDetectsKind()
     {
-        var bytes = new UTF32Encoding(bigEndian: true, byteOrderMark: true).GetBytes("abc");
+        var bytes = WithBom(new UTF32Encoding(bigEndian: true, byteOrderMark: true), "abc");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal("abc", result.Text);
         Assert.Equal(PlainTextEncodingKind.Utf32BE, result.EncodingKind);
@@ -99,7 +108,7 @@ public class PlainTextFileServiceTests : IDisposable
     {
         // UTF-32 LE BOM (FF FE 00 00) は UTF-16 LE BOM (FF FE) を接頭辞として含むため、
         // 長い BOM から先に判定する必要がある。
-        var bytes = new UTF32Encoding(bigEndian: false, byteOrderMark: true).GetBytes("x");
+        var bytes = WithBom(new UTF32Encoding(bigEndian: false, byteOrderMark: true), "x");
         var result = PlainTextFileService.DecodeBytes(bytes);
         Assert.Equal(PlainTextEncodingKind.Utf32LE, result.EncodingKind);
     }
