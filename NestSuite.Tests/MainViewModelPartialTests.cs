@@ -461,14 +461,8 @@ public class MainViewModelPartialTests
     }
 
     // ── v2.19.4 M15: 右ペイン一括コピーの有効判定（HasFilteredMarkers） ──────
-
-    [Fact]
-    public void HasFilteredMarkers_NoMarkers_IsFalse()
-    {
-        var main = new MainViewModel();
-
-        Assert.False(main.HasFilteredMarkers);
-    }
+    // 注: new MainViewModel() はサンプルプロジェクト（初期マーカーを含み得る）を読み込むため、
+    // 「0件」の確認はフィルタで全種別を除外する形で行う（既存 Marker 系テストの baseline 方式に合わせる）。
 
     [Fact]
     public void HasFilteredMarkers_AfterAddingMarker_IsTrue()

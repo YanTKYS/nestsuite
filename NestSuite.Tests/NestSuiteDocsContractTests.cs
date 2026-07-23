@@ -395,10 +395,12 @@ public class NestSuiteDocsContractTests
     }
 
     [Fact]
-    public void Backlog_M15_RemainsOpenItem()
+    public void Backlog_M15_RecordedAsCompleted_NotOpenItem()
     {
-        // 移設元: ExpertProposalPlanningTests。M15 は完了済みではなく現在も open item。
-        Assert.Contains("| M15 |", TestPaths.ReadBacklog());
+        // 移設元: ExpertProposalPlanningTests（旧 Backlog_M15_RemainsOpenItem）。
+        // M15 は v2.19.4 で実装済み（欠番）となったため、open item の表行としては存在しない
+        // （absence 側の確認は BacklogCompletedOpenItemAbsenceRecords の "M15" エントリが担う）。
+        Assert.DoesNotContain("| M15 |", TestPaths.ReadBacklog());
     }
 
     [Fact]
