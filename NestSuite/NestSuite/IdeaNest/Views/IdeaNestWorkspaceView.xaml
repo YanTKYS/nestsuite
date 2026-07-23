@@ -429,7 +429,8 @@
                                         VerticalAlignment="Top"
                                         ClipToBounds="True"
                                         Background="{Binding BackgroundBrush, Converter={StaticResource IdeaHexToBrush}}"
-                                        MouseLeftButtonUp="OnCardMouseLeftButtonUp">
+                                        MouseLeftButtonUp="OnCardMouseLeftButtonUp"
+                                        KeyDown="OnCardKeyDown">
                                     <Border.Style>
                                         <Style TargetType="Border" BasedOn="{StaticResource IdeaCardContainerStyle}">
                                             <Style.Triggers>

@@ -7,6 +7,21 @@
 
 ---
 
+## v2.19.1 — ID-4 IdeaNest：Enterでフォーカス中カードをプレビュー
+
+- **ID-4: IdeaNestのカード一覧で、フォーカス中のカードに対してEnterキーを押すとそのカードのプレビューを開けるようにした（TD-88必須範囲のみ実装）。** カードは既存どおりTabで到達可能であり、フォーカスリング表示・フッターボタンのキーボード操作・Shift+F10によるContextMenuは変更していない。今回追加したのはEnterキー操作のみ。
+- **実装位置**: カード`Border`（`Focusable="True"`）へ`KeyDown="OnCardKeyDown"`を追加（`NestSuite/IdeaNest/Views/IdeaNestWorkspaceView.xaml`）。ハンドラ本体は`IdeaNestWorkspaceView.xaml.cs`の`OnCardKeyDown`。バブリングする`KeyDown`を使い、Shell全体の`PreviewKeyDown`やWorkspace横断の仕組みへは追加していない（IdeaNestのカード一覧に閉じた実装）。
+- **既存プレビュー処理を再利用**: マウスクリック（`OnCardMouseLeftButtonUp`）と全く同じ`Workspace?.PreviewIdeaCommand.Execute(card)`をEnterからも呼び出すだけで、プレビュー表示処理自体は複製していない。ContextMenuの「プレビュー」経路も同じ`PreviewIdeaCommand`を使うため、マウス・ContextMenu・Enterの3経路が同一の処理へ収束する。
+- **子コントロールとの競合回避**: マウスハンドラと同じ`IsInsideButton`判定（フォーカス位置から祖先を辿り`ButtonBase`を探す）を再利用し、カード内フッターボタン（ピン留め等）にフォーカスがある状態でのEnterはBoolean標準のButton動作へ委ね、カード側では横取りしない。検索ボックス・カード編集用TextBox・プレビュー内TextBoxは、そもそも`OnCardKeyDown`が配線されているカード`Border`の外側にあるため影響を受けない。`e.Handled`はこのハンドラが実際にプレビューを開いた場合のみ`true`にする。
+- **フォーカス復帰**: プレビュー（`PreviewIdeaWindow`）は`ShowDialog()`によるモーダル表示であり、既存の動作としてダイアログを閉じるとオーナーであるIdeaNestワークスペースへ制御が戻る。フォーカス復帰用の新規`FocusManager`やカスタム処理は追加していない。
+- **非対象の確認**: 矢印キーによるカード間移動・Spaceキーによるピン留め切替・Deleteキーによる削除は、いずれも今回実装していない（TD-88レビューで「任意」「不採用」と整理済みの範囲を維持）。
+- **dirtyへの影響**: `PreviewIdeaCommand`の遷移先である`PreviewIdea`メソッドは、ダイアログ表示前にVM状態を変更しないため、プレビューを開くだけではdirtyにならない（既存の未変更コード経路のため新規テストではなくコード確認で確認）。
+- **テスト**: `NestSuite.Tests/IdeaNestCardEnterPreviewTests.cs`を追加。XAMLへの`KeyDown`配線確認・既存`MouseLeftButtonUp`配線の非重複確認・`Focusable`維持確認・既存グローバルショートカット不変の確認・`OnCardKeyDown`のシグネチャ確認・`IsInsideButton`共有確認・`PreviewIdeaCommand.Execute(card)`呼び出し確認・`IsInsideButton`判定呼び出し確認・`e.Handled = true`設定確認・対象外キー（Space/Delete/Back/矢印4方向）非追加確認、を静的なXAML/ソース内容確認とリフレクションで実施した（既存のWPF非インスタンス化テスト規約に合わせた）。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest schema・ChatNest/TempNest/session/recent files/draft形式の変更なし。外部依存・外部UIフレームワークの追加なし。
+- 実機でしか確認できない項目（Tabでのカードフォーカス移動とフォーカスリング表示・Enterでのプレビュー表示・Escapeでのプレビュー終了とフォーカス復帰・フッターボタンフォーカス時のEnterが親プレビューを開かないこと・検索ボックスフォーカス時のEnterがプレビューを開かないこと・ライト/ダークテーマ・カードサイズS/M/L・アーカイブ表示・検索/フィルタ中の挙動）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.0 — SH-43 `.txt` 対応の最小プレーンテキストWorkspace追加
 
 - **SH-43: 通常の `.txt` ファイルを開き、簡単なプレーンテキスト編集と保存を行える最小限の Workspace（PlainTextWorkspace）を追加した。** 新しい Nest ではなく、通常ファイルを扱う補助 Workspace として実装した（表示名「テキスト」）。`.txt` 本体が正本で、NestSuite 独自情報は埋め込まず `.nestsuite` wrapper へも格納しない。

@@ -22,6 +22,7 @@ public static class ShortcutHelpProvider
         new("NoteNest", "ノートリンク候補の選択", "↑ / ↓ / Tab / Esc", "ノートリンク候補表示中に候補移動、確定、または閉じる操作をします。"),
 
         new("IdeaNest", "検索", "Ctrl+F", "カードのタイトル・本文・タグ検索欄へ移動します。"),
+        new("IdeaNest", "フォーカス中カードのプレビュー", "Enter", "Tab などでフォーカスしたカードのプレビューを開きます。"),
         new("IdeaNest", "新規カード追加", "Ctrl+Shift+N", "新しいアイデアカードを追加します。"),
         new("IdeaNest", "表示中カードをコピー", "Ctrl+Shift+C", "表示中カードを Markdown 形式でコピーします。"),
         new("IdeaNest", "ランダムプレビュー", "Ctrl+Shift+R", "カードをランダムに 1 件プレビューします。"),
