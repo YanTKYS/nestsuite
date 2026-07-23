@@ -7,6 +7,21 @@
 
 ---
 
+## v2.19.4 — M15 NoteNest右ペイン：マーカー／タスクの一括コピー
+
+- **M15: NoteNest右ペインに表示されているマーカー一覧・タスク一覧を、Markdown形式でまとめてクリップボードへコピーできるようにした。** マーカー一覧ヘッダーへ「全件コピー」ボタンを追加し、現行UIに残っているタスク一覧（互換表示）ヘッダーにも同様のボタンを追加した。
+- **コピー形式**: マーカーは`- [TODO] 本文 — ノート名`（ノート名は取得できる場合のみ付与）のMarkdown箇条書き。タスクは完了状態をMarkdownチェックリスト（`- [ ] 未完了` / `- [x] 完了`）へ変換する。見出しは付けず一覧のみをコピーする。
+- **コピー対象・表示順**: マーカーは画面表示中のフィルタ後一覧（`FilteredMarkers`、TODO/FIXME/NOTEチェックボックスの状態を反映）をそのままの順序でコピーする。タスクは右ペインのグループ順→各グループ内は未完了→完了の表示順を維持する。コピー時の独自ソートや重複排除は行わない。
+- **空一覧**: マーカーが0件（フィルタ後）の場合、コピーボタンを無効化する（`HasFilteredMarkers`）。タスクはヘッダー自体が0件時に非表示になる既存の`HasAnyTasks`契約により、実質的に操作できない状態になる。
+- **実装**: Markdown生成は`NoteNestRightPaneMarkdownFormatter`（Clipboard・通知・View操作を持たない純粋関数）に分離し、既存の`NoteNestMarkdownExportService`/IdeaNestの`IdeaNestMarkdownExporter`と同じ責務分離パターンに揃えた。クリップボード書込・成功通知・失敗時のErrorLog記録は、既存の`ExportNoteMarkdownCopy_Click`と同じ`Clipboard.SetText`→`Host.ShowTransientStatus`→（失敗時）`ErrorLogService.Log`+エラーダイアログのパターンをそのまま再利用した。
+- **非対象**: 右ペイン絞り込み（L10）・CSV/JSON出力・コピー形式のユーザー設定化・各行への個別コピーボタン・タスク機能の再拡張（新規作成導線・完了状態モデル変更・期限/担当者追加・一括完了・一括削除）はいずれも実装していない。
+- **dirty・保存形式**: 一括コピーは読み取り専用操作であり、NoteNestをdirtyにせず、本文・NoteNest保存JSON・schemaへは一切影響しない。UI settingsへの項目追加もなし。
+- **テスト**: `NoteNestRightPaneMarkdownFormatterTests`（0件/1件/複数件・マーカー種別・ノート名有無・改行正規化・タスク完了状態・グループ順・空グループのスキップ）、`MainViewModelPartialTests`（`HasFilteredMarkers`のフィルタ連動）、`M15RightPaneCopyXamlTests`（コピー操作の一意配線・AutomationProperties.Name/ToolTip・各行への個別ボタン非追加・既存Clipboard/通知パターンの再利用・空Markdown時の早期returnの静的確認）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式の変更なし。他Workspaceへの影響なし。外部依存追加なし。新しいショートカットは追加していない。
+- 実機でしか確認できない項目（マーカー・タスクの実際のコピー・貼り付け結果・コピー完了通知の表示・空一覧時のボタン無効化の見た目・Tab/Enterでの操作・ライト/ダークテーマでの視認性）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.3 — L4 NoteNestエディタのワードラップ切替
 
 - **L4: NoteNest本文エディタで、テキストの折り返し表示をON／OFFできるようにした。** 表示（_V）メニューへチェック付きのトグル項目「テキストを折り返す(_W)」を追加した（本文フォント・ノートの並び順と同じ配置方針）。

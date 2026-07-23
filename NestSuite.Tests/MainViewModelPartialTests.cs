@@ -460,6 +460,43 @@ public class MainViewModelPartialTests
         Assert.False(main.IsModified);
     }
 
+    // ── v2.19.4 M15: 右ペイン一括コピーの有効判定（HasFilteredMarkers） ──────
+
+    [Fact]
+    public void HasFilteredMarkers_NoMarkers_IsFalse()
+    {
+        var main = new MainViewModel();
+
+        Assert.False(main.HasFilteredMarkers);
+    }
+
+    [Fact]
+    public void HasFilteredMarkers_AfterAddingMarker_IsTrue()
+    {
+        var main = new MainViewModel();
+        var nb = main.Notes.AddNotebook("NB");
+        var note = main.Notes.AddNote(nb, "N")!;
+
+        note.Content = "[TODO] something";
+
+        Assert.True(main.HasFilteredMarkers);
+    }
+
+    [Fact]
+    public void HasFilteredMarkers_AllTypesFilteredOut_IsFalse()
+    {
+        var main = new MainViewModel();
+        var nb = main.Notes.AddNotebook("NB");
+        var note = main.Notes.AddNote(nb, "N")!;
+        note.Content = "[TODO] something";
+
+        main.FilterTodo = false;
+        main.FilterFixme = false;
+        main.FilterNote = false;
+
+        Assert.False(main.HasFilteredMarkers);
+    }
+
     // ── Markers (multi-note aggregation via MainViewModel) ────────────────────
 
     [Fact]

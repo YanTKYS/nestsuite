@@ -128,6 +128,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.1", "ID-4", "v2.19.1 — ID-4" };
         yield return new object[] { "v2.19.2", "TD-87", "v2.19.2 — TD-87" };
         yield return new object[] { "v2.19.3", "L4", "v2.19.3 — L4" };
+        yield return new object[] { "v2.19.4", "M15", "v2.19.4 — M15" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -295,6 +296,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-87" };
         // ── v2.19.3 L4: NoteNestエディタのワードラップ切替（欠番）──
         yield return new object[] { "L4" };
+        // ── v2.19.4 M15: NoteNest右ペイン：マーカー／タスクの一括コピー（欠番）──
+        yield return new object[] { "M15" };
     }
 
     [Theory]
