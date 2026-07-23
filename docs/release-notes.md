@@ -7,6 +7,18 @@
 
 ---
 
+## v2.19.2 — TD-87 recent files破損時のquarantine・ErrorLog・空状態継続
+
+- **TD-87: `nestsuite-recent-files.json`が破損している場合の「黙って空として扱う」挙動を改善した。** 破損読込をErrorLogへError記録し、破損ファイルを`.corrupt`（既存なら日時付き）へ退避したうえで、recent filesは空として起動を継続するようにした（既存のsession破損時quarantine、TD-65と同型の最小実装）。
+- **変更箇所**: `NestSuiteRecentFilesService.Load`。正常JSON・ファイルなしのケースは従来どおりErrorLog記録もquarantineも行わない。JSON構文破損・型不一致等でデシリアライズに失敗した場合のみ、`ErrorLogService.Log`でErrorを記録し、`File.Move`で破損ファイルを同一ディレクトリ内の`.corrupt`（既に存在すれば日時付き名）へ退避する。quarantine自体が失敗（アクセス拒否等）した場合もErrorLogへ記録するのみで、例外は再throwせず空履歴で起動継続する。
+- **次回保存**: quarantine後にrecent filesへ新しい項目が追加されると、通常の`nestsuite-recent-files.json`が新規作成される。quarantine済みファイルは上書きしない。
+- **対象外**: TempNest（`tempnest.json`）のquarantineは今回実装していない（TD-90 ST-4/ST-4aの将来候補として記録のみ）。recent files UI通知・履歴復元UI・バックアップ世代管理・ErrorLogのInfo/Warning追加・ErrorLogローテーション変更は追加していない。session/draft/UI settingsのquarantine挙動自体は変更していない。
+- **テスト**: `NestSuite.Tests/NestSuiteRecentFilesServiceTests.cs`へ、破損時の`.corrupt`退避・2回目破損時の日時付き退避（既存`.corrupt`を上書きしない）・quarantine失敗時も例外を投げず空履歴を返す・ファイルなし時はquarantineを試みない・quarantine後の通常保存で正常ファイルが再生成されることの確認を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式の変更なし。recent filesのJSON構造（フィールド追加・wrapper化等）も変更なし。外部依存追加なし。
+- 実機でしか確認できない項目（`nestsuite-recent-files.json`を手作業で破損させた際の起動継続・quarantine退避・ErrorLog記録・次回保存での再生成・既存`.corrupt`がある状態での非上書き）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.1 — ID-4 IdeaNest：Enterでフォーカス中カードをプレビュー
 
 - **ID-4: IdeaNestのカード一覧で、フォーカス中のカードに対してEnterキーを押すとそのカードのプレビューを開けるようにした（TD-88必須範囲のみ実装）。** カードは既存どおりTabで到達可能であり、フォーカスリング表示・フッターボタンのキーボード操作・Shift+F10によるContextMenuは変更していない。今回追加したのはEnterキー操作のみ。

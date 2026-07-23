@@ -126,6 +126,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.18.24", "TD-90", "v2.18.24 — TD-90" };
         yield return new object[] { "v2.19.0", "SH-43", "v2.19.0 — SH-43" };
         yield return new object[] { "v2.19.1", "ID-4", "v2.19.1 — ID-4" };
+        yield return new object[] { "v2.19.2", "TD-87", "v2.19.2 — TD-87" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -289,6 +290,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "LT-12" };
         // ── v2.19.1 ID-4: Enterでフォーカス中カードをプレビュー（TD-88必須範囲のみ実装、欠番）──
         yield return new object[] { "ID-4" };
+        // ── v2.19.2 TD-87: recent files破損時のquarantine・ErrorLog・空状態継続（欠番）──
+        yield return new object[] { "TD-87" };
     }
 
     [Theory]
