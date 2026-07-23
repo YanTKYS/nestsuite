@@ -68,6 +68,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
             UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));
         // M14: 左ペインのノート一覧表示順。既定は作成順。不正値は UiSettingsService 側で正規化済み。
         _noteSortMode = uiSettings.NoteSortMode;
+        // v2.19.3 L4: NoteNest 本文エディタの折り返し表示。既定は true（現行の折り返しあり表示を維持）。
+        _noteNestWordWrap = uiSettings.NoteNestWordWrap;
 
         InitializeComponent();
         // v2.16.5 SH-28: 一時通知（保存・エクスポート・コピー等の完了メッセージ）は
@@ -104,6 +106,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // M14: NoteNest ノートの並び順メニュー（表示 > ノートの並び順）の選択状態初期化。
         UpdateNoteSortModeMenuChecks();
+        // v2.19.3 L4: NoteNest 本文エディタのワードラップメニューの選択状態初期化。
+        UpdateNoteNestWordWrapMenuCheck();
 
         // v1.19.1: 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
@@ -518,6 +522,45 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         UpdateNoteSortModeMenuChecks();
     }
 
+    /// <summary>
+    /// v2.19.3 L4: 表示 > テキストを折り返す メニューのクリックハンドラ。NoteNest を開いていない状態でも
+    /// 呼び出せる（本文フォント・ノートの並び順メニューと同じ理由）。変更元 Workspace が存在しないため、
+    /// <see cref="PropagateNoteNestWordWrap"/> は除外なし（全 NoteNest セッション対象）で呼ぶ。
+    /// </summary>
+    private void MenuNoteNestWordWrap_Click(object sender, RoutedEventArgs e)
+    {
+        var isChecked = ((MenuItem)sender).IsChecked;
+        PropagateNoteNestWordWrap(isChecked, exclude: null);
+    }
+
+    /// <summary>v2.19.3 L4: 現在の折り返し設定をメニューのチェック状態へ反映する。</summary>
+    private void UpdateNoteNestWordWrapMenuCheck()
+    {
+        NoteNestWordWrapMenuItem.IsChecked = _noteNestWordWrap;
+    }
+
+    /// <summary>
+    /// v2.19.3 L4: NoteNest 本文エディタの折り返し設定を、変更元以外の全 NoteNest セッションへ伝播し
+    /// ui-settings.json（NoteNestWordWrap）へ永続化する。Workspace ファイル本体・session・draft形式へは
+    /// 一切保存せず、Workspace を dirty にもしない。<paramref name="exclude"/> は
+    /// <see cref="PropagateNoteSortMode"/> と同じ意味（メニュー起点の呼び出しでは null）。
+    /// </summary>
+    private void PropagateNoteNestWordWrap(bool wordWrap, object? exclude)
+    {
+        _noteNestWordWrap = wordWrap;
+        foreach (var s in _sessionManager.Sessions)
+        {
+            if (exclude != null && ReferenceEquals(s.WorkspaceViewModel, exclude)) continue;
+            if (s.WorkspaceViewModel is MainViewModel otherNoteVm)
+                otherNoteVm.EditorWordWrap = wordWrap;
+        }
+        var uiSvc = new UiSettingsService();
+        var ui = uiSvc.Load();
+        ui.NoteNestWordWrap = wordWrap;
+        uiSvc.Save(ui);
+        UpdateNoteNestWordWrapMenuCheck();
+    }
+
     // ── v1.7.3: ファイル単位タブ管理 ─────────────────────────────────────
 
     /// <summary>NestSuite 起動時のデフォルト選択ツール ID。</summary>
@@ -554,6 +597,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
     // M14: NoteNest 左ペインのノート一覧表示順。アプリ全体で1つ、WorkspaceEditorFontFamily と同じ
     // 伝播・永続化パターン（PropagateNoteSortMode 参照）。保存データの並び順には影響しない。
     private NoteSortMode _noteSortMode = NoteSortMode.Created;
+    // v2.19.3 L4: NoteNest 本文エディタの折り返し表示。アプリ全体で1つ、NoteSortMode と同じ
+    // 伝播・永続化パターン（PropagateNoteNestWordWrap 参照）。保存データ（本文・schema）には影響しない。
+    private bool _noteNestWordWrap = true;
     private Point _tabDragStartPoint;
     private NestSuiteDocumentTab? _tabDragSource;
     private int? _tabDropTargetIndex;
@@ -599,6 +645,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.EditorFontSize = _noteNestEditorFontSize;
         vm.EditorFontFamily = _workspaceEditorFontFamily;
         vm.NoteSortMode = _noteSortMode;
+        vm.EditorWordWrap = _noteNestWordWrap;
         vm.PropertyChanged += OnNoteNestSessionPropertyChanged;
         return vm;
     }

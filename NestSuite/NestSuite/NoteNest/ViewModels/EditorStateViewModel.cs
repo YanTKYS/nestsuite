@@ -16,6 +16,7 @@ public sealed class EditorStateViewModel : BaseViewModel
     private string _fontFamily = "Yu Gothic UI";
     private string _savedFontFamily = "Yu Gothic UI";
     private double _fontSize = 14;
+    private bool _wordWrap = true;
     private string _caretPositionText = "";
     private bool _isLoading;
     private bool _suppressSettingsChanged;
@@ -73,6 +74,14 @@ public sealed class EditorStateViewModel : BaseViewModel
         get => _fontSize;
         set { if (SetProperty(ref _fontSize, value) && !_suppressSettingsChanged) SettingsChanged?.Invoke(this, EventArgs.Empty); }
     }
+
+    /// <summary>
+    /// v2.19.3 L4: NoteNest 本文エディタの折り返し表示（true=Wrap／false=NoWrap+横スクロール）。
+    /// UI 設定（Shell の NoteNestWordWrap）駆動の純粋な表示設定であり、変更しても Workspace を
+    /// dirty にせず、保存対象（本文・schema）にも影響しない（<see cref="FontFamily"/> と同様の位置づけ）。
+    /// </summary>
+    public bool WordWrap { get => _wordWrap; set => SetProperty(ref _wordWrap, value); }
+
     public string CaretPositionText { get => _caretPositionText; set => SetProperty(ref _caretPositionText, value); }
     public bool IsTaskCommentMode => Mode == EditorMode.TaskComment;
     public bool IsNoteEditMode => Mode == EditorMode.NoteEdit;

@@ -439,6 +439,30 @@ public class NestSuiteShellXamlTests
         return File.ReadAllText(path);
     }
 
+    // ── v2.19.3 L4: NoteNest 本文エディタのワードラップ切替メニュー ───────
+
+    [Fact]
+    public void ShellXaml_ContainsNoteNestWordWrapMenuItem_Checkable()
+    {
+        var src = ReadShellXaml();
+        var start = src.IndexOf("x:Name=\"NoteNestWordWrapMenuItem\"", StringComparison.Ordinal);
+        Assert.True(start >= 0, "NoteNestWordWrapMenuItem が見つからない");
+        var end = src.IndexOf("/>", start, StringComparison.Ordinal);
+        Assert.True(end >= 0);
+        var element = src.Substring(start, end - start);
+
+        Assert.Contains("IsCheckable=\"True\"", element);
+        Assert.Contains("Click=\"MenuNoteNestWordWrap_Click\"", element);
+    }
+
+    [Fact]
+    public void ShellXaml_NoteNestWordWrapMenuItem_IsUnderViewMenu_NotDuplicated()
+    {
+        var src = ReadShellXaml();
+        var occurrences = System.Text.RegularExpressions.Regex.Matches(src, "Click=\"MenuNoteNestWordWrap_Click\"").Count;
+        Assert.Equal(1, occurrences);
+    }
+
     private string ReadShellXaml()
     {
         var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NestSuiteShellWindow.xaml");

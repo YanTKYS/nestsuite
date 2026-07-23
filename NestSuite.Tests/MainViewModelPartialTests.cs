@@ -429,6 +429,37 @@ public class MainViewModelPartialTests
         Assert.Equal(16, main.EditorFontSize);
     }
 
+    // ── v2.19.3 L4: EditorWordWrap ファサード（NoteNest 本文エディタの折り返し表示） ──
+
+    [Fact]
+    public void EditorWordWrap_DefaultsToTrue()
+    {
+        var main = new MainViewModel();
+
+        Assert.True(main.EditorWordWrap);
+    }
+
+    [Fact]
+    public void EditorWordWrap_SetOnFacade_ReflectedInEditorState()
+    {
+        var main = new MainViewModel();
+
+        main.EditorWordWrap = false;
+
+        Assert.False(main.Editor.WordWrap);
+        Assert.False(main.EditorWordWrap);
+    }
+
+    [Fact]
+    public void EditorWordWrap_Change_DoesNotSetIsModified()
+    {
+        var main = new MainViewModel();
+
+        main.EditorWordWrap = false;
+
+        Assert.False(main.IsModified);
+    }
+
     // ── Markers (multi-note aggregation via MainViewModel) ────────────────────
 
     [Fact]

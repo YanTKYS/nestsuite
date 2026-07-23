@@ -54,6 +54,13 @@ public class UiSettings
     /// アプリ全体で1つの UI 設定。既定値は作成順（現行の表示順を維持）。
     /// </summary>
     public NoteSortMode NoteSortMode { get; set; } = NoteSortMode.Created;
+
+    /// <summary>
+    /// v2.19.3 L4: NoteNest 本文エディタの折り返し表示（true=Wrap／false=NoWrap+横スクロール）。
+    /// Workspace ファイル・schema へは保存しない、アプリ全体で1つの UI 設定。既定値は true
+    /// （現行の折り返しあり表示を維持し、既存利用者の表示を突然変えない）。
+    /// </summary>
+    public bool NoteNestWordWrap { get; set; } = true;
 }
 
 public class UiSettingsService

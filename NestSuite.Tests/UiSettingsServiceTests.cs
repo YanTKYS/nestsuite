@@ -95,6 +95,49 @@ public class UiSettingsServiceTests : IDisposable
         Assert.False(File.Exists(_path + ".tmp"));
     }
 
+    // ── v2.19.3 L4: NoteNest 本文エディタの折り返し表示（NoteNestWordWrap） ────
+
+    [Fact]
+    public void NoteNestWordWrap_DefaultsToTrue_OnNewUiSettings()
+    {
+        Assert.True(new UiSettings().NoteNestWordWrap);
+    }
+
+    [Fact]
+    public void Load_OldUiSettingsJsonWithoutWordWrapField_DefaultsToTrue()
+    {
+        // v2.19.3 以前の ui-settings.json（NoteNestWordWrap フィールドなし）を想定。
+        File.WriteAllText(_path, "{\"LastSearchText\":\"既存\"}");
+        var service = new UiSettingsService(_path);
+
+        var settings = service.Load();
+
+        Assert.True(settings.NoteNestWordWrap);
+        Assert.Equal("既存", settings.LastSearchText);
+    }
+
+    [Fact]
+    public void Save_WordWrapFalse_ThenReload_RestoresFalse()
+    {
+        var service = new UiSettingsService(_path);
+        service.Save(new UiSettings { NoteNestWordWrap = false });
+
+        var loaded = service.Load();
+
+        Assert.False(loaded.NoteNestWordWrap);
+    }
+
+    [Fact]
+    public void Save_WordWrapTrue_ThenReload_RestoresTrue()
+    {
+        var service = new UiSettingsService(_path);
+        service.Save(new UiSettings { NoteNestWordWrap = true });
+
+        var loaded = service.Load();
+
+        Assert.True(loaded.NoteNestWordWrap);
+    }
+
     // ── M19: 読込失敗時の復旧経路 ────────────────────────────────────────────
 
     [Fact]

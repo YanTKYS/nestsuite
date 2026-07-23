@@ -174,6 +174,15 @@
                               AutomationProperties.Name="NoteNest.SortMode.Title"
                               Click="MenuNoteSortMode_Click"/>
                 </MenuItem>
+                <!-- v2.19.3 L4: NoteNest 本文エディタのワードラップ切替。NoteNest を開いていなくても
+                     変更できるよう、本文フォント・ノートの並び順と同様にメニューバーへ置く。
+                     保存データ（本文・schema）は変更しない、表示専用の UI 設定。 -->
+                <MenuItem x:Name="NoteNestWordWrapMenuItem"
+                          Header="テキストを折り返す(_W)"
+                          IsCheckable="True"
+                          AutomationProperties.AutomationId="Shell.NoteNestWordWrapMenuItem"
+                          AutomationProperties.Name="Shell.NoteNestWordWrapMenuItem"
+                          Click="MenuNoteNestWordWrap_Click"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
                 <!-- v2.16.10 SH-30: 常時有効なヘルプ項目は「無効理由」ではなく短い説明のみを付ける -->
