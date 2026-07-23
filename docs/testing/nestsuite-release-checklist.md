@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.19.1）
+# NestSuite リリース前確認チェックリスト（v2.19.2）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -536,6 +536,35 @@
 - [ ] `PreviewIdeaWindow` 内の左右キーによるカード切り替えが従来どおり動作する
 - [ ] `PreviewIdeaWindow` の `Escape` による終了が従来どおり動作する
 - [ ] 矢印キーによるカード間移動・Space キーによるピン留め切替・Delete キーによる削除は、今回のバージョンでは追加されていない（誤操作扱いにならないことを確認）
+
+---
+
+## recent files破損時のquarantine・ErrorLog・空状態継続（v2.19.2 TD-87）
+
+### 正常履歴
+
+- [ ] NestSuiteで複数ファイル（NoteNest/IdeaNest/ChatNest）を開く
+- [ ] アプリを終了し、再起動する
+- [ ] 「最近使ったファイル」に開いていたファイルが表示される
+
+### 破損履歴
+
+- [ ] `%APPDATA%\NoteNest\nestsuite-recent-files.json` を手作業で破損させる（例: `{ invalid json`）
+- [ ] NestSuiteが起動する（例外ダイアログが出ない）
+- [ ] 「最近使ったファイル」が空になる
+- [ ] 破損ファイルが `nestsuite-recent-files.json.corrupt`（または日時付き名）へ退避されている
+- [ ] `%APPDATA%\NoteNest\logs\nestsuite-error.log` にErrorとして記録されている
+
+### 再生成
+
+- [ ] 破損後に任意のWorkspaceファイルを開く
+- [ ] NestSuiteを終了・再起動する
+- [ ] 「最近使ったファイル」が正常に復元される
+- [ ] quarantineした `.corrupt` ファイルは残っている（上書きされていない）
+
+### 既存退避ファイルあり
+
+- [ ] `.corrupt` を事前に置いた状態で再度破損させても、既存の `.corrupt` を上書きせず日時付き名で別途退避される
 
 ---
 
