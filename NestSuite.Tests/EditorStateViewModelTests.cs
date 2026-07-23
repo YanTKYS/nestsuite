@@ -75,6 +75,42 @@ public class EditorStateViewModelTests
         Assert.False(changed);
     }
 
+    // ── v2.19.3 L4: NoteNest 本文エディタの折り返し表示（表示専用の UI 設定） ──
+
+    [Fact]
+    public void WordWrap_DefaultsToTrue()
+    {
+        var editor = new EditorStateViewModel();
+
+        Assert.True(editor.WordWrap);
+    }
+
+    [Fact]
+    public void WordWrap_CanBeSetToFalse_AndDoesNotRaiseSettingsChanged()
+    {
+        var editor = new EditorStateViewModel();
+        var changed = false;
+        editor.SettingsChanged += (_, _) => changed = true;
+
+        editor.WordWrap = false;
+
+        Assert.False(editor.WordWrap);
+        Assert.False(changed);
+    }
+
+    [Fact]
+    public void WordWrap_DoesNotAffectFontOrSavedFontFamily()
+    {
+        var editor = new EditorStateViewModel();
+        editor.LoadSettings("MS Gothic", 16);
+
+        editor.WordWrap = false;
+
+        Assert.Equal("MS Gothic", editor.FontFamily);
+        Assert.Equal("MS Gothic", editor.SavedFontFamily);
+        Assert.Equal(16, editor.FontSize);
+    }
+
     [Fact]
     public void DirectRelatedNoteChangeRaisesEventButSelectionDoesNot()
     {

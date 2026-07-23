@@ -27,6 +27,7 @@ public partial class MainViewModel
     public string EditorContent { get => _editor.Content; set => _editor.Content = value; }
     public string EditorFontFamily { get => _editor.FontFamily; set => _editor.FontFamily = value; }
     public double EditorFontSize { get => _editor.FontSize; set => _editor.FontSize = value; }
+    public bool EditorWordWrap { get => _editor.WordWrap; set => _editor.WordWrap = value; }
     public string CaretPositionText { get => _editor.CaretPositionText; set => _editor.CaretPositionText = value; }
     public string StatusMessage { get => _session.StatusMessage; set => _session.StatusMessage = value; }
     public bool IsModified { get => _session.IsModified; set => _session.IsModified = value; }

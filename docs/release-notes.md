@@ -7,6 +7,20 @@
 
 ---
 
+## v2.19.3 — L4 NoteNestエディタのワードラップ切替
+
+- **L4: NoteNest本文エディタで、テキストの折り返し表示をON／OFFできるようにした。** 表示（_V）メニューへチェック付きのトグル項目「テキストを折り返す(_W)」を追加した（本文フォント・ノートの並び順と同じ配置方針）。
+- **折り返しON（既定）**: 従来どおり`TextWrapping=Wrap`・水平スクロールバーなし。**折り返しOFF**: `TextWrapping=NoWrap`・水平スクロールバー`Auto`で長い1行を横スクロールして確認できる。
+- **反映範囲**: 開いている全NoteNestタブ・新しく開くNoteNestタブ・別ウィンドウ化されたNoteNestタブへ反映する（別ウィンドウは既存タブのView/ViewModelをそのまま再利用する構造のため、追加のコードなしで反映される）。IdeaNest・ChatNest・TempNest・PlainTextWorkspaceへは影響しない。
+- **実装**: `MainViewModel.EditorWordWrap`（`EditorStateViewModel.WordWrap`）を追加し、`NestSuiteShellWindow`が本文フォント・ノートの並び順と同じ伝播・永続化パターン（全NoteNestセッションへ反映＋`UiSettings.NoteNestWordWrap`へ保存）を担う。`NoteEditorHost`はDataContextの`EditorWordWrap`をもとに`EditorBox.TextWrapping`/`HorizontalScrollBarVisibility`を切り替える（`NoteEditorWordWrapSettings`の小さな純粋関数で変換）。行番号の復活・RichTextBox化・独自エディタ導入は行っていない。
+- **設定保持**: `UiSettings.NoteNestWordWrap`（既定`true`、optional bool追加のみ）へ保存し、次回起動時も復元する。旧`ui-settings.json`（フィールドなし）はそのまま読み込め、既定でON。
+- **dirty・保存形式**: 折り返し切替はWorkspaceをdirtyにせず、本文・NoteNest保存JSON・`.notenest`・`.nestsuite` wrapperには一切影響しない。新しいショートカットは追加していない（メニュー操作のみ）。
+- **テスト**: `EditorStateViewModelTests`・`MainViewModelPartialTests`（`EditorWordWrap`ファサードの既定値・dirty非設定）・`UiSettingsServiceTests`（既定値・旧設定互換・保存復元）・`L4NoteNestWordWrapTests`（メニュー配線・全セッション伝播・新規タブ適用・新規ショートカット非追加の静的確認）・`NoteEditorWordWrapSettingsTests`（bool→TextWrapping/HorizontalScrollBarVisibility変換の純粋関数テスト）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft形式の変更なし。外部依存追加なし。
+- 実機でしか確認できない項目（長い1行の折り返しON/OFF表示・横スクロールバー表示・複数タブ/別ウィンドウへの反映・再起動後の設定復元・ライト/ダークテーマ・複数フォント/フォントサイズでの動作）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.2 — TD-87 recent files破損時のquarantine・ErrorLog・空状態継続
 
 - **TD-87: `nestsuite-recent-files.json`が破損している場合の「黙って空として扱う」挙動を改善した。** 破損読込をErrorLogへError記録し、破損ファイルを`.corrupt`（既存なら日時付き）へ退避したうえで、recent filesは空として起動を継続するようにした（既存のsession破損時quarantine、TD-65と同型の最小実装）。

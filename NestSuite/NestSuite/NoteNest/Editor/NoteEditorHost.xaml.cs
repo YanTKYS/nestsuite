@@ -62,6 +62,7 @@ public partial class NoteEditorHost : UserControl
         _lineLayout = new TextBoxLineLayoutAdapter(EditorBox);
         _markerHighlights = MarkerLineDetector.Detect(EditorBox.Text);
         ThemeService.ThemeChanged += OnThemeServiceThemeChanged;
+        ApplyWordWrapSetting();
         UpdateStatusBar();
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
         EditorReady?.Invoke(this, EventArgs.Empty);
@@ -164,12 +165,35 @@ public partial class NoteEditorHost : UserControl
             oldVm.PropertyChanged -= OnViewModelPropertyChanged;
         if (e.NewValue is INotifyPropertyChanged newVm)
             newVm.PropertyChanged += OnViewModelPropertyChanged;
+        if (_editorEventsAttached) ApplyWordWrapSetting();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == "EditorFontSize" || e.PropertyName == "EditorFontFamily")
             Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
+
+        if (e.PropertyName == "EditorWordWrap")
+        {
+            ApplyWordWrapSetting();
+            Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
+        }
+    }
+
+    /// <summary>
+    /// v2.19.3 L4: DataContext（MainViewModel.EditorWordWrap）の折り返し表示設定を
+    /// EditorBox の TextWrapping / HorizontalScrollBarVisibility へ反映する。
+    /// DataContext が未設定・対象プロパティを持たない場合は現状（折り返しON相当）を維持する。
+    /// </summary>
+    private void ApplyWordWrapSetting()
+    {
+        var wordWrap = DataContext switch
+        {
+            NestSuite.ViewModels.MainViewModel vm => vm.EditorWordWrap,
+            _ => true,
+        };
+        EditorBox.TextWrapping = NoteEditorWordWrapSettings.ToTextWrapping(wordWrap);
+        EditorBox.HorizontalScrollBarVisibility = NoteEditorWordWrapSettings.ToHorizontalScrollBarVisibility(wordWrap);
     }
 
     private void OnThemeServiceThemeChanged(object? sender, EventArgs e)
