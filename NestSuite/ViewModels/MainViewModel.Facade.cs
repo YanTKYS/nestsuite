@@ -41,6 +41,12 @@ public partial class MainViewModel
     public int MarkerSortOrderIndex { get => _markers.SortOrderIndex; set => _markers.SortOrderIndex = value; }
     public IEnumerable<MarkerViewModel> FilteredMarkers => _markers.FilteredMarkers;
     public string FilteredMarkerCountText => _markers.FilteredMarkerCountText;
+
+    /// <summary>
+    /// v2.19.4 M15: 右ペインのマーカー一括コピー操作の有効判定。フィルタ後（画面表示中）の
+    /// 件数で判定し、フィルタ前の総数（<see cref="HasAnyMarkers"/>）とは独立して扱う。
+    /// </summary>
+    public bool HasFilteredMarkers => _markers.FilteredMarkers.Any();
     public string TodoCountText  => _markers.TodoCountText;
     public string FixmeCountText => _markers.FixmeCountText;
     public string NoteCountText  => _markers.NoteCountText;
