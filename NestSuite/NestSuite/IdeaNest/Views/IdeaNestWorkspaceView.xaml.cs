@@ -127,6 +127,24 @@ public partial class IdeaNestWorkspaceView : UserControl
         Workspace?.PreviewIdeaCommand.Execute(card);
     }
 
+    /// <summary>
+    /// v2.19.1 ID-4 (TD-88必須範囲): フォーカス中のカードで Enter を押したとき、
+    /// マウスクリックと同じ <see cref="OnCardMouseLeftButtonUp"/> の遷移先（PreviewIdeaCommand）を
+    /// そのまま呼び出す。プレビュー処理自体は複製しない。
+    /// フッターボタン（ピン留め等）にフォーカスがある場合の Enter は、既存の
+    /// <see cref="IsInsideButton"/> 判定（マウスクリック時と同一）でここでは処理せず、
+    /// Button 標準の Enter/Click 動作へそのまま委ねる（横取りしない）。
+    /// </summary>
+    private void OnCardKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled || e.Key != Key.Enter) return;
+        if (sender is not FrameworkElement fe || fe.DataContext is not IdeaCardViewModel card) return;
+        if (e.OriginalSource is DependencyObject src && IsInsideButton(src)) return;
+
+        Workspace?.PreviewIdeaCommand.Execute(card);
+        e.Handled = true;
+    }
+
     private static bool IsInsideButton(DependencyObject src)
     {
         for (var d = src; d != null; d = VisualTreeHelper.GetParent(d))
