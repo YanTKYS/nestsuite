@@ -129,7 +129,9 @@ Blocking / High: **なし**。
 
 **K-3 は v2.19.12 / L28 で対応済み。** タスクグループ見出し・完了済みタスクセクション見出しをBorder＋`MouseBinding`からWPF標準`ToggleButton`化し、Tab到達・Enter/Spaceでの開閉に対応した。開閉状態の変更経路は既存の`ToggleGroupCommand`／`ToggleCompletedSectionCommand`のまま。タスクタイトルもButton化し、Enterで既存のコメント表示切替（`SelectTask`）へ対応した。詳細は `docs/release-notes.md`（v2.19.12 L28）を参照。
 
-**K-4 は v2.19.13 / CH-19 で対応済み。** ChatNestの過去メッセージ表示コンテナ（`StackPanel`）を`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`にし、Tab到達・Shift+F10／コンテキストメニューキーでの既存ContextMenu表示に対応した。ContextMenuは新設せず既存のもの（本文コピー・編集・削除・会話コピー/保存・時刻表示）をマウス右クリックと共用し、`PlacementTarget.DataContext`による操作対象一致の既存契約も維持している。独自のキーボード並び替えショートカットは追加していない（既存ContextMenuに並び替え項目がないため対象外）。詳細は `docs/release-notes.md`（v2.19.13 CH-19）を参照。K-5・K-6は本レビュー時点のまま未対応（今回変更していない）。
+**K-4 は v2.19.13 / CH-19 で対応済み。** ChatNestの過去メッセージ表示コンテナ（`StackPanel`）を`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`にし、Tab到達・Shift+F10／コンテキストメニューキーでの既存ContextMenu表示に対応した。ContextMenuは新設せず既存のもの（本文コピー・編集・削除・会話コピー/保存・時刻表示）をマウス右クリックと共用し、`PlacementTarget.DataContext`による操作対象一致の既存契約も維持している。独自のキーボード並び替えショートカットは追加していない（既存ContextMenuに並び替え項目がないため対象外）。詳細は `docs/release-notes.md`（v2.19.13 CH-19）を参照。
+
+**K-5 は v2.19.14 / SH-45 で対応済み。** アイコン・記号のみで操作目的が可視文字から伝わらないボタン（タブ×・横断検索×・タブ追加＋・タブ一覧▾・NoteNestコメント編集✏/保存💾/右ペイン開閉»«、IdeaNestタグパネル切替・検索クリア✕・再シャッフル🔀・ランダムプレビュー🎲・カードサイズS/M/L・ピン留め📌/アーカイブ📥/削除🗑、ChatNest検索閉じる✕/前▲/次▼）へ`AutomationProperties.Name`を付与した。可視テキストからUIA名を導出できるコントロール（通常ボタン・Header付きMenuItem）には機械的に付与していない。状態によって操作が逆転するボタン（IdeaNestのピン留め・アーカイブ切替、NoteNest右ペイン開閉）は状態に追従する名前にした。詳細は `docs/release-notes.md`（v2.19.14 SH-45）を参照。K-6は本レビュー時点のまま未対応（今回変更していない）。
 
 | ID | 重要度 | 対象 | 再現手順 | 利用者影響 | 現行の代替経路 | 推奨対応 | 今回実装するか |
 |----|--------|------|----------|-----------|----------------|----------|----------------|
@@ -137,7 +139,7 @@ Blocking / High: **なし**。
 | K-2 | Medium | NoteNest右ペイン マーカー/アウトバウンドリンク/バックリンク項目（`NoteNestWorkspaceView.xaml` 776/899/958行） | Tabを何度押しても一覧項目にフォーカスが来ない。ジャンプは`MouseLeftButtonDown`のみ | マーカー・リンク経由の該当行ジャンプがマウス必須 | Ctrl+F検索で同じ文字列に到達可能。リンク先ノートはツリーから開ける | ItemsControl→ListBox化（選択+Enterでジャンプ）を一覧単位で行う小修正。1 version 1一覧 | **対応済み（マーカー一覧: v2.19.10 / L26。リンク一覧: v2.19.11 / L27）** |
 | K-3 | Medium | NoteNest右ペイン タスクグループ開閉・タスクコメント表示（同609/640行 `MouseBinding`、`TaskTitle_MouseLeftButtonDown`） | グループ見出し・タスクタイトルにフォーカスが来ない | グループ折りたたみ・コメントモード切替がマウス必須 | グループは既定展開のため閲覧・チェック操作（CheckBoxでキーボード可）は可能 | 見出しをToggleButton化する等の小修正 | **対応済み（v2.19.12 / L28）** |
 | K-4 | Medium | ChatNestメッセージ単体操作（`ChatNestWorkspaceView.xaml` MessageTemplate） | メッセージにフォーカスが来ないため、編集・削除・本文コピー・並び替え・会話コピー/保存のContextMenuをキーボードで開けない | 過去発言の修正・書き出しがマウス必須（編集モードに入った後のキー操作は対応済み） | なし（投稿・検索・閲覧など主要フローは影響なし） | メッセージコンテナのフォーカス可能化＋Shift+F10到達、または会話コピー/保存系のメニューバー導線追加。軽量案を別途設計 | **対応済み（v2.19.13 / CH-19）** |
-| K-5 | Low | タブ×ボタン・横断検索×ボタン等のAutomationProperties.Name欠落（`NestSuiteShellWindow.xaml` 243-248/482-490行、IdeaNestフッターボタン等） | スクリーンリーダー・UIA経由で「×」「📌」等の記号のみが読まれる | 支援技術利用時に目的が伝わりにくい（ToolTipはあり） | ToolTip・ContextMenuの同等項目 | 対象を絞ってName付与（機械的な全付与はしない） | しない（別version候補） |
+| K-5 | Low | タブ×ボタン・横断検索×ボタン等のAutomationProperties.Name欠落（`NestSuiteShellWindow.xaml` 243-248/482-490行、IdeaNestフッターボタン等） | スクリーンリーダー・UIA経由で「×」「📌」等の記号のみが読まれる | 支援技術利用時に目的が伝わりにくい（ToolTipはあり） | ToolTip・ContextMenuの同等項目 | 対象を絞ってName付与（機械的な全付与はしない） | **対応済み（v2.19.14 / SH-45）** |
 | K-6 | Low | Shellファイルメニューのアクセスキー重複 `新規作成(_N)`/`名前を付けて保存(_N)`（27-68行）、タブContextMenuの `_R` 重複（456/461行） | Alt+F→Nで確定せず循環選択になる | Enter1打が余分に必要なだけで操作は可能（WPF標準の循環動作） | 矢印キー選択 | どちらかのアクセスキー変更 | しない（別version候補） |
 
 ## 7. 現状維持事項（根拠つき）
@@ -186,7 +188,7 @@ backlogへは自動追加しない。着手時に本表から新規採番（ま�
 | 4 | ~~NoteNest: リンク一覧（アウトバウンド/バックリンク）の同様対応~~ **完了（v2.19.11 / L27）** | K-2の残り | 1 version |
 | 5 | ~~NoteNest: タスクグループ開閉のキーボード対応~~ **完了（v2.19.12 / L28）** | K-3 | 1 version |
 | 6 | ~~ChatNest: メッセージ操作のキーボード導線（設計検討から）~~ **完了（v2.19.13 / CH-19）** | K-4 | 1 version（要小設計） |
-| 7 | アイコンのみボタンへのAutomationName付与（対象限定） | K-5 | 1 version（複数Workspace横断だが同一目的の文言追加のみ） |
+| 7 | ~~アイコンのみボタンへのAutomationName付与（対象限定）~~ **完了（v2.19.14 / SH-45）** | K-5 | 1 version（複数Workspace横断だが同一目的の文言追加のみ） |
 | 8 | アクセスキー重複の解消 | K-6 | 1 version |
 
 複数Workspaceの修正を1 versionに束ねない（7は「同一目的の属性追加のみ」の例外として許容範囲だが、着手時に再判断する）。

@@ -61,6 +61,7 @@
                             Margin="4,0,0,0"
                             Padding="3,1"
                             ToolTip="コメントを編集"
+                            AutomationProperties.Name="コメントを編集"
                             Click="EditTaskComment_Click"
                             Background="Transparent"
                             BorderThickness="0"
@@ -427,6 +428,7 @@
                                 Style="{StaticResource IconButton}"
                                 Command="{Binding SaveProjectCommand}"
                                 ToolTip="保存 (Ctrl+S)"
+                                AutomationProperties.Name="保存"
                                 FontSize="15"/>
                     </Border>
                     <Border DockPanel.Dock="Right"
@@ -552,7 +554,6 @@
         <Button Grid.Column="3"
                 x:Name="RightPaneExpandButton"
                 AutomationProperties.AutomationId="NoteNest.RightPaneExpandButton"
-                AutomationProperties.Name="NoteNest.RightPaneExpandButton"
                 Panel.ZIndex="1"
                 Content="»" Width="20"
                 HorizontalAlignment="Center" VerticalAlignment="Center"

@@ -43,14 +43,26 @@ public class IdeaCardViewModel : IdeaNestViewModelBase
     public bool IsPinned
     {
         get => Model.IsPinned;
-        set { if (Model.IsPinned != value) { Model.IsPinned = value; OnPropertyChanged(); } }
+        set { if (Model.IsPinned != value) { Model.IsPinned = value; OnPropertyChanged(); OnPropertyChanged(nameof(PinActionName)); } }
     }
 
     public bool IsArchived
     {
         get => Model.IsArchived;
-        set { if (Model.IsArchived != value) { Model.IsArchived = value; OnPropertyChanged(); } }
+        set { if (Model.IsArchived != value) { Model.IsArchived = value; OnPropertyChanged(); OnPropertyChanged(nameof(ArchiveActionName)); } }
     }
+
+    /// <summary>
+    /// SH-45: ピン留め切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
+    /// 表示専用の派生値で、保存もdirty対象にもしない。
+    /// </summary>
+    public string PinActionName => IsPinned ? "カードのピン留めを解除" : "カードをピン留め";
+
+    /// <summary>
+    /// SH-45: アーカイブ切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
+    /// 表示専用の派生値で、保存もdirty対象にもしない。
+    /// </summary>
+    public string ArchiveActionName => IsArchived ? "カードをアーカイブから戻す" : "カードをアーカイブ";
 
     public DateTime CreatedAt => Model.CreatedAt;
     public DateTime UpdatedAt => Model.UpdatedAt;
@@ -140,5 +152,7 @@ public class IdeaCardViewModel : IdeaNestViewModelBase
         OnPropertyChanged(nameof(BackgroundBrush));
         OnPropertyChanged(nameof(IsPinned));
         OnPropertyChanged(nameof(IsArchived));
+        OnPropertyChanged(nameof(PinActionName));
+        OnPropertyChanged(nameof(ArchiveActionName));
     }
 }
