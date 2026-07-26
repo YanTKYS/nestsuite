@@ -67,7 +67,7 @@
                 <MenuItem x:Name="SaveAllMenuItem" Header="すべて保存(_A)"
                           Click="MenuSaveAll_Click" InputGestureText="Ctrl+Shift+S"
                           ToolTipService.ShowOnDisabled="True"/>
-                <MenuItem x:Name="SaveAsMenuItem" Header="名前を付けて保存(_N)..." Click="MenuSaveAs_Click"
+                <MenuItem x:Name="SaveAsMenuItem" Header="名前を付けて保存(_V)..." Click="MenuSaveAs_Click"
                           ToolTipService.ShowOnDisabled="True"/>
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
@@ -473,7 +473,7 @@
                                                       Visibility="{Binding IsDetachable, Converter={StaticResource BoolToVis}}"
                                                       Click="TabContextDetach_Click"/>
                                             <!-- v2.9.1 SH-21: 分離中タブはシェルへ戻す操作を提供する -->
-                                            <MenuItem Header="このタブへ戻す(_R)"
+                                            <MenuItem Header="このタブへ戻す(_B)"
                                                       Visibility="{Binding IsDetached, Converter={StaticResource BoolToVis}}"
                                                       Click="TabContextReturnDetached_Click"/>
                                             <Separator/>

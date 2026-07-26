@@ -329,17 +329,17 @@ public class SH45IconButtonAutomationNameTests
         Assert.DoesNotContain(".Save(", expandBody);
     }
 
-    // ── 11. K-6（アクセスキー重複）は今回変更していない ──────────────────
+    // ── 11. K-6（アクセスキー重複）はSH-45の対象外だった ──────────────────
+    // SH-45時点では新規作成(_N)/名前を付けて保存(_N)、このタブへ戻す(_R)/右側のタブを
+    // 閉じる(_R) の重複は意図的に未修正のまま残していた。これらはK-6としてSH-46
+    // （v2.19.15）で解消済みのため、このテストはSH-45が新規作成(_N)自体を変更して
+    // いないことのみを確認する（重複の有無はSH46MenuAccessKeyTestsが検証する）。
 
     [Fact]
-    public void K6AccessKeyDuplicates_AreNotChanged_ThisVersion()
+    public void SH45_DidNotTouchNewMenuMnemonic()
     {
         var shellXaml = ReadShellXaml();
-        // 新規作成(_N) / 名前を付けて保存(_N) の重複はSH-45の対象外として維持する。
-        Assert.Contains("(_N)", shellXaml);
-        // 「このタブへ戻す(_R)」「右側のタブを閉じる(_R)」の重複も同様に維持する。
-        Assert.Contains("Header=\"このタブへ戻す(_R)\"", shellXaml);
-        Assert.Contains("Header=\"右側のタブを閉じる(_R)\"", shellXaml);
+        Assert.Contains("Header=\"新規作成(_N)\"", shellXaml);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────
