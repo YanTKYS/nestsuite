@@ -130,6 +130,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.3", "L4", "v2.19.3 — L4" };
         yield return new object[] { "v2.19.4", "M15", "v2.19.4 — M15" };
         yield return new object[] { "v2.19.5", "ID-7", "v2.19.5 — ID-7" };
+        yield return new object[] { "v2.19.6", "L10", "v2.19.6 — L10" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -301,6 +302,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "M15" };
         // ── v2.19.5 ID-7: IdeaNest検索語のカード内ハイライト（欠番）──
         yield return new object[] { "ID-7" };
+        // ── v2.19.6 L10: NoteNest右ペイン内の絞り込み（欠番）──
+        yield return new object[] { "L10" };
     }
 
     [Theory]

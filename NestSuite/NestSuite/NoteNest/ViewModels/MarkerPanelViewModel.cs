@@ -10,6 +10,7 @@ public sealed class MarkerPanelViewModel : BaseViewModel
     private bool _filterTodo = true;
     private bool _filterFixme = true;
     private bool _filterNote = true;
+    private string _filterText = string.Empty;
     private int _sortOrderIndex;
     private int _todoCount;
     private int _fixmeCount;
@@ -27,6 +28,12 @@ public sealed class MarkerPanelViewModel : BaseViewModel
     public bool FilterTodo { get => _filterTodo; set { if (SetProperty(ref _filterTodo, value)) RaiseFilteredChanged(); } }
     public bool FilterFixme { get => _filterFixme; set { if (SetProperty(ref _filterFixme, value)) RaiseFilteredChanged(); } }
     public bool FilterNote { get => _filterNote; set { if (SetProperty(ref _filterNote, value)) RaiseFilteredChanged(); } }
+
+    /// <summary>
+    /// L10: 右ペイン共通絞り込み文字列（Trim済み）。既存の種別フィルタ（TODO/FIXME/NOTE）へ
+    /// AND条件で追加適用する。表示専用の一時状態で保存対象ではない。
+    /// </summary>
+    public string FilterText { get => _filterText; set { if (SetProperty(ref _filterText, value ?? string.Empty)) RaiseFilteredChanged(); } }
     public int SortOrderIndex { get => _sortOrderIndex; set { if (SetProperty(ref _sortOrderIndex, value)) RaiseFilteredChanged(); } }
 
     public IEnumerable<MarkerViewModel> FilteredMarkers
@@ -37,6 +44,8 @@ public sealed class MarkerPanelViewModel : BaseViewModel
                 (marker.Type == MarkerTypeNames.Todo && FilterTodo) ||
                 (marker.Type == MarkerTypeNames.Fixme && FilterFixme) ||
                 (marker.Type == MarkerTypeNames.Note && FilterNote));
+            filtered = filtered.Where(marker =>
+                RightPaneFilterMatcher.MatchesAny(_filterText, marker.Excerpt, marker.NoteTitle, marker.Type));
             return SortOrderIndex switch
             {
                 1 => filtered.OrderBy(marker => MarkerTypeNames.SortOrder(marker.Type)).ThenBy(marker => marker.NoteTitle).ThenBy(marker => marker.LineNumber),

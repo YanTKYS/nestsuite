@@ -49,7 +49,15 @@ public sealed class WorkspaceChangeCoordinator
             Publish(false, facadeProperty,
                 nameof(MainViewModel.HasAnyMarkers),
                 nameof(MainViewModel.HasNoMarkers),
-                nameof(MainViewModel.ShowMarkerEmptyState));
+                nameof(MainViewModel.ShowMarkerEmptyState),
+                nameof(MainViewModel.MarkerEmptyStateText));
+        // L10: 種別フィルタ・絞り込み文字列の変更で FilteredMarkers が変わった際も、
+        // 一括コピー有効判定・空状態を併せて再評価させる。
+        else if (e.PropertyName == nameof(MarkerPanelViewModel.FilteredMarkers))
+            Publish(false, facadeProperty,
+                nameof(MainViewModel.HasFilteredMarkers),
+                nameof(MainViewModel.ShowMarkerEmptyState),
+                nameof(MainViewModel.MarkerEmptyStateText));
         else
             Publish(false, facadeProperty);
     }
