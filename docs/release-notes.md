@@ -7,6 +7,22 @@
 
 ---
 
+## v2.19.15 — SH-46 Shellメニュー・タブContextMenuのアクセスキー重複解消
+
+- **SH-46: Shellファイルメニュー・タブContextMenu内で重複していたアクセスキーを解消した。** 同一メニュー階層内でアクセスキーが重複していると、該当キーを押しても即時確定せず候補間の循環選択と追加のEnter操作が必要だったため、Alt+F等のメニュー操作を1回のキー入力で完結できるようにした。
+- **ファイルメニュー**: 「新規作成(_N)」と「名前を付けて保存(_N)」が重複していたため、頻度の高い「新規作成」の`_N`を維持し、「名前を付けて保存」を`_V`へ変更した（`Header="名前を付けて保存(_V)..."`）。ファイルメニュー直下の他のアクセスキー（開く_O・最近使ったファイル_R・上書き保存_S・すべて保存_A・終了_X）は変更していない。
+- **タブContextMenu**: 「このタブへ戻す(_R)」と「右側のタブを閉じる(_R)」が重複していたため、「右側のタブを閉じる」の`_R`（Rightの意味で自然）を維持し、「このタブへ戻す」を`_B`へ変更した。他の項目（このタブを閉じる_C・ピン留め_P・ピン留めを解除_U・別ウィンドウで表示_D・他のタブを閉じる_O）は変更していない。
+- **「新規作成」の子メニュー（新規 NoteNest_N・新規 IdeaNest_I・新規 ChatNest_C・新規 テキスト_T）は別階層のため変更していない。**
+- **表示文言（アクセスキー記号`(_X)`を除く部分）・メニュー項目の順序・`Click`ハンドラ・`Command`・`CommandParameter`・`InputGestureText`（Ctrl+S・Ctrl+Shift+S）・`Visibility`・`IsEnabled`・ToolTip・`ToolTipService.ShowOnDisabled`は一切変更していない。** 新しいKeyBinding・RoutedCommand・グローバルショートカットも追加していない。
+- **SH-45で付与したAutomationProperties（タブ追加＋・タブ一覧▾・タブ閉じる×・横断検索閉じる×等の`AutomationProperties.Name`）は変更していない。**
+- **dirtyへの影響なし**: アクセスキー変更はXAML表示上の変更であり、メニュー移動だけでは`IsModified`を変更しない。「名前を付けて保存」実行時の既存保存契約は維持している。
+- **これにより、キーボード・アクセシビリティ横断レビュー（TD-88）のK-1〜K-6がすべて完了した。**
+- **テスト**: `SH46MenuAccessKeyTests`（ファイルメニュー直下・タブContextMenu全体それぞれのアクセスキー一意性確認、重複解消前後の対応関係確認、新規作成子メニューの非干渉確認、表示文言・メニュー順序・Clickハンドラ・InputGestureText・SH-45 AutomationName・ToolTip無効理由の維持確認）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・ChatNest/IdeaNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部ライブラリ・アクセスキー管理ライブラリ）の追加なし。
+- 実機でしか確認できない項目（Alt+F→Nでの新規作成、Alt+F→Vでの名前を付けて保存の1回確定、新規作成子メニューからの各Workspace作成、Shift+F10からのタブContextMenuでの「このタブへ戻す」「右側のタブを閉じる」の実行と対象タブの一致、通常/ピン留め/分離中/Tempタブ各状態でのVisibility・IsEnabled、Ctrl+S・Ctrl+Shift+Sの動作、マウスクリックでの従来動作、dirty確認、ライト/ダークテーマでのアクセスキー下線・ToolTip表示）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.14 — SH-45 アイコン・記号のみボタンのAutomationName補完
 
 - **SH-45: 表示がアイコン・絵文字・記号だけで、可視テキストから操作目的を判断できないボタンを棚卸しし、対象へ`AutomationProperties.Name`を付与した。** 表示・`Click`・`Command`・`CommandParameter`・`Visibility`・`IsEnabled`・Tab順・ToolTipの表示条件は一切変更していない。
