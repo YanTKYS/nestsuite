@@ -7,6 +7,33 @@
 
 ---
 
+## v2.19.9 — SH-44 Shell横断検索のEscapeクローズ・フォーカス復帰
+
+- **SH-44: Shell横断検索パネルを`Escape`キーで閉じられるようにした。** 検索欄・検索結果一覧を含むパネル内にフォーカスがある場合のみEscapeを処理し、パネル外のEscape（ダイアログのIsCancel・NoteNest補完ポップアップ・各Workspace検索・プレビュー等）は横取りしない。
+- **×ボタンと共通のクローズ処理へ統一した。** Escape・×ボタンのどちらも同じ`CloseCrossSearchPanel()`を呼ぶ構造にし、クローズ処理（Visibility変更・検索状態リセット）が二重実装にならないようにした。
+- **通常クローズ後は、横断検索を開く前にフォーカスされていた要素へ復帰するようにした。** 開く直前の`Keyboard.FocusedElement`を保持し、閉じたときに復帰する。既に開いている状態からの再オープンは既存のトグル構造上発生しないため、復帰先の誤上書きは起きない。
+- **復帰先が無効な場合は安全なフォールバックを使う。** 保存していた要素が破棄・非表示・無効・フォーカス不可のいずれかであれば、1. アクティブWorkspaceの既定フォーカス（現状IdeaNestの既存API`FocusWorkspace()`のみ対応）→ 2. Shellのタブ一覧 → 3. メインウィンドウ、の順に安全にフォールバックする。判定自体は`CrossSearchFocusRestoreLogic`という純粋関数へ分離し、実際のWPF Focus()呼び出しと切り離してテストできるようにした。
+- **検索結果を実行して対象タブへ遷移した場合は、遷移先のフォーカスへ影響しない。** 現行の結果選択処理（`CrossSearchResultsList_SelectionChanged`）はもともと共通クローズ処理を呼ばずパネルを開いたままにする実装のため、Escapeの追加によって遷移後フォーカスが古い要素へ戻ることはない。将来「結果実行時にパネルを閉じる」仕様が入っても分岐できるよう、`CloseCrossSearchPanel(restorePreviousFocus: bool)`という構造にしてある。
+- **二重クローズを防止した。** パネルが既に閉じている状態での`CloseCrossSearchPanel()`は何もせず、古い復帰先も参照しない。フォーカス参照は開いている間だけ保持し、閉じたら即クリアする（保存対象・長期保持ではない）。
+- **検索仕様・検索対象・結果表示・ファイル読込・保存形式は変更していない。** 検索文字列・検索結果の保持/クリアは既存の×ボタンの挙動（`ShellSearchPanelViewModel.Reset()`）のまま。
+- **テスト**: `SH44CrossSearchEscapeFocusTests`（フォーカス復帰判定の純粋関数テスト・Escape配線・×ボタンとの共通クローズ・二重クローズ防止・フォーカス保存タイミング・フォールバック順・XAML静的確認・dirty/保存APIへの非参照確認）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式への変更なし。外部依存の追加なし。新しいグローバルショートカットは追加していない（Escapeはパネル内の標準的な閉じる操作）。
+- **version補足**: 本タスクの指示書はv2.19.8を予定していたが、直前のTD-83-1修正（PRレビュー指摘対応）が既にv2.19.8を使用していたため、重複を避けてv2.19.9とした。
+- 実機でしか確認できない項目（Escape・×ボタン・検索結果実行後の実際のフォーカス移動、NoteNest本文/IdeaNestカード/ChatNest入力欄/タブ見出しへの復帰後にすぐ操作できること、IME変換中のEscape挙動、タブ切替・タブクローズによる復帰先消滅時の安全性、連打時の挙動、ライト/ダークテーマでのフォーカス表示）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
+## v2.19.8 — TD-83-1 archive移動後の相対リンク修正（PRレビュー指摘対応）
+
+- **TD-83-1: PR #588（TD-83）のレビューで指摘された、archive移動後の相対Markdownリンク切れを修正した。** `docs/archive/completed-designs/notenest-editor-h0-reassessment.md` 冒頭の `[履歴文書]` バナーが、移動前の相対パス `README.md` のまま残っていた。移動後の配置では `README.md` は `docs/archive/completed-designs/README.md`（archiveフォルダの汎用索引）を指してしまい、本来案内すべき `docs/design/README.md` とは異なる文書に解決していた。
+- **修正内容**: リンク先を `../../design/README.md` へ修正した。これは他の archive 済み文書（`nestsuite-preparation.md` 等が `docs/integration/README.md` を `../../integration/README.md` で参照する既存の記法）と同じ相対パス規約に揃えている。
+- **調査範囲**: TD-83 で移動・編集した文書（`notenest-editor-h0-reassessment.md`・`operation-note.md`・editor関連3文書・`docs/README.md`・`docs/design/README.md`・`docs/integration/README.md`・`docs/migration/README.md`・リポジトリルート `README.md`）と、それらから逆リンクされる archive 済み文書（`nestsuite-preparation.md`・`ideanest-save-load-plan.md`・`nestsuite-multi-file-tabs-plan.md`・`nestsuite-notenest-multi-file-plan.md`・`nestsuite-default-startup-plan.md`）を対象に、相対Markdownリンクをすべて洗い出した。上記1件以外に壊れているリンクはなかった。
+- **テスト**: `DocsArchiveTd83Tests` に、ファイル内の相対Markdownリンクを実際に解決して存在確認する `RelativeMarkdownLinks_Resolve`（対象14文書）・`RootReadme_RelativeMarkdownLinks_Resolve` を追加した。文字列の部分一致確認だけでなく、リンク先パスが実際に解決できることを機械的に固定する。既存テストは削除・skipしていない。
+- **TD-83自体の文書判定（Archive 2件・Keep 2件）は変更していない。** 今回はリンク切れの修正のみ。backlog への新規追加は行っていない（TD-83-1 は TD-83 の直接の修正であり、独立した backlog item として扱わない。M17-1 が M17 の修正として扱われたのと同じパターン）。
+- アプリ機能・保存形式・schemaへの変更はない。外部依存の追加なし。
+
+---
+
 ## v2.19.7 — TD-83 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
 - **TD-83: `docs/planning/docs-inventory-and-archive-policy.md` の次回候補に基づき、完了済み editor 設計文書1件と旧入口README系3件（`docs/operations/operation-note.md`・`docs/integration/README.md`・`docs/migration/README.md`）の計4文書を個別に再判定した。** 結果は Archive 2件（editor設計文書・operation-note.md）、Keep 2件（integration/README.md・migration/README.md）。単に「古そうだから削除」「完了済みだから一律archive」とはせず、各文書の現在の役割・参照元・実装状況を確認したうえで分類した。Delete Candidate と分類されていた文書も、機械的には削除していない。

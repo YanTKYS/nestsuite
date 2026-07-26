@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -5,13 +6,42 @@ namespace NestSuite.Tests;
 /// <summary>
 /// v2.19.7 TD-83: 完了済みeditor設計文書・旧入口READMEのarchive/削除候補再判定の回帰テスト。
 /// 新パスの存在・旧パスの不在・現行文書からの参照更新・旧入口READMEを削除していないことを確認する。
+/// PRレビュー指摘（v2.19.7-1）を受け、archive移動後の相対Markdownリンクが実際に解決できることも固定する。
 /// </summary>
 public class DocsArchiveTd83Tests
 {
     private static readonly string RepoRoot = TestPaths.RepoRoot;
+    private static readonly Regex MarkdownLinkPattern = new(@"\[[^\]]*\]\(([^)]+)\)", RegexOptions.Compiled);
 
     private static string DocsPath(params string[] segments) =>
         Path.Combine(new[] { RepoRoot, "docs" }.Concat(segments).ToArray());
+
+    /// <summary>
+    /// ファイル内の相対Markdownリンク（http(s)://・アンカーのみ・メールリンクは除く）が、
+    /// そのファイルからの相対パスとして実際に解決できることを確認する。
+    /// </summary>
+    private static void AssertRelativeMarkdownLinksResolve(string filePath)
+    {
+        Assert.True(File.Exists(filePath), $"File not found: {filePath}");
+        var text = File.ReadAllText(filePath);
+        var directory = Path.GetDirectoryName(filePath)!;
+
+        foreach (Match match in MarkdownLinkPattern.Matches(text))
+        {
+            var target = match.Groups[1].Value.Trim();
+            if (target.Length == 0) continue;
+            if (target.StartsWith('#')) continue;
+            if (target.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                target.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+                target.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var withoutAnchor = target.Split('#')[0];
+            var resolved = Path.GetFullPath(Path.Combine(directory, withoutAnchor));
+            Assert.True(File.Exists(resolved) || Directory.Exists(resolved),
+                $"Relative link target does not resolve in {filePath}: \"{target}\" -> {resolved}");
+        }
+    }
 
     // ── Archive: notenest-editor-h0-reassessment.md ────────────────────────
 
@@ -166,4 +196,31 @@ public class DocsArchiveTd83Tests
         var text = File.ReadAllText(path);
         Assert.Contains("v2.19.7", text);
     }
+
+    // ── PRレビュー指摘: archive移動後の相対リンク解決確認 ───────────────────
+    // docs/archive/completed-designs/notenest-editor-h0-reassessment.md の冒頭バナーが
+    // 移動前の相対パス "README.md"（実際には docs/archive/completed-designs/README.md へ
+    // 誤って解決していた）のまま残っていた問題（PR #588 レビュー指摘）を受けて追加。
+
+    [Theory]
+    [InlineData("archive/completed-designs/notenest-editor-h0-reassessment.md")]
+    [InlineData("archive/completed-designs/operation-note.md")]
+    [InlineData("archive/completed-designs/nestsuite-preparation.md")]
+    [InlineData("archive/completed-designs/ideanest-save-load-plan.md")]
+    [InlineData("archive/completed-designs/nestsuite-multi-file-tabs-plan.md")]
+    [InlineData("archive/completed-designs/nestsuite-notenest-multi-file-plan.md")]
+    [InlineData("archive/migrations/nestsuite-default-startup-plan.md")]
+    [InlineData("design/README.md")]
+    [InlineData("design/notenest-editor-host-design.md")]
+    [InlineData("design/notenest-editor-textbox-dependencies.md")]
+    [InlineData("design/notenest-editor-adapter-design.md")]
+    [InlineData("integration/README.md")]
+    [InlineData("migration/README.md")]
+    [InlineData("README.md")]
+    public void RelativeMarkdownLinks_Resolve(string relativePath) =>
+        AssertRelativeMarkdownLinksResolve(Path.Combine(RepoRoot, "docs", relativePath));
+
+    [Fact]
+    public void RootReadme_RelativeMarkdownLinks_Resolve() =>
+        AssertRelativeMarkdownLinksResolve(Path.Combine(RepoRoot, "README.md"));
 }

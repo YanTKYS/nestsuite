@@ -259,7 +259,7 @@
                                 Content="×" FontSize="12"
                                 Width="22" Height="22"
                                 Background="Transparent" BorderThickness="0"
-                                ToolTip="横断検索パネルを閉じる"
+                                ToolTip="横断検索パネルを閉じる（Escでも閉じられます）"
                                 Click="CrossSearchCloseButton_Click"/>
                     </Grid>
                     <TextBox x:Name="CrossSearchBox"

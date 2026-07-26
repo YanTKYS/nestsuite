@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using NestSuite.Services;
 using NestSuite.ViewModels;
 
@@ -19,6 +20,10 @@ public partial class NestSuiteShellWindow
 
     private ShellSearchPanelViewModel? _crossSearchViewModel;
 
+    // SH-44: 横断検索を開く直前にフォーカスされていた要素。開いている間だけ保持し、
+    // 閉じたら即クリアする（保存対象・長期保持なし）。
+    private IInputElement? _crossSearchPreviousFocus;
+
     private void CommandCrossSearch_Executed(object sender, ExecutedRoutedEventArgs e) => ToggleCrossSearchPanel();
 
     private void ToggleCrossSearchPanel()
@@ -28,6 +33,11 @@ public partial class NestSuiteShellWindow
             CloseCrossSearchPanel();
             return;
         }
+
+        // SH-44: Closed→Open のときだけ復帰先を保存する。既に開いている状態は上の分岐で
+        // 必ずクローズへ回るため、ここに到達するのは初回オープンの1回だけであり、
+        // 検索欄への再フォーカス等で復帰先が上書きされることはない。
+        _crossSearchPreviousFocus = Keyboard.FocusedElement;
 
         // SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時の未オープンファイル読込は
         // Task.Run（バックグラウンド）＋ Dispatcher（UIスレッドへの反映）で行う。
@@ -44,10 +54,97 @@ public partial class NestSuiteShellWindow
         CrossSearchBox.Focus();
     }
 
-    private void CloseCrossSearchPanel()
+    /// <summary>
+    /// SH-44: 横断検索パネルを閉じる共通処理。×ボタン・Escapeのどちらから呼ばれても
+    /// 同じ経路（検索状態クリア＋フォーカス復帰）を通る。
+    /// </summary>
+    /// <param name="restorePreviousFocus">
+    /// true: 開く前のフォーカス要素へ復帰する（単純クローズ）。
+    /// false: 復帰しない（検索結果を実行して既に遷移先へフォーカスが移っている場合用）。
+    /// 現状、検索結果選択（<see cref="CrossSearchResultsList_SelectionChanged"/>）はこの共通クローズを
+    /// 呼ばずパネルを開いたままにするため、false は現時点で呼び出し箇所がないが、
+    /// 将来「結果実行時に自動で閉じる」仕様が入っても分岐できるよう用意しておく。
+    /// </param>
+    private void CloseCrossSearchPanel(bool restorePreviousFocus = true)
     {
+        // SH-44: 二重クローズ防止。既に閉じている場合は何もせず、古い復帰先も破棄する。
+        if (CrossSearchPanel.Visibility != Visibility.Visible)
+        {
+            _crossSearchPreviousFocus = null;
+            return;
+        }
+
         CrossSearchPanel.Visibility = Visibility.Collapsed;
         _crossSearchViewModel?.Reset();
+
+        var previousFocus = _crossSearchPreviousFocus;
+        _crossSearchPreviousFocus = null;
+
+        if (restorePreviousFocus)
+            RestoreFocusAfterCrossSearchClose(previousFocus);
+    }
+
+    /// <summary>
+    /// SH-44: Escapeが横断検索パネル内で押された場合だけ処理する。パネル外や非表示中のEscapeは
+    /// 横取りしない（ダイアログのIsCancel・NoteNest補完ポップアップ・他Workspace検索等に影響しない）。
+    /// </summary>
+    private bool TryHandleCrossSearchEscape(KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape) return false;
+        if (CrossSearchPanel.Visibility != Visibility.Visible) return false;
+        if (!CrossSearchPanel.IsKeyboardFocusWithin) return false;
+
+        CloseCrossSearchPanel();
+        e.Handled = true;
+        return true;
+    }
+
+    /// <summary>
+    /// SH-44: 通常クローズ後のフォーカス復帰。Visibility変更と同一スタック内のFocus()は
+    /// 失敗しうるため、既存パターン（<c>ChatNestWorkspaceView</c>のCtrl+F開閉と同様）に合わせ
+    /// Dispatcher.InvokeAsync(DispatcherPriority.Input) でレイアウト更新後に実行する。
+    /// フォールバック順: 1. 保存済み要素 → 2. アクティブWorkspaceの既定フォーカス
+    /// （現状IdeaNestのみ既存API有り）→ 3. Shellのタブ一覧 → 4. メインウィンドウ。
+    /// </summary>
+    private void RestoreFocusAfterCrossSearchClose(IInputElement? previousFocus)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (TryFocus(previousFocus as UIElement)) return;
+            if (TryFocusActiveWorkspaceDefault()) return;
+            if (TryFocus(TabStrip)) return;
+            Focus();
+        }, DispatcherPriority.Input);
+    }
+
+    /// <summary>
+    /// SH-44: 現在アクティブなWorkspaceが提供する既定フォーカス先。既存のフォーカス復帰API
+    /// （<see cref="NestSuite.IdeaNest.Views.IdeaNestWorkspaceView.FocusWorkspace"/>）がある
+    /// IdeaNestのみ対応する。他Workspaceは同種のAPIが未整備のため、次のフォールバック
+    /// （タブ一覧）へ進む。今回のために新しいWorkspace種別switchを大量に追加しない。
+    /// </summary>
+    private bool TryFocusActiveWorkspaceDefault()
+    {
+        if (_selectedTab is not { WorkspaceKind: NestSuiteWorkspaceKind.IdeaNest } tab) return false;
+        if (_detachedWindows.ContainsKey(tab.Id)) return false;
+        if (IdeaNestWorkspaceView.Visibility != Visibility.Visible) return false;
+
+        IdeaNestWorkspaceView.FocusWorkspace();
+        return true;
+    }
+
+    /// <summary>
+    /// SH-44: 破棄済み・非表示・無効・フォーカス不可な要素へ無理にFocus()しない。
+    /// 判定自体は <see cref="CrossSearchFocusRestoreLogic.ShouldUseSavedFocus"/>（純粋関数）に委譲し、
+    /// 実際のWPF Focus()呼び出しだけをここで行う。
+    /// </summary>
+    private static bool TryFocus(UIElement? element)
+    {
+        var state = element == null
+            ? FocusRestoreCandidateState.Missing
+            : new FocusRestoreCandidateState(true, element.IsVisible, element.IsEnabled, element.Focusable);
+
+        return CrossSearchFocusRestoreLogic.ShouldUseSavedFocus(state) && element!.Focus();
     }
 
     private void CrossSearchCloseButton_Click(object sender, RoutedEventArgs e) => CloseCrossSearchPanel();
