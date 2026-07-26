@@ -849,9 +849,28 @@
                         </Border>
 
                         <!-- Marker list -->
+                        <!-- L26: ItemsControl → ListBox 化。Tab到達・上下キー選択・Enterジャンプに対応。
+                             ItemsSource は引き続き FilteredMarkers（種別フィルタ＋L10文字列絞り込み＋並び順）を
+                             そのまま使用し、表示・M15全件コピー対象の一致を維持する。選択変更自体はジャンプせず、
+                             ジャンプは既存の MarkerClickCommand（マウスクリックと共通）を Enter キーからも呼び出す。 -->
                         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding FilteredMarkers}">
-                                <ItemsControl.ItemTemplate>
+                            <ListBox x:Name="MarkerList"
+                                     ItemsSource="{Binding FilteredMarkers}"
+                                     SelectionMode="Single"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     AutomationProperties.AutomationId="NoteNest.MarkerList"
+                                     AutomationProperties.Name="マーカー一覧"
+                                     IsEnabled="{Binding HasFilteredMarkers}"
+                                     KeyDown="MarkerList_KeyDown">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Border Padding="10,8"
                                                 BorderBrush="{DynamicResource ItemBorderBrush}" BorderThickness="0,0,0,1"
@@ -904,8 +923,8 @@
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                         </ScrollViewer>
 
                         <!-- L23/L10: ノートはあるがマーカーが0件（元々0件、または種別・絞り込み文字列で0件）の場合の

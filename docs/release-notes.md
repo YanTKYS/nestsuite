@@ -7,6 +7,28 @@
 
 ---
 
+## v2.19.10 — L26 NoteNestマーカー一覧のListBox化（キーボード選択対応）
+
+- **L26: NoteNest右ペインのマーカー一覧を、WPF標準`ItemsControl`から`ListBox`（`SelectionMode="Single"`）へ変更した。** Tabキーで一覧へフォーカスが到達できるようになり、上下キーで表示中のマーカー間を選択移動できる。
+- **`ItemsSource`は引き続き`FilteredMarkers`をそのまま使用している。** 種別フィルタ（TODO/FIXME/NOTE）・L10の絞り込み文字列・並び順（抽出順/種別順/ノート順/行番号順）を反映した表示・M15全件コピー対象と、上下キーでの選択順は完全に一致する。フィルタ・並び順・M15全件コピーのロジック自体は変更していない。
+- **Enterキーで選択中マーカーへジャンプする。** ジャンプ処理はマウスクリック（`Marker_MouseLeftButtonDown`）と共通の`ViewModel.MarkerClickCommand`をそのまま呼び出しており、新しい遷移ロジックは追加していない。ノート切替・行位置ナビゲーション・本文エディタへのフォーカス移動（`NavigateToLine`が内部で`EditorHost.Editor.Focus()`を呼ぶ既存動作）は既存実装のまま変わらない。
+- **選択変更（上下キーでの移動）だけではジャンプしない。** `SelectionChanged`はジャンプ処理に一切配線しておらず、Enterキーのみがジャンプを実行する。
+- **マウスクリックでのジャンプは変更していない。** `Border`の`MouseLeftButtonDown="Marker_MouseLeftButtonDown"`はそのまま維持しており、クリックで即ジャンプする挙動は従来通り。
+- **選択状態は保存・永続化しない。** 選択中マーカーはViewModelの保存対象プロパティへは追加しておらず、フィルタ・並び順変更で選択中マーカーが表示から外れた場合はWPF標準の挙動（ListBoxの`ItemsSource`再バインドに伴う選択解除）に委ね、例外は発生しない。無関係な項目へ自動ジャンプすることもない。
+- **0件時の空状態は維持し、フォーカス矩形が残らないようにした。** `MarkerList`の`IsEnabled`を既存の`HasFilteredMarkers`にバインドし、0件時はTab到達不可・フォーカス矩形非表示とした（全件コピーボタンの既存`IsEnabled`バインドと同じパターン）。Enterキー処理側にも選択なし（`SelectedItem`が`null`）の場合の早期returnガードがあり、例外は発生しない。
+- **M15全件コピーは影響を受けない。** コピー対象は選択状態に関わらず引き続き`FilteredMarkers`全件であり、1件選択している状態でも表示中のマーカーがすべてコピーされる。単一項目コピーは追加していない。
+- **アクセシビリティ**: `MarkerList`に`AutomationProperties.AutomationId="NoteNest.MarkerList"`・`AutomationProperties.Name="マーカー一覧"`を追加した。各行の個別読み上げ名は追加せず、既存の表示テキストからのUIA自動生成に委ねている。
+- **選択・フォーカスの視認性は既存のDynamicResourceとWPF標準の選択表示に委ねた。** 新しい色システムは追加していない。既存のホバー背景（`MarkerHoverBg`）は行の`Border`側にそのまま残しており、選択状態はWPF標準のListBoxItem選択表示（フォーカス時/非フォーカス時で自動的に異なる）を利用する。
+- **Space/Delete/Escapeキーへの新規割り当ては行っていない。** Spaceは標準の選択トグルのまま、Deleteはマーカー・本文削除には未対応、Escapeの新しい閉じる/選択解除動作も追加していない。
+- **右クリック・ContextMenuは既存のまま。** マーカー一覧の各行に既存のContextMenuは存在せず、今回も追加していない。
+- **dirtyへの影響なし**: 選択変更・Enterジャンプ（ノート選択とキャレット移動のみ）はいずれも`IsModified`を変更しない。
+- **今回のスコープ外**: `docs/planning/keyboard-accessibility-cross-review.md` K-2のうち、アウトバウンドリンク一覧・被リンク一覧のListBox化は今回実装していない（別バージョンで対応予定）。互換タスク一覧のキーボード対応・マーカーの編集/削除/複数選択/単体コピー/並べ替え・検索語ハイライト・新しいグローバルショートカットも対象外。
+- **テスト**: `L26MarkerListKeyboardTests`（ListBox化の静的確認・Enterキー配線・マウス/Enterでの処理共通化・SelectionChanged未配線・0件時の`IsEnabled`バインド・空状態維持・dirty/保存APIへの非参照確認・選択状態の非永続化・Space/Delete/Escape未割り当て・周辺UI要素の維持）を追加した。既存の`MarkerPanelViewModelTests`・`NoteNestRightPaneFilterTests`・`M15RightPaneCopyXamlTests`等は削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部ライブラリ・UIコンポーネントライブラリ）の追加なし。
+- 実機でしか確認できない項目（Tab→上下キー→Enter→ジャンプ→本文フォーカス→入力の一連操作、選択のみではジャンプしないことの目視確認、マウスジャンプとEnterジャンプの遷移先一致、種別フィルタ／L10絞り込みのみを対象とした上下キー範囲、並び順変更後の上下キー順序反映、0件時のフォーカス矩形非表示とEnter時の非例外、1件選択状態でのM15全件コピー、選択項目消滅時の安全性、ライト/ダークテーマでの選択・フォーカス視認性、範囲外への自動スクロール、dirty確認、別ウィンドウ分離時の挙動一致）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.9 — SH-44 Shell横断検索のEscapeクローズ・フォーカス復帰
 
 - **SH-44: Shell横断検索パネルを`Escape`キーで閉じられるようにした。** 検索欄・検索結果一覧を含むパネル内にフォーカスがある場合のみEscapeを処理し、パネル外のEscape（ダイアログのIsCancel・NoteNest補完ポップアップ・各Workspace検索・プレビュー等）は横取りしない。
