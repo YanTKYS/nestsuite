@@ -140,6 +140,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.13", "CH-19", "v2.19.13 — CH-19" };
         yield return new object[] { "v2.19.14", "SH-45", "v2.19.14 — SH-45" };
         yield return new object[] { "v2.19.15", "SH-46", "v2.19.15 — SH-46" };
+        yield return new object[] { "v2.20.0", "TD-91", "v2.20.0 — TD-91" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -329,6 +330,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "SH-45" };
         // ── v2.19.15 SH-46: Shellメニュー・タブContextMenuのアクセスキー重複解消（欠番）──
         yield return new object[] { "SH-46" };
+        // ── v2.20.0 TD-91: キーボード・アクセシビリティ横断レビュー総点検・回帰確認（欠番）──
+        yield return new object[] { "TD-91" };
     }
 
     [Theory]

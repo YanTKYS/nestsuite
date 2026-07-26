@@ -218,3 +218,33 @@ backlogへは自動追加しない。着手時に本表から新規採番（ま�
 7. **状態は色だけで表現しない**。既存の ●未保存・★ピン・アーカイブバッジ・枠線太さ変化のように形状・文字を併用する。
 8. **ダイアログには IsCancel を必ず、応答型には IsDefault と初期フォーカスを設定する**（`IdeaConfirmWindow.MakeButton` が参照実装）。
 9. **無効状態には理由を残す**（`ToolTipService.ShowOnDisabled` — SH-30方式）。
+
+## 12. 総点検・完了整理（v2.20.0 / TD-91）
+
+- 実施version: v2.20.0
+- 対応ID: TD-91
+- 種別: 横断総点検・回帰確認（新機能追加なし）
+
+K-1〜K-6は、それぞれ次のversionで個別対応済みであり、TD-91で現在の`main`上に矛盾なく共存していることを確認した。
+
+| ID | 内容 | 対応version |
+|----|------|--------------|
+| K-1 | Shell横断検索のEscapeクローズ・フォーカス復帰 | v2.19.9 / SH-44 |
+| K-2 | NoteNestマーカー一覧・リンク一覧のListBox化 | v2.19.10 / L26、v2.19.11 / L27 |
+| K-3 | NoteNestタスクグループ開閉・タスクコメント表示のキーボード対応 | v2.19.12 / L28 |
+| K-4 | ChatNestメッセージのフォーカス可能化・ContextMenuキーボード導線 | v2.19.13 / CH-19 |
+| K-5 | アイコン・記号のみボタンのAutomationProperties.Name補完 | v2.19.14 / SH-45 |
+| K-6 | Shellメニュー・タブContextMenuのアクセスキー重複解消 | v2.19.15 / SH-46 |
+
+**K-1〜K-6は全件対応済み。** 確認した内容:
+
+- 主要操作（Shell・NoteNest・IdeaNest・ChatNest・TempNest・PlainTextWorkspace）のキーボード完結性を再確認した。既存の`TD91KeyboardAccessibilityCloseoutTests`および各個別対応の既存契約テスト（SH44/L26/L27/L28/CH19/SH45/SH46関連）がすべて成立していることをコードレベルで確認した。
+- 個別対応間のキー競合がないことを確認した。`Key.Space`・`Key.Delete`・`Key.Apps`・`Key.F10`の新規ハンドラはコードベース上に存在せず、`Key.Escape`・`Key.Enter`の処理はいずれも各対象コントロール（横断検索パネル・マーカー/リンクListBox・タスクタイトル・NoteEditorHost・IdeaNest/ChatNest検索欄等）に限定されており、対象外要素からの横取りは確認されなかった。
+- マウス操作を維持していることを確認した（各K対応はいずれも既存のマウス経路と同じCommand/Clickハンドラを共有しており、キーボード専用の別ロジックを追加していない）。
+- Tab移動・フォーカス移動・横断検索/ContextMenu/検索欄の開閉・一覧項目の選択・タスクグループ開閉・タスクコメント表示切替・AutomationNameの状態更新は、いずれも`IsModified`を変更しないことを確認した（既存の編集・削除・並び替え・完了状態変更は従来どおりdirtyになる）。
+- 保存形式・schema（NoteNest `1.4.2`、`.nestsuite` wrapper `formatVersion 1.0`、ChatNest/IdeaNest/TempNest/PlainText/session/draft/UI settings各形式）への影響がないことを確認した。
+- ID-4で対象外とした矢印キーでのカード間移動・SpaceでのIdeaNestピン留め・Deleteでの削除、およびChatNestメッセージのEnter編集・Delete削除・独自並び替えキーは、いずれも追加されていないことを確認した。
+
+**実機未確認事項（推測で完了扱いにしていない）**: 本環境（Linux CLI、WPF GUI実行不可）では、Windows実機でのキーボード操作通し確認、Narrator等のスクリーンリーダーでの最終読み上げ確認、ライト/ダークテーマでのフォーカス視認性、100%/125%/150% DPIでの表示崩れ確認、別ウィンドウ化した状態での一気通貫確認は実施できていない。§10「未確認事項」の内容は本節時点でも未解消のまま残っており、削除していない。
+
+**キーボード・アクセシビリティ横断レビュー（TD-88）対応はこれで完了とし、通常backlogの運用へ復帰する。** 今後の個別改善（K-5で見送ったAutomationIdの全画面整理、K-6を超えるアクセスキー再配置、ChatNest/IdeaNestの矢印キー移動等）は、必要になった時点で`docs/backlog.md`へ新規IDを採番して扱う。

@@ -7,6 +7,20 @@
 
 ---
 
+## v2.20.0 — TD-91 キーボード・アクセシビリティ横断レビューの総点検・回帰確認
+
+- **TD-91: キーボード・アクセシビリティ横断レビュー（K-1〜K-6、v2.19.9〜v2.19.15）の総点検・回帰確認を実施した。新機能・新規キーボードショートカットの追加は行っていない。**
+- **K-1（横断検索のEscapeクローズ・フォーカス復帰／SH-44 v2.19.9）〜K-6（Shellメニュー・タブContextMenuのアクセスキー重複解消／SH-46 v2.19.15）の全6件が、現行`main`上で互いに競合なく共存していることをコードレベルで確認した。** `Key.Apps`・`Key.F10`・`Key.Space`・`Key.Delete`の新規ハンドラは存在せず、各対応のEnter/Escapeキー処理は対象コントロールごとに独立したメソッドとして定義されている。
+- **Shell・NoteNest・IdeaNest・ChatNest・TempNest・PlainTextWorkspaceの主要キーボード操作を再確認し、既存のマウス操作経路（Click/Command）と同じ処理をキーボード側からも呼び出す既存設計が維持されていることを確認した。**
+- **AutomationProperties.Name（SH-45）の状態依存名、アクセスキーの一意性（SH-46）についても、両方の状態・対象メニュー階層で改めて確認した。**
+- **dirty（`IsModified`）への影響なし**: 各K対応のイベント処理ファイルは`IsModified`・保存API・AutoSave・UI設定を一切参照していないことを確認した。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・ChatNest/IdeaNest/TempNest/PlainText/session/draft/UI settings形式への変更なし。外部依存の追加なし。**
+- **テスト**: 新規に`TD91KeyboardAccessibilityCloseoutTests`を追加し、K-1〜K-6の対応要素の存在・キー競合の非存在・非対象キーの未追加・dirty非影響・schema非影響・AutomationName状態依存・アクセスキー一意性・docs/version状態を横断的に確認した。既存の個別対応テスト（SH44関連・L26/L27/L28TaskKeyboardTests・CH19MessageFocusContextMenuTests・SH45IconButtonAutomationNameTests・SH46MenuAccessKeyTests）は削除・統合せずそのまま維持している。
+- **これにより、キーボード・アクセシビリティ横断レビュー（TD-88）はK-1〜K-6全件完了に加え総点検も完了し、正式に閉じて通常backlogの運用へ復帰する。** 詳細は `docs/planning/keyboard-accessibility-cross-review.md` §12 参照。
+- **実機でしか確認できない項目**（Windows実機でのキーボード操作通し確認、スクリーンリーダーでの読み上げ確認、ライト/ダークテーマでのフォーカス視認性、DPI別表示崩れ確認、別ウィンドウ化した状態での一気通貫確認）は、本開発環境（Linux CLI、Windows実機なし）では未確認のまま残っている。
+
+---
+
 ## v2.19.15 — SH-46 Shellメニュー・タブContextMenuのアクセスキー重複解消
 
 - **SH-46: Shellファイルメニュー・タブContextMenu内で重複していたアクセスキーを解消した。** 同一メニュー階層内でアクセスキーが重複していると、該当キーを押しても即時確定せず候補間の循環選択と追加のEnter操作が必要だったため、Alt+F等のメニュー操作を1回のキー入力で完結できるようにした。
