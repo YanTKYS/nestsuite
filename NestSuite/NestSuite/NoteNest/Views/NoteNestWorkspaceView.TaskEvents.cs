@@ -43,14 +43,33 @@ public partial class NoteNestWorkspaceView
         ViewModel.DeleteTaskCommand.Execute(task);
     }
 
+    /// <summary>
+    /// L28: タスクタイトルはButton化したが、既存どおりダブルクリックのみでコメント表示を切り替える。
+    /// PreviewMouseLeftButtonDownで受けるため、Buttonの標準クリック処理より先に判定できる
+    /// （単発クリックはe.Handledを立てず、ButtonBase標準処理へ素通りするが、Clickハンドラを
+    /// 持たないため何も起きない）。
+    /// </summary>
     private void TaskTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount == 2 && (sender as FrameworkElement)?.DataContext is TaskViewModel task)
         {
-            ViewModel.SelectTask(task);
+            ToggleTaskComment(task);
             e.Handled = true;
         }
     }
+
+    /// <summary>L28: タスクタイトルへフォーカス中のEnterのみでコメント表示を切り替える（Spaceは割り当てない）。</summary>
+    private void TaskTitle_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || e.Handled) return;
+        if ((sender as FrameworkElement)?.DataContext is not TaskViewModel task) return;
+
+        ToggleTaskComment(task);
+        e.Handled = true;
+    }
+
+    /// <summary>マウスダブルクリック・Enterキー共通のコメント表示切替処理。既存のSelectTaskをそのまま使う。</summary>
+    private void ToggleTaskComment(TaskViewModel task) => ViewModel.SelectTask(task);
 
     private void EditTaskComment_Click(object sender, RoutedEventArgs e)
     {

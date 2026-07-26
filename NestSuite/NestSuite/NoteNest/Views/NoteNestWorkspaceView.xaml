@@ -65,26 +65,46 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"/>
-                    <TextBlock Text="{Binding Title}"
-                               VerticalAlignment="Center"
-                               TextWrapping="Wrap"
-                               FontSize="12.5"
-                               MouseLeftButtonDown="TaskTitle_MouseLeftButtonDown">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="ToolTip" Value="ダブルクリックでコメントを追加"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
-                                        <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TaskCompletedFg}"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding HasComment}" Value="True">
-                                        <Setter Property="ToolTip" Value="ダブルクリックでコメントを編集"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <!-- L28: TextBlock → Button化してTab到達可能にする。マウスは既存どおりダブルクリックのみで
+                         反応させたいため、Buttonの標準Click（単発クリック／Space）は使わず、
+                         PreviewMouseLeftButtonDown（既存のClickCount==2判定を再利用）と
+                         PreviewKeyDown（Enterのみ）で個別に処理する。Spaceは標準Clickへ素通りするが
+                         Clickハンドラを持たないため何も起きない（コメント切替に割り当てない）。 -->
+                    <Button Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            PreviewMouseLeftButtonDown="TaskTitle_MouseLeftButtonDown"
+                            PreviewKeyDown="TaskTitle_PreviewKeyDown">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="{Binding Title}"
+                                   TextWrapping="Wrap"
+                                   FontSize="12.5">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="ToolTip" Value="ダブルクリックまたはEnterでコメントを追加"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TaskCompletedFg}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasComment}" Value="True">
+                                            <Setter Property="ToolTip" Value="ダブルクリックまたはEnterでコメントを編集"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Button>
                 </DockPanel>
             </Border>
         </DataTemplate>
@@ -656,20 +676,33 @@
                                 <StackPanel Visibility="{Binding HasVisibleTasks, Converter={StaticResource BoolToVis}}">
 
                                     <!-- Group header -->
-                                    <Border Padding="10,6,10,6"
-                                            Background="{DynamicResource GroupHeaderBg}"
-                                            BorderBrush="{DynamicResource PaneBorder}"
-                                            BorderThickness="0,0,0,1"
-                                            Cursor="Hand"
-                                            AllowDrop="True"
-                                            DragOver="TaskGroupHeader_DragOver"
-                                            Drop="TaskGroupHeader_Drop">
-                                        <Border.InputBindings>
-                                            <MouseBinding MouseAction="LeftClick"
-                                                          Command="{Binding DataContext.ToggleGroupCommand,
-                                                                    RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                          CommandParameter="{Binding}"/>
-                                        </Border.InputBindings>
+                                    <!-- L28: Border＋MouseBinding → ToggleButton化。既存ToggleGroupCommand（IsExpandedの
+                                         唯一の変更経路）をCommandへそのまま割り当て、マウスクリック・Enter・Spaceの
+                                         いずれもWPF標準ButtonBase動作で同じCommandを呼ぶ（独自KeyDownは追加しない）。
+                                         IsCheckedはIsExpandedへOneWayで連動させ、AutomationのToggleStateへ反映させる。 -->
+                                    <ToggleButton Padding="10,6,10,6"
+                                                  Background="{DynamicResource GroupHeaderBg}"
+                                                  BorderBrush="{DynamicResource PaneBorder}"
+                                                  BorderThickness="0,0,0,1"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  Cursor="Hand"
+                                                  AllowDrop="True"
+                                                  DragOver="TaskGroupHeader_DragOver"
+                                                  Drop="TaskGroupHeader_Drop"
+                                                  IsChecked="{Binding IsExpanded, Mode=OneWay}"
+                                                  Command="{Binding DataContext.ToggleGroupCommand,
+                                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  CommandParameter="{Binding}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
                                         <DockPanel>
                                             <TextBlock DockPanel.Dock="Right"
                                                        Text="{Binding CountText}"
@@ -679,7 +712,7 @@
                                                        FontWeight="SemiBold" FontSize="12"
                                                        VerticalAlignment="Center"/>
                                         </DockPanel>
-                                    </Border>
+                                    </ToggleButton>
 
                                     <!-- Incomplete tasks (always visible when group is expanded) -->
                                     <ItemsControl ItemsSource="{Binding IncompleteTasks}"
@@ -689,16 +722,27 @@
                                     <!-- Completed tasks section -->
                                     <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
                                         <!-- Completed section header: only shown when completed tasks exist -->
-                                        <Border Padding="10,5,10,5"
-                                                Background="{DynamicResource GroupHeaderBg}"
-                                                BorderBrush="{DynamicResource PaneBorder}"
-                                                BorderThickness="0,1,0,1"
-                                                Cursor="Hand"
-                                                Visibility="{Binding HasCompletedTasks, Converter={StaticResource BoolToVis}}">
-                                            <Border.InputBindings>
-                                                <MouseBinding MouseAction="LeftClick"
-                                                              Command="{Binding ToggleCompletedSectionCommand}"/>
-                                            </Border.InputBindings>
+                                        <!-- L28: Border＋MouseBinding → ToggleButton化。既存ToggleCompletedSectionCommand
+                                             （IsCompletedSectionExpandedの唯一の変更経路）をそのままCommandへ割り当てる。 -->
+                                        <ToggleButton Padding="10,5,10,5"
+                                                      Background="{DynamicResource GroupHeaderBg}"
+                                                      BorderBrush="{DynamicResource PaneBorder}"
+                                                      BorderThickness="0,1,0,1"
+                                                      HorizontalContentAlignment="Stretch"
+                                                      Cursor="Hand"
+                                                      Visibility="{Binding HasCompletedTasks, Converter={StaticResource BoolToVis}}"
+                                                      IsChecked="{Binding IsCompletedSectionExpanded, Mode=OneWay}"
+                                                      Command="{Binding ToggleCompletedSectionCommand}">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
                                             <DockPanel>
                                                 <TextBlock DockPanel.Dock="Right"
                                                            FontSize="9"
@@ -720,7 +764,7 @@
                                                            Foreground="{DynamicResource FaintFg}"
                                                            VerticalAlignment="Center"/>
                                             </DockPanel>
-                                        </Border>
+                                        </ToggleButton>
                                         <!-- Completed task items (dimmed) -->
                                         <ItemsControl ItemsSource="{Binding CompletedTasks}"
                                                       ItemTemplate="{StaticResource TaskItemTemplate}"
