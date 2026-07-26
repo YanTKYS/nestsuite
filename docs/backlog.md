@@ -72,13 +72,13 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 
 ## 3. NestSuite Shell 改善
 
-SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、SH-29 は v2.16.9、SH-30 は v2.16.10、SH-34 は v2.16.21、SH-37 は v2.18.3、SH-38 は v2.18.5、SH-39 は v2.18.15、SH-40（AT-1 フェーズ1）は v2.18.17、SH-41（AT-2 フェーズ1）は v2.18.18、SH-42（魅力向上施策の実機回帰・総点検）は v2.18.19、SH-43（`.txt` 対応の最小プレーンテキスト Workspace 追加）は v2.19.0 で実装済み（欠番）。SH-24（タブのクイックスイッチャー強化）は v2.18.23 の総点検（TD-89）で見送り（欠番。既存の Ctrl+Tab / Ctrl+1〜9 / タブ一覧オーバーフローで到達でき、タブ過多で切替に迷う実利用報告もないため。再提案時は新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/backlog-adoption-trigger-review.md` 参照。
+SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、SH-29 は v2.16.9、SH-30 は v2.16.10、SH-34 は v2.16.21、SH-37 は v2.18.3、SH-38 は v2.18.5、SH-39 は v2.18.15、SH-40（AT-1 フェーズ1）は v2.18.17、SH-41（AT-2 フェーズ1）は v2.18.18、SH-42（魅力向上施策の実機回帰・総点検）は v2.18.19、SH-43（`.txt` 対応の最小プレーンテキスト Workspace 追加）は v2.19.0、SH-44（Shell横断検索のEscapeクローズ・フォーカス復帰）は v2.19.9 で実装済み（欠番）。SH-24（タブのクイックスイッチャー強化）は v2.18.23 の総点検（TD-89）で見送り（欠番。既存の Ctrl+Tab / Ctrl+1〜9 / タブ一覧オーバーフローで到達でき、タブ過多で切替に迷う実利用報告もないため。再提案時は新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/backlog-adoption-trigger-review.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | **本行は参照ポインタであり、実体・着手トリガー・実装方針は LT-9 フェーズ2 を正本とする**（解除対象拡張・個別解除は LT-9 フェーズ2 へ吸収済み。二重管理しない）。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する（FAQ / ユーザーガイドへの案内は反映済み）。LT-9 フェーズ2 のトリガー成立時に本行も同時に完了扱いとする | C |
 
-TD-88（v2.18.22）で抽出された Shell の小修正候補（横断検索の Escape クローズ＋フォーカス戻り等）は backlog へ登録せず、`docs/planning/keyboard-accessibility-cross-review.md` §9 の version 分割表で管理する（着手時に新 ID を採番）。
+TD-88（v2.18.22）で抽出された Shell の小修正候補は backlog へ登録せず、`docs/planning/keyboard-accessibility-cross-review.md` §9 の version 分割表で管理する（着手時に新 ID を採番）。うち横断検索の Escape クローズ＋フォーカス戻り（K-1）は SH-44（v2.19.9）で対応済み。残り（K-2〜K-6相当の候補）は同表のまま未着手。
 
 ---
 

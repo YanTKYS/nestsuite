@@ -132,6 +132,9 @@ public partial class NestSuiteShellWindow
         base.OnPreviewKeyDown(e);
         if (e.Handled) return;
 
+        // SH-44: 横断検索パネル内のEscapeで閉じる。パネル外のEscapeは処理しない。
+        if (TryHandleCrossSearchEscape(e)) return;
+
         var ctrl  = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
         var shift = (Keyboard.Modifiers & ModifierKeys.Shift)   == ModifierKeys.Shift;
 
