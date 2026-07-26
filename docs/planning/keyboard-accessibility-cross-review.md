@@ -129,7 +129,7 @@ Blocking / High: **なし**。
 
 **K-3 は v2.19.12 / L28 で対応済み。** タスクグループ見出し・完了済みタスクセクション見出しをBorder＋`MouseBinding`からWPF標準`ToggleButton`化し、Tab到達・Enter/Spaceでの開閉に対応した。開閉状態の変更経路は既存の`ToggleGroupCommand`／`ToggleCompletedSectionCommand`のまま。タスクタイトルもButton化し、Enterで既存のコメント表示切替（`SelectTask`）へ対応した。詳細は `docs/release-notes.md`（v2.19.12 L28）を参照。
 
-**K-4 は v2.19.13 / CH-19 で対応済み。** ChatNestの過去メッセージ表示コンテナ（`StackPanel`）を`Focusable="True"`／`IsTabStop="True"`にし、Tab到達・Shift+F10／コンテキストメニューキーでの既存ContextMenu表示に対応した。ContextMenuは新設せず既存のもの（本文コピー・編集・削除・会話コピー/保存・時刻表示）をマウス右クリックと共用し、`PlacementTarget.DataContext`による操作対象一致の既存契約も維持している。独自のキーボード並び替えショートカットは追加していない（既存ContextMenuに並び替え項目がないため対象外）。詳細は `docs/release-notes.md`（v2.19.13 CH-19）を参照。K-5・K-6は本レビュー時点のまま未対応（今回変更していない）。
+**K-4 は v2.19.13 / CH-19 で対応済み。** ChatNestの過去メッセージ表示コンテナ（`StackPanel`）を`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`にし、Tab到達・Shift+F10／コンテキストメニューキーでの既存ContextMenu表示に対応した。ContextMenuは新設せず既存のもの（本文コピー・編集・削除・会話コピー/保存・時刻表示）をマウス右クリックと共用し、`PlacementTarget.DataContext`による操作対象一致の既存契約も維持している。独自のキーボード並び替えショートカットは追加していない（既存ContextMenuに並び替え項目がないため対象外）。詳細は `docs/release-notes.md`（v2.19.13 CH-19）を参照。K-5・K-6は本レビュー時点のまま未対応（今回変更していない）。
 
 | ID | 重要度 | 対象 | 再現手順 | 利用者影響 | 現行の代替経路 | 推奨対応 | 今回実装するか |
 |----|--------|------|----------|-----------|----------------|----------|----------------|

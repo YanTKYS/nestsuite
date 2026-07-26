@@ -129,7 +129,7 @@ ID-15 は v2.18.2 で実装済み（欠番）。ID-14 は v2.18.8 で実装済�
 CH-11 は v2.18.10 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
 CH-18 は v2.18.11 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
 CH-16 は v2.18.12 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
-CH-17（長文送信前プレビュー/確認導線）は v2.18.23 の総点検（TD-89）で見送り（欠番。インライン編集・削除が既にあり誤送信の回復コストが低く、条件付き確認 UI は入力フローの軽さ・認知負荷軽減方針と逆行するため。実際の誤送信報告が複数観測されたら新 ID で再評価する）。CH-19 は v2.19.13 で実装済み（欠番。過去メッセージの表示コンテナを`Focusable="True"`／`IsTabStop="True"`でキーボードフォーカス可能にし、Tab到達・Shift+F10／コンテキストメニューキーによる既存ContextMenu（本文コピー・編集・削除・会話コピー等）へのキーボード導線を追加した。ContextMenuはマウス右クリック用と共用のまま新設しておらず、`PlacementTarget.DataContext`経由の操作対象一致という既存契約も変更していない。メッセージ一覧のListBox化・矢印キー移動・Enter編集開始・Delete直接削除・独自並び替えショートカットは今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/keyboard-accessibility-cross-review.md` 参照。
+CH-17（長文送信前プレビュー/確認導線）は v2.18.23 の総点検（TD-89）で見送り（欠番。インライン編集・削除が既にあり誤送信の回復コストが低く、条件付き確認 UI は入力フローの軽さ・認知負荷軽減方針と逆行するため。実際の誤送信報告が複数観測されたら新 ID で再評価する）。CH-19 は v2.19.13 で実装済み（欠番。過去メッセージの表示コンテナを`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`でキーボードフォーカス可能にし、Tab到達・Shift+F10／コンテキストメニューキーによる既存ContextMenu（本文コピー・編集・削除・会話コピー等）へのキーボード導線を追加した。ContextMenuはマウス右クリック用と共用のまま新設しておらず、`PlacementTarget.DataContext`経由の操作対象一致という既存契約も変更していない。メッセージ一覧のListBox化・矢印キー移動・Enter編集開始・Delete直接削除・独自並び替えショートカットは今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/keyboard-accessibility-cross-review.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|

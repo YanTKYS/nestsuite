@@ -40,7 +40,9 @@ public class CH19MessageFocusContextMenuTests
     {
         var element = ExtractMessageContainerElement(ReadChatNestWorkspaceViewXaml());
         Assert.Contains("Focusable=\"True\"", element);
-        Assert.Contains("IsTabStop=\"True\"", element);
+        // StackPanelはSystem.Windows.Controls.Controlではないため、IsTabStopは
+        // Control固有プロパティではなく添付プロパティ KeyboardNavigation.IsTabStop で指定する。
+        Assert.Contains("KeyboardNavigation.IsTabStop=\"True\"", element);
     }
 
     [Fact]

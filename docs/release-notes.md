@@ -9,7 +9,7 @@
 
 ## v2.19.13 — CH-19 ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線
 
-- **CH-19: ChatNestの過去メッセージ表示コンテナ（メッセージ本体の`StackPanel`）を`Focusable="True"`／`IsTabStop="True"`にし、Tabキーで各メッセージへ到達できるようにした。** 既存の見た目・レイアウトは変更していない。
+- **CH-19: ChatNestの過去メッセージ表示コンテナ（メッセージ本体の`StackPanel`）を`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`にし、Tabキーで各メッセージへ到達できるようにした。** 既存の見た目・レイアウトは変更していない。
 - **フォーカス中のメッセージはWPF標準`FocusVisualStyle`で視認できる。** 新しい色体系やBorder追加は行わず、既存のメッセージ枠・背景をそのまま維持した。
 - **Shift+F10・コンテキストメニューキーで、フォーカス中メッセージの既存ContextMenu（本文コピー・編集・削除・会話コピー・会話Markdownコピー・NestSuite形式コピー・会話を保存・時刻表示）を開けるようにした。** WPF標準の`ContextMenuOpening`はフォーカス中要素からバブリングしてContextMenuを開くため、独自の`Key.F10`／`Key.Apps`処理は追加していない。
 - **マウス右クリックによる既存ContextMenu表示は変更していない。** マウス用とキーボード用の別ContextMenuは作らず、同一の`StackPanel.ContextMenu`を共用する。

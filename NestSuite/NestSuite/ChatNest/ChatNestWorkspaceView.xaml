@@ -232,7 +232,7 @@
                         Margin="16,3"
                         MaxWidth="580"
                         Focusable="True"
-                        IsTabStop="True"
+                        KeyboardNavigation.IsTabStop="True"
                         AutomationProperties.Name="{Binding AccessibleSummary}"
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
 
