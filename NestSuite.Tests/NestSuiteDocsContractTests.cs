@@ -134,6 +134,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.7", "TD-83", "v2.19.7 — TD-83" };
         yield return new object[] { "v2.19.8", "TD-83-1", "v2.19.8 — TD-83-1" };
         yield return new object[] { "v2.19.9", "SH-44", "v2.19.9 — SH-44" };
+        yield return new object[] { "v2.19.10", "L26", "v2.19.10 — L26" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -311,6 +312,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "TD-83" };
         // ── v2.19.9 SH-44: Shell横断検索のEscapeクローズ・フォーカス復帰（欠番）──
         yield return new object[] { "SH-44" };
+        // ── v2.19.10 L26: NoteNestマーカー一覧のListBox化・キーボード選択対応（欠番）──
+        yield return new object[] { "L26" };
     }
 
     [Theory]
