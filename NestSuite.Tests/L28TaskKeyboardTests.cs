@@ -205,10 +205,18 @@ public class L28TaskKeyboardTests
     public void GroupExpandedState_IsNotBoundTwoWay_ToAnySaveModel()
     {
         var xaml = ReadWorkspaceXaml();
-        // IsExpanded / IsCompletedSectionExpanded はOneWay（表示専用）でのみ使用し、
-        // 新たなTwoWayバインディングや保存モデルへの参照を追加していないこと。
-        Assert.DoesNotContain("IsExpanded, Mode=TwoWay", xaml);
-        Assert.DoesNotContain("IsCompletedSectionExpanded, Mode=TwoWay", xaml);
+        // タスクグループ部分（ItemsSource="{Binding TaskGroups}" 〜 完了済みタスク一覧まで）に絞って、
+        // IsExpanded / IsCompletedSectionExpanded がOneWay（表示専用）でのみ使用されていることを確認する。
+        // ファイル全体には無関係な NotebookTree の TreeViewItem.IsExpanded（TwoWay、既存・対象外）が
+        // 別に存在するため、対象範囲を限定して誤検出を避ける。
+        var start = xaml.IndexOf("ItemsSource=\"{Binding TaskGroups}\"", System.StringComparison.Ordinal);
+        Assert.True(start >= 0);
+        var end = xaml.IndexOf("Completed task items (dimmed)", start, System.StringComparison.Ordinal);
+        Assert.True(end >= 0);
+        var taskGroupsRegion = xaml.Substring(start, end - start);
+
+        Assert.DoesNotContain("IsExpanded, Mode=TwoWay", taskGroupsRegion);
+        Assert.DoesNotContain("IsCompletedSectionExpanded, Mode=TwoWay", taskGroupsRegion);
     }
 
     // ── 11. 非対象キー ───────────────────────────────────────────────────
