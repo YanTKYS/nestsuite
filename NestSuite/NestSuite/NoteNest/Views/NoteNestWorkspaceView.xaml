@@ -546,17 +546,65 @@
         <!-- ═══ RIGHT PANE ═══ -->
         <Grid Grid.Column="4" Background="{DynamicResource RightPaneBg}">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="3*" MinHeight="150"/>
                 <RowDefinition Height="4"/>
                 <!-- v2.13.5 M16 フォローアップ: 既存タスクがない場合はヒント文のみの高さに縮め、
-                     マーカー / リンク（Row 0）へ余った領域を譲る -->
+                     マーカー / リンク（Row 1）へ余った領域を譲る -->
                 <RowDefinition Height="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowHeight}}"
                                MinHeight="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowMinHeight}}"/>
             </Grid.RowDefinitions>
 
+            <!-- L10: 右ペイン（マーカー・互換タスク）共通の絞り込み欄。マーカー用・タスク用に
+                 別々の入力欄は持たず、1つの文字列を両方へ AND 条件で適用する。 -->
+            <Border Grid.Row="0"
+                    BorderBrush="{DynamicResource PaneBorder}" BorderThickness="0,0,0,1"
+                    Padding="8,5">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right"
+                            x:Name="RightPaneFilterClearButton"
+                            AutomationProperties.AutomationId="NoteNest.RightPaneFilterClearButton"
+                            AutomationProperties.Name="右ペインの絞り込みをクリア"
+                            ToolTip="右ペインの絞り込みをクリア"
+                            Content="×" Width="20" Height="20"
+                            Margin="4,0,0,0" Padding="0"
+                            Background="Transparent" BorderThickness="0"
+                            Cursor="Hand"
+                            IsEnabled="{Binding HasRightPaneFilterText}"
+                            Visibility="{Binding HasRightPaneFilterText, Converter={StaticResource BoolToVis}}"
+                            Click="RightPaneFilterClear_Click"/>
+                    <Grid>
+                        <TextBox x:Name="RightPaneFilterBox"
+                                 AutomationProperties.AutomationId="NoteNest.RightPaneFilterBox"
+                                 AutomationProperties.Name="右ペインを絞り込み"
+                                 ToolTip="マーカー・タスクを絞り込み"
+                                 FontSize="11.5" Padding="4,2"
+                                 Text="{Binding RightPaneFilterText, UpdateSourceTrigger=PropertyChanged}"
+                                 PreviewKeyDown="RightPaneFilterBox_PreviewKeyDown"/>
+                        <TextBlock Text="マーカー・タスクを絞り込み"
+                                   IsHitTestVisible="False"
+                                   FontSize="11.5"
+                                   Foreground="{DynamicResource MutedFg}"
+                                   Margin="6,0,0,0"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=RightPaneFilterBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </DockPanel>
+            </Border>
+
             <!-- ── Tasks（互換表示：縮退方針 TD-52/M16 第3段階。既存タスクがある場合のみ表示し、
                  新規作成導線は通常UIから外す。作業ポイントは本文マーカーへ寄せる）── -->
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -585,6 +633,7 @@
                                 Content="全件コピー"
                                 Padding="6,2" FontSize="11"
                                 VerticalAlignment="Center"
+                                IsEnabled="{Binding HasAnyVisibleTasks}"
                                 AutomationProperties.AutomationId="NoteNest.CopyAllTasksButton"
                                 AutomationProperties.Name="タスクをすべてコピー"
                                 ToolTip="表示中のタスクをMarkdown形式でコピーします"
@@ -598,13 +647,13 @@
                     </DockPanel>
                 </Border>
 
-                <!-- Task groups（既存タスクがあるグループのみ表示。新規作成ボタンは表示しない） -->
+                <!-- Task groups（既存タスクがあり、かつ絞り込みに一致するグループのみ表示。新規作成ボタンは表示しない） -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                               Visibility="{Binding HasAnyTasks, Converter={StaticResource BoolToVis}}">
                     <ItemsControl ItemsSource="{Binding TaskGroups}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Visibility="{Binding HasTasks, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Visibility="{Binding HasVisibleTasks, Converter={StaticResource BoolToVis}}">
 
                                     <!-- Group header -->
                                     <Border Padding="10,6,10,6"
@@ -684,14 +733,28 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <!-- L10: タスクは存在するが絞り込みで0件になった場合の空状態 -->
+                <TextBlock Grid.Row="1"
+                           AutomationProperties.AutomationId="NoteNest.EmptyState.TasksFilter"
+                           AutomationProperties.Name="NoteNest.EmptyState.TasksFilter"
+                           Text="一致するタスクはありません"
+                           Foreground="{DynamicResource MutedFg}"
+                           FontSize="12"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="16,10"
+                           IsHitTestVisible="False"
+                           Visibility="{Binding ShowTaskFilterEmptyState, Converter={StaticResource BoolToVis}}"/>
             </Grid>
 
             <!-- Horizontal GridSplitter -->
-            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
+            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch"
                           Background="{DynamicResource PaneBorder}" ShowsPreview="True"/>
 
             <!-- ── Markers / Links TabControl（主役：縮退方針 TD-52 第2段階）── -->
-            <TabControl Grid.Row="0"
+            <TabControl Grid.Row="1"
                         AutomationProperties.AutomationId="NoteNest.RightPaneTabControl"
                         AutomationProperties.Name="NoteNest.RightPaneTabControl"
                         Background="{DynamicResource RightPaneBg}"
@@ -845,10 +908,13 @@
                             </ItemsControl>
                         </ScrollViewer>
 
-                        <!-- L23: ノートはあるがマーカーが0件の場合の空状態案内。ノートが1件もない間は表示しない -->
+                        <!-- L23/L10: ノートはあるがマーカーが0件（元々0件、または種別・絞り込み文字列で0件）の場合の
+                             空状態案内。ノートが1件もない間は表示しない。文言は元々0件かどうかで切り替える
+                             （MarkerEmptyStateText）。 -->
                         <TextBlock Grid.Row="2"
                                    AutomationProperties.AutomationId="NoteNest.EmptyState.Markers"
                                    AutomationProperties.Name="NoteNest.EmptyState.Markers"
+                                   Text="{Binding MarkerEmptyStateText}"
                                    Foreground="{DynamicResource MutedFg}"
                                    FontSize="12"
                                    TextAlignment="Center"
@@ -857,9 +923,7 @@
                                    VerticalAlignment="Center"
                                    Margin="16,0"
                                    IsHitTestVisible="False"
-                                   Visibility="{Binding ShowMarkerEmptyState, Converter={StaticResource BoolToVis}}">
-                            マーカーはありません<LineBreak/>本文の [TODO] [FIXME] [NOTE] がここに表示されます
-                        </TextBlock>
+                                   Visibility="{Binding ShowMarkerEmptyState, Converter={StaticResource BoolToVis}}"/>
 
                         <!-- Project-wide marker summary -->
                         <Border Grid.Row="3"

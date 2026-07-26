@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using NestSuite.Services;
 
 namespace NestSuite.ViewModels;
 
@@ -8,6 +9,7 @@ public class TaskGroupViewModel : BaseViewModel
 {
     private bool _isExpanded = true;
     private bool _isCompletedSectionExpanded = true;
+    private string _filterText = string.Empty;
 
     public TaskGroupViewModel(string title, string key)
     {
@@ -39,14 +41,42 @@ public class TaskGroupViewModel : BaseViewModel
         set => SetProperty(ref _isCompletedSectionExpanded, value);
     }
 
-    public IEnumerable<TaskViewModel> IncompleteTasks => Tasks.Where(t => !t.IsCompleted);
-    public IEnumerable<TaskViewModel> CompletedTasks  => Tasks.Where(t => t.IsCompleted);
-    public bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
-    public string CompletedCountText => $"完了済み（{Tasks.Count(t => t.IsCompleted)}）";
+    /// <summary>
+    /// L10: 右ペイン共通絞り込み文字列（Trim済み）。<see cref="TaskBoardViewModel.FilterText"/> から
+    /// 各グループへ配布される表示専用の一時状態で、保存対象ではない。
+    /// </summary>
+    public string FilterText
+    {
+        get => _filterText;
+        set
+        {
+            if (!SetProperty(ref _filterText, value ?? string.Empty)) return;
+            RefreshTaskViews();
+        }
+    }
+
+    /// <summary>
+    /// L10: 絞り込み文字列がグループ名に一致した場合はグループ内の全タスクを表示し、
+    /// それ以外はタスクタイトルが一致したものだけを表示する。
+    /// </summary>
+    public IEnumerable<TaskViewModel> IncompleteTasks => FilterTasks(Tasks.Where(t => !t.IsCompleted));
+    public IEnumerable<TaskViewModel> CompletedTasks  => FilterTasks(Tasks.Where(t => t.IsCompleted));
+    public bool HasCompletedTasks => CompletedTasks.Any();
+    public string CompletedCountText => $"完了済み（{CompletedTasks.Count()}）";
     public string CountText => $"{Tasks.Count(t => !t.IsCompleted)}/{Tasks.Count}";
 
     /// <summary>v2.13.4 M16: 既存タスクがないグループを右ペインに表示しないための判定。</summary>
     public bool HasTasks => Tasks.Count > 0;
+
+    /// <summary>L10: 絞り込み後にこのグループへ表示する項目が1件以上あるかどうか。</summary>
+    public bool HasVisibleTasks => IncompleteTasks.Any() || CompletedTasks.Any();
+
+    private IEnumerable<TaskViewModel> FilterTasks(IEnumerable<TaskViewModel> source)
+    {
+        if (_filterText.Length == 0) return source;
+        if (RightPaneFilterMatcher.Matches(Title, _filterText)) return source;
+        return source.Where(t => RightPaneFilterMatcher.Matches(t.Title, _filterText));
+    }
 
     public void AddTask(TaskViewModel task)
     {
@@ -78,6 +108,7 @@ public class TaskGroupViewModel : BaseViewModel
         OnPropertyChanged(nameof(CompletedTasks));
         OnPropertyChanged(nameof(HasCompletedTasks));
         OnPropertyChanged(nameof(CompletedCountText));
+        OnPropertyChanged(nameof(HasVisibleTasks));
     }
 
     private void Task_PropertyChanged(object? sender, PropertyChangedEventArgs e)

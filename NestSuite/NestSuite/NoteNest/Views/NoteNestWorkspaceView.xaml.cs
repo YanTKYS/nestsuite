@@ -217,7 +217,9 @@ public partial class NoteNestWorkspaceView : UserControl
 
     private void CopyAllTasks_Click(object sender, RoutedEventArgs e)
     {
-        var tasks = ViewModel.TaskGroups.SelectMany(g => g.Tasks).ToList();
+        // L10: 通知件数は画面表示中（絞り込み後）の件数と一致させる。IncompleteTasks/CompletedTasks は
+        // TaskGroupViewModel.FilterText 適用後の表示用一覧であり、FormatTasks が使う一覧と同じもの。
+        var tasks = ViewModel.TaskGroups.SelectMany(g => g.IncompleteTasks.Concat(g.CompletedTasks)).ToList();
         var markdown = NoteNestRightPaneMarkdownFormatter.FormatTasks(ViewModel.TaskGroups);
         if (string.IsNullOrEmpty(markdown)) return;
         try

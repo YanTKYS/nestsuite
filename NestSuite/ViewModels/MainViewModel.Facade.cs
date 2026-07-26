@@ -50,6 +50,42 @@ public partial class MainViewModel
     public string TodoCountText  => _markers.TodoCountText;
     public string FixmeCountText => _markers.FixmeCountText;
     public string NoteCountText  => _markers.NoteCountText;
+
+    private string _rightPaneFilterText = string.Empty;
+
+    /// <summary>
+    /// L10: NoteNest右ペイン（マーカー一覧・互換タスク一覧）共通の絞り込み文字列。
+    /// TextBox表示用にユーザー入力をそのまま保持し、一致判定に使う実効値は
+    /// <see cref="MarkerPanelViewModel.FilterText"/> / <see cref="TaskBoardViewModel.FilterText"/> へ
+    /// Trimして配布する。表示専用の一時状態であり、NoteNest保存データ・sessionへは保存しない。
+    /// MainViewModelはNoteNestタブごとに1インスタンスのため、絞り込み状態もタブごとに独立する。
+    /// </summary>
+    public string RightPaneFilterText
+    {
+        get => _rightPaneFilterText;
+        set
+        {
+            var normalized = value ?? string.Empty;
+            if (_rightPaneFilterText == normalized) return;
+            _rightPaneFilterText = normalized;
+            var effective = normalized.Trim();
+            _markers.FilterText = effective;
+            _tasks.FilterText = effective;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasRightPaneFilterText));
+            OnPropertyChanged(nameof(HasAnyVisibleTasks));
+            OnPropertyChanged(nameof(ShowTaskFilterEmptyState));
+        }
+    }
+
+    public bool HasRightPaneFilterText => _rightPaneFilterText.Trim().Length > 0;
+    public bool HasAnyVisibleTasks => _tasks.HasAnyVisibleTasks;
+
+    /// <summary>
+    /// L10: 絞り込みの結果タスクが0件になった場合の空状態。タスクが元々0件の場合の
+    /// <see cref="ShowTaskEmptyState"/> とは区別する（そちらは絞り込みと無関係）。
+    /// </summary>
+    public bool ShowTaskFilterEmptyState => HasAnyTasks && HasRightPaneFilterText && !HasAnyVisibleTasks;
     public bool IsSampleProject => _session.IsSampleProject;
     public bool IsTaskCommentMode => _editor.IsTaskCommentMode;
     public bool IsNoteEditMode => _editor.IsNoteEditMode;
@@ -101,7 +137,17 @@ public partial class MainViewModel
     public bool HasAnyMarkers => _markers.MarkerCount > 0;
     public bool HasNoMarkers => !HasAnyMarkers;
     public bool ShowTaskEmptyState => HasAnyNotes && HasNoTasks;
-    public bool ShowMarkerEmptyState => HasAnyNotes && HasNoMarkers;
+
+    /// <summary>
+    /// L10: マーカーが0件（種別フィルタのみ／絞り込み文字列のみ／両方／元々0件のいずれか）の場合の空状態。
+    /// 既存の種別フィルタによる0件状態と絞り込み文字列による0件状態は区別しない。
+    /// </summary>
+    public bool ShowMarkerEmptyState => HasAnyNotes && !HasFilteredMarkers;
+
+    /// <summary>L10: マーカーが元から0件か、絞り込みで0件になったかで空状態の文言を切り替える。</summary>
+    public string MarkerEmptyStateText => HasNoMarkers
+        ? "マーカーはありません\n本文の [TODO] [FIXME] [NOTE] がここに表示されます"
+        : "一致するマーカーはありません";
 
     /// <summary>v2.16.10 SH-30: Markdown エクスポート（選択ノート対象）の無効理由ツールチップ。</summary>
     public string MarkdownExportSelectedNoteTooltip =>
