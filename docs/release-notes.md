@@ -7,6 +7,17 @@
 
 ---
 
+## v2.19.8 — TD-83-1 archive移動後の相対リンク修正（PRレビュー指摘対応）
+
+- **TD-83-1: PR #588（TD-83）のレビューで指摘された、archive移動後の相対Markdownリンク切れを修正した。** `docs/archive/completed-designs/notenest-editor-h0-reassessment.md` 冒頭の `[履歴文書]` バナーが、移動前の相対パス `README.md` のまま残っていた。移動後の配置では `README.md` は `docs/archive/completed-designs/README.md`（archiveフォルダの汎用索引）を指してしまい、本来案内すべき `docs/design/README.md` とは異なる文書に解決していた。
+- **修正内容**: リンク先を `../../design/README.md` へ修正した。これは他の archive 済み文書（`nestsuite-preparation.md` 等が `docs/integration/README.md` を `../../integration/README.md` で参照する既存の記法）と同じ相対パス規約に揃えている。
+- **調査範囲**: TD-83 で移動・編集した文書（`notenest-editor-h0-reassessment.md`・`operation-note.md`・editor関連3文書・`docs/README.md`・`docs/design/README.md`・`docs/integration/README.md`・`docs/migration/README.md`・リポジトリルート `README.md`）と、それらから逆リンクされる archive 済み文書（`nestsuite-preparation.md`・`ideanest-save-load-plan.md`・`nestsuite-multi-file-tabs-plan.md`・`nestsuite-notenest-multi-file-plan.md`・`nestsuite-default-startup-plan.md`）を対象に、相対Markdownリンクをすべて洗い出した。上記1件以外に壊れているリンクはなかった。
+- **テスト**: `DocsArchiveTd83Tests` に、ファイル内の相対Markdownリンクを実際に解決して存在確認する `RelativeMarkdownLinks_Resolve`（対象14文書）・`RootReadme_RelativeMarkdownLinks_Resolve` を追加した。文字列の部分一致確認だけでなく、リンク先パスが実際に解決できることを機械的に固定する。既存テストは削除・skipしていない。
+- **TD-83自体の文書判定（Archive 2件・Keep 2件）は変更していない。** 今回はリンク切れの修正のみ。backlog への新規追加は行っていない（TD-83-1 は TD-83 の直接の修正であり、独立した backlog item として扱わない。M17-1 が M17 の修正として扱われたのと同じパターン）。
+- アプリ機能・保存形式・schemaへの変更はない。外部依存の追加なし。
+
+---
+
 ## v2.19.7 — TD-83 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
 - **TD-83: `docs/planning/docs-inventory-and-archive-policy.md` の次回候補に基づき、完了済み editor 設計文書1件と旧入口README系3件（`docs/operations/operation-note.md`・`docs/integration/README.md`・`docs/migration/README.md`）の計4文書を個別に再判定した。** 結果は Archive 2件（editor設計文書・operation-note.md）、Keep 2件（integration/README.md・migration/README.md）。単に「古そうだから削除」「完了済みだから一律archive」とはせず、各文書の現在の役割・参照元・実装状況を確認したうえで分類した。Delete Candidate と分類されていた文書も、機械的には削除していない。

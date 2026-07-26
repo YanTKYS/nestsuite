@@ -132,6 +132,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.5", "ID-7", "v2.19.5 — ID-7" };
         yield return new object[] { "v2.19.6", "L10", "v2.19.6 — L10" };
         yield return new object[] { "v2.19.7", "TD-83", "v2.19.7 — TD-83" };
+        yield return new object[] { "v2.19.8", "TD-83-1", "v2.19.8 — TD-83-1" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。

@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.19.7
+> version: v2.19.8
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -262,6 +262,14 @@ TD-82（v2.17.7）で archive へ移設した判断自体は、当時の完了�
 - `docs/operations/operation-note.md` は NoteNest v1.5.4 時代の運用メモで、内容のほぼ全てが現行 Canonical 文書（`nestsuite-user-guide.md`・`nestsuite-known-limitations.md`・`schema-versioning-policy.md`・`nestsuite-release-checklist.md`）へ吸収済みと確認した。「同一ファイルを複数の方法で同時に開かないでください」という注意事項も、現行の二重オープン検出（`nestsuite-known-limitations.md` 記載）により当時の懸念そのものが解消されている。判断が微妙な項目（バックアップ推奨頻度・配布前チェックリストの一部）もあったため、Delete ではなく Archive とした。
 - `docs/integration/README.md` / `docs/migration/README.md` は、当初 Delete Candidate だったが、実際には `docs/archive/completed-designs/` の4文書と `docs/archive/migrations/nestsuite-default-startup-plan.md` の `[履歴文書]` 冒頭注記が「詳細はこちら」として直接リンクする移設先索引として機能していることを確認した。削除すると、archive 済み5文書のリンク切れと、`docs/README.md` からの案内断絶が生じるため、削除しないと判断した。単純に「Delete Candidate と分類されていたから削除する」対応はしていない。
 
+### TD-83-1完了: archive移動後の相対リンク修正（PRレビュー指摘対応）
+
+TD-83（v2.19.7）の PR レビューで、`docs/archive/completed-designs/notenest-editor-h0-reassessment.md` 冒頭の `[履歴文書]` バナーが、移動前の相対パス `README.md` のまま残っていることが指摘された。移動後の配置では `archive/completed-designs/README.md`（archive フォルダの汎用索引）へ誤って解決しており、本来案内すべき `docs/design/README.md` とは異なる文書だった。
+
+v2.19.8 / TD-83-1 で `../../design/README.md` へ修正し、TD-83 で移動・編集した全文書＋そこから逆リンクされる archive 済み文書の相対Markdownリンクを再点検した（他に壊れているリンクはなかった）。`DocsArchiveTd83Tests` へ、リンク先の実在を機械的に確認する `RelativeMarkdownLinks_Resolve` を追加し、同種の問題を今後static testで検出できるようにした。
+
+TD-83 自体の文書判定（Archive 2件・Keep 2件）は変更していない。TD-83-1 は TD-82-1 と同様、直前の TD 番号の補正として扱い、独立した backlog item は起票していない。
+
 ---
 
 ## 8. リスク
@@ -280,7 +288,7 @@ TD-82（v2.17.7）で archive へ移設した判断自体は、当時の完了�
 
 ## 9. 次回作業案
 
-> v2.17.8 は TD-82-1（`workspace-file-extension-unification.md` の正本性補正）を、v2.19.7 は TD-83（完了済みeditor設計・旧入口READMEのarchive/削除候補再判定）を実施した。
+> v2.17.8 は TD-82-1（`workspace-file-extension-unification.md` の正本性補正）を、v2.19.7 は TD-83（完了済みeditor設計・旧入口READMEのarchive/削除候補再判定）を、v2.19.8 は TD-83-1（archive移動後の相対リンク修正）を実施した。
 
 TD-83 完了時点で、次回以降に優先着手すべき明確な docs 整理候補は確認できていない。
 新規の棚卸し対象は、実際に完了済み設計文書が積み上がった時点で改めて起票する（全docsの一括再棚卸しは行わない）。
