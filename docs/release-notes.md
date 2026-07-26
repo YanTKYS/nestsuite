@@ -7,6 +7,23 @@
 
 ---
 
+## v2.19.12 — L28 NoteNestタスクグループ開閉・タスクコメント表示のキーボード対応
+
+- **L28: NoteNest右ペインの互換タスク表示について、タスクグループ見出し・完了済みタスクセクション見出しを、Border＋`MouseBinding`（マウス専用）からWPF標準`ToggleButton`へ変更した。** Tabキーで各見出しへ到達でき、EnterまたはSpaceで展開・折りたたみできる。
+- **開閉状態の変更経路は既存の`ToggleGroupCommand`／`ToggleCompletedSectionCommand`のまま、単一の正本として維持した。** マウスクリック・Enter・Spaceのいずれも同じ`ToggleButton.Command`を経由するWPF標準の`ButtonBase`動作で処理され、マウス用とキーボード用の別実装は作っていない。独自の`KeyDown`ハンドラは追加していない。`ToggleButton.IsChecked`は`IsExpanded`／`IsCompletedSectionExpanded`へOneWayで連動させ、AutomationのToggleStateへ反映されるようにした。
+- **タスクタイトルを`TextBlock`から`Button`へ変更し、Tabで到達できるようにした。** 既存のマウスダブルクリック操作（`TaskTitle_MouseLeftButtonDown`、`ClickCount == 2`判定）は変更せず、`PreviewMouseLeftButtonDown`として先に評価することでButtonの標準クリック処理より優先させている。単発マウスクリックとSpaceキーはButtonの標準Click処理へ素通りするが、Clickハンドラを一切配線していないため何も起こらない（コメント表示切替には割り当てていない）。
+- **Enterキーはタスクタイトルへフォーカス中のみ、既存のコメント表示切替処理を実行する。** マウスダブルクリック・Enterのどちらも新設の共通メソッド`ToggleTaskComment(TaskViewModel task)`（`ViewModel.SelectTask(task)`をそのまま呼ぶだけ）を経由し、処理を重複させていない。
+- **Task CheckBoxは変更していない。** 既存のSpaceでの完了／未完了切替はそのまま維持しており、今回追加したキー処理（タイトルの`PreviewKeyDown`）はCheckBox側の操作を横取りしない。
+- **dirtyへの影響なし**: グループ開閉・完了済みセクション開閉・コメント表示切替はいずれも`IsModified`を変更しない。
+- **表示状態は永続化しない。** `IsExpanded`／`IsCompletedSectionExpanded`のバインディングはOneWayのままで、session・UI設定・NoteNestファイルへの新規保存項目は追加していない。
+- **タスク機能の再拡張は行っていない。** タスク新規追加UI・編集UI・期限・担当者・優先度・一括完了／削除・検索・絞り込み追加等は今回のスコープ外。NoteNestのタスク機能は引き続き互換表示（本文マーカー中心の縮退方針）という位置づけを維持している。
+- **今回のスコープ外**: `docs/planning/keyboard-accessibility-cross-review.md` K-3（本version対応）を除く、K-4以降（ChatNestメッセージ操作等）は今回実装していない。
+- **テスト**: `L28TaskKeyboardTests`（グループ見出し・完了済みセクション見出しのToggleButton化と独自KeyDown不使用の確認、タスクタイトルのButton化とPreview系ハンドラ配線、Enter処理とマウスダブルクリック処理の共通化、CheckBoxへの非干渉、dirty/保存APIへの非参照確認、表示状態の非永続化、Escape/Delete/矢印キー未追加、周辺UI維持）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部ライブラリ・UIコンポーネントライブラリ）の追加なし。
+- 実機でしか確認できない項目（Tab→Enter/Spaceでのグループ開閉と見出しへのフォーカス維持、複数グループでの個別開閉、タスクタイトルのTab到達→Enterでのコメント表示切替とフォーカス維持、マウス操作との一致、CheckBox操作がグループ開閉・コメント表示へ影響しないこと、折りたたみ時のフォーカス安全性、dirty確認、ライト/ダークテーマでのフォーカス視認性、狭いウィンドウ幅・高DPI・長いタイトル/コメントでのレイアウト崩れ、別ウィンドウ分離時の挙動一致）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.11 — L27 NoteNestリンク一覧のListBox化（Enterジャンプ対応）
 
 - **L27: NoteNest右ペイン「リンク」タブの「からのリンク」（`LinkPanel.OutboundLinks`）・「へのリンク」（`LinkPanel.Backlinks`）を、WPF標準`ItemsControl`から`ListBox`（`SelectionMode="Single"`）へ変更した。** L26のマーカー一覧と同じ操作契約（Tab到達→上下キーで選択のみ→Enterで実行）に揃えている。

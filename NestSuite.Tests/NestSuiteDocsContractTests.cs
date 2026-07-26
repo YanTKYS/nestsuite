@@ -136,6 +136,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.9", "SH-44", "v2.19.9 — SH-44" };
         yield return new object[] { "v2.19.10", "L26", "v2.19.10 — L26" };
         yield return new object[] { "v2.19.11", "L27", "v2.19.11 — L27" };
+        yield return new object[] { "v2.19.12", "L28", "v2.19.12 — L28" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -317,6 +318,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "L26" };
         // ── v2.19.11 L27: NoteNestリンク一覧のListBox化・Enterジャンプ（欠番）──
         yield return new object[] { "L27" };
+        // ── v2.19.12 L28: NoteNestタスクグループ開閉・タスクコメント表示のキーボード対応（欠番）──
+        yield return new object[] { "L28" };
     }
 
     [Theory]
