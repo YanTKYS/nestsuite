@@ -57,7 +57,7 @@
 | `nestsuite-known-limitations.md` | NestSuite 既知の制約 | 現行 |
 | `design-decisions.md` | 設計判断の背景と理由（v0.2.0 以降の累積） | 現行 |
 | `nestsuite-attractiveness-direction.md` | 認知負荷軽減後の価値向上・魅力向上の中期方針 | 現行 |
-| `notenest-editor-*.md`（4件） | エディタ TextBox 設計・H0 系列（v2.5.x 完了済み） | 履歴 |
+| `notenest-editor-textbox-dependencies.md` / `notenest-editor-adapter-design.md` / `notenest-editor-host-design.md`（3件） | エディタ TextBox 設計・H0 系列（v2.5.x 完了済み）。`ITextEditorAdapter` / `NoteEditorHost` の現行境界を理解する補助として維持 | 履歴 |
 | `review-gemini.md` | ソースコードレビューレポート（NoteNest 時代・外部レビュー） | 履歴 |
 
 詳細は [`docs/design/README.md`](design/README.md) を参照。
@@ -86,17 +86,18 @@
 | ファイル | 内容 | 分類 |
 |----------|------|------|
 | `file-association.md` | ファイル関連付けの設定手順 | 現行 |
-| `operation-note.md` | 運用上の注意（NoteNest v1.5.4 時代のメモ） | 履歴 |
+
+`operation-note.md`（NoteNest v1.5.4 時代の運用メモ）は、内容のほぼ全てが `docs/guide/nestsuite-user-guide.md`・`docs/design/nestsuite-known-limitations.md`・`docs/architecture/schema-versioning-policy.md`・`docs/testing/nestsuite-release-checklist.md` へ吸収済みと判断し、v2.19.7 / TD-83 で `docs/archive/completed-designs/operation-note.md` へ移設した。
 
 ### integration/（統合設計 — 履歴）
 
 v1.8〜v1.9 時代の Workspace 統合・複数ファイルタブ設計は `docs/archive/completed-designs/` へ移設済み。
-旧入口として [`docs/integration/README.md`](integration/README.md) を残している。
+[`docs/integration/README.md`](integration/README.md) は、移設した4文書それぞれの `[履歴文書]` 冒頭注記が「詳細はこちら」として直接リンクする移設先索引であり、v2.19.7 / TD-83 で削除しないと判断した（維持）。
 
 ### migration/（移行計画 — 履歴）
 
 v1.11〜v1.19 時代の NestSuite 既定起動化・`--classic-notenest` 削除計画は `docs/archive/migrations/` へ移設済み。
-旧入口として [`docs/migration/README.md`](migration/README.md) を残している。
+[`docs/migration/README.md`](migration/README.md) は、移設した文書の `[履歴文書]` 冒頭注記が直接リンクする移設先索引であり、v2.19.7 / TD-83 で削除しないと判断した（維持）。
 
 ---
 

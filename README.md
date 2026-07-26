@@ -136,7 +136,7 @@ NoteNest / IdeaNest / ChatNest のタブをタブのコンテキストメニュ�
 | セッション | `%APPDATA%\NoteNest\session.json` |
 | UI 設定 | `%APPDATA%\NoteNest\ui-settings.json` |
 
-保存時に `.bak` が自動作成されます。プロジェクトファイルが破損した場合は `.bak` をリネームして前回保存時点に戻せます。詳細は [docs/operations/operation-note.md](docs/operations/operation-note.md) を参照してください。
+保存時に `.bak` が自動作成されます。プロジェクトファイルが破損した場合は `.bak` をリネームして前回保存時点に戻せます。詳細は [docs/guide/nestsuite-user-guide.md](docs/guide/nestsuite-user-guide.md) を参照してください。
 
 ## 注意事項
 
@@ -166,6 +166,6 @@ NoteNest / IdeaNest / ChatNest のタブをタブのコンテキストメニュ�
 | [docs/design/design-decisions.md](docs/design/design-decisions.md) | 設計判断の背景 |
 | [docs/design/nestsuite-known-limitations.md](docs/design/nestsuite-known-limitations.md) | 既知の制約一覧 |
 | [docs/architecture/workspace-detached-window.md](docs/architecture/workspace-detached-window.md) | 別ウィンドウ表示アーキテクチャ |
-| [docs/operations/operation-note.md](docs/operations/operation-note.md) | 運用上の注意・既知制限 |
+| [docs/operations/file-association.md](docs/operations/file-association.md) | ファイル関連付けの設定手順 |
 | [docs/testing/nestsuite-release-checklist.md](docs/testing/nestsuite-release-checklist.md) | リリース前確認チェックリスト |
 | [docs/development/nestsuite-development-guidelines.md](docs/development/nestsuite-development-guidelines.md) | 開発ルール（開発者向け） |

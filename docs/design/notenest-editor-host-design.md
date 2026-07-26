@@ -10,7 +10,7 @@
 > 前提: `docs/design/notenest-editor-textbox-dependencies.md`（v2.5.1 H0-1 棚卸し結果）
 > 前提: `docs/design/notenest-editor-adapter-design.md`（v2.5.2 H0-2 設計・v2.5.3 H0-3 実装結果）
 > 目的: v2.5.5 以降で `EditorHost` を導入するかどうかを判断できる設計整理。今回は実装しない。
-> 次段階: `docs/design/notenest-editor-h0-reassessment.md`（v2.5.5 H0-5 — H0 系列総括・H1〜H4 再判定・推奨実装順）
+> 次段階: `docs/archive/completed-designs/notenest-editor-h0-reassessment.md`（v2.5.5 H0-5 — H0 系列総括・H1〜H4 再判定・推奨実装順）
 
 ---
 
@@ -337,7 +337,7 @@ DataContext 継承を採用したことで DependencyProperty の追加が不要
 #### 採用した方式と制約
 
 - **TextBox 継続で実現できた範囲**: ガター側の背景ハイライトは Canvas オーバーレイで対応可能だった
-- **実現できなかった範囲**: WPF 標準 TextBox では行単位の Foreground・FontWeight 変更が不可能。太字・文字色変更は行わなかった。この点は docs/design/notenest-editor-h0-reassessment.md §2 H2 の評価どおり
+- **実現できなかった範囲**: WPF 標準 TextBox では行単位の Foreground・FontWeight 変更が不可能。太字・文字色変更は行わなかった。この点は docs/archive/completed-designs/notenest-editor-h0-reassessment.md §2 H2 の評価どおり
 - **本文内ハイライトは対象外**: エディタ本文内の現在行背景ハイライトは TextBox では実装不可能なため対象外とした
 
 #### H1a に進む場合の注意

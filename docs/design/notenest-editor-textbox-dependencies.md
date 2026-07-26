@@ -9,7 +9,7 @@
 > 目的: H1〜H4（ノートリンク補完・行番号ハイライト・リンク色分け・マーカー行非表示）に安全に着手するための、WPF 標準 TextBox 依存の事前整理。
 > 次段階: `docs/design/notenest-editor-adapter-design.md`（v2.5.2 H0-2 — ITextEditorAdapter 設計 / v2.5.3 H0-3 — 実装完了）
 > 次段階: `docs/design/notenest-editor-host-design.md`（v2.5.4 H0-4 — EditorHost 導入方針）
-> 最終判断: `docs/design/notenest-editor-h0-reassessment.md`（v2.5.5 H0-5 — H0 系列総括・推奨実装順）
+> 最終判断: `docs/archive/completed-designs/notenest-editor-h0-reassessment.md`（v2.5.5 H0-5 — H0 系列総括・推奨実装順）
 
 ---
 
