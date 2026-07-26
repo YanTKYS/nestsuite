@@ -7,6 +7,26 @@
 
 ---
 
+## v2.19.13 — CH-19 ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線
+
+- **CH-19: ChatNestの過去メッセージ表示コンテナ（メッセージ本体の`StackPanel`）を`Focusable="True"`／`IsTabStop="True"`にし、Tabキーで各メッセージへ到達できるようにした。** 既存の見た目・レイアウトは変更していない。
+- **フォーカス中のメッセージはWPF標準`FocusVisualStyle`で視認できる。** 新しい色体系やBorder追加は行わず、既存のメッセージ枠・背景をそのまま維持した。
+- **Shift+F10・コンテキストメニューキーで、フォーカス中メッセージの既存ContextMenu（本文コピー・編集・削除・会話コピー・会話Markdownコピー・NestSuite形式コピー・会話を保存・時刻表示）を開けるようにした。** WPF標準の`ContextMenuOpening`はフォーカス中要素からバブリングしてContextMenuを開くため、独自の`Key.F10`／`Key.Apps`処理は追加していない。
+- **マウス右クリックによる既存ContextMenu表示は変更していない。** マウス用とキーボード用の別ContextMenuは作らず、同一の`StackPanel.ContextMenu`を共用する。
+- **操作対象は常にContextMenuを開いたメッセージと一致する。** ContextMenuの`DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"`という既存契約は変更しておらず、マウス右クリック・Shift+F10・コンテキストメニューキーのいずれで開いても同じメッセージが操作対象になる。
+- **既存の編集・削除・本文コピー等の処理はそのまま。** `BeginEditCommand`／`RequestDeleteCommand`／`CopyMessageCommand`をはじめ、ContextMenu項目・Command・表示条件は一切変更していない。削除の既存確認処理、編集モードへの遷移も従来どおり。
+- **メッセージコンテナ自体にEnter・Space・Deleteの新しい既定動作は追加していない。** ContextMenuを開く操作はShift+F10／コンテキストメニューキーのみ。独自の並び替えショートカット（Alt+↑/↓等）も追加していない。
+- **投稿欄（Ctrl+Enter投稿・Enter改行・Ctrl+左右の発言者切替）・会話内検索（Ctrl+F・Enter/Shift+Enter・Escape）・編集モード（`EditBox_PreviewKeyDown`）のキー処理は変更していない。**
+- **アクセシビリティ**: メッセージコンテナへ`AutomationProperties.Name`を追加し、`MessageViewModel.AccessibleSummary`（発言者・本文の先頭40文字程度の短い要約、表示専用の派生値）を読み上げ名とした。本文全文は複製していない。
+- **dirtyへの影響なし**: Tabでのフォーカス移動・Shift+F10でのContextMenu表示・Escapeでの終了はいずれも`IsModified`を変更しない。既存の編集確定・削除確定・並び替え確定は従来どおりdirtyになる。
+- **表示状態は永続化しない。** フォーカス中メッセージ・最後に開いたContextMenu等の保存用プロパティは追加していない。
+- **今回のスコープ外**: `docs/planning/keyboard-accessibility-cross-review.md` K-4（本version対応）を除く、K-5・K-6（ChatNestアクセスキー重複解消等）は今回実装していない。`Messages`の`ItemsControl`を`ListBox`化する変更、矢印キーでのメッセージ間移動、Enterによる編集開始、Deleteによる直接削除も対象外。
+- **テスト**: `CH19MessageFocusContextMenuTests`（メッセージコンテナのFocusable/IsTabStop化、既存ContextMenu共有・項目数不変・独自Shift+F10/Apps処理の非追加、PlacementTarget.DataContext契約の維持、Enter/Space/Delete未追加、投稿欄・検索欄・編集モードの既存キー処理維持、dirty非影響、表示状態非永続化、ListBox化していないことの確認）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・ChatNest/IdeaNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部ライブラリ・アクセシビリティライブラリ・UIコンポーネントライブラリ）の追加なし。
+- 実機でしか確認できない項目（Tabでの各メッセージへの到達とフォーカス視認、Shift+F10・コンテキストメニューキーでの既存ContextMenu表示と操作対象一致、マウス右クリックとの遷移先一致、編集・削除・本文コピーの実行結果、削除後のフォーカス安全性、投稿欄・会話内検索・編集モードとの非干渉、多数メッセージでのスクロール追従、ライト/ダークテーマでの視認性、別ウィンドウ分離時の挙動一致、dirty確認）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.12 — L28 NoteNestタスクグループ開閉・タスクコメント表示のキーボード対応
 
 - **L28: NoteNest右ペインの互換タスク表示について、タスクグループ見出し・完了済みタスクセクション見出しを、Border＋`MouseBinding`（マウス専用）からWPF標準`ToggleButton`へ変更した。** Tabキーで各見出しへ到達でき、EnterまたはSpaceで展開・折りたたみできる。

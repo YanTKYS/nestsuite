@@ -80,6 +80,20 @@ public class MessageViewModel : INotifyPropertyChanged
     /// <summary>CH-11: 日付区切りの表示文字列。絶対日付のみ（「今日」「昨日」等の相対表現は使わない）。</summary>
     public string DateSeparatorText => CreatedAt.ToString("yyyy年M月d日");
 
+    /// <summary>
+    /// CH-19: メッセージコンテナの AutomationProperties.Name 用の短い読み上げ名。
+    /// 本文全文は複製せず、先頭の一部だけを含める表示専用の派生値（保存しない）。
+    /// </summary>
+    public string AccessibleSummary
+    {
+        get
+        {
+            var excerpt = Text.Replace('\r', ' ').Replace('\n', ' ').Trim();
+            if (excerpt.Length > 40) excerpt = excerpt[..40] + "…";
+            return $"{Speaker}、メッセージ、{excerpt}";
+        }
+    }
+
     public ChatNestRelayCommand BeginEditCommand { get; }
     public ChatNestRelayCommand CommitEditCommand { get; }
     public ChatNestRelayCommand CancelEditCommand { get; }
@@ -127,6 +141,7 @@ public class MessageViewModel : INotifyPropertyChanged
         Model.Text = trimmed;
         IsEditing = false;
         OnPropertyChanged(nameof(Text));
+        OnPropertyChanged(nameof(AccessibleSummary));
         _onEditCommitted(this);
     }
 

@@ -220,11 +220,20 @@
                         Background="{DynamicResource BorderBrush}"/>
             </StackPanel>
 
+            <!-- CH-19: メッセージコンテナ自体をフォーカス可能化し、TabキーとShift+F10／コンテキスト
+                 メニューキーによる既存ContextMenuへのキーボード到達を可能にする。ContextMenuはこの
+                 StackPanelにそのまま残しており、PlacementTarget.DataContextは変更していないため、
+                 マウス右クリック・Shift+F10のどちらで開いても操作対象は一致する（WPF標準の
+                 ContextMenuOpeningはフォーカス中要素からバブリングするため、独自KeyDownは追加しない）。
+                 フォーカス視認性はWPF標準FocusVisualStyleに委ね、新しい色体系は追加していない。 -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="{Binding Speaker, Converter={StaticResource SpeakerAlign}}"
                         VerticalAlignment="Top"
                         Margin="16,3"
                         MaxWidth="580"
+                        Focusable="True"
+                        IsTabStop="True"
+                        AutomationProperties.Name="{Binding AccessibleSummary}"
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
 
                 <!-- CH-5: 現在の検索結果に背景ハイライト。CH-13: ドラッグ中は半透明 -->
