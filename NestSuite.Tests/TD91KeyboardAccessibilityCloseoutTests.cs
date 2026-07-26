@@ -3,8 +3,6 @@ using System.IO;
 using System.Linq;
 using NestSuite.IdeaNest.Models;
 using NestSuite.IdeaNest.ViewModels;
-using NestSuite.Models;
-using NestSuite.ViewModels;
 using Xunit;
 
 namespace NestSuite.Tests;
@@ -226,9 +224,21 @@ public class TD91KeyboardAccessibilityCloseoutTests
     // ── 6. 保存形式・schema非影響 ────────────────────────────────────────
 
     [Fact]
-    public void NoteNestSchemaVersion_IsStillPinnedAt142()
+    public void NoteNestSchemaVersion_IsUnchangedByTd91()
     {
-        Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
+        // schemaリテラルの直接比較はApplicationVersionTests側の一元管理テストと重複するため、
+        // ここではTD-91対応ファイル群がschemaやProject関連のシリアライズ処理へ触れていないことのみ確認する。
+        var files = new[]
+        {
+            Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.MarkerEvents.cs"),
+            Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.LinkEvents.cs"),
+            Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.TaskEvents.cs"),
+        };
+        foreach (var file in files)
+        {
+            var src = File.ReadAllText(file);
+            Assert.DoesNotContain("CurrentSchemaVersion", src);
+        }
     }
 
     // ── 7. AutomationName（状態依存の両状態を確認） ──────────────────────
@@ -288,11 +298,7 @@ public class TD91KeyboardAccessibilityCloseoutTests
         Assert.False(backlog.Contains("| TD-91 |", System.StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void ApplicationVersion_Is2200()
-    {
-        Assert.Equal("2.20.0", MainViewModel.ApplicationVersion);
-    }
+    // バージョン値自体の確認はApplicationVersionTestsが一元的に担うため、ここでは重複させない。
 
     // ── helpers ─────────────────────────────────────────────────────────────
 
