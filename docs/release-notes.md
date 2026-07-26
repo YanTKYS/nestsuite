@@ -7,6 +7,28 @@
 
 ---
 
+## v2.19.11 — L27 NoteNestリンク一覧のListBox化（Enterジャンプ対応）
+
+- **L27: NoteNest右ペイン「リンク」タブの「からのリンク」（`LinkPanel.OutboundLinks`）・「へのリンク」（`LinkPanel.Backlinks`）を、WPF標準`ItemsControl`から`ListBox`（`SelectionMode="Single"`）へ変更した。** L26のマーカー一覧と同じ操作契約（Tab到達→上下キーで選択のみ→Enterで実行）に揃えている。
+- **ItemsSourceは引き続き既存の`LinkPanel.OutboundLinks`／`LinkPanel.Backlinks`をそのまま使用している。** リンク抽出・リンク解決・リンク切れ判定・表示件数のロジックは一切変更していない。
+- **Enterキーで選択中の項目へ移動する。** 移動処理はマウスクリック（`OutboundLink_MouseLeftButtonDown`／`Backlink_MouseLeftButtonDown`）と共通の小さなメソッド（`TryNavigateOutboundLink`／`TryNavigateBacklink`）へ整理し、既存の`ViewModel.NavigateToNote`をそのまま呼び出す。マウス・Enterどちらから呼んでも同じ移動先・同じ状態になる。
+- **選択変更（上下キーでの移動）だけではノートへ移動しない。** `SelectionChanged`はどちらのListBoxにも配線しておらず、Enterキーのみが移動を実行する。
+- **リンク切れ（`OutboundLinkEntry.Target == null`）はEnterでも移動しない。** `TryNavigateOutboundLink`がガード節で判定して`false`を返し、例外は発生せず現在のノートを維持する。呼び出し元はリンク切れの場合も含めて`e.Handled = true`を設定し、Enterキー処理を一覧内で完結させる。既存の⚠表示・ToolTip「リンク切れ」は維持している。
+- **マウスクリックでの移動は変更していない。** 項目内`Border`の`MouseLeftButtonDown`はそのまま維持しており、クリックで即移動する挙動は従来通り。
+- **0件時の一覧は`IsEnabled`を`LinkPanel.HasOutboundLinks`／`LinkPanel.HasBacklinks`（今回追加した表示専用の計算プロパティ）へバインドし、Tab到達不可・フォーカス矩形非表示とした。** 既存の「（なし）」表示・「ノートを選択してください」案内は維持している。
+- **ノート切替・リンク再生成時は、旧選択を保持しない。** `OutboundLinks`／`Backlinks`はノート切替のたびに新しいコレクションへ差し替わるため、WPF標準の`ItemsSource`再バインド挙動により選択は自動的に解除され、例外は発生しない。
+- **スクロール構造**: リンクタブ全体を囲む既存の外側`ScrollViewer`をそのまま維持し（案A）、各ListBoxは`ScrollViewer.VerticalScrollBarVisibility="Disabled"`／`HorizontalScrollBarVisibility="Disabled"`として内部スクロールを無効化した。二重スクロールバーを避けつつ、選択項目への`BringIntoView`は外側`ScrollViewer`へ伝播する構造とした。
+- **選択・フォーカスの視認性**: 新しい色体系は追加せず、既存のホバー背景（`MarkerHoverBg`）とWPF標準の`ListBoxItem`選択表示に委ねた。L26と同じ`ItemContainerStyle`（`Padding="0"`・`HorizontalContentAlignment="Stretch"`）を採用している。
+- **アクセシビリティ**: `OutboundLinkList`に`AutomationProperties.AutomationId="NoteNest.OutboundLinkList"`・`Name="からのリンク一覧"`、`BacklinkList`に`AutomationProperties.AutomationId="NoteNest.BacklinkList"`・`Name="へのリンク一覧"`を追加した。
+- **Space/Delete/Escape/左右キーへの新規割り当ては行っていない。** Spaceは標準の選択トグルのまま、左右キーによるタブ切替や一覧間移動などの独自操作も追加していない。
+- **dirtyへの影響なし**: 選択変更・Enter移動（ノート選択のみ）はいずれも`IsModified`を変更しない。
+- **今回のスコープ外**: `docs/planning/keyboard-accessibility-cross-review.md` K-2はこれで全部分完了。K-3（タスクグループ開閉・タスクコメント表示）以降は今回実装していない。リンク一覧の検索・並び替え・単体コピー・修復・編集・削除も対象外。
+- **テスト**: `L27LinkListKeyboardTests`（ListBox化の静的確認・Enterキー配線・マウス/Enterでの処理共通化・リンク切れの非移動・SelectionChanged未配線・0件時の`IsEnabled`バインド・空状態維持・dirty/保存APIへの非参照確認・選択状態の非永続化・Space/Delete/Escape/左右キー未割り当て・周辺UI要素の維持・スクロール構造）を追加した。`NoteLinkPanelViewModelTests`へ`HasOutboundLinks`／`HasBacklinks`の確認テストを追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部ライブラリ・UIコンポーネントライブラリ）の追加なし。
+- 実機でしか確認できない項目（Tab→上下キー→Enter→ジャンプの一連操作、選択のみではノートが切り替わらないことの目視確認、マウス移動とEnter移動の遷移先一致、リンク切れ項目でのEnter時の非例外・非誤移動、0件時のフォーカス矩形非表示、選択項目消滅時の安全性、外側ScrollViewerへの選択項目追従スクロール・二重スクロールバーの非表示、ライト/ダークテーマでの選択・フォーカス視認性、dirty確認、別ウィンドウ分離時の挙動一致）は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.10 — L26 NoteNestマーカー一覧のListBox化（キーボード選択対応）
 
 - **L26: NoteNest右ペインのマーカー一覧を、WPF標準`ItemsControl`から`ListBox`（`SelectionMode="Single"`）へ変更した。** Tabキーで一覧へフォーカスが到達できるようになり、上下キーで表示中のマーカー間を選択移動できる。

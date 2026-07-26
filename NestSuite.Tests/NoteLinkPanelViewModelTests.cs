@@ -137,6 +137,54 @@ public class NoteLinkPanelViewModelTests
         Assert.True(vm.HasNoBacklinks);
     }
 
+    // ── L27 (v2.19.11): 0件ListBoxへの不必要なTabフォーカスを避けるための判定 ──
+
+    [Fact]
+    public void HasOutboundLinks_FalseWhenNoteSelectedButNoLinks()
+    {
+        var vm = new NoteLinkPanelViewModel();
+        var note = MakeNote("A", "No links here");
+
+        vm.Refresh(note, [note]);
+
+        Assert.False(vm.HasOutboundLinks);
+    }
+
+    [Fact]
+    public void HasOutboundLinks_TrueWhenLinksExist()
+    {
+        var vm = new NoteLinkPanelViewModel();
+        var noteA = MakeNote("A", "[[B]]");
+        var noteB = MakeNote("B");
+
+        vm.Refresh(noteA, [noteA, noteB]);
+
+        Assert.True(vm.HasOutboundLinks);
+    }
+
+    [Fact]
+    public void HasBacklinks_FalseWhenNoteSelectedButNoBacklinks()
+    {
+        var vm = new NoteLinkPanelViewModel();
+        var note = MakeNote("A");
+
+        vm.Refresh(note, [note]);
+
+        Assert.False(vm.HasBacklinks);
+    }
+
+    [Fact]
+    public void HasBacklinks_TrueWhenBacklinksExist()
+    {
+        var vm = new NoteLinkPanelViewModel();
+        var noteA = MakeNote("A");
+        var noteB = MakeNote("B", "[[A]]");
+
+        vm.Refresh(noteA, [noteA, noteB]);
+
+        Assert.True(vm.HasBacklinks);
+    }
+
     [Fact]
     public void HasNoNote_TrueInitially()
     {
