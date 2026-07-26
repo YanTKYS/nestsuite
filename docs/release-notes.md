@@ -7,6 +7,19 @@
 
 ---
 
+## v2.19.7 — TD-83 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
+
+- **TD-83: `docs/planning/docs-inventory-and-archive-policy.md` の次回候補に基づき、完了済み editor 設計文書1件と旧入口README系3件（`docs/operations/operation-note.md`・`docs/integration/README.md`・`docs/migration/README.md`）の計4文書を個別に再判定した。** 結果は Archive 2件（editor設計文書・operation-note.md）、Keep 2件（integration/README.md・migration/README.md）。単に「古そうだから削除」「完了済みだから一律archive」とはせず、各文書の現在の役割・参照元・実装状況を確認したうえで分類した。Delete Candidate と分類されていた文書も、機械的には削除していない。
+- **`docs/design/notenest-editor-h0-reassessment.md`（H0系列総括・H1〜H4再判定、v2.5.5 H0-5）を `docs/archive/completed-designs/` へ移設した。** H1a・H2a・EH-1 は実装完了、H3・H4 の見送り判断は既に `docs/backlog.md` の RJ-11・RJ-7 として記録済みで、未解決の判断待ち事項が残っていないことを確認した。相互参照する `notenest-editor-textbox-dependencies.md` / `notenest-editor-adapter-design.md` / `notenest-editor-host-design.md` の3文書は、`ITextEditorAdapter` / `NoteEditorHost` という現行 editor 実装の責務境界を理解する補助として引き続き参照価値があるため、`docs/design/` に維持し、archive していない（この3文書内の h0-reassessment への相互参照パスは新しい archive 先へ更新した）。
+- **`docs/operations/operation-note.md`（NoteNest v1.5.4 時代の運用メモ）を `docs/archive/completed-designs/` へ移設した。** 内容のほぼ全て（自動保存・複数ファイル同時利用の注意・ファイル関連付け・`.bak`復元・保存形式の安定性・NoteNest v1.2.6時点の機能制限一覧）が現行 Canonical 文書（`docs/guide/nestsuite-user-guide.md`・`docs/design/nestsuite-known-limitations.md`・`docs/architecture/schema-versioning-policy.md`・`docs/testing/nestsuite-release-checklist.md`）へ吸収済みであることを確認した。「同一ファイルを複数の方法で同時に開かないでください」という当時の注意事項も、現行の二重オープン検出（既存タブへの自動アクティブ化）により当時の懸念自体が解消されている。判断が微妙な項目（推奨バックアップ頻度・配布前チェックリストの一部）が残っていたため、Delete ではなく Archive とした。
+- **`docs/integration/README.md` と `docs/migration/README.md` は、Delete Candidate と分類されていたが、削除しないと判定した。** 実際には、`docs/archive/completed-designs/` の4文書（`nestsuite-preparation.md`・`ideanest-save-load-plan.md`・`nestsuite-multi-file-tabs-plan.md`・`nestsuite-notenest-multi-file-plan.md`）と `docs/archive/migrations/nestsuite-default-startup-plan.md` の `[履歴文書]` 冒頭注記が、この2つのREADMEを「詳細はこちら」の移設先索引として直接リンクしていることを確認した。削除すると5文書のリンク切れと `docs/README.md` からの案内断絶が生じるため、両READMEを維持し、文言のみ「次回以降に再判定」から「今回削除しないと確定」へ更新した。
+- **参照リンクを更新した。** `docs/design/README.md`・`docs/README.md`・`docs/planning/docs-inventory-and-archive-policy.md` の該当箇所を新しい配置・判定へ更新し、`docs/testing/test-scenarios.md` の `--classic-notenest` 関連の古いチェックリスト（§64）にあった `operation-note.md` への参照パスも修正した（§64自体の全面見直しは対象外）。release notesの過去エントリ・archive済み文書自身の historical な記述は、他バージョンの archive 作業（TD-79〜TD-82）と同様に書き換えていない。
+- **docs contractテストを追加した。** `DocsArchiveTd83Tests`（新パスの存在・旧パスの不在・履歴文書バナーの保持・参照更新・archive済み5文書からの逆リンク維持・旧入口READMEを削除していないこと・backlog/release notesの整合）を追加した。既存テストは削除・skipしていない。
+- **アプリ機能・UI・保存形式・schemaへの変更はない。** NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest/ChatNest/TempNest/session/draft/UI settings形式への変更なし。外部依存の追加なし。
+- 実機でしか確認できない項目は本質的にない（docs整理のみ）が、通常のリリース前確認として、NestSuiteの起動・主要Workspaceのオープン・ヘルプ/利用者ガイド導線の非破壊は、本開発環境（Linux CLI、Windows実機なし）では未確認。
+
+---
+
 ## v2.19.6 — L10 NoteNest右ペイン内の絞り込み
 
 - **L10: NoteNest右ペイン（マーカー一覧・互換タスク一覧）に、共通の文字列絞り込み欄を追加した。** マーカー用・タスク用に別々の入力欄は持たず、1つの絞り込み欄で両方を同時に絞り込める。右ペイン最上部（マーカー/リンクタブ・タスクセクションの上）に配置し、確定操作なしで入力の都度即時反映する。

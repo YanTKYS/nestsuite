@@ -18,4 +18,5 @@ v1.7〜v1.9 時代の実装済み統合計画は、v2.17.5 / TD-80 で `docs/arc
 現行開発で参照すべき文書はこのディレクトリに含まれません。
 現行の設計方針は `docs/development/nestsuite-development-guidelines.md`、`docs/design/`、`docs/release-notes.md` を優先してください。
 
-この README 自体は旧入口として残しています。削除可否は次回以降に再判定します。
+この README 自体は、上表4文書それぞれの `[履歴文書]` 冒頭注記が「詳細はこちら」として直接リンクする移設先索引です。
+v2.19.7 / TD-83 で削除可否を再判定し、参照元4文書のリンク先として現役の役割があるため維持と判断しました（`docs/planning/docs-inventory-and-archive-policy.md` 参照）。

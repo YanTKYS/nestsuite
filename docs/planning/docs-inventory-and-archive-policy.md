@@ -1,6 +1,6 @@
 # NestSuite docs棚卸し・archive方針
 
-> version: v2.17.8
+> version: v2.19.7
 > 対象: `docs/` 配下の Markdown 文書
 > 目的: 現行正本と履歴文書を分離し、今後の archive 移設を安全に進めるための棚卸し結果を記録する。
 
@@ -52,7 +52,7 @@
 | `docs/design/nestsuite-known-limitations.md` | Canonical | 既知制約の正本 | 開発者・設計者 | 現行制約の判断材料 | 維持。 |
 | `docs/design/notenest-editor-adapter-design.md` | Active Reference | Editor adapter 方針 | editor 関連実装 | 現行 editor 設計の補助 | 維持。 |
 | `docs/design/notenest-editor-host-design.md` | Active Reference | EditorHost 導入方針 | editor 関連実装 | 現行 editor 方針の補助 | 維持。 |
-| `docs/design/notenest-editor-h0-reassessment.md` | Archive Candidate | H0 系列再判定記録 | editor 方針・RJ-8 | 採否確定済みの比較記録 | `docs/archive/completed-designs/` 候補。 |
+| `docs/archive/completed-designs/notenest-editor-h0-reassessment.md` | Archived | H0 系列総括・H1〜H4 再判定記録 | `docs/design/README.md`、H0系列3文書からの相互参照 | H1a・H2a・EH-1 は実装完了、H3 は RJ-11、H4 は RJ-7 として backlog に記録済みで、未解決の判断待ち事項が残っていない | TD-83（v2.19.7）で `docs/design/` から移設済み。相互参照する3文書（textbox-dependencies / adapter-design / host-design）は現行境界の参照価値があるため移設していない。 |
 | `docs/design/notenest-editor-textbox-dependencies.md` | Active Reference | TextBox 依存棚卸し | editor 差し替え検討 | 現行 TextBox 維持判断の補助 | 維持。 |
 | `docs/design/review-gemini.md` | Archive Candidate | 過去レビュー記録 | release notes / planning | 現行正本ではなくレビュー履歴 | expert-review 系移設時に一緒に検討。 |
 | `docs/development/static-test-guidelines.md` | Canonical | 静的テスト追加・削除基準 | docs-contract / 開発ガイド | テスト設計の正本 | 維持。 |
@@ -76,13 +76,13 @@
 | `docs/testing/test-scenarios.md` | Active Reference | 手動・統合テスト観点 | release checklist | 一部古いが確認観点として有用 | 維持。古い表記は別課題で整理。 |
 | `docs/operations/file-association.md` | Canonical | ファイル関連付け運用 | release / 配布作業 | 現行運用手順 | 維持。 |
 | `docs/archive/migrations/repository-rename.md` | Archived | リポジトリ名変更手順 | 過去移行時・release notes | 完了済み運用記録 | TD-80 で移設済み。現在の運用手順は `docs/operations/` を優先。 |
-| `docs/operations/operation-note.md` | Delete Candidate | 旧 NoteNest v1.5.4 運用メモ | 参照なし想定 | 現行 NestSuite 運用正本ではなく内容が古い | 削除前に参照元確認。旧履歴価値が必要なら archive へ。 |
-| `docs/integration/README.md` | Delete Candidate | integration 配下の旧入口 | 開発者 | 配下の個別文書は TD-80 で archive へ移設済み | 今回は削除しない。次回以降、空入口として残す必要性を再判定。 |
+| `docs/archive/completed-designs/operation-note.md` | Archived | 旧 NoteNest v1.5.4 運用メモ | `docs/README.md`（履歴索引） | 内容のほぼ全てが `nestsuite-user-guide.md`・`nestsuite-known-limitations.md`・`schema-versioning-policy.md`・`nestsuite-release-checklist.md` へ吸収済み。「同一ファイル多重オープン」注意も現行の二重オープン検出で解消済み | TD-83（v2.19.7）で `docs/operations/` から移設済み。 |
+| `docs/integration/README.md` | Active Reference | integration 配下の旧入口 兼 archive 済み4文書の移設先索引 | 開発者・`docs/archive/completed-designs/` の4文書の `[履歴文書]` 冒頭注記 | Delete Candidate として再判定したが、archive 済み4文書（`nestsuite-preparation.md`・`ideanest-save-load-plan.md`・`nestsuite-multi-file-tabs-plan.md`・`nestsuite-notenest-multi-file-plan.md`）の冒頭注記が本 README へ直接リンクしており、削除すると4文書のリンク切れが生じる | TD-83（v2.19.7）で削除しないと確定。次回以降の再判定は不要（archive 側の参照リンクを全廃した場合のみ再検討）。 |
 | `docs/archive/completed-designs/ideanest-save-load-plan.md` | Archived | IdeaNest 保存・読込実装済み計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
 | `docs/archive/completed-designs/nestsuite-multi-file-tabs-plan.md` | Archived | 同一ツール複数ファイル対応計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
 | `docs/archive/completed-designs/nestsuite-notenest-multi-file-plan.md` | Archived | NoteNest 複数ファイルタブ計画 | release notes | 完了済み統合計画 | TD-80 で移設済み。 |
 | `docs/archive/completed-designs/nestsuite-preparation.md` | Archived | NestSuite 対応準備メモ | release notes | 完了済み準備記録 | TD-80 で移設済み。 |
-| `docs/migration/README.md` | Delete Candidate | migration 配下の旧入口 | 開発者 | 配下の個別文書は TD-80 で archive へ移設済み | 今回は削除しない。次回以降、空入口として残す必要性を再判定。 |
+| `docs/migration/README.md` | Active Reference | migration 配下の旧入口 兼 archive 済み文書の移設先索引 | 開発者・`nestsuite-default-startup-plan.md` の `[履歴文書]` 冒頭注記 | Delete Candidate として再判定したが、`docs/archive/migrations/nestsuite-default-startup-plan.md` の冒頭注記が本 README へ直接リンクしており、削除するとリンク切れが生じる | TD-83（v2.19.7）で削除しないと確定。次回以降の再判定は不要（archive 側の参照リンクを全廃した場合のみ再検討）。 |
 | `docs/archive/migrations/nestsuite-default-startup-plan.md` | Archived | 既定起動化の完了済み移行計画 | release notes | 実装済み移行記録 | TD-80 で移設済み。 |
 | `docs/archive/expert-review/expert-review-closeout.md` | Archived | expert review 完了記録 | docs-contract・release notes | v2.17.0 で完了済み。ただしテスト固定あり | TD-79 で移設済み。docs-contract は新パスを確認する。 |
 | `docs/archive/expert-review/expert-proposals-2026-06.md` | Archived | 有識者提案整理 | closeout・review 群 | 特別進行の履歴 | TD-79 で移設済み。 |
@@ -245,15 +245,22 @@ Completed designs:
 
 TD-82（v2.17.7）で archive へ移設した判断自体は、当時の完了済み移行記録としての性質のみに着目したものであり、production コード・Canonical 文書からの継続参照という観点が抜けていた。TD-82-1 はこれを補正するものであり、TD-82 の履歴・欠番は取り消さない。
 
-### 次の候補: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
+### TD-83完了: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
 
-候補を一度に大量移設せず、次回以降は 1〜2 件程度に絞って扱う。
+次の4文書を v2.19.7 / TD-83 で個別に再判定した。
 
-優先候補:
+| 対象文書 | 判定 | 実施内容 |
+|---|---|---|
+| `docs/design/notenest-editor-h0-reassessment.md` | Archive | `docs/archive/completed-designs/notenest-editor-h0-reassessment.md` へ移設 |
+| `docs/operations/operation-note.md` | Archive | `docs/archive/completed-designs/operation-note.md` へ移設 |
+| `docs/integration/README.md` | Keep（Delete Candidate から変更） | 移設しない。archive済み4文書の `[履歴文書]` 冒頭注記の移設先索引として維持 |
+| `docs/migration/README.md` | Keep（Delete Candidate から変更） | 移設しない。archive済み文書の `[履歴文書]` 冒頭注記の移設先索引として維持 |
 
-- `docs/design/notenest-editor-h0-reassessment.md`
-- `docs/operations/operation-note.md`
-- `docs/integration/README.md` / `docs/migration/README.md` の削除可否再判定
+判断理由:
+
+- `notenest-editor-h0-reassessment.md` は H1a・H2a・EH-1 の実装完了、H3・H4 の見送り判断（RJ-11・RJ-7）がいずれも `docs/backlog.md` に記録済みで、未解決の判断待ち事項がない完了済み設計記録のため archive した。相互参照する `notenest-editor-textbox-dependencies.md` / `notenest-editor-adapter-design.md` / `notenest-editor-host-design.md` の3文書は、`ITextEditorAdapter` / `NoteEditorHost` という現行 editor 実装の責務境界を理解する補助として引き続き参照価値があるため、`docs/design/` に維持した（archive しない）。
+- `docs/operations/operation-note.md` は NoteNest v1.5.4 時代の運用メモで、内容のほぼ全てが現行 Canonical 文書（`nestsuite-user-guide.md`・`nestsuite-known-limitations.md`・`schema-versioning-policy.md`・`nestsuite-release-checklist.md`）へ吸収済みと確認した。「同一ファイルを複数の方法で同時に開かないでください」という注意事項も、現行の二重オープン検出（`nestsuite-known-limitations.md` 記載）により当時の懸念そのものが解消されている。判断が微妙な項目（バックアップ推奨頻度・配布前チェックリストの一部）もあったため、Delete ではなく Archive とした。
+- `docs/integration/README.md` / `docs/migration/README.md` は、当初 Delete Candidate だったが、実際には `docs/archive/completed-designs/` の4文書と `docs/archive/migrations/nestsuite-default-startup-plan.md` の `[履歴文書]` 冒頭注記が「詳細はこちら」として直接リンクする移設先索引として機能していることを確認した。削除すると、archive 済み5文書のリンク切れと、`docs/README.md` からの案内断絶が生じるため、削除しないと判断した。単純に「Delete Candidate と分類されていたから削除する」対応はしていない。
 
 ---
 
@@ -273,10 +280,7 @@ TD-82（v2.17.7）で archive へ移設した判断自体は、当時の完了�
 
 ## 9. 次回作業案
 
-> v2.17.8 は TD-82-1（`workspace-file-extension-unification.md` の正本性補正）を優先実施した。以下の editor設計・旧入口README再判定は次回以降へ持ち越す。
+> v2.17.8 は TD-82-1（`workspace-file-extension-unification.md` の正本性補正）を、v2.19.7 は TD-83（完了済みeditor設計・旧入口READMEのarchive/削除候補再判定）を実施した。
 
-### 次回: 完了済みeditor設計・旧入口READMEのarchive/削除候補再判定
-
-- `docs/design/notenest-editor-h0-reassessment.md` を archive へ移せるか、現行 editor 方針の参照価値が残るかを再確認する
-- `docs/operations/operation-note.md`、`docs/integration/README.md`、`docs/migration/README.md` は Delete Candidate として削除可能か、archive へ残すべきかを個別判断する
-- Delete Candidate の即削除は行わず、削除する場合は別 version で行う
+TD-83 完了時点で、次回以降に優先着手すべき明確な docs 整理候補は確認できていない。
+新規の棚卸し対象は、実際に完了済み設計文書が積み上がった時点で改めて起票する（全docsの一括再棚卸しは行わない）。
