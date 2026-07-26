@@ -196,6 +196,42 @@ public partial class NoteNestWorkspaceView : UserControl
         }
     }
 
+    // ── v2.19.4 M15: 右ペイン（マーカー／タスク）の一括コピー ────────────────
+
+    private void CopyAllMarkers_Click(object sender, RoutedEventArgs e)
+    {
+        var markers = ViewModel.FilteredMarkers.ToList();
+        var markdown = NoteNestRightPaneMarkdownFormatter.FormatMarkers(markers);
+        if (string.IsNullOrEmpty(markdown)) return;
+        try
+        {
+            Clipboard.SetText(markdown);
+            Host.ShowTransientStatus($"{markers.Count}件のマーカーをコピーしました");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("MarkerListMarkdownCopyToClipboard", ex, "NoteNest");
+            ShowError("クリップボードへのコピーに失敗しました。", "コピーエラー");
+        }
+    }
+
+    private void CopyAllTasks_Click(object sender, RoutedEventArgs e)
+    {
+        var tasks = ViewModel.TaskGroups.SelectMany(g => g.Tasks).ToList();
+        var markdown = NoteNestRightPaneMarkdownFormatter.FormatTasks(ViewModel.TaskGroups);
+        if (string.IsNullOrEmpty(markdown)) return;
+        try
+        {
+            Clipboard.SetText(markdown);
+            Host.ShowTransientStatus($"{tasks.Count}件のタスクをコピーしました");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log("TaskListMarkdownCopyToClipboard", ex, "NoteNest");
+            ShowError("クリップボードへのコピーに失敗しました。", "コピーエラー");
+        }
+    }
+
     private void ExportNoteMarkdownSave_Click(object sender, RoutedEventArgs e)
     {
         var note = ViewModel.SelectedNote;

@@ -580,12 +580,22 @@
                         BorderBrush="{DynamicResource PaneBorder}" BorderThickness="0,0,0,1"
                         Padding="12,9"
                         Visibility="{Binding HasAnyTasks, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="タスク（互換）" FontWeight="Bold" FontSize="13"/>
-                        <TextBlock Text="{Binding TotalIncompleteTaskCountText}"
-                                   Foreground="{DynamicResource FaintFg}" FontSize="11"
-                                   VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right"
+                                Content="全件コピー"
+                                Padding="6,2" FontSize="11"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="NoteNest.CopyAllTasksButton"
+                                AutomationProperties.Name="タスクをすべてコピー"
+                                ToolTip="表示中のタスクをMarkdown形式でコピーします"
+                                Click="CopyAllTasks_Click"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="タスク（互換）" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="{Binding TotalIncompleteTaskCountText}"
+                                       Foreground="{DynamicResource FaintFg}" FontSize="11"
+                                       VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
 
                 <!-- Task groups（既存タスクがあるグループのみ表示。新規作成ボタンは表示しない） -->
@@ -704,6 +714,16 @@
                                 BorderBrush="{DynamicResource PaneBorder}" BorderThickness="0,0,0,1"
                                 Padding="12,9">
                             <DockPanel>
+                                <Button DockPanel.Dock="Right"
+                                        Content="全件コピー"
+                                        Padding="6,2" FontSize="11"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        IsEnabled="{Binding HasFilteredMarkers}"
+                                        AutomationProperties.AutomationId="NoteNest.CopyAllMarkersButton"
+                                        AutomationProperties.Name="マーカーをすべてコピー"
+                                        ToolTip="表示中のマーカーをMarkdown形式でコピーします"
+                                        Click="CopyAllMarkers_Click"/>
                                 <TextBlock DockPanel.Dock="Right"
                                            Text="{Binding FilteredMarkerCountText}"
                                            Foreground="{DynamicResource MutedFg}" FontSize="12"
