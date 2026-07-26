@@ -138,6 +138,7 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "v2.19.11", "L27", "v2.19.11 — L27" };
         yield return new object[] { "v2.19.12", "L28", "v2.19.12 — L28" };
         yield return new object[] { "v2.19.13", "CH-19", "v2.19.13 — CH-19" };
+        yield return new object[] { "v2.19.14", "SH-45", "v2.19.14 — SH-45" };
         // 注意: v2.16.24 (LT-9 フェーズ2) は "LT-9" と "フェーズ2" という
         // 2 つのキーワードを 1 テストで確認する形（ID 単体ではない）だったため、
         // この一覧には含めず ReleaseNotes_Contains_V21624 / _LT9Phase2 として個別に維持する。
@@ -323,6 +324,8 @@ public class NestSuiteDocsContractTests
         yield return new object[] { "L28" };
         // ── v2.19.13 CH-19: ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線（欠番）──
         yield return new object[] { "CH-19" };
+        // ── v2.19.14 SH-45: アイコン・記号のみボタンのAutomationName補完（欠番）──
+        yield return new object[] { "SH-45" };
     }
 
     [Theory]

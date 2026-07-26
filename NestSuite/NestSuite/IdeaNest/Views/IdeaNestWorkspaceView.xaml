@@ -89,6 +89,7 @@
                 <Button Grid.Column="0"
                         Content="{Binding TagPanelButtonLabel}"
                         ToolTip="{Binding TagPanelButtonTip}"
+                        AutomationProperties.Name="{Binding TagPanelButtonTip}"
                         Command="{Binding ToggleTagPanelCommand}"
                         Style="{StaticResource IdeaIconButtonStyle}"
                         Padding="8,4" Margin="0,0,8,0"
@@ -127,6 +128,7 @@
                             HorizontalAlignment="Right" VerticalAlignment="Center"
                             Margin="0,0,4,0"
                             ToolTip="検索をクリア (Esc)"
+                            AutomationProperties.Name="検索をクリア"
                             Visibility="{Binding SearchText, Converter={StaticResource IdeaStringToVis}}" />
                 </Grid>
 
@@ -179,17 +181,20 @@
                               VerticalContentAlignment="Center"
                               ToolTip="カードの並び順を選択" />
                     <Button Content="🔀" ToolTip="再シャッフル"
+                            AutomationProperties.Name="カードを再シャッフル"
                             Style="{StaticResource IdeaIconButtonStyle}"
                             Command="{Binding ReshuffleCommand}"
                             Padding="6,4" Margin="4,0,0,0"
                             Visibility="{Binding IsShuffleMode, Converter={StaticResource IdeaBoolToVis}}" />
                     <Button Content="🎲" ToolTip="壁打ち — ランダムに 1 枚プレビュー (Ctrl+Shift+R)"
+                            AutomationProperties.Name="カードをランダムに1枚プレビュー"
                             Style="{StaticResource IdeaIconButtonStyle}"
                             Command="{Binding RandomPreviewCommand}"
                             Padding="6,4" Margin="4,0,0,0" />
                     <TextBlock Text="サイズ:" Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                                FontSize="12" VerticalAlignment="Center" Margin="12,0,6,0" />
                     <Button Content="S" ToolTip="小 (コンパクト)"
+                            AutomationProperties.Name="カードサイズを小に設定"
                             Command="{Binding SetCardSizeCommand}" CommandParameter="small"
                             Padding="6,4" Margin="0,0,2,0">
                         <Button.Style>
@@ -204,6 +209,7 @@
                         </Button.Style>
                     </Button>
                     <Button Content="M" ToolTip="中 (標準)"
+                            AutomationProperties.Name="カードサイズを中に設定"
                             Command="{Binding SetCardSizeCommand}" CommandParameter="medium"
                             Padding="6,4" Margin="0,0,2,0">
                         <Button.Style>
@@ -218,6 +224,7 @@
                         </Button.Style>
                     </Button>
                     <Button Content="L" ToolTip="大 (広い)"
+                            AutomationProperties.Name="カードサイズを大に設定"
                             Command="{Binding SetCardSizeCommand}" CommandParameter="large"
                             Padding="6,4" Margin="0">
                         <Button.Style>
@@ -521,14 +528,17 @@
                                                 </Style>
                                             </StackPanel.Style>
                                             <Button Content="📌" ToolTip="ピン留め切替"
+                                                    AutomationProperties.Name="{Binding PinActionName}"
                                                     Style="{StaticResource IdeaIconButtonStyle}"
                                                     Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
                                             <Button Content="📥" ToolTip="アーカイブ切替"
+                                                    AutomationProperties.Name="{Binding ArchiveActionName}"
                                                     Style="{StaticResource IdeaIconButtonStyle}"
                                                     Command="{Binding DataContext.ToggleArchiveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
                                             <Button Content="🗑" ToolTip="削除"
+                                                    AutomationProperties.Name="カードを削除"
                                                     Style="{StaticResource IdeaIconButtonStyle}"
                                                     Command="{Binding DataContext.DeleteIdeaCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />

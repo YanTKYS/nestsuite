@@ -7,6 +7,26 @@
 
 ---
 
+## v2.19.14 — SH-45 アイコン・記号のみボタンのAutomationName補完
+
+- **SH-45: 表示がアイコン・絵文字・記号だけで、可視テキストから操作目的を判断できないボタンを棚卸しし、対象へ`AutomationProperties.Name`を付与した。** 表示・`Click`・`Command`・`CommandParameter`・`Visibility`・`IsEnabled`・Tab順・ToolTipの表示条件は一切変更していない。
+- **Shellのタブ閉じるボタン（×）・横断検索閉じるボタン（×）**へ、それぞれ「このタブを閉じる」「横断検索を閉じる」を付与した。
+- **Shellの新規タブ追加ボタン（＋）・タブ一覧ボタン（▾）**は、`AutomationProperties.Name`が内部ID文字列（`Shell.TabAddButton`／`Shell.TabListButton`）のまま利用者向け名として使われていたため、「新規タブを追加」「タブ一覧を開く」という操作名へ修正した。`AutomationProperties.AutomationId`は変更していない。
+- **NoteNestのコメント編集ボタン（✏）・保存ボタン（💾）**へ、それぞれ「コメントを編集」「保存」を付与した。保存ボタンの既存ToolTip「保存 (Ctrl+S)」からショートカット表記は含めていない。
+- **NoteNest右ペイン開閉ボタン（»/«）**は、Content・ToolTipをコード側で状態に応じて切り替えている既存実装（`CollapseRightPane`/`ExpandRightPane`）へ、同じ文言で`AutomationProperties.Name`（「右ペインを表示」／「右ペインを閉じる」）を追従させた。固定の内部ID文字列だった旧XAML値は削除した。
+- **IdeaNestのタグパネル切替ボタン**は、既存の状態依存ToolTipバインディング（`TagPanelButtonTip`）をそのまま`AutomationProperties.Name`として再利用した。
+- **IdeaNestのカード footer ピン留め切替・アーカイブ切替ボタン**は、固定名では状態によって操作が逆転してしまうため、`IdeaCardViewModel`へ表示専用の`PinActionName`／`ArchiveActionName`（現在の`IsPinned`／`IsArchived`に応じて「カードをピン留め」⇔「カードのピン留めを解除」等を返す）を追加してBindingした。保存対象・dirty対象には含めていない。
+- **IdeaNestの検索クリア（✕）・再シャッフル（🔀）・ランダムプレビュー（🎲）・カードサイズS/M/L・削除（🗑）ボタン**、**ChatNestの検索閉じる（✕）・前の結果（▲）・次の結果（▼）ボタン**へ、それぞれ既存ToolTipの意味に合わせた固定の操作名を付与した。
+- **可視テキストを持つ通常ボタン・MenuItemは今回変更していない。** WPF/UIAが可視文字から名前を導出できるため、機械的な付与は行っていない。IdeaNestのContextMenu項目（「ピン留め切替(_P)」等、Header文字あり）も対象外のまま。
+- **装飾記号（未保存「●」、リンク切れ「⚠」等）は操作ボタンとして扱っていない。** AutomationName付与の対象にしていない。
+- **dirtyへの影響なし**: AutomationName付与・状態依存プロパティの追加はいずれも`IsModified`を変更しない。
+- **今回のスコープ外**: `docs/planning/keyboard-accessibility-cross-review.md` K-5（本version対応）を除く、K-6（アクセスキー重複の解消。「新規作成(_N)」／「名前を付けて保存(_N)」、「このタブへ戻す(_R)」／「右側のタブを閉じる(_R)」）は今回対応していない。全ButtonへのAutomationName一括付与、AutomationIdの全画面整理も対象外。
+- **テスト**: `SH45IconButtonAutomationNameTests`（対象ボタンのName付与確認、内部ID文字列からの修正確認、状態依存Nameの状態追従確認、可視テキスト要素・装飾記号・K-6対象の非変更確認、Click/Command/ToolTipの維持確認、dirty非影響確認）を追加した。既存テストは削除・skipしていない。
+- 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・ChatNest/IdeaNest/TempNest/session/draft/UI settings形式への変更なし。外部依存（NuGet・外部アクセシビリティライブラリ・UIコンポーネントライブラリ）の追加なし。
+- 実機／UIA確認ツールでしか確認できない項目（Tabでの対象ボタンへの到達とEnter/Spaceでの既存動作維持、Tab順の非変更、マウスクリック・ToolTip表示の非変更、Windows NarratorまたはInspect.exe等でのAutomationName読み上げ確認、状態依存ボタンの各状態でのName切り替わり、ライト/ダークテーマ・狭いウィンドウ・高DPI・別ウィンドウでの表示非変更、dirty確認）は、本開発環境（Linux CLI、Windows実機なし）では静的確認のみで、UIA/スクリーンリーダーでの実確認は行っていない。
+
+---
+
 ## v2.19.13 — CH-19 ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線
 
 - **CH-19: ChatNestの過去メッセージ表示コンテナ（メッセージ本体の`StackPanel`）を`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`にし、Tabキーで各メッセージへ到達できるようにした。** 既存の見た目・レイアウトは変更していない。

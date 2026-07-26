@@ -260,6 +260,7 @@
                                 Width="22" Height="22"
                                 Background="Transparent" BorderThickness="0"
                                 ToolTip="横断検索パネルを閉じる（Escでも閉じられます）"
+                                AutomationProperties.Name="横断検索を閉じる"
                                 Click="CrossSearchCloseButton_Click"/>
                     </Grid>
                     <TextBox x:Name="CrossSearchBox"
@@ -365,7 +366,7 @@
                     <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabAddButton"
-                            AutomationProperties.Name="Shell.TabAddButton"
+                            AutomationProperties.Name="新規タブを追加"
                             Content="＋"
                             Style="{StaticResource IconButton}"
                             FontSize="14"
@@ -399,7 +400,7 @@
                     <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabListButton"
-                            AutomationProperties.Name="Shell.TabListButton"
+                            AutomationProperties.Name="タブ一覧を開く"
                             Content="▾"
                             Style="{StaticResource IconButton}"
                             FontSize="12"
@@ -504,6 +505,7 @@
                                                 Background="Transparent" BorderThickness="0"
                                                 Cursor="Hand"
                                                 ToolTip="このタブを閉じる"
+                                                AutomationProperties.Name="このタブを閉じる"
                                                 Tag="{Binding}"
                                                 Visibility="{Binding CanClose, Converter={StaticResource BoolToVis}}"
                                                 Click="TabClose_Click"/>

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using NestSuite.NoteNest.Editor;
 using NestSuite.Services;
@@ -85,6 +86,8 @@ public partial class NoteNestWorkspaceView : UserControl
         _isRightPaneCollapsed = true;
         RightPaneExpandButton.Content = "»";
         RightPaneExpandButton.ToolTip = "右ペインを表示";
+        // SH-45: 記号のみのボタンのため、状態に追従するAutomationProperties.NameをToolTipと同じ文言で設定する。
+        AutomationProperties.SetName(RightPaneExpandButton, "右ペインを表示");
     }
 
     public void ExpandRightPane()
@@ -95,6 +98,7 @@ public partial class NoteNestWorkspaceView : UserControl
         _isRightPaneCollapsed = false;
         RightPaneExpandButton.Content = "«";
         RightPaneExpandButton.ToolTip = "右ペインを閉じる";
+        AutomationProperties.SetName(RightPaneExpandButton, "右ペインを閉じる");
     }
 
     public void NavigateToLine(int lineNumber)
