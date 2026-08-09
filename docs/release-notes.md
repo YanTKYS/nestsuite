@@ -7,6 +7,21 @@
 
 ---
 
+## v2.21.1 — LK-4-1 WorkspaceTransferTargetDialog の AutomationName 補正
+
+- **LK-4-1: v2.21.0 / LK-4 で追加した `WorkspaceTransferTargetDialog` について、`AutomationProperties.Name` に内部的な `AutomationId` 文字列がそのまま設定されていた箇所を補正した。** `AutomationId`（`Dialog.WorkspaceTransferTargetList` / `Dialog.OkButton` / `Dialog.CancelButton`）はテスト・UI Automation 用の内部識別子としてすべて維持し、`AutomationProperties.Name`（スクリーンリーダー等が読み上げる利用者向け名称）とは役割を分離した（v2.19.14 SH-45 以降の方針に合わせた）。
+- **転送先一覧 ListBox** の `AutomationProperties.Name` を `Dialog.WorkspaceTransferTargetList`（内部 ID そのまま）から `転送先のIdeaNestタブ一覧`（利用者が意味を理解できる名称）へ変更した。`AutomationId` は変更していない。
+- **OK ボタン**の `AutomationProperties.Name` を `Dialog.OkButton` から `転送先を決定` へ変更した。既存の NestSuite ダイアログ（`NotePickerDialog` / `FontSettingsDialog` / `InputDialog` / `BrokenLinksDialog` / `ShellStateSummaryDialog`）はいずれも可視テキストを持つボタンへ明示的な `AutomationProperties.Name` を設定する方針で統一されているため、本ダイアログも Name を削除せず、内部 ID ではない意味のある文字列へ置き換える方針（既存方針への統一）を採った。`AutomationId="Dialog.OkButton"` / `Content="OK"` / `IsDefault="True"` は変更していない。
+- **キャンセルボタン**の `AutomationProperties.Name` を `Dialog.CancelButton` から `キャンセル`（可視テキストと同じ、内部 ID ではない）へ変更した。`AutomationId="Dialog.CancelButton"` / `Content="キャンセル"` / `IsCancel="True"` は変更していない。
+- **LK-4 の転送仕様・UI 構成・キーボード操作は一切変更していない。** ListBox への初期フォーカス・Tab/上下キー/Enter（`IsDefault`）/Escape（`IsCancel`）/マウスダブルクリックによる決定、IdeaNest タブ 0/1/複数件の分岐、`WorkspaceTransferContent`（`Title=null`・`Body=発言全文`）・`WorkspaceTransferTarget`・`WorkspaceTransferResult`、`IdeaNestWorkspaceViewModel.AddCardFromTransfer`、ダイアログのサイズ・レイアウト・色・余白・フォントはすべて維持している。
+- **dirty / save 契約への影響なし。** 転送成功時に IdeaNest のみが既存経路で dirty になり、ChatNest は変更しない・自動保存しない・自動タブ切替しないという v2.21.0 の契約をそのまま維持している。
+- **TN-3・LK-2・LK-3 は今回変更していない。**
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式への変更なし。外部依存の追加なし。**
+- **テスト**: `LK4ChatNestToIdeaNestTransferTests` へ、ListBox / OK / キャンセルボタンそれぞれの `AutomationId` 維持確認・`AutomationProperties.Name` が内部 ID ではないことの確認・`IsDefault`/`IsCancel`/初期フォーカス/ダブルクリックの既存契約維持確認を追加した。既存の LK-4 テストは削除・skip・弱体化していない。
+- **実機でしか確認できない項目**（Windows 実機・Narrator 等での実際の読み上げ確認、ListBox への初期フォーカス・上下キー選択・Enter/Escape・マウスダブルクリックの実操作確認）は、本開発環境（Linux CLI、Windows 実機なし）では未確認のまま残っている。
+
+---
+
 ## v2.21.0 — LK-4 ChatNest発言 → IdeaNestカード化
 
 - **LK-4: ChatNest の個別発言を、利用者の明示操作によって既存の IdeaNest タブへ新規カードとして転送できるようにした。** 設計正本は v2.20.1 / TD-92 の `docs/planning/workspace-manual-transfer-helper-design.md`。同設計を再検討・拡張せず、確定済みの責務・DTO・結果契約・UX に従って LK-4 のみを実装した。
