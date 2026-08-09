@@ -210,6 +210,13 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
     public event EventHandler? WorkspaceModified;
 
+    /// <summary>
+    /// LK-4 (v2.21.0): Shell が配線する、発言 1 件を IdeaNest カードへ転送する要求。
+    /// 引数は発言本文のみ（IdeaNest / Shell の型を ChatNest 側は一切参照しない）。
+    /// null = 未配線（通常発生しない。Shell が ChatNest ViewModel 生成時に必ず配線する）。
+    /// </summary>
+    public Action<string>? TransferMessageToIdeaNestRequested { get; set; }
+
     public ChatNestWorkspaceViewModel()
     {
         _postCommand = new ChatNestRelayCommand(Post, () => !string.IsNullOrWhiteSpace(InputText));
@@ -420,7 +427,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     // ── プライベート: MessageViewModel ファクトリ ─────────────────────────
 
     private MessageViewModel CreateMessageViewModel(Message model)
-        => new(model, HandleBeginEditRequest, HandleDeleteRequest, HandleEditCommitted, HandleCopyRequest);
+        => new(model, HandleBeginEditRequest, HandleDeleteRequest, HandleEditCommitted, HandleCopyRequest, HandleTransferToIdeaNestRequest);
 
     private void HandleBeginEditRequest(MessageViewModel vm)
     {
@@ -443,6 +450,12 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>CH-10: 発言本文のみをコピーする。発言者名・タイムスタンプは含めない。</summary>
     private void HandleCopyRequest(MessageViewModel vm) => CopyToClipboard(vm.Text);
+
+    /// <summary>
+    /// LK-4: 発言本文のみを Shell へ渡す。発言者名・タイムスタンプ・ヘッダは付加しない。
+    /// 転送元（ChatNest）はこの発言・会話の状態を一切変更しない。
+    /// </summary>
+    private void HandleTransferToIdeaNestRequest(MessageViewModel vm) => TransferMessageToIdeaNestRequested?.Invoke(vm.Text);
 
     private void OnMessagesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {

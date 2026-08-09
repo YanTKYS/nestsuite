@@ -107,7 +107,7 @@ public class MessageViewModelDateSeparatorTests
     {
         var vm = new MessageViewModel(
             new Message { Speaker = Speaker.自分, Text = "A" },
-            _ => { }, _ => { }, _ => { }, _ => { });
+            _ => { }, _ => { }, _ => { }, _ => { }, _ => { });
 
         Assert.False(vm.ShowDateSeparator);
     }

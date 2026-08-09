@@ -135,12 +135,15 @@ public class TD92WorkspaceTransferDesignDocsTests
     }
 
     [Fact]
-    public void Backlog_StillContainsLk4AsOpenItem()
+    public void Backlog_DoesNotContainLk4AsOpenItem()
     {
+        // v2.20.1 時点では LK-4 は未実装で backlog に open item として残っていたが、
+        // v2.21.0 で実装済みとなり欠番化した（NestSuiteDocsContractTests の
+        // BacklogCompletedOpenItemAbsenceRecords 側で完了確認を集約する）。
         var backlog = TestPaths.ReadBacklog();
 
-        Assert.True(backlog.Contains("| LK-4 |", StringComparison.Ordinal),
-            "LK-4 は本 version では未実装のため、backlog に open item として残っている必要がある");
+        Assert.False(backlog.Contains("| LK-4 |", StringComparison.Ordinal),
+            "LK-4 は v2.21.0 で実装済みのため、backlog に open item として残っていてはならない");
     }
 
     [Fact]

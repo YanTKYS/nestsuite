@@ -765,6 +765,16 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         return ok;
     }
 
+    /// <summary>
+    /// LK-4 (v2.21.0): Workspace 間手動転送共通ヘルパー（<c>WorkspaceTransferContent</c>、
+    /// docs/planning/workspace-manual-transfer-helper-design.md）からの受入 API。
+    /// <paramref name="title"/> が空の場合、タイトル生成は行わずそのまま <see cref="CardOperationsService.CommitAdd"/>
+    /// へ渡す。既存の「Title が空なら本文先頭行から生成する」契約（<see cref="CommitAddFromFileContent"/> 等と同じ）
+    /// にそのまま委ねるため、ここでは新しいタイトル生成ロジックを持たない。
+    /// </summary>
+    public bool AddCardFromTransfer(string? title, string body) =>
+        _cardOps.CommitAdd(new Idea { Title = title ?? string.Empty, Body = body }) != null;
+
     public int CreateCardsFromFiles(IEnumerable<string> filePaths)
     {
         var created = 0;

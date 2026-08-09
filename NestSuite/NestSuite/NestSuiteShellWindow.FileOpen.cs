@@ -148,6 +148,7 @@ public partial class NestSuiteShellWindow
         {
             var newVm = new ChatNestWorkspaceViewModel();
             newVm.ContentFontFamily = _workspaceEditorFontFamily;
+            WireChatNestToIdeaNestTransfer(newVm);
             var messages = ChatNestFileService.LoadPrepared(context);
             newVm.LoadMessages(messages);
             var tab = NestSuiteTabFactory.FromResolvedKind(context.FilePath, context.WorkspaceKind);
@@ -432,6 +433,7 @@ public partial class NestSuiteShellWindow
         {
             var newVm = new ChatNestWorkspaceViewModel();
             newVm.ContentFontFamily = _workspaceEditorFontFamily;
+            WireChatNestToIdeaNestTransfer(newVm);
             var messages = ChatNestFileService.LoadPrepared(context);
             newVm.LoadMessages(messages);
 

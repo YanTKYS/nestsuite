@@ -97,12 +97,13 @@ public class CH19MessageFocusContextMenuTests
     // ── 4. 既存メニュー項目の維持 ────────────────────────────────────────
 
     [Fact]
-    public void ExistingContextMenuItems_AreUnchanged_NoNewItemsAdded()
+    public void ExistingContextMenuItems_AreUnchanged()
     {
         var element = ExtractMessageContainerElement(ReadChatNestWorkspaceViewXaml());
         var menuItemCount = CountOccurrences(element, "<MenuItem ");
-        // 本文コピー・編集・削除・会話コピー・会話Markdownコピー・NestSuite形式コピー・会話保存・時刻表示 の8項目。
-        Assert.Equal(8, menuItemCount);
+        // 本文コピー・編集・削除・IdeaNestカードに追加（LK-4 v2.21.0 追加）・会話コピー・
+        // 会話Markdownコピー・NestSuite形式コピー・会話保存・時刻表示 の9項目。
+        Assert.Equal(9, menuItemCount);
         Assert.Contains("Header=\"本文をコピー(_C)\"", element);
         Assert.Contains("Header=\"編集(_E)\"", element);
         Assert.Contains("Header=\"削除(_D)\"", element);

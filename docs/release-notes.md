@@ -7,6 +7,26 @@
 
 ---
 
+## v2.21.0 — LK-4 ChatNest発言 → IdeaNestカード化
+
+- **LK-4: ChatNest の個別発言を、利用者の明示操作によって既存の IdeaNest タブへ新規カードとして転送できるようにした。** 設計正本は v2.20.1 / TD-92 の `docs/planning/workspace-manual-transfer-helper-design.md`。同設計を再検討・拡張せず、確定済みの責務・DTO・結果契約・UX に従って LK-4 のみを実装した。
+- **ChatNest メッセージ ContextMenu へ「IdeaNestカードに追加(_I)」を追加した。** 配置は既存の発言単体操作（本文をコピー・編集・削除）と会話全体操作の間の Separator の直前。既存項目（Header・順序・Command・アクセスキー）は変更していない。`_I` は同一 ContextMenu 内で一意（SH-46 のアクセスキー一意性方針を維持）。マウス右クリック・Shift+F10・コンテキストメニューキーのいずれからも同じ既存 ContextMenu へ到達できる（CH-19 の契約を維持）。新しいグローバルショートカットは追加していない。
+- **ChatNest 側は IdeaNest の型・内部構造を一切参照しない。** `MessageViewModel` に `TransferToIdeaNestCommand` を追加し、`ChatNestWorkspaceViewModel.TransferMessageToIdeaNestRequested`（発言本文の string のみを渡す callback）経由で Shell へ要求を発行する、TN-3 の `PromoteRequested` と同じ責務分離。
+- **Shell に共通転送ヘルパー（`NestSuiteShellWindow.WorkspaceTransfer.cs`）を新設した。** `WorkspaceTransferContent { Title, Body }`・`WorkspaceTransferTarget { Kind, TabId, DisplayName }`・`WorkspaceTransferResult`（`Success` / `NoTarget` / `InvalidContent` / `TargetRejected` / `Failed` の 5 値のみ、`Canceled` 等は追加しない）を実装した。転送先候補列挙（`EnumerateTransferTargets`）・TabId + WorkspaceKind による対象解決・session からの ViewModel 解決・本文空判定・受入 delegate 呼び出し・結果返却・予期しない例外の ErrorLog 記録のみを責務とし、UI 文言・ダイアログ表示・タブ生成／削除／切替・ファイル保存・session 保存・dirty の直接操作・転送元の変更は一切行わない。production の共通 interface は作らず、VM を cast して転送先の既存 public API を呼ぶ delegate 方式とした。
+- **LK-4 の導線（`NestSuiteShellWindow.ChatNestToIdeaNest.cs`）を新設した。** IdeaNest タブが 0 件なら転送せず一時通知「IdeaNest タブがありません。IdeaNest を開いてから実行してください」のみで新規 IdeaNest タブは自動生成しない。1 件ならそのタブへ直接追加し「IdeaNest「〈タブ名〉」にカードを追加しました」と通知する。複数件なら新設の最小ダイアログ `WorkspaceTransferTargetDialog`（一覧・OK・キャンセルのみ、検索・複数選択・新規作成なし、Tab/上下キー/Enter/Escape 対応、`IsDefault`/`IsCancel` 準拠）で利用者に明示選択させ、選択対象は内部的に TabId で保持するため同名タブが複数あっても誤転送しない。別ウィンドウ表示中の IdeaNest タブも候補に含める（表示名末尾に「（別ウィンドウ）」を付けて区別、自動的に前面化はしない）。
+- **Title = null／Body = 発言本文全文で転送し、発言者名・時刻・`[NOTE] ChatNestからの転記:` ヘッダは付加しない。** タイトル生成は共通層で行わず、IdeaNest 既存の `CardOperationsService.CommitAdd`（Title が空なら Body 先頭行から生成する既存契約）にそのまま委ねる。`IdeaNestWorkspaceViewModel.AddCardFromTransfer(string? title, string body)` を追加したが、これは `CommitAdd` を 1 回呼ぶだけの薄いラッパーで、クリップボード専用の `CommitAddFromText`（`Paste_yyyyMMddHHmm` 等の自動タイトル生成）は使用していない。
+- **dirty は IdeaNest のみ、既存経路（`CommitAdd` → `_onDirty()` → `MarkDirty()` → `HasChanges` → `SyncIdeaNestTabForViewModel` → タブの `IsModified`）で成立する。** 転送成功・失敗にかかわらず転送元 ChatNest は一切変更しない（メッセージ削除・「転送済み」マーク・色変更・リンク付与・本文変更・並び順変更・dirty 化のいずれも行わない）。
+- **転送は保存ではない。** 共通ヘルパー・LK-4 導線のいずれもファイル I/O・自動保存・`SaveSessionAfterTabChange` を呼ばない。転送で dirty になった IdeaNest は、利用者が通常操作（Ctrl+S 等）で保存するまでメモリ上の変更のまま残る。
+- **転送成功後も ChatNest タブに留まる。** `ActivateTab` を呼ばず、IdeaNest への自動タブ切替・`SelectedCard` の強制変更・`ScrollRequested` の発火・プレビュー表示は行わない。一時通知（`ShowStatusNotification`）のみで完結させ、会話の流れを止めない。
+- **エラー処理**: IdeaNest タブなし・対象タブが途中で閉じられた・本文が空・転送先で追加に失敗、という通常の利用者操作上の失敗はいずれも一時通知のみで ErrorLog へ記録しない。予期しない例外のみ「IdeaNestカードの追加に失敗しました。」のエラーダイアログ表示と `ErrorLogService.Log("WorkspaceTransfer", ex)` の 1 回記録を行う（現行方針どおり ErrorLog は Error のみ）。
+- **TN-3 は変更していない。** `NestSuiteShellWindow.TempNestPromotion.cs`・`PromoteTempNestSlotToNoteNest`・`MainViewModel.CreateNoteFromTransfer`・TN-3 の rollback／元スロット削除確認のいずれも今回のスコープ外。TD-92 で確定したとおり、LK-4 は新規タブ生成ロジックを持ち込まない「既存タブへの追加」専用の最小ヘルパーとして独立に実装した。
+- **LK-2 / LK-3 は今回実装していない。** 本 version で作った共通 DTO・結果契約・タブ解決ヘルパーは将来 LK-2 / LK-3 でも無理なく再利用できる形を維持しているが、そのためだけの追加コードは加えていない。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式への変更なし。schema bump なし。外部依存の追加なし。**
+- **テスト**: `LK4ChatNestToIdeaNestTransferTests` を追加し、共通型・共通ヘルパーのメソッド契約（reflection、Window は生成しない）、ChatNest 側の本文マッピング（発言者・時刻・ヘッダを含まないこと）、IdeaNest 側 `AddCardFromTransfer` の成功／空本文／タイトル生成／dirty 化、ChatNest ContextMenu の項目追加・配置・アクセスキー一意性、CH-19 契約の維持、TN-3 シグネチャの非変更、保存 shape の非変更を確認した。既存の `MessageViewModel` コンストラクタ呼び出し箇所（`ChatDateSeparatorTests` / `ChatNestUxTests`）は新しい callback 引数を追加して更新し、`CH19MessageFocusContextMenuTests.ExistingContextMenuItems_AreUnchanged`（旧名 `_NoNewItemsAdded`）はメニュー項目数を 8 → 9 へ更新した。それ以外の既存テストは削除・skip・弱体化していない。
+- **実機でしか確認できない項目**（Windows 実機での ContextMenu 操作・Shift+F10／コンテキストメニューキーからの一連操作・選択ダイアログのキーボード操作・IdeaNest タブ 0/1/複数件の実際の画面遷移・別ウィンドウ表示中 IdeaNest への転送・転送後の保存と再起動後の内容保持）は、本開発環境（Linux CLI、Windows 実機なし）では未確認のまま残っている。
+
+---
+
 ## v2.20.1 — TD-92 Workspace 間手動転送の共通ヘルパー設計
 
 - **TD-92: Workspace 間の「利用者が明示的に操作したときだけ実行される手動転送」について、最小の責務境界を設計した。設計 version であり、production code は一切変更していない。** 成果物は `docs/planning/workspace-manual-transfer-helper-design.md`（目的・背景・現行コード調査・対象/非対象ユースケース・責務境界・転送データ契約・転送先解決・受入契約・成功/失敗結果・dirty/save 契約・エラー処理・LK-4 への具体適用・LK-2/LK-3 への適用可能性・TN-3 との関係・採用案・却下案・LK-4 実装時の変更予定ファイル・必須テスト・結論）。
