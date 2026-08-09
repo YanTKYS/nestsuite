@@ -76,6 +76,7 @@
 |----------|------|------|
 | `review7-fable5.md` | エキスパートレビュー7: 魅力向上フェーズ（v2.18.0〜v2.18.3）の総点検と次期優先候補評価（v2.18.4） | **現行** |
 | `docs-inventory-and-archive-policy.md` | docs 棚卸し・archive 方針（TD-78） | 現行 |
+| `workspace-manual-transfer-helper-design.md` | Workspace 間手動転送の共通ヘルパー設計（TD-92 / v2.20.1）。LK-4 実装の設計正本 | **現行** |
 
 ### archive/（履歴保管）
 
