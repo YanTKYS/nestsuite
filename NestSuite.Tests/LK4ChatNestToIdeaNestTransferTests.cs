@@ -107,6 +107,77 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.NotNull(type.GetProperty("SelectedTarget", InstanceNonPublic));
     }
 
+    // ── 4-1. LK-4-1 (v2.21.1): WorkspaceTransferTargetDialog の AutomationName 補正 ──
+
+    private static string ReadWorkspaceTransferTargetDialogXaml() =>
+        File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "Dialogs", "WorkspaceTransferTargetDialog.xaml"));
+
+    [Fact]
+    public void TargetListBox_AutomationId_IsUnchanged()
+    {
+        var xaml = ReadWorkspaceTransferTargetDialogXaml();
+        Assert.Contains("AutomationProperties.AutomationId=\"Dialog.WorkspaceTransferTargetList\"", xaml);
+    }
+
+    [Fact]
+    public void TargetListBox_AutomationName_IsNotTheInternalId_AndIsMeaningful()
+    {
+        var xaml = ReadWorkspaceTransferTargetDialogXaml();
+        Assert.DoesNotContain("AutomationProperties.Name=\"Dialog.WorkspaceTransferTargetList\"", xaml);
+
+        var start = xaml.IndexOf("x:Name=\"TargetList\"", StringComparison.Ordinal);
+        Assert.True(start >= 0);
+        var end = xaml.IndexOf("/>", start, StringComparison.Ordinal);
+        var element = xaml.Substring(start, end - start);
+
+        var nameStart = element.IndexOf("AutomationProperties.Name=\"", StringComparison.Ordinal);
+        Assert.True(nameStart >= 0, "ListBox に AutomationProperties.Name が設定されていない");
+        nameStart += "AutomationProperties.Name=\"".Length;
+        var nameEnd = element.IndexOf('"', nameStart);
+        var name = element.Substring(nameStart, nameEnd - nameStart);
+
+        Assert.NotEqual("Dialog.WorkspaceTransferTargetList", name);
+        Assert.DoesNotContain("Dialog.", name, StringComparison.Ordinal);
+        Assert.NotEmpty(name);
+    }
+
+    [Fact]
+    public void OkButton_AutomationId_IsUnchanged_AndAutomationNameIsNotInternalId()
+    {
+        var xaml = ReadWorkspaceTransferTargetDialogXaml();
+        Assert.Contains("AutomationProperties.AutomationId=\"Dialog.OkButton\"", xaml);
+        Assert.DoesNotContain("AutomationProperties.Name=\"Dialog.OkButton\"", xaml);
+        Assert.Contains("Content=\"OK\"", xaml);
+    }
+
+    [Fact]
+    public void CancelButton_AutomationId_IsUnchanged_AndAutomationNameIsNotInternalId()
+    {
+        var xaml = ReadWorkspaceTransferTargetDialogXaml();
+        Assert.Contains("AutomationProperties.AutomationId=\"Dialog.CancelButton\"", xaml);
+        Assert.DoesNotContain("AutomationProperties.Name=\"Dialog.CancelButton\"", xaml);
+        Assert.Contains("Content=\"キャンセル\"", xaml);
+    }
+
+    [Fact]
+    public void ExistingAccessibilityAndKeyboardContract_IsUnchanged()
+    {
+        var xaml = ReadWorkspaceTransferTargetDialogXaml();
+
+        // OK = IsDefault、キャンセル = IsCancel（Enter/Escape の既存動作を担保する契約）
+        Assert.Contains("IsDefault=\"True\"", xaml);
+        Assert.Contains("IsCancel=\"True\"", xaml);
+        Assert.Contains("MouseDoubleClick=\"TargetList_MouseDoubleClick\"", xaml);
+    }
+
+    [Fact]
+    public void WorkspaceTransferTargetDialog_InitialFocusGoesToListBox_Unchanged()
+    {
+        var src = File.ReadAllText(Path.Combine(
+            RepoRoot, "NestSuite", "Dialogs", "WorkspaceTransferTargetDialog.xaml.cs"));
+        Assert.Contains("TargetList.Focus()", src);
+    }
+
     // ── 5. TN-3 非干渉: 既存シグネチャが変更されていないこと ─────────────────
 
     [Fact]

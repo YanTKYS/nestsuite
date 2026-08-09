@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.21.0）
+# NestSuite リリース前確認チェックリスト（v2.21.1）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -1174,6 +1174,16 @@
 - [ ] 対象選択ダイアログが表示され、上下キーで選択・Enterで確定・Escapeでキャンセルできる
 - [ ] 選択したタブだけにカードが追加され、他のIdeaNestタブは変化しない
 - [ ] 同名タブが複数ある場合でも、選んだタブへ正しく追加される
+- [ ] 選択ダイアログを開いた時点でListBoxへ初期フォーカスがある
+- [ ] マウスダブルクリックでも決定できる
+
+### 選択ダイアログのAutomationName（v2.21.1 LK-4-1）
+
+- [ ] Narrator等のスクリーンリーダーを利用できる場合、転送先一覧・OK・キャンセルの読み上げ名が
+      `Dialog.WorkspaceTransferTargetList` / `Dialog.OkButton` / `Dialog.CancelButton` のような
+      内部IDのままではなく、意味の分かる日本語（例: 「転送先のIdeaNestタブ一覧」「転送先を決定」「キャンセル」）
+      で読み上げられることを確認する
+- [ ] 利用できない場合は未確認として明記する
 
 ### 別ウィンドウ表示中のIdeaNest
 

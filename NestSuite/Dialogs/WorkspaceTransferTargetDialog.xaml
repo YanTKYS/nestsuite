@@ -21,10 +21,12 @@
 
         <TextBlock x:Name="PromptText" Grid.Row="0" Text="転送先のタブを選択してください:" FontSize="13"/>
 
+        <!-- LK-4-1 (v2.21.1): AutomationId は内部識別子として維持し、AutomationProperties.Name は
+             利用者向けの読み上げ名として別に設定する（v2.19.14 SH-45 以降の方針）。 -->
         <ListBox x:Name="TargetList"
                  Grid.Row="2"
                  AutomationProperties.AutomationId="Dialog.WorkspaceTransferTargetList"
-                 AutomationProperties.Name="Dialog.WorkspaceTransferTargetList"
+                 AutomationProperties.Name="転送先のIdeaNestタブ一覧"
                  DisplayMemberPath="DisplayName"
                  FontSize="13"
                  MouseDoubleClick="TargetList_MouseDoubleClick"/>
@@ -32,12 +34,12 @@
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="OK" Width="80" Margin="0,0,8,0" IsDefault="True"
                     AutomationProperties.AutomationId="Dialog.OkButton"
-                    AutomationProperties.Name="Dialog.OkButton"
+                    AutomationProperties.Name="転送先を決定"
                     Click="OK_Click"
                     Background="#2B5CE6" Foreground="White" BorderThickness="0" Padding="6,4"/>
             <Button Content="キャンセル" Width="88" IsCancel="True"
                     AutomationProperties.AutomationId="Dialog.CancelButton"
-                    AutomationProperties.Name="Dialog.CancelButton"
+                    AutomationProperties.Name="キャンセル"
                     Click="Cancel_Click" Padding="6,4"/>
         </StackPanel>
     </Grid>
