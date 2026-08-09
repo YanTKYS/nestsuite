@@ -101,9 +101,10 @@ public class LK4ChatNestToIdeaNestTransferTests
     public void WorkspaceTransferTargetDialog_TypeExists_WithExpectedMembers()
     {
         // 複数件選択ダイアログ自体も WPF Window のため、他の Dialog 型と同じ方針でインスタンス化はせず
-        // 型・メンバーの存在のみを確認する。
+        // 型・メンバーの存在のみを確認する。SelectedTarget は WorkspaceTransferTarget（internal）を
+        // 公開型より外へ露出させないため internal（CS0053 回避）。
         var type = typeof(NestSuite.Dialogs.WorkspaceTransferTargetDialog);
-        Assert.NotNull(type.GetProperty("SelectedTarget"));
+        Assert.NotNull(type.GetProperty("SelectedTarget", InstanceNonPublic));
     }
 
     // ── 5. TN-3 非干渉: 既存シグネチャが変更されていないこと ─────────────────

@@ -11,11 +11,11 @@ namespace NestSuite.Dialogs;
 /// </summary>
 public partial class WorkspaceTransferTargetDialog : Window
 {
-    public NestSuiteShellWindow.WorkspaceTransferTarget? SelectedTarget { get; private set; }
+    internal NestSuiteShellWindow.WorkspaceTransferTarget? SelectedTarget { get; private set; }
 
     private readonly List<NestSuiteShellWindow.WorkspaceTransferTarget> _targets;
 
-    public WorkspaceTransferTargetDialog(
+    internal WorkspaceTransferTargetDialog(
         IEnumerable<NestSuiteShellWindow.WorkspaceTransferTarget> targets,
         string? windowTitle = null,
         string? promptText = null)
