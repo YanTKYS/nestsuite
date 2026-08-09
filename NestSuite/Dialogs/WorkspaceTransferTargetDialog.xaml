@@ -1,0 +1,44 @@
+<Window x:Class="NestSuite.Dialogs.WorkspaceTransferTargetDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="転送先の選択"
+        Width="360" Height="300"
+        MinWidth="280" MinHeight="200"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <!-- LK-4 (v2.21.0): 転送先タブが複数件の場合にだけ表示する最小の選択ダイアログ
+         （docs/planning/workspace-manual-transfer-helper-design.md §13.5）。
+         検索・複数選択・新規Workspace作成・履歴・お気に入り・「今後表示しない」は設けない。 -->
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="PromptText" Grid.Row="0" Text="転送先のタブを選択してください:" FontSize="13"/>
+
+        <ListBox x:Name="TargetList"
+                 Grid.Row="2"
+                 AutomationProperties.AutomationId="Dialog.WorkspaceTransferTargetList"
+                 AutomationProperties.Name="Dialog.WorkspaceTransferTargetList"
+                 DisplayMemberPath="DisplayName"
+                 FontSize="13"
+                 MouseDoubleClick="TargetList_MouseDoubleClick"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="OK" Width="80" Margin="0,0,8,0" IsDefault="True"
+                    AutomationProperties.AutomationId="Dialog.OkButton"
+                    AutomationProperties.Name="Dialog.OkButton"
+                    Click="OK_Click"
+                    Background="#2B5CE6" Foreground="White" BorderThickness="0" Padding="6,4"/>
+            <Button Content="キャンセル" Width="88" IsCancel="True"
+                    AutomationProperties.AutomationId="Dialog.CancelButton"
+                    AutomationProperties.Name="Dialog.CancelButton"
+                    Click="Cancel_Click" Padding="6,4"/>
+        </StackPanel>
+    </Grid>
+</Window>

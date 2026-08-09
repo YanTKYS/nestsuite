@@ -23,6 +23,7 @@ public class MessageViewModel : INotifyPropertyChanged
     private readonly Action<MessageViewModel> _onRequestDelete;
     private readonly Action<MessageViewModel> _onEditCommitted;
     private readonly Action<MessageViewModel> _onCopyRequested;
+    private readonly Action<MessageViewModel> _onTransferToIdeaNestRequested;
 
     public Message Model { get; }
 
@@ -102,24 +103,34 @@ public class MessageViewModel : INotifyPropertyChanged
     /// <summary>CH-10: 発言本文のみをクリップボードへコピーするコマンド。</summary>
     public ChatNestRelayCommand CopyMessageCommand { get; }
 
+    /// <summary>
+    /// LK-4 (v2.21.0): この発言を IdeaNest カードへ転送する要求を発行するコマンド。
+    /// 常に実行可能とする（IdeaNest タブの有無を ChatNest 側で監視・分岐しない。
+    /// 0 件時の案内は要求を受け取った Shell 側が行う）。
+    /// </summary>
+    public ChatNestRelayCommand TransferToIdeaNestCommand { get; }
+
     public MessageViewModel(
         Message model,
         Action<MessageViewModel> onBeginEditRequested,
         Action<MessageViewModel> onRequestDelete,
         Action<MessageViewModel> onEditCommitted,
-        Action<MessageViewModel> onCopyRequested)
+        Action<MessageViewModel> onCopyRequested,
+        Action<MessageViewModel> onTransferToIdeaNestRequested)
     {
         Model = model;
         _onBeginEditRequested = onBeginEditRequested;
         _onRequestDelete      = onRequestDelete;
         _onEditCommitted      = onEditCommitted;
         _onCopyRequested      = onCopyRequested;
+        _onTransferToIdeaNestRequested = onTransferToIdeaNestRequested;
 
         BeginEditCommand     = new ChatNestRelayCommand(() => _onBeginEditRequested(this));
         CommitEditCommand    = new ChatNestRelayCommand(CommitEdit, () => !string.IsNullOrWhiteSpace(EditingText));
         CancelEditCommand    = new ChatNestRelayCommand(CancelEdit);
         RequestDeleteCommand = new ChatNestRelayCommand(() => _onRequestDelete(this));
         CopyMessageCommand   = new ChatNestRelayCommand(() => _onCopyRequested(this));
+        TransferToIdeaNestCommand = new ChatNestRelayCommand(() => _onTransferToIdeaNestRequested(this));
     }
 
     internal void BeginEditInternal()

@@ -21,7 +21,8 @@ public class ChatNestUxTests
             _ => { },
             _ => { },
             _ => { },
-            m => captured = m);
+            m => captured = m,
+            _ => { });
 
         msgVm.CopyMessageCommand.Execute(null);
 
@@ -38,7 +39,8 @@ public class ChatNestUxTests
             _ => { },
             _ => { },
             _ => { },
-            m => copiedText = m.Text);
+            m => copiedText = m.Text,
+            _ => { });
 
         msgVm.CopyMessageCommand.Execute(null);
 

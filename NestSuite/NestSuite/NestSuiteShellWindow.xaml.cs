@@ -659,6 +659,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         var vm = new ChatNestWorkspaceViewModel();
         vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnChatNestPropertyChanged;
+        WireChatNestToIdeaNestTransfer(vm);
         return vm;
     }
 

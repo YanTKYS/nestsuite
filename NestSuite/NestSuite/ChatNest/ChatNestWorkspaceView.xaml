@@ -257,6 +257,9 @@
                         <MenuItem Header="本文をコピー(_C)" Command="{Binding CopyMessageCommand}"/>
                         <MenuItem Header="編集(_E)" Command="{Binding BeginEditCommand}"/>
                         <MenuItem Header="削除(_D)" Command="{Binding RequestDeleteCommand}"/>
+                        <!-- LK-4 (v2.21.0): 発言単体を IdeaNest カードへ手動転送する。TD-92 設計どおり
+                             常に有効（IdeaNest タブの有無は Shell 側が受け取ってから判定する）。 -->
+                        <MenuItem Header="IdeaNestカードに追加(_I)" Command="{Binding TransferToIdeaNestCommand}"/>
                         <Separator/>
                         <MenuItem Header="会話をコピー(_K)"
                                   Command="{Binding PlacementTarget.Tag.CopyConversationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>

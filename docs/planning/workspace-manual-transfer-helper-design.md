@@ -639,3 +639,33 @@ TN-3 を今回の共通ヘルパーへ寄せると、ヘルパーが「タブ生
 - TN-3 は変更しない。共通化の再判断は LK-2 着手時に行う。
 - **本 version では production code を変更していない。** 保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper
   （`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest 形式・session・draft・UI settings への変更なし。外部依存の追加なし。
+
+---
+
+## 22. 実装結果（v2.21.0 / LK-4）
+
+> 本節は TD-92（v2.20.1、本設計文書）→ LK-4（v2.21.0、初回実装）の関係を明示するための追記であり、
+> §1〜21 の設計本文は実装後もそのまま正本として維持する（過去形への全面書換えはしない）。
+
+TD-92 で確定した設計を再検討・拡張せず、そのまま LK-4（ChatNest 発言 → IdeaNest カード化）として実装した。
+
+| 設計（TD-92 / §7〜13） | 実装（LK-4 / v2.21.0） |
+|---|---|
+| `WorkspaceTransferContent { Title, Body }` | `NestSuiteShellWindow.WorkspaceTransfer.cs` に疑似コードどおり実装 |
+| `WorkspaceTransferTarget { Kind, TabId, DisplayName }` | 同上 |
+| `WorkspaceTransferResult` 5 値 | 同上（`Canceled` 等は追加していない） |
+| `EnumerateTransferTargets` / `TransferToWorkspaceTab<TViewModel>` | 同上（`_tabs` / `_sessionManager` を参照する Shell partial メソッドとして実装） |
+| 受入 delegate 方式（interface なし） | `IdeaNestWorkspaceViewModel.AddCardFromTransfer(string? title, string body)` を追加し、`TransferToWorkspaceTab<IdeaNestWorkspaceViewModel>` から delegate 経由で呼ぶ |
+| LK-4 導線（ChatNest ContextMenu → Shell → IdeaNest） | `NestSuiteShellWindow.ChatNestToIdeaNest.cs` を新設。ChatNest 側は `MessageViewModel.TransferToIdeaNestCommand` → `ChatNestWorkspaceViewModel.TransferMessageToIdeaNestRequested`（string のみ）で Shell へ要求 |
+| IdeaNest タブ 0/1/複数件の UX | 設計どおり実装。複数件時のみ `NestSuite/Dialogs/WorkspaceTransferTargetDialog.xaml(.cs)` を新設 |
+| Title=null・Body=本文全文 | 設計どおり実装。`AddCardFromTransfer` は `CommitAddFromText` を使わず `CommitAdd` を直接 1 回呼ぶ |
+| TN-3 非変更 | `NestSuiteShellWindow.TempNestPromotion.cs` 等は今回未変更 |
+
+設計からの逸脱・追加判断は発生していない。§18 で挙げた「新規候補」ファイルはすべてそのまま使用し、
+「変更しない」としたファイル（TN-3 関連・`NestSuiteTabFactory.cs`・`MainViewModel.Notes.cs`・`CardOperationsService.cs` 等）も
+今回変更していない。§19 の必須テスト項目は `NestSuite.Tests/LK4ChatNestToIdeaNestTransferTests.cs` で、本リポジトリの既存方針
+（Shell = WPF `Window` はインスタンス化せずリフレクションで契約確認、ViewModel は直接インスタンス化して振る舞いを確認）に沿って
+実装した。詳細は `docs/release-notes.md` の v2.21.0 エントリを参照。
+
+LK-2 / LK-3 は今回実装していない。§14 で確認した適用可能性の判断（LK-3 は追加共通化なしで成立、LK-2 は NoteNest 側にタイトル付き
+オーバーロードの追加が必要）は実装によって覆っておらず、着手時はそのまま踏襲する。
