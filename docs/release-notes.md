@@ -7,6 +7,29 @@
 
 ---
 
+## v2.20.1 — TD-92 Workspace 間手動転送の共通ヘルパー設計
+
+- **TD-92: Workspace 間の「利用者が明示的に操作したときだけ実行される手動転送」について、最小の責務境界を設計した。設計 version であり、production code は一切変更していない。** 成果物は `docs/planning/workspace-manual-transfer-helper-design.md`（目的・背景・現行コード調査・対象/非対象ユースケース・責務境界・転送データ契約・転送先解決・受入契約・成功/失敗結果・dirty/save 契約・エラー処理・LK-4 への具体適用・LK-2/LK-3 への適用可能性・TN-3 との関係・採用案・却下案・LK-4 実装時の変更予定ファイル・必須テスト・結論）。
+- **転送共通ヘルパーの責務を限定した。** 共通化するのは「転送内容」「転送先の指定」「成功/失敗結果」の 3 点のみで、実装規模は Shell の partial 1 ファイル + LK-4 導線 partial 1 ファイル + 最小の転送先選択ダイアログ 1 枚 + 転送先 ViewModel への薄い public メソッド 1 本に収める。汎用 Workspace 操作 API・汎用 CRUD サービス・共通データモデル・Workspace 間 EventBus / Mediator・DI 基盤・転送キュー・Undo/Redo 共通基盤は作らない。共通ヘルパーはファイル I/O・タブ生成・タブ切替・ダイアログ表示・利用者向け文言・状態を持たない。
+- **転送データ契約を確定した**: 共通 DTO `WorkspaceTransferContent { string? Title; string Body; }` の 2 フィールドのみ。`SourceWorkspaceKind` / `SourceDisplayName` は含めない。IdeaNest 固有タグ・色、ChatNest 発言者モデル、NoteNest 内部 ID、TempNest スロット番号、UI Control、ViewModel、保存ファイルモデルも含めない（必要な固有情報は転送元・転送先側で解決する）。`Title` を持つ理由は TempNest スロットが Title と Body を独立して持つという既存データ構造上の事実による。
+- **転送先指定を確定した**: `WorkspaceKind` + タブ Id の組で識別する（案 B 採用）。候補は開いているタブのみを列挙し、未保存（無題）タブ・別ウィンドウ表示中のタブも候補に含める。閉じているファイルを自動で開かず、新規 Workspace / タブを自動生成しない。同種タブが複数あるときは利用者が明示選択するまで転送しない。
+- **転送先受入契約を確定した**: production の共通 interface を作らず、Shell が session 経由で転送先 ViewModel を cast し、その Workspace の既存 public API を delegate 1 つで呼ぶ（現行 TN-3 と同じ形）。巨大な `IWorkspace`・Workspace 共通基底クラスの再設計・全 Workspace への interface 強制実装は行わない。
+- **結果契約を確定した**: `WorkspaceTransferResult` の 5 値（`Success` / `NoTarget` / `InvalidContent` / `TargetRejected` / `Failed`）。`Canceled` は作らず、選択 UI のキャンセルは共通ヘルパー呼び出し前の早期 return で表現する。内部結果と利用者向けメッセージを混在させず、文言は転送元ごとの導線で組み立てる（共通の文言マッパーは作らない）。
+- **dirty 契約を確定した**: 転送成功時のみ転送先が dirty になり、それは転送先の既存追加処理（IdeaNest なら `CommitAdd` → `MarkDirty` → `HasChanges` → `SyncIdeaNestTabForViewModel`）を通す。共通ヘルパーは `IsModified` / `HasChanges` / `session.IsModified` を直接代入せず `ReplaceTab` も呼ばない。転送元は dirty にしない。失敗時はいずれも dirty にしない。
+- **save 契約を確定した**: 転送は保存ではない。メモリ上の転送先へ追加して dirty にするだけで、保存は利用者の通常操作で行う。転送共通ヘルパーはファイル I/O を持たず、自動保存・転送先ファイルの直接書き換え・session の直接書き換えを行わない。
+- **エラー責務を確定した**: 転送先タブなし・対象タブが途中で閉じられた・本文が空・転送先で追加に失敗、という通常の利用者操作上の失敗は一時通知のみで ErrorLog へ記録しない。予期しない例外のみエラーダイアログ + `ErrorLogService.Log` とする（現行方針どおり ErrorLog は Error のみ）。
+- **自動同期・自動保存・転送履歴の永続化・クロス Workspace リンク生成・双方向同期・バックグラウンド転送・転送元の自動削除は非対象と明記した。**
+- **LK-4（ChatNest 発言 → IdeaNest カード化）の具体的実装方針を確定した**: 入口は ChatNest メッセージの既存 ContextMenu へ「IdeaNestカードに追加(_I)」を 1 項目追加（`_I` は既存 8 項目と重複せず SH-46 の一意性契約を維持）。マッピングは **Title = 空（null）／ Body = メッセージ本文全文**とし、タイトル生成は IdeaNest 既存 `CommitAdd`（Title 空なら本文先頭行 40 文字）に委ねる。発言者名・時刻・`[NOTE] ChatNestからの転記:` ヘッダは本文へ付加しない。**IdeaNest タブ 0 件時は転送せず簡潔な一時通知のみ（自動生成しない）、1 件時はそのタブへ直接追加、複数件時は最小の対象選択ダイアログで明示選択後に追加**する。転送成功後は**転送元 ChatNest を変更せず、IdeaNest へ自動タブ切替もせず**、現在のタブに留まって一時通知のみ表示する。
+- **LK-2 / LK-3 への適用可能性を確認した**: LK-3（TempNest → IdeaNest カード）は追加の共通化なしで成立する。LK-2（TempNest → NoteNest ノート）は `MainViewModel.CreateNoteFromTransfer` が本文しか受け取らないため、LK-2 時点で NoteNest 側にタイトルを受け取るオーバーロードを足す必要がある（共通層の変更ではない）。LK-2 / LK-3 のための先行抽象化は作らず、LK-4 実装後に実際に共通性が確認できた部分だけを再利用する方針とした。
+- **TN-3 との関係を整理した**: TN-3（TempNest → NoteNest 昇格、v2.18.0）と LK-4 で本当に共通なのは「転送内容を転送先 ViewModel の既存追加 API へ渡す」1 段のみで、TN-3 の大半（新規タブ生成・session 登録・アクティブ化・rollback・転送元消去確認）は新規タブ生成に由来する。TN-3 を共通ヘルパーへ寄せるとフラグだらけの汎用転送基盤になるため、**TN-3 は変更せず、LK-4 用の最小境界として「既存タブへの追加」だけを扱うヘルパーを新設する**と判断した。共通化の再判断は LK-2 着手時に行う。
+- **プロダクトコードは変更していない**（共通 DTO・interface・service の本番実装、ContextMenu 項目追加、転送先選択ダイアログ、仮実装のいずれも作成していない。必要な型定義は設計文書内の疑似コードで示した）。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式への変更なし。schema bump なし。外部依存の追加なし。**
+- **backlog**: TD-92 を open backlog に残さず完了済み欠番として記録した。「タブ間連携」セクションの共通着手トリガー (2)「転送共通ヘルパーの設計レビューが完了した」が **v2.20.1 / TD-92 で成立**したことを明記し、**LK-4 を次の実装候補として着手可能な状態へ更新**した（LK-4 自体は未実装のまま backlog に残している）。LK-2 / LK-3 は着手条件を「LK-4 実装完了後」へ整理し、今回は着手していない。
+- **テスト**: `TD92WorkspaceTransferDesignDocsTests` を追加し、設計文書の存在・LK-4 / LK-2 / LK-3 の記載・dirty / save / エラー責務の記載・非対象の明記・release notes への v2.20.1 / TD-92 記録・TD-92 が open backlog に残っていないこと・LK-4 が未完了のまま backlog に存在することを確認する（本文の完全一致や行番号には依存しない）。既存テストは削除・skip していない。
+- **実機でしか確認できない項目はない**（本 version は設計文書・docs・version 更新のみで、UI・挙動の変更がないため）。
+
+---
+
 ## v2.20.0 — TD-91 キーボード・アクセシビリティ横断レビューの総点検・回帰確認
 
 - **TD-91: キーボード・アクセシビリティ横断レビュー（K-1〜K-6、v2.19.9〜v2.19.15）の総点検・回帰確認を実施した。新機能・新規キーボードショートカットの追加は行っていない。**
