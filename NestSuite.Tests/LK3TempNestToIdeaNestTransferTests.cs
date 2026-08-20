@@ -404,6 +404,22 @@ public class LK3TempNestToIdeaNestTransferTests
         Assert.DoesNotContain("SettingsWindow", xaml);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void TempNestWorkspaceView_TransferButton_AutomationName_IsNotTheInternalId(int slot)
+    {
+        // LK-4-1 (v2.21.1) と同種の問題の再発防止。「IdeaNestカードに追加」ボタンは可視テキストを
+        // 持つため、AutomationProperties.Name へ内部 AutomationId 文字列をそのまま設定しない
+        // （設定しなければ WPF の既定挙動で Content から AutomationName が導出される）。
+        var xaml = ReadTempNestWorkspaceViewXaml();
+
+        Assert.DoesNotContain(
+            $"AutomationProperties.Name=\"TempNest.Slot{slot}.TransferToIdeaNestButton\"", xaml);
+    }
+
     // ── 8. docs: TD-92 → LK-4 → LK-3 の関係・backlog・release notes ─────────
 
     [Fact]
