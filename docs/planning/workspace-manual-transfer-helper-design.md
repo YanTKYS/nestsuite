@@ -712,3 +712,44 @@ TempNest 側の入口は、既存のスロット操作行（コピー／クリ�
 
 LK-2 は今回実装していない。§14 で確認した適用可能性の判断（NoteNest 側にタイトル付きオーバーロードの追加が必要）は
 LK-3 実装によって覆っておらず、着手時はそのまま踏襲する。
+
+---
+
+## 24. 実装結果（v2.23.0 / LK-2）
+
+> 本節は TD-92（v2.20.1）→ LK-4（v2.21.0）→ LK-3（v2.22.0）→ LK-2（v2.23.0、3 本目の実装）の関係を
+> 明示するための追記であり、§1〜23 の設計本文・実装結果は今回もそのまま正本として維持する
+>（過去形への全面書換えはしない）。
+
+§14 で確認した適用可能性のとおり、LK-2（TempNest スロット → 既存 NoteNest タブへ新規ノート追加）を、
+NoteNest 側にタイトル付きオーバーロードを 1 本追加するだけで実装した。新しい汎用転送サービス・マネージャは作っていない。
+
+| 設計・LK-3 実装（§7〜13・§22・§23） | 実装（LK-2 / v2.23.0） |
+|---|---|
+| `WorkspaceTransferContent { Title, Body }` | 変更なし。そのまま再利用 |
+| `WorkspaceTransferTarget` / `WorkspaceTransferResult` | 変更なし。そのまま再利用 |
+| `EnumerateTransferTargets` / `TransferToWorkspaceTab<TViewModel>` | 変更なし。そのまま再利用（LK-3 で確定済みの「Title または Body のいずれかがあれば有効」判定をそのまま利用） |
+| `WorkspaceTransferTargetDialog` | 変更なし。そのまま再利用（プロンプト文言のみ「転送先のNoteNestタブを選択してください:」へ retarget） |
+| NoteNest 側受入 API | `MainViewModel.CreateNoteFromTransfer(string? title, string content)` を新規オーバーロードとして追加。§14 で見込んでいたとおり、これが LK-2 で唯一 NoteNest 側に必要だった変更 |
+| 既存 `CreateNoteFromTransfer(string content)`（TN-3） | 新オーバーロードへ `title: null` で委譲する薄いラッパーへ変更。TN-3 のフォールバックタイトル生成・重複時連番化・本文設定の挙動は不変（回帰は `MainViewModelPartialTests` の既存 TN-3 テストで確認） |
+| LK-2 導線 | `NestSuiteShellWindow.TempNestToNoteNest.cs` を新設。TempNest 側は `TempNestSlotViewModel.TransferToNoteNestCommand` → `TransferToNoteNestRequested`（`Func<TempNestSlotViewModel, bool?>`、TN-3 の `PromoteRequested` / LK-3 の `TransferToIdeaNestRequested` と同じ形）で Shell へ要求 |
+| NoteNest タブ 0/1/複数件の UX | LK-3/LK-4 と同じ方針で実装（0 件=案内のみ・1 件=直接追加・複数件=既存ダイアログで選択、Detached も対象、自動生成・自動切替・自動保存なし） |
+| Title = slot.Title（空なら null）／Body = slot.Body | 設計どおり実装。共通層で加工しない（日時・スロット番号・ヘッダ等を付加しない） |
+| タイトル方針 | slot.Title があればそれをそのまま新規ノートのタイトルに使う。なければ `PromotedNoteTitleGenerator`（TN-3 と同じ）にフォールバックする。重複時は既存の `MakeUniqueNoteTitle` で連番化する（新しいタイトル生成器・重複判定は作っていない） |
+| TN-3 非変更 | `NestSuiteShellWindow.TempNestPromotion.cs`・`PromoteTempNestSlotToNoteNest`・TN-3 の新規タブ生成・rollback・元スロット消去仕様は今回未変更 |
+| LK-3 非変更 | `NestSuiteShellWindow.TempNestToIdeaNest.cs`・`TransferTempNestSlotToIdeaNest`・`TempNestSlotViewModel.TransferToIdeaNestCommand` の挙動は今回未変更 |
+| LK-4 非変更 | `NestSuiteShellWindow.ChatNestToIdeaNest.cs` の挙動は今回未変更（回帰は既存 `LK4ChatNestToIdeaNestTransferTests` で確認） |
+
+TempNest 側の入口は、既存のスロット操作行（コピー／クリア／新規NoteNestへ昇格／IdeaNestカードに追加の並び）へ
+「既存NoteNestへ追加」ボタンを追加する形とした（新しい ContextMenu・常設ツールバー・設定画面は追加していない）。
+既存の「NoteNestへ昇格」ボタンは新規タブ作成用（TN-3）と既存タブ追加用（LK-2）の区別が付くよう、
+表示文言のみ「新規NoteNestへ昇格」へ最小修正した（Command・Click ハンドラ・挙動・AutomationId は変更していない）。
+転送成功後の元スロット処理は TN-3・LK-3 と同じ考え方を再利用し、`DialogService.ConfirmWithSafeDefault`（既定「残す」）で
+消去するかどうかを利用者に確認する。ただし TN-3・LK-3 の実装そのものを共通ヘルパーへ移行してはいない。
+
+§19 の必須テスト項目に相当するものは `NestSuite.Tests/LK2TempNestToNoteNestTransferTests.cs` に実装した。
+**LK-4・LK-3・LK-2 の 3 本の実装で、共通ヘルパー（`WorkspaceTransferContent`/`WorkspaceTransferTarget`/`WorkspaceTransferResult`/
+`EnumerateTransferTargets`/`TransferToWorkspaceTab`/`WorkspaceTransferTargetDialog`）が実際に再利用された。**
+これは §16 で見込んでいた再利用が実際に成立したことの記録であり、これを理由にした新たな汎用化（LK-5 相当の横断クイック投入等）
+への自動着手は行わない（`docs/backlog.md` の LK-5 再評価条件を参照。再評価には「実際に利用された実績」が必要で、
+実装本数だけでは成立しない）。
