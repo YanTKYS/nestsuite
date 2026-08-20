@@ -144,6 +144,12 @@
                             ToolTip="スロットの本文を新規NoteNestノートへ転送します"
                             Command="{Binding Slot1.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="IdeaNestカードに追加" Padding="8,3" Margin="4,0,0,0" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot1.TransferToIdeaNestButton"
+                            AutomationProperties.Name="TempNest.Slot1.TransferToIdeaNestButton"
+                            ToolTip="スロットのタイトル・本文を既存のIdeaNestタブへカードとして追加します"
+                            Command="{Binding Slot1.TransferToIdeaNestCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
                     <TextBox Text="{Binding Slot1.Title, UpdateSourceTrigger=PropertyChanged}"
@@ -228,6 +234,12 @@
                             AutomationProperties.Name="TempNest.Slot2.PromoteButton"
                             ToolTip="スロットの本文を新規NoteNestノートへ転送します"
                             Command="{Binding Slot2.PromoteToNoteCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="IdeaNestカードに追加" Padding="8,3" Margin="4,0,0,0" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot2.TransferToIdeaNestButton"
+                            AutomationProperties.Name="TempNest.Slot2.TransferToIdeaNestButton"
+                            ToolTip="スロットのタイトル・本文を既存のIdeaNestタブへカードとして追加します"
+                            Command="{Binding Slot2.TransferToIdeaNestCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -314,6 +326,12 @@
                             ToolTip="スロットの本文を新規NoteNestノートへ転送します"
                             Command="{Binding Slot3.PromoteToNoteCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="IdeaNestカードに追加" Padding="8,3" Margin="4,0,0,0" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot3.TransferToIdeaNestButton"
+                            AutomationProperties.Name="TempNest.Slot3.TransferToIdeaNestButton"
+                            ToolTip="スロットのタイトル・本文を既存のIdeaNestタブへカードとして追加します"
+                            Command="{Binding Slot3.TransferToIdeaNestCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
                     <TextBox Text="{Binding Slot3.Title, UpdateSourceTrigger=PropertyChanged}"
@@ -398,6 +416,12 @@
                             AutomationProperties.Name="TempNest.Slot4.PromoteButton"
                             ToolTip="スロットの本文を新規NoteNestノートへ転送します"
                             Command="{Binding Slot4.PromoteToNoteCommand}"
+                            Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
+                    <Button Content="IdeaNestカードに追加" Padding="8,3" Margin="4,0,0,0" FontSize="11"
+                            AutomationProperties.AutomationId="TempNest.Slot4.TransferToIdeaNestButton"
+                            AutomationProperties.Name="TempNest.Slot4.TransferToIdeaNestButton"
+                            ToolTip="スロットのタイトル・本文を既存のIdeaNestタブへカードとして追加します"
+                            Command="{Binding Slot4.TransferToIdeaNestCommand}"
                             Background="Transparent" BorderBrush="{DynamicResource PaneBorder}" BorderThickness="1"/>
                 </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,6">

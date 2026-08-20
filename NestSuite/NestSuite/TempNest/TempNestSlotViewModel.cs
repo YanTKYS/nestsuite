@@ -13,6 +13,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     private readonly DispatcherTimer _feedbackTimer;
     private bool _disposed;
     private bool _isPromoting;
+    private bool _isTransferringToIdeaNest;
 
     public string Title
     {
@@ -39,9 +40,10 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
 
     public event Action? Changed;
 
-    public ICommand CopyBodyCommand      { get; }
-    public ICommand ClearCommand         { get; }
-    public ICommand PromoteToNoteCommand { get; }
+    public ICommand CopyBodyCommand           { get; }
+    public ICommand ClearCommand              { get; }
+    public ICommand PromoteToNoteCommand      { get; }
+    public ICommand TransferToIdeaNestCommand { get; }
 
     // Set by the View to show a confirmation dialog before clearing a non-empty slot.
     // Return true to proceed, false to cancel. When null, clears without confirmation.
@@ -53,6 +55,14 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     /// false=成功し残すを選択。実際の消去はこのスロット自身が行う。
     /// </summary>
     public Func<TempNestSlotViewModel, bool?>? PromoteRequested { get; set; }
+
+    /// <summary>
+    /// LK-3 (v2.22.0): Shell が配線する、既存 IdeaNest タブへのカード転送処理本体。
+    /// null=未配線、実行時は転送失敗として扱う。戻り値の意味は<see cref="PromoteRequested"/>と同じ
+    /// （null=失敗・キャンセル・対象なし=元スロット不変、true=成功し利用者が消去を選択、
+    /// false=成功し残すを選択）。実際の消去はこのスロット自身が行う。
+    /// </summary>
+    public Func<TempNestSlotViewModel, bool?>? TransferToIdeaNestRequested { get; set; }
 
     public TempNestSlotViewModel()
     {
@@ -99,6 +109,28 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
                 }
             },
             _ => !_isPromoting && !string.IsNullOrWhiteSpace(Body));
+        TransferToIdeaNestCommand = new RelayCommand(
+            _ =>
+            {
+                if (_isTransferringToIdeaNest) return;
+                _isTransferringToIdeaNest = true;
+                CommandManager.InvalidateRequerySuggested();
+                try
+                {
+                    var result = TransferToIdeaNestRequested?.Invoke(this);
+                    if (result == null) return;
+                    if (result == true) Clear();
+                }
+                finally
+                {
+                    _isTransferringToIdeaNest = false;
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            },
+            // LK-3: Title・Body のどちらか一方でもあれば実行可能（TransferToWorkspaceTab の
+            // InvalidContent 判定と同じ基準）。
+            _ => !_isTransferringToIdeaNest
+                 && (!string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Body)));
     }
 
     /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知を表示する。1つ前の通知は上書きする。</summary>
@@ -154,5 +186,6 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
         _feedbackTimer.Tick -= FeedbackTimer_Tick;
         Changed = null;
         PromoteRequested = null;
+        TransferToIdeaNestRequested = null;
     }
 }

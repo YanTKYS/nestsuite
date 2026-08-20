@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.21.1）
+# NestSuite リリース前確認チェックリスト（v2.22.0）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -1210,6 +1210,67 @@
 
 - [ ] 転送元ChatNestがいかなる場合もdirtyにならない
 - [ ] TN-3（TempNest→NoteNest昇格）の動作が従来どおりである
+
+---
+
+## TempNestスロット → IdeaNestカード追加（v2.22.0 LK-3）
+
+### IdeaNestタブ0件
+
+- [ ] IdeaNestタブを開いていない状態でTempNestスロットにTitle/Bodyを入力し「IdeaNestカードに追加」を実行する
+- [ ] 案内の一時通知のみが表示され、新規IdeaNestタブが自動生成されない
+- [ ] TempNestの表示・内容が変化しない
+
+### IdeaNestタブ1件
+
+- [ ] IdeaNestタブを1つ開いた状態でスロットをカード化する
+- [ ] 選択UIが表示されず、そのタブへ直接カードが追加される
+- [ ] 追加されたカードのTitle・BodyがTempNestスロットのTitle・Bodyと一致する
+- [ ] IdeaNestタブに未保存（dirty）表示が付く
+- [ ] TempNestに留まり、IdeaNestへ自動切替されない
+- [ ] 一時通知でカード追加が伝わる
+- [ ] 追加後、元スロットを「消去する」「残す」の両方を確認する（既定は「残す」）
+
+### IdeaNestタブ複数件
+
+- [ ] IdeaNestタブを2つ以上開いた状態でスロットをカード化する
+- [ ] 既存の`WorkspaceTransferTargetDialog`が表示され、上下キーで選択・Enterで確定・Escapeでキャンセルできる
+- [ ] 選択したタブだけにカードが追加され、他のIdeaNestタブは変化しない
+- [ ] 同名タブが複数ある場合でも、選んだタブへ正しく追加される
+- [ ] キャンセルした場合、TempNest・IdeaNestとも変化しない
+
+### 別ウィンドウ表示中のIdeaNest（Detached）
+
+- [ ] 別ウィンドウ化したIdeaNestタブも選択候補に表示される
+- [ ] 選択後にカードが追加され、別ウィンドウが自動的に前面化しない
+
+### タイトルのみ・本文空
+
+- [ ] Titleのみ入力・Body空の状態で「IdeaNestカードに追加」を実行すると、Titleのみのカードが追加される
+- [ ] Title・Bodyとも空の場合はボタンが無効化されている
+
+### キーボード操作
+
+- [ ] Tabで対象スロットの「IdeaNestカードに追加」ボタンへフォーカスし、Enter/Spaceで実行できる
+- [ ] マウスクリックでも同じ処理が実行できる
+
+### 失敗時
+
+- [ ] 可能な範囲で失敗系（対象タブなし・キャンセル等）を確認し、不要なErrorLog記録が発生しないことを確認する
+- [ ] 予期しない例外が発生した場合のみエラーダイアログが表示される
+- [ ] 失敗・キャンセル時はTempNestの元スロットが一切変更されない
+
+### 保存・再起動
+
+- [ ] 転送後、IdeaNestタブでCtrl+Sを実行すると通常どおり保存される
+- [ ] 保存したIdeaNestファイルを再起動後に開き、追加したカードが正しく保持されている
+
+### dirty・非対象
+
+- [ ] 転送先IdeaNest以外（TempNest自身）は転送成功後処理までdirtyにならない
+- [ ] TN-3（TempNest→NoteNest昇格）の動作が従来どおりである
+- [ ] LK-4（ChatNest→IdeaNest）の動作が従来どおりである
+- [ ] LK-2（TempNest→NoteNest既存タブ）は未実装のままである
 
 ---
 
