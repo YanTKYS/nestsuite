@@ -151,6 +151,8 @@ TD-88（v2.18.22）で抽出されたメッセージ単体操作（編集・削�
 
 LK-1（NoteNest ↔ IdeaNest 双方向連携)は v2.18.23 の総点検（TD-89）で LT-6（クロス Workspace リンク）へ吸収（欠番。双方向リンクは LT-6 の全文検索・リンク基盤と同一構想であり重複管理を解消）。**LK-5（選択テキストの横断クイック投入）は同総点検で見送り（欠番。個別転送導線の実績が 1 本もない段階で汎用化を持つのは早すぎるため。転送導線が 2 本以上実装され、かつ実際に利用された実績が確認できた時点で新 ID で再評価する。LK-4 / LK-3 / LK-2 の 3 本が v2.23.0 時点で実装済みだが、これは「実装された」に過ぎず「実際に利用された実績」ではないため、LK-5 相当の再評価トリガーはまだ成立しない）。** TN-7（TempNest スロットから Workspace へ投入）は LK-2 / LK-3 へ吸収済み。詳細は `docs/planning/backlog-adoption-trigger-review.md` 参照。
 
+**TD-93（v2.24.0）で TN-3・LK-4・LK-3・LK-2 の横断総点検・回帰確認を実施した（欠番。新しい転送機能は追加していない）。** 共通ヘルパー（`WorkspaceTransferContent`/`WorkspaceTransferTarget`/`WorkspaceTransferResult`/`EnumerateTransferTargets`/`TransferToWorkspaceTab`）が引き続き最小責務に留まっていること、TN-3 を共通化しない判断が妥当であること、0/1/複数件・Detached・dirty/save契約・ErrorLog Error-only方針に回帰がないことを確認した。`WorkspaceTransferTargetDialog` の一覧 `AutomationProperties.Name` が転送先種別（IdeaNest/NoteNest）によらず「転送先のIdeaNestタブ一覧」に固定されていた点（LK-2 で NoteNest 転送にも同ダイアログが再利用されるようになったための取り残し）と、TempNest スロットの「コピー」「クリア」「新規NoteNestへ昇格」ボタンの `AutomationProperties.Name` が可視テキストではなく内部 `AutomationId` 文字列のまま設定されていた点（SH-45/LK-4-1 の既存方針から外れていた既存コード）の 2 件を最小補正した。それ以外の重複（LK-4/LK-3/LK-2 導線の 0/1/複数件分岐・result switch の類似構造）は「各転送の UX 差が読みやすい・責務が明確・変更頻度が低い」ため共通化しなかった。詳細は `docs/release-notes.md` 参照。**LK-5 相当の再評価トリガー（実際に利用された実績）は今回も観測されておらず、成立していない。**
+
 現在、「タブ間連携」単独の未完了項目はない。実際に利用された実績が確認できるまで、LK-5 相当の横断的な汎用転送基盤へは着手しない。
 
 ---

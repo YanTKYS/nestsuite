@@ -715,6 +715,60 @@ LK-3 実装によって覆っておらず、着手時はそのまま踏襲する
 
 ---
 
+## 25. 総点検結果（v2.24.0 / TD-93）
+
+> 本節は TD-92（v2.20.1、本設計文書）→ LK-4（v2.21.0）→ LK-3（v2.22.0）→ LK-2（v2.23.0）→
+> TD-93（v2.24.0、現行 3 本＋TN-3 の総点検・回帰確認）の関係を明示するための追記であり、
+> §1〜24 の設計本文・実装結果は今回もそのまま正本として維持する（過去形への全面書換えはしない）。
+> **TD-93 は総点検 version であり、新しい転送機能は追加していない。**
+
+TD-93 では、TN-3・LK-4・LK-3・LK-2 を実装済みコードとして横断的に再点検し、以下を確認した。
+
+- **共通ヘルパーの責務境界（§6・§9）は現行コードでも維持されている。** `WorkspaceTransferContent`（Title/Body の 2 フィールドのみ）・
+  `WorkspaceTransferTarget`（Kind/TabId/DisplayName）・`WorkspaceTransferResult`（5 値）はいずれも変更されておらず、
+  `TransferToWorkspaceTab<TViewModel>` はユーザー向け文言・Dialog 表示・Save・タブ生成/切替・dirty 直接操作・転送元削除を
+  引き続き持たない。3 本（LK-4/LK-3/LK-2）が同じヘルパーをそのまま再利用しており、拡張は行っていない。
+- **TN-3 を共通ヘルパーへ統合しない判断（§15）は現在も妥当と判断した。** TN-3 は新規タブ生成・session 登録・rollback・
+  `ActivateTab`・`SaveSessionAfterTabChange` を伴う唯一の転送であり、既存タブへの追加だけを扱う LK-4/LK-3/LK-2 とは
+  責務が異なる。今回、TN-3 の共通化・リファクタリングは行っていない。
+- **LK-4/LK-3/LK-2 の Title/Body マッピング（§13.2・§23・§24）に回帰はない。** LK-4 は常に `Title=null`／`Body=発言全文`、
+  LK-3/LK-2 は `Title=slot.Title`（空なら null）／`Body=slot.Body` のままで、共通層・転送元導線のいずれにも日時・
+  スロット番号・ヘッダ等の付加情報は加わっていない。
+- **0/1/複数件・Detached の契約（§8.4・§13.3〜13.5）に回帰はない。** 3 本とも 0 件時は自動生成せず案内のみ、1 件時は
+  直接追加、複数件時は `WorkspaceTransferTargetDialog` で TabId ベースの明示選択、Detached タブも候補に含み転送後も
+  前面化しない、という同じ方針を維持している。
+- **dirty / save 契約（§11）に回帰はない。** 転送元は失敗・キャンセル時はもちろん成功時も変更されず、TempNest のみ
+  利用者が明示的に消去を選んだ場合に対象スロットを `Clear` する。転送先は成功時のみ既存の追加経路
+  （`CommitAdd`→`MarkDirty`／`AddNote`→`IsModified`）で dirty になり、共通ヘルパー・各導線のいずれも
+  `IsModified`/`HasChanges`/`session.IsModified` を直接操作していない。自動保存・`ActivateTab` の呼び出しもない。
+- **アクセシビリティに 2 件の取り残しを発見し、最小補正した（設計判断への影響はない）。**
+  1. `WorkspaceTransferTargetDialog` の一覧 `AutomationProperties.Name` が、LK-2 で NoteNest 転送にも同ダイアログが
+     再利用されるようになった後も、LK-4 実装時の固定文字列「転送先のIdeaNestタブ一覧」のままだった。呼出元が
+     転送先種別に応じた名称（IdeaNest 転送では「転送先のIdeaNestタブ一覧」、NoteNest 転送では
+     「転送先のNoteNestタブ一覧」）を明示できるよう、コンストラクターへ `listAutomationName`（既存の
+     `windowTitle`/`promptText` と同じ形の任意パラメーター）を追加した。`AutomationId`・ダイアログ構成・
+     キーボード操作は変更していない。
+  2. TempNest スロットの「コピー」「クリア」「新規NoteNestへ昇格」ボタンが、SH-45（v2.19.14）／LK-4-1（v2.21.1）で
+     確立済みの「可視テキストを持つボタンには `AutomationProperties.Name` を付与しない」方針に反し、内部
+     `AutomationId` 文字列をそのまま `Name` に設定していた（SH-45 の棚卸し対象がアイコン・記号のみボタンに限定
+     されていたための見落とし）。同じ操作行の LK-3/LK-2 追加ボタンは方針どおり未設定だったため、行内で扱いが
+     不統一だった。3 ボタン×4 スロットの `AutomationProperties.Name` を削除し、`AutomationId`・`Content`・
+     `Command`・`Click`・ToolTip は変更していない。
+- **コード重複（LK-4/LK-3/LK-2 導線の 0/1/複数件分岐・`WorkspaceTransferResult` の switch 文の類似構造）を評価し、
+  共通化しなかった。** 各転送の UX 差（通知文言・受入 delegate・TempNest 側の消去確認有無）が読みやすく責務が明確で、
+  変更頻度も低いため、共通化を正当化する具体的な不具合の重複修正・契約差異による回帰リスクは確認できなかった。
+- **backlog のトリガー成立状況を再確認した。** LK-5 相当（横断クイック投入等の汎用化）は「LK-4/LK-3/LK-2 の 3 本が
+  実装された」事実だけでは成立せず、backlog に記載済みの「実際に利用された実績」トリガーは今回も観測されていない。
+  新規 backlog 項目は推測で追加していない。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest /
+  session / draft / UI settings 形式への変更なし。外部依存の追加なし。**
+
+§19 の必須テスト項目に相当する横断回帰確認は `NestSuite.Tests/TD93WorkspaceTransferRegressionTests.cs` に実装した。
+既存の `TD92WorkspaceTransferDesignDocsTests`/`LK4ChatNestToIdeaNestTransferTests`/`LK3TempNestToIdeaNestTransferTests`/
+`LK2TempNestToNoteNestTransferTests`/`TempNestTests` は削除・skip・弱体化していない。
+
+---
+
 ## 24. 実装結果（v2.23.0 / LK-2）
 
 > 本節は TD-92（v2.20.1）→ LK-4（v2.21.0）→ LK-3（v2.22.0）→ LK-2（v2.23.0、3 本目の実装）の関係を
