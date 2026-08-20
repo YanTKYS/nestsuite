@@ -364,8 +364,8 @@ public class TD93WorkspaceTransferRegressionTests
     }
 
     // ── I. docs 記録の整合性 ──────────────────────────────────────────
-    // (ApplicationVersion の確認は ApplicationVersionTests.cs に集約する。
-    //  本クラスでは MainViewModel.ApplicationVersion を直接参照しない。)
+    // (アプリバージョンの確認は ApplicationVersionTests.cs に集約する方針のため、
+    //  本クラスでは対象プロパティを直接参照しない。)
 
     [Fact]
     public void ReleaseNotes_RecordsV2240_TD93()
