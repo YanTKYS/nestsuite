@@ -7,6 +7,26 @@
 
 ---
 
+## v2.22.0 — LK-3 TempNestスロット → IdeaNestカード追加
+
+- **LK-3: TempNest の各スロットに入力したタイトル・本文を、利用者の明示操作によって既存の IdeaNest タブへ新規カードとして追加できるようにした。** 設計正本は v2.20.1 / TD-92 の `docs/planning/workspace-manual-transfer-helper-design.md`。同設計を再検討・拡張せず、v2.21.0 / LK-4 で実装済みの共通ヘルパーを実際に再利用して LK-3 のみを実装した（詳細は同文書 §23「実装結果（v2.22.0 / LK-3）」）。
+- **LK-4 で追加した共通ヘルパーをそのまま再利用した。** `WorkspaceTransferContent` / `WorkspaceTransferTarget` / `WorkspaceTransferResult` / `EnumerateTransferTargets` / `TransferToWorkspaceTab<TViewModel>` / `WorkspaceTransferTargetDialog` / `IdeaNestWorkspaceViewModel.AddCardFromTransfer` はいずれも変更・再実装していない。新しい共通転送サービス・専用 DTO・専用受入 API は作っていない。
+- **TempNest の Title/Body マッピングをそのまま転送する。** `Title = slot.Title`（空なら null）／`Body = slot.Body`。日時・スロット番号・「TempNestから転送」等のヘッダは一切付加しない。共通層で本文・タイトルを加工しない。
+- **転送内容の有効判定を最小補正した。** `TransferToWorkspaceTab` の `InvalidContent` 判定を「Body 必須」から「Title または Body のいずれかがあれば有効」へ変更した。IdeaNest の通常カード追加契約（`CardOperationsService.CommitAdd`）が既に Title のみでも有効であるため、共通ヘルパー側をこれに合わせた（TempNest で Title のみ入力・Body 空のスロットもカード化できる）。**LK-4 は常に `Title=null` で呼ぶため、この補正は Body のみの空判定と同値であり LK-4 の挙動は変わらない。**
+- **LK-3 の導線（`NestSuiteShellWindow.TempNestToIdeaNest.cs`）を新設した。** TempNest 側の入口は、各スロットの既存操作行（コピー／クリア／NoteNestへ昇格の並び）へ「IdeaNestカードに追加」ボタンを追加する形とし、新しい ContextMenu・常設ツールバー・設定画面は追加していない。TempNest 側は `TempNestSlotViewModel.TransferToIdeaNestCommand` → `TransferToIdeaNestRequested`（TN-3 の `PromoteRequested` と同じ形の delegate）で Shell へ要求する。追加した4つのボタンはいずれも可視テキスト（`Content="IdeaNestカードに追加"`）を持つため、`AutomationProperties.Name` は設定せず（v2.21.1 / LK-4-1 と同種の「内部 `AutomationId` をそのまま `Name` に設定してしまう問題」の再発防止。`AutomationId` は維持し、`AutomationName` は WPF の既定挙動どおり `Content` から導出させる）。
+- **IdeaNest タブ 0/1/複数件の挙動は LK-4 と同じ。** 0 件なら転送せず一時通知「IdeaNest タブがありません。IdeaNest を開いてから実行してください」のみで新規 IdeaNest タブは自動生成しない。1 件ならそのタブへ直接追加し「IdeaNest「〈タブ名〉」にカードを追加しました」と通知する。複数件なら既存の `WorkspaceTransferTargetDialog`（新規ダイアログは作らない）で明示選択させ、選択対象は内部的に TabId で保持するため同名タブが複数あっても誤転送しない。別ウィンドウ表示中（Detached）の IdeaNest タブも候補に含め、選択後も自動的に前面化しない。
+- **転送成功後は TempNest に留まる。** `ActivateTab` は呼ばず、IdeaNest へ自動タブ切替しない。転送は保存ではなく、共通ヘルパー・LK-3 導線のいずれもファイル I/O・自動保存・`SaveSessionAfterTabChange` を呼ばない。転送で dirty になった IdeaNest は、利用者が通常操作（Ctrl+S 等）で保存するまでメモリ上の変更のまま残る。
+- **転送成功後の元スロット処理は、TN-3 と同じ考え方（既定「残す」の確認ダイアログ）で利用者に明示させる。** `DialogService.ConfirmWithSafeDefault` を再利用し、「はい」で対象スロットだけをクリア、「いいえ」（既定）で TempNest の内容を残す。失敗・キャンセル時（IdeaNest タブなし・選択キャンセル・InvalidContent・NoTarget・TargetRejected・Failed）は元スロットを一切変更しない。
+- **TN-3 は変更していない。** `NestSuiteShellWindow.TempNestPromotion.cs`・`PromoteTempNestSlotToNoteNest`・TN-3 の新規タブ生成・rollback・元スロット消去確認のいずれも今回のスコープ外。TempNest → NoteNest 昇格の挙動は従来どおり。
+- **LK-4 は変更していない。** `NestSuiteShellWindow.ChatNestToIdeaNest.cs`・ChatNest 側の導線・挙動は今回変更していない。
+- **LK-2（TempNest スロット → NoteNest 既存タブ）は今回実装していない。** 別 version として扱う。
+- **LK-4 と LK-3 の 2 本で共通ヘルパーが実際に再利用された。** これを理由に新たな汎用化（LK-5 相当の横断クイック投入等）へは自動着手しない。転送導線が 2 本実装されたことに加え、実際に利用された実績が確認できた時点で初めて再評価する方針を維持する。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式への変更なし。外部依存の追加なし。**
+- **テスト**: `LK3TempNestToIdeaNestTransferTests` を新設し、Title/Body マッピング・余計な付加情報がないこと・`AddCardFromTransfer` 再利用・IdeaNest タブ 0/1/複数件時の分岐契約・Detached 対応・転送後のクリア/保持双方・失敗/キャンセル時の TempNest 不変・IdeaNest dirty 契約・自動保存/自動タブ切替非実装・TN-3/LK-4 の既存テスト維持・保存形式非変更を確認する。既存の `LK4ChatNestToIdeaNestTransferTests` / `TD92WorkspaceTransferDesignDocsTests` は、LK-3 が backlog の open item から外れたことに伴う 2 件のアサーション更新のみ行い、それ以外は削除・skip・弱体化していない。
+- **実機でしか確認できない項目**（Windows 実機での実際のボタン操作・ダイアログ表示・Detached タブの前面化非動作、Narrator 等での読み上げ確認）は、本開発環境（Linux CLI、Windows 実機なし）では未確認のまま残っている。
+
+---
+
 ## v2.21.1 — LK-4-1 WorkspaceTransferTargetDialog の AutomationName 補正
 
 - **LK-4-1: v2.21.0 / LK-4 で追加した `WorkspaceTransferTargetDialog` について、`AutomationProperties.Name` に内部的な `AutomationId` 文字列がそのまま設定されていた箇所を補正した。** `AutomationId`（`Dialog.WorkspaceTransferTargetList` / `Dialog.OkButton` / `Dialog.CancelButton`）はテスト・UI Automation 用の内部識別子としてすべて維持し、`AutomationProperties.Name`（スクリーンリーダー等が読み上げる利用者向け名称）とは役割を分離した（v2.19.14 SH-45 以降の方針に合わせた）。

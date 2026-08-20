@@ -70,7 +70,10 @@ public partial class NestSuiteShellWindow
         Func<TViewModel, WorkspaceTransferContent, bool> accept)
         where TViewModel : class
     {
-        if (string.IsNullOrWhiteSpace(content.Body)) return WorkspaceTransferResult.InvalidContent;
+        // LK-3 (v2.22.0): Title と Body のどちらか一方でもあれば有効とする（TD-92 §7 の議論を LK-3 で確定）。
+        // LK-4（ChatNest）は常に Title=null で呼ぶため、この判定は Body のみの空判定と同値であり回帰しない。
+        if (string.IsNullOrWhiteSpace(content.Title) && string.IsNullOrWhiteSpace(content.Body))
+            return WorkspaceTransferResult.InvalidContent;
 
         var tab = _tabs.FirstOrDefault(t => t.Id == target.TabId && t.WorkspaceKind == target.Kind);
         if (tab == null) return WorkspaceTransferResult.NoTarget;

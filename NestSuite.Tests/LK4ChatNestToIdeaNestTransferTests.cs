@@ -449,12 +449,14 @@ public class LK4ChatNestToIdeaNestTransferTests
     }
 
     [Fact]
-    public void Backlog_StillContainsLk2AndLk3AsOpenItems_NotAutoStarted()
+    public void Backlog_StillContainsLk2AsOpenItem_NotAutoStarted()
     {
+        // LK-3 は v2.22.0 で実装済みとなり open backlog から削除された
+        // （LK3TempNestToIdeaNestTransferTests.Backlog_DoesNotContainLk3AsOpenItem 側で確認する）。
+        // LK-2 は今回も自動着手せず未着手のまま残す。
         var backlog = TestPaths.ReadBacklog();
 
         Assert.True(backlog.Contains("| LK-2 |", StringComparison.Ordinal));
-        Assert.True(backlog.Contains("| LK-3 |", StringComparison.Ordinal));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────

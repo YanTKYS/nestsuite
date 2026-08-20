@@ -687,6 +687,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         vm.ContentFontFamily = _workspaceEditorFontFamily;
         vm.PropertyChanged += OnTempNestPropertyChanged;
         WireTempNestPromotion(vm);
+        WireTempNestToIdeaNestTransfer(vm);
         // SH-40: 「続きから」recentリンクのクリックを既存のrecent files openパスへ委譲する。
         vm.OpenContinueFromRecentRequested = OpenRecentFile;
         return vm;
