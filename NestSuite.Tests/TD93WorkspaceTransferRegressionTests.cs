@@ -363,15 +363,9 @@ public class TD93WorkspaceTransferRegressionTests
         Assert.Equal(1, occurrences);
     }
 
-    // ── I. 保存形式・バージョン ────────────────────────────────────────
-
-    [Fact]
-    public void ApplicationVersion_Is_2_24_0()
-    {
-        Assert.Equal("2.24.0", MainViewModel.ApplicationVersion);
-    }
-
-    // ── J. docs 記録の整合性 ──────────────────────────────────────────
+    // ── I. docs 記録の整合性 ──────────────────────────────────────────
+    // (ApplicationVersion の確認は ApplicationVersionTests.cs に集約する。
+    //  本クラスでは MainViewModel.ApplicationVersion を直接参照しない。)
 
     [Fact]
     public void ReleaseNotes_RecordsV2240_TD93()
@@ -423,7 +417,7 @@ public class TD93WorkspaceTransferRegressionTests
         Assert.Contains("Workspace間手動転送の総点検・回帰確認（v2.24.0 TD-93）", text);
     }
 
-    // ── K. 既存テストクラスがそのまま存在する（削除・置換していない） ────
+    // ── J. 既存テストクラスがそのまま存在する（削除・置換していない） ────
 
     [Theory]
     [InlineData("TempNestTests.cs")]
