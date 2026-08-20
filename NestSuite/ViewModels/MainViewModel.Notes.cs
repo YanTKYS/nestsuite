@@ -58,12 +58,24 @@ public partial class MainViewModel
     /// 連番を付与して一意化する。本文はそのまま設定し、タグ・マーカー・スター等は追加しない。
     /// 対象ノートブックが存在しない場合（空プロジェクト）は新規ノートブックを作成する。
     /// </summary>
-    public NoteViewModel? CreateNoteFromTransfer(string content)
+    public NoteViewModel? CreateNoteFromTransfer(string content) => CreateNoteFromTransfer(title: null, content);
+
+    /// <summary>
+    /// LK-2: TempNest スロット → 既存 NoteNest タブへの追加でも使う拡張版。
+    /// <paramref name="title"/> が指定されていればそれをタイトルとして使う（重複時は連番で一意化）。
+    /// 未指定（null／空白）の場合は TN-3 と同じ既存のタイトル生成規則
+    /// （<see cref="PromotedNoteTitleGenerator"/>）にフォールバックする。TN-3 の挙動（引数 1 個版）は
+    /// このオーバーロードへ委譲するだけで変更しない。
+    /// </summary>
+    public NoteViewModel? CreateNoteFromTransfer(string? title, string content)
     {
         var notebook = _notes.Notebooks.FirstOrDefault() ?? _notes.AddNotebook("ノート");
-        var title = MakeUniqueNoteTitle(PromotedNoteTitleGenerator.Generate(content));
+        var baseTitle = string.IsNullOrWhiteSpace(title)
+            ? PromotedNoteTitleGenerator.Generate(content)
+            : title;
+        var uniqueTitle = MakeUniqueNoteTitle(baseTitle);
 
-        var note = _notes.AddNote(notebook, title);
+        var note = _notes.AddNote(notebook, uniqueTitle);
         if (note == null) return null;
 
         note.Content = content;

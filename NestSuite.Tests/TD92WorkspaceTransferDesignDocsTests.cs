@@ -159,13 +159,13 @@ public class TD92WorkspaceTransferDesignDocsTests
     }
 
     [Fact]
-    public void Backlog_StillContainsLk2AsOpenItem()
+    public void Backlog_Lk2_NoLongerOpenItem_ImplementedInLaterVersion()
     {
         // v2.20.1 時点では LK-2 / LK-3 とも未着手で backlog に残っていたが、
-        // LK-3 は v2.22.0 で実装済みとなり欠番化した（NestSuiteDocsContractTests の
-        // BacklogCompletedOpenItemAbsenceRecords 側で完了確認を集約する）。LK-2 は今回も未着手のまま残す。
+        // LK-3 は v2.22.0、LK-2 は v2.23.0 でそれぞれ実装済みとなり欠番化した
+        // （NestSuiteDocsContractTests の BacklogCompletedOpenItemAbsenceRecords 側で完了確認を集約する）。
         var backlog = TestPaths.ReadBacklog();
 
-        Assert.True(backlog.Contains("| LK-2 |", StringComparison.Ordinal));
+        Assert.False(backlog.Contains("| LK-2 |", StringComparison.Ordinal));
     }
 }

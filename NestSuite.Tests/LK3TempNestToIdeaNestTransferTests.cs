@@ -452,12 +452,13 @@ public class LK3TempNestToIdeaNestTransferTests
     }
 
     [Fact]
-    public void Backlog_StillContainsLk2AsOpenItem()
+    public void Backlog_Lk2_NoLongerOpenItem_ImplementedInLaterVersion()
     {
+        // LK-2 は v2.22.0 時点では実装対象外だったが、v2.23.0 で実装され backlog から削除された
+        // （LK2TempNestToNoteNestTransferTests.Backlog_DoesNotContainLk2AsOpenItem 側で確認する）。
         var backlog = TestPaths.ReadBacklog();
 
-        Assert.True(backlog.Contains("| LK-2 |", StringComparison.Ordinal),
-            "LK-2 は今回実装対象外のため backlog に残っている必要がある");
+        Assert.False(backlog.Contains("| LK-2 |", StringComparison.Ordinal));
     }
 
     [Fact]
