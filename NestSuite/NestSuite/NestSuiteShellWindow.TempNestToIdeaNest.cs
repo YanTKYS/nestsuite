@@ -61,7 +61,8 @@ public partial class NestSuiteShellWindow
             var dialog = new WorkspaceTransferTargetDialog(
                 candidates,
                 windowTitle: "IdeaNestへ転送",
-                promptText: "転送先の IdeaNest タブを選択してください:")
+                promptText: "転送先の IdeaNest タブを選択してください:",
+                listAutomationName: "転送先のIdeaNestタブ一覧")
             {
                 Owner = this,
             };

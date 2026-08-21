@@ -1,4 +1,4 @@
-# NestSuite リリース前確認チェックリスト（v2.22.0）
+# NestSuite リリース前確認チェックリスト（v2.24.0）
 
 > **実装時は `docs/development/nestsuite-development-guidelines.md` を参照してください。**  
 > 変更履歴・チェック追加の経緯は [`nestsuite-release-checklist-history.md`](nestsuite-release-checklist-history.md) を参照してください。
@@ -1339,6 +1339,27 @@
 - [ ] TN-3のボタン表示が「新規NoteNestへ昇格」に変わっているが、Command・挙動は従来どおりである
 - [ ] LK-3（TempNest→IdeaNest）の動作が従来どおりである
 - [ ] LK-4（ChatNest→IdeaNest）の動作が従来どおりである
+
+---
+
+## Workspace間手動転送の総点検・回帰確認（v2.24.0 TD-93）
+
+TD-93はTN-3・LK-4・LK-3・LK-2の総点検版であり、新しい転送機能は追加していない。上記の各セクション
+（「TempNestスロット → 既存NoteNestタブへノート追加（v2.23.0 LK-2）」「TempNestスロット → IdeaNestカード追加（v2.22.0 LK-3）」
+「ChatNest発言 → IdeaNestカード化（v2.21.0 LK-4）」）の既存項目がそのまま回帰確認項目になる。以下はTD-93で見つかった
+2件の最小補正に対する追加確認項目のみ。
+
+### WorkspaceTransferTargetDialogのAutomationName（転送先種別ごと）
+
+- [ ] LK-4／LK-3（IdeaNestへ転送）で複数候補ダイアログを開くと、一覧のAutomationNameが「転送先のIdeaNestタブ一覧」である
+- [ ] LK-2（NoteNestへ転送）で複数候補ダイアログを開くと、一覧のAutomationNameが「転送先のNoteNestタブ一覧」である（「IdeaNest」という誤った名称が読み上げられない）
+- [ ] AutomationId（`Dialog.WorkspaceTransferTargetList`等）・OK/キャンセルボタンの挙動・レイアウトは変更されていない
+
+### TempNestスロットのコピー／クリア／新規NoteNestへ昇格ボタンのAutomationName
+
+- [ ] 各スロットの「コピー」「クリア」「新規NoteNestへ昇格」ボタンのAutomationNameが、内部AutomationId文字列（`TempNest.SlotX.CopyButton`等）ではなく可視テキストから自然に導出されている（Narrator等で確認）
+- [ ] AutomationId・Command・Click・表示文言・レイアウトは変更されていない
+- [ ] 「IdeaNestカードに追加」「既存NoteNestへ追加」ボタン（LK-3/LK-2、既に可視テキストから導出済み）と挙動が揃っている
 
 ---
 

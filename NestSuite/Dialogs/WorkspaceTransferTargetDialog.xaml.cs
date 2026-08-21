@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Input;
 
 namespace NestSuite.Dialogs;
@@ -18,12 +19,16 @@ public partial class WorkspaceTransferTargetDialog : Window
     internal WorkspaceTransferTargetDialog(
         IEnumerable<NestSuiteShellWindow.WorkspaceTransferTarget> targets,
         string? windowTitle = null,
-        string? promptText = null)
+        string? promptText = null,
+        string? listAutomationName = null)
     {
         _targets = targets.ToList();
         InitializeComponent();
         if (windowTitle != null) Title = windowTitle;
         if (promptText != null) PromptText.Text = promptText;
+        // TD-93: このダイアログは LK-2（NoteNest）でも再利用されるため、XAML 既定の
+        // 「転送先のIdeaNestタブ一覧」を呼出元の転送先種別に合わせて上書きする。
+        if (listAutomationName != null) AutomationProperties.SetName(TargetList, listAutomationName);
         TargetList.ItemsSource = _targets;
 
         Loaded += (_, _) =>
