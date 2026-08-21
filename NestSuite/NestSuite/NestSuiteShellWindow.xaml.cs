@@ -109,17 +109,8 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         WorkspaceView.DialogHost = this;
 
-        // ChatNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
-        // DataContext は ActivateTab でアクティブ NoteNest タブの MainViewModel に設定する
-        // IdeaNestWorkspaceView.DataContext はタブ切替時に ActivateTab で差し替える
-        // ファイル指定なし起動のみ初期 NoteNest タブを作成する。
-        // 引数指定起動でも前回セッション復元を試みる。
-        //          復元失敗時の無題タブ作成は initialFilePath がない場合のみ行う。
-        //          こうすることで「有セッション＋引数ファイル」→ [復元タブ + 引数タブ]、
-        //          「無セッション＋引数ファイル」→ [引数タブのみ] となり、
-        //          無題タブが不要に混入しない。
-        // ItemsSource を先に空コレクションで設定する（タブ選択のちらつき抑制）
-        //         ObservableCollection に後から Add しても WPF の自動選択が発生しない
+        // タブを 1 枚も持たない状態で ItemsSource を設定しておく。空コレクションを先に割り当てておけば、
+        // 以降の ObservableCollection への Add では WPF の自動選択が走らず、選択のちらつきが起きない。
         TabStrip.ItemsSource = _tabs;
 
         // 通常タブの追加経路を1箇所で検知できるよう、他のタブ追加より前に購読しておく。
@@ -136,20 +127,20 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         if (StartupRestoreSessionPolicy.ShouldSaveSessionAfterStartupRestore(
             restoredSession, _forgotFileNotFoundRestoreFailuresDuringStartup))
         {
-            // 復元中は _isRestoringSession により
-            // 随時保存を抑止しているため、復元完了後に 1 回だけ保存し session の鮮度を上げる
-            // （成功した pending entry の重複解消などが反映される）。
-            // 復元対象が 0 件で
-            // TryRestoreSession が false を返した場合でも、起動中に FileNotFound の
+            // 復元中は _isRestoringSession が随時保存を抑止しているため、復元完了後に 1 回だけ保存して
+            // session の鮮度を上げる（成功した pending entry の重複解消などが反映される）。
+            // 復元対象が 0 件で TryRestoreSession が false を返した場合でも、起動中に FileNotFound の
             // pending entry を解除していれば、その決定を保存する（強制終了時に失われないように）。
-            // 判定条件を StartupRestoreSessionPolicy へ切り出した
-            // （UI 非依存の単体テストで確認できるようにするため）。
+            // 判定条件が StartupRestoreSessionPolicy にあるのは、UI 非依存の単体テストで確認するため。
             SaveSession();
         }
         // 「続きから」候補は、通常タブのsession復元が1件も成功せず、
         // 起動引数によるファイル指定もない起動（= 直後のTempNestアクティブ化分岐と同一条件）でだけ
         // 評価する。新しい「初回起動」判定は追加せず、既存の起動分岐をそのまま利用する。
         var shouldEvaluateContinueFrom = ContinueFromPanelPolicy.ShouldEvaluateAtStartup(restoredSession, initialFilePath);
+        // 復元失敗時の無題タブ作成は initialFilePath がない場合のみ行う。こうすることで
+        // 「有セッション＋引数ファイル」→ [復元タブ + 引数タブ]、「無セッション＋引数ファイル」→ [引数タブのみ]
+        // となり、無題タブが不要に混入しない。
         if (!restoredSession && NestSuiteStartupTabPolicy.ShouldCreateInitialTab(initialFilePath))
         {
             // セッション復元なし・初期ファイルなし → Temp タブをアクティブ化（無題 NoteNest は作成しない）

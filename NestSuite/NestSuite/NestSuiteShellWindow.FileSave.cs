@@ -191,8 +191,8 @@ public partial class NestSuiteShellWindow
 
     /// <summary>
     /// 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。
-    /// selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
-    ///               null の場合は Shell の _dialogs を使う。重複チェックも tabId を基準に行う。
+    /// <paramref name="selectSavePath"/> は SaveAs ダイアログを呼び出し側の Window に出すための差し替え口で、
+    /// null の場合は Shell の _dialogs を使う。重複チェックも tabId を基準に行う。
     /// </summary>
     internal void SaveNoteNestForTabId(string tabId, Func<string, string?>? selectSavePath = null)
     {
