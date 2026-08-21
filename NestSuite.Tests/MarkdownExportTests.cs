@@ -11,7 +11,6 @@ namespace NestSuite.Tests;
 /// </summary>
 public class MarkdownExportTests
 {
-    private static readonly string RepoRoot = TestPaths.RepoRoot;
 
     // ── バージョン ────────────────────────────────────────────────────────
 
@@ -203,14 +202,10 @@ public class MarkdownExportTests
             vm.MarkdownExportAllNotesTooltip);
     }
 
-    // TD-75a-2 (v2.16.27): M10 の backlog 完了確認・v2.10.5 存在確認は
-    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
-    // （(v2.10.5, M10) のデータ行）。検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 
     private static NoteViewModel MakeNote(string title, string content)
         => TestFactories.MakeNote(title, content);
 
-    private string ReadBacklog() => TestPaths.ReadBacklog();
 }

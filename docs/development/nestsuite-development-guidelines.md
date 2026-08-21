@@ -123,7 +123,11 @@
 
 ### テスト整合性の原則
 
-- 既存テストを削除しない
+> **テストを追加・削除する前に `docs/development/test-suite-policy.md`（v2.24.1 TD-94）を確認すること。**
+> 何をテストし何をテストしないか（docs 本文を xUnit で検証しない・production source 文字列テストを原則避ける・
+> behavior / 互換性 / データ保護を優先する）を同文書で定めている。
+
+- 既存テストを削除しない（テスト棚卸しを明示的な目的とする version を除く。`test-suite-policy.md` §8 参照）
 - 既存テストをスキップ（`[Fact(Skip=...)]` 等）化しない
 - テストの期待値を、仕様変更でなく「通りやすくするため」だけの理由で変更しない
 - `ApplicationVersion_Is_*` などアプリバージョン確認、および現行 schema version の文字列リテラル確認は

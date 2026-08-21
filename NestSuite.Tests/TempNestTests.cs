@@ -309,13 +309,6 @@ public class TempNestTests
         Assert.False(slot.HasFeedback);
     }
 
-    // TD-75a-2 (v2.16.27): TN-2 / L14 / L15 / CH-13 の release notes 存在確認・
-    // v2.10.3 存在確認は NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ
-    // 移設した（(v2.10.3, TN-2) / (v2.10.3, L14) / (v2.10.3, L15) のデータ行。
-    // CH-13 は実際の完了バージョンである (v2.10.9, CH-13) として移設し、
-    // ChatNestWorkspaceFeatureRecordsTests 側の同一チェックと重複していたぶんを統合した）。
-    // 検証内容は変えていない。
-
     // ── TN-3 (v2.18.0): PromoteToNoteCommand CanExecute ──────────────────
 
     [Fact]

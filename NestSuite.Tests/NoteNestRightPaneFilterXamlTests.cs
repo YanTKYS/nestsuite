@@ -142,17 +142,4 @@ public class NoteNestRightPaneFilterXamlTests
         var xaml = ReadWorkspaceViewXaml();
         Assert.DoesNotContain("InputGesture", xaml);
     }
-
-    // ── docs ────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public void UserGuide_ExplainsRightPaneFilter()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
-
-        Assert.Contains("右ペイン内の絞り込み", text);
-        Assert.Contains("既存のマーカー種別フィルタ", text);
-        Assert.Contains("絞り込み後に画面表示されている項目だけがコピーされます", text);
-        Assert.Contains("保存されません", text);
-    }
 }

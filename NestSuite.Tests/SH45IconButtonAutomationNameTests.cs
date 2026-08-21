@@ -32,6 +32,9 @@ public class SH45IconButtonAutomationNameTests
     private static string ReadChatNestXaml() =>
         File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "ChatNest", "ChatNestWorkspaceView.xaml"));
 
+    private static string ReadTempNestXaml() =>
+        File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "NestSuite", "TempNest", "TempNestWorkspaceView.xaml"));
+
     private static string ExtractElementEndingAt(string xaml, string anchor, bool selfClosing = true)
     {
         var idx = xaml.IndexOf(anchor, System.StringComparison.Ordinal);
@@ -254,6 +257,31 @@ public class SH45IconButtonAutomationNameTests
         var elementEnd = xaml.IndexOf("/>", idx, System.StringComparison.Ordinal);
         var element = xaml.Substring(elementStart, elementEnd - elementStart);
         Assert.DoesNotContain("AutomationProperties.Name", element);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void TempNestSlotButtons_WithVisibleText_DoNotUseInternalIdAsAutomationName(int slot)
+    {
+        // v2.24.0 TD-93 の補正: TempNest スロットの操作ボタンはいずれも可視テキストを持つため、
+        // AutomationProperties.Name は付与せず WPF 既定どおり Content から導出させる。
+        // 内部 AutomationId 文字列（TempNest.SlotX.CopyButton 等）がそのまま読み上げ名として
+        // 使われる状態への逆戻りを防ぐ。AutomationId 自体はテスト・UI Automation 用に維持する。
+        var xaml = ReadTempNestXaml();
+
+        foreach (var button in new[]
+        {
+            "CopyButton", "ClearButton", "PromoteButton",
+            "TransferToIdeaNestButton", "TransferToNoteNestButton",
+        })
+        {
+            var id = $"TempNest.Slot{slot}.{button}";
+            Assert.Contains($"AutomationProperties.AutomationId=\"{id}\"", xaml);
+            Assert.DoesNotContain($"AutomationProperties.Name=\"{id}\"", xaml);
+        }
     }
 
     [Fact]
