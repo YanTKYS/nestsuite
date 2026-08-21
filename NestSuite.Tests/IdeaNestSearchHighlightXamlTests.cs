@@ -104,15 +104,4 @@ public class IdeaNestSearchHighlightXamlTests
         Assert.Contains("SearchMatchSegments.Split(", source);
         Assert.Contains("StringComparison.OrdinalIgnoreCase", source);
     }
-
-    [Fact]
-    public void UserGuide_ExplainsIdeaNestSearchHighlight()
-    {
-        var text = File.ReadAllText(Path.Combine(RepoRoot, "docs", "guide", "nestsuite-user-guide.md"));
-
-        Assert.Contains("IdeaNestカード内検索ハイライト", text);
-        Assert.Contains("タグだけが検索語に一致した場合", text);
-        Assert.Contains("通常表示へ戻ります", text);
-        Assert.Contains("保存データには一切影響しません", text);
-    }
 }

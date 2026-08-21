@@ -25,71 +25,6 @@ public class LK4ChatNestToIdeaNestTransferTests
     private static readonly string RepoRoot = TestPaths.RepoRoot;
     private static readonly BindingFlags InstanceNonPublic =
         BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-
-    // ── 1. DTO: WorkspaceTransferContent は Title / Body のみ ────────────────
-
-    [Fact]
-    public void WorkspaceTransferContent_HasOnlyTitleAndBody()
-    {
-        var type = typeof(NestSuiteShellWindow).GetNestedType("WorkspaceTransferContent", BindingFlags.NonPublic);
-        Assert.NotNull(type);
-
-        var properties = type!.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Select(p => p.Name)
-            .OrderBy(n => n)
-            .ToArray();
-
-        Assert.Equal(new[] { "Body", "Title" }, properties);
-        Assert.Equal(typeof(string), type.GetProperty("Title")!.PropertyType);
-        Assert.Equal(typeof(string), type.GetProperty("Body")!.PropertyType);
-    }
-
-    // ── 2. WorkspaceTransferTarget: Kind + TabId + DisplayName ───────────────
-
-    [Fact]
-    public void WorkspaceTransferTarget_HasKindTabIdAndDisplayName()
-    {
-        var type = typeof(NestSuiteShellWindow).GetNestedType("WorkspaceTransferTarget", BindingFlags.NonPublic);
-        Assert.NotNull(type);
-
-        var properties = type!.GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(p => p.Name).ToArray();
-        Assert.Contains("Kind", properties);
-        Assert.Contains("TabId", properties);
-        Assert.Contains("DisplayName", properties);
-    }
-
-    // ── 3. WorkspaceTransferResult: 5値のみ（Canceled 等を増やさない） ───────
-
-    [Fact]
-    public void WorkspaceTransferResult_HasExactlyFiveValues()
-    {
-        var type = typeof(NestSuiteShellWindow).GetNestedType("WorkspaceTransferResult", BindingFlags.NonPublic);
-        Assert.NotNull(type);
-        Assert.True(type!.IsEnum);
-
-        var names = Enum.GetNames(type);
-        Assert.Equal(
-            new[] { "Success", "NoTarget", "InvalidContent", "TargetRejected", "Failed" },
-            names);
-    }
-
-    // ── 4. 共通ヘルパーのメソッド存在確認（Window非依存の契約のみ） ─────────
-
-    [Fact]
-    public void NestSuiteShellWindow_HasEnumerateTransferTargetsMethod()
-    {
-        var method = typeof(NestSuiteShellWindow).GetMethod("EnumerateTransferTargets", InstanceNonPublic);
-        Assert.NotNull(method);
-    }
-
-    [Fact]
-    public void NestSuiteShellWindow_HasTransferToWorkspaceTabMethod()
-    {
-        var method = typeof(NestSuiteShellWindow).GetMethod("TransferToWorkspaceTab", InstanceNonPublic);
-        Assert.NotNull(method);
-        Assert.True(method!.IsGenericMethodDefinition);
-    }
-
     [Fact]
     public void NestSuiteShellWindow_HasChatNestToIdeaNestWiringMethods()
     {
@@ -169,27 +104,6 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains("IsCancel=\"True\"", xaml);
         Assert.Contains("MouseDoubleClick=\"TargetList_MouseDoubleClick\"", xaml);
     }
-
-    [Fact]
-    public void WorkspaceTransferTargetDialog_InitialFocusGoesToListBox_Unchanged()
-    {
-        var src = File.ReadAllText(Path.Combine(
-            RepoRoot, "NestSuite", "Dialogs", "WorkspaceTransferTargetDialog.xaml.cs"));
-        Assert.Contains("TargetList.Focus()", src);
-    }
-
-    // ── 5. TN-3 非干渉: 既存シグネチャが変更されていないこと ─────────────────
-
-    [Fact]
-    public void NestSuiteShellWindow_Tn3PromotionMethod_StillExists_Unchanged()
-    {
-        var method = typeof(NestSuiteShellWindow)
-            .GetMethod("PromoteTempNestSlotToNoteNest", InstanceNonPublic, null,
-                [typeof(NestSuite.TempNest.TempNestSlotViewModel)], null);
-        Assert.NotNull(method);
-        Assert.Equal(typeof(bool?), method!.ReturnType);
-    }
-
     // ── 6. ChatNest 本文マッピング: Title=null、Body=本文全文のみ ────────────
 
     [Fact]
@@ -297,26 +211,6 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Empty(vm.AllCards);
         Assert.False(vm.HasChanges);
     }
-
-    [Fact]
-    public void AddCardFromTransfer_DoesNotUseCommitAddFromText_NoAutoPasteTitleGeneration()
-    {
-        // LK-4 は CommitAddFromText（Paste_yyyyMMddHHmm 等のタイトル自動生成、[NOTE]ヘッダ検出）を
-        // 使わない。AddCardFromTransfer のソース自体がそれを呼んでいないことを確認する。
-        // AddCardFromTransfer は式形式（=>）のメンバーのため、次の宣言（次の public/private）までの
-        // 範囲を対象にする（ExtractMethodBody のブレースバランス方式は式形式には使えない）。
-        var src = File.ReadAllText(Path.Combine(
-            RepoRoot, "NestSuite", "NestSuite", "IdeaNest", "ViewModels", "IdeaNestWorkspaceViewModel.cs"));
-        var start = src.IndexOf("public bool AddCardFromTransfer", StringComparison.Ordinal);
-        Assert.True(start >= 0);
-        var end = src.IndexOf(';', start);
-        Assert.True(end >= 0);
-        var body = src.Substring(start, end - start + 1);
-
-        Assert.DoesNotContain("CommitAddFromText", body);
-        Assert.Contains("CommitAdd(", body);
-    }
-
     // ── 8. ChatNest ContextMenu: 項目追加・アクセスキー一意性・配置 ──────────
 
     private static string ReadChatNestXaml() =>
@@ -338,38 +232,6 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains("Header=\"IdeaNestカードに追加(_I)\"", menu);
         Assert.Contains("Command=\"{Binding TransferToIdeaNestCommand}\"", menu);
     }
-
-    [Fact]
-    public void MessageContextMenu_AddToIdeaNestItem_IsPlacedInSingleMessageOperationGroup()
-    {
-        var menu = ExtractMessageContextMenu(ReadChatNestXaml());
-
-        var deleteIdx = menu.IndexOf("Header=\"削除(_D)\"", StringComparison.Ordinal);
-        var transferIdx = menu.IndexOf("Header=\"IdeaNestカードに追加(_I)\"", StringComparison.Ordinal);
-        var separatorIdx = menu.IndexOf("<Separator/>", StringComparison.Ordinal);
-        var copyConversationIdx = menu.IndexOf("Header=\"会話をコピー(_K)\"", StringComparison.Ordinal);
-
-        Assert.True(deleteIdx >= 0 && transferIdx >= 0 && separatorIdx >= 0 && copyConversationIdx >= 0);
-        // 削除(_D) < IdeaNestカードに追加(_I) < 最初のSeparator < 会話をコピー(_K)
-        Assert.True(deleteIdx < transferIdx);
-        Assert.True(transferIdx < separatorIdx);
-        Assert.True(separatorIdx < copyConversationIdx);
-    }
-
-    [Fact]
-    public void MessageContextMenu_ExistingItemsHeaderCommandOrder_Unchanged()
-    {
-        var menu = ExtractMessageContextMenu(ReadChatNestXaml());
-
-        Assert.Contains("Header=\"本文をコピー(_C)\" Command=\"{Binding CopyMessageCommand}\"", menu);
-        Assert.Contains("Header=\"編集(_E)\" Command=\"{Binding BeginEditCommand}\"", menu);
-        Assert.Contains("Header=\"削除(_D)\" Command=\"{Binding RequestDeleteCommand}\"", menu);
-        Assert.Contains("Header=\"会話をMarkdownでコピー(_M)\"", menu);
-        Assert.Contains("Header=\"NestSuite形式でコピー(_N)\"", menu);
-        Assert.Contains("Header=\"会話を保存...(_S)\"", menu);
-        Assert.Contains("Header=\"時刻を表示(_T)\"", menu);
-    }
-
     [Fact]
     public void MessageContextMenu_AccessKeys_AreUnique()
     {
@@ -379,28 +241,6 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains('I', keys);
         Assert.Equal(keys.Count, keys.Distinct().Count());
     }
-
-    // ── 9. CH-19 契約維持: フォーカス可能化・既存ContextMenu共用 ────────────
-
-    [Fact]
-    public void CH19FocusabilityContract_StillHolds_AfterMenuItemAdded()
-    {
-        var xaml = ReadChatNestXaml();
-        var anchor = xaml.IndexOf("MaxWidth=\"580\"", StringComparison.Ordinal);
-        Assert.True(anchor >= 0);
-        var start = xaml.LastIndexOf("<StackPanel", anchor, StringComparison.Ordinal);
-        var end = xaml.IndexOf("</StackPanel.ContextMenu>", anchor, StringComparison.Ordinal);
-        var element = xaml.Substring(start, end - start + "</StackPanel.ContextMenu>".Length);
-
-        Assert.Contains("Focusable=\"True\"", element);
-        Assert.Contains("KeyboardNavigation.IsTabStop=\"True\"", element);
-        Assert.Contains(
-            "<ContextMenu DataContext=\"{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}\">",
-            element);
-        // ContextMenu定義が1つのままであること（キーボード専用の別ContextMenuを新設していない）
-        Assert.Equal(1, CountOccurrences(element, "<ContextMenu"));
-    }
-
     // ── 10. 保存形式・schema 非変更（IdeaNest 側） ───────────────────────────
 
     [Fact]
@@ -416,50 +256,6 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Empty(saved.Ideas[0].Tags);
         Assert.Equal("yellow", saved.Ideas[0].Color);
     }
-
-    // ── 11. docs: TD-92 → LK-4 の関係・backlog・release notes ───────────────
-
-    [Fact]
-    public void DesignDoc_RecordsLk4ImplementationResult()
-    {
-        var doc = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "planning", "workspace-manual-transfer-helper-design.md"));
-
-        Assert.Contains("v2.21.0", doc);
-        Assert.Contains("LK-4", doc);
-        Assert.Contains("実装結果", doc);
-    }
-
-    [Fact]
-    public void ReleaseNotes_RecordsV2210Lk4()
-    {
-        var notes = TestPaths.ReadReleaseNotes();
-
-        Assert.Contains("v2.21.0", notes);
-        Assert.Contains("LK-4", notes);
-    }
-
-    [Fact]
-    public void Backlog_DoesNotContainLk4AsOpenItem()
-    {
-        var backlog = TestPaths.ReadBacklog();
-
-        Assert.False(backlog.Contains("| LK-4 |", StringComparison.Ordinal),
-            "backlog.md に LK-4 が open item の表行として残っている");
-    }
-
-    [Fact]
-    public void Backlog_Lk2_NoLongerOpenItem_ImplementedInLaterVersion()
-    {
-        // LK-3 は v2.22.0 で実装済みとなり open backlog から削除された
-        // （LK3TempNestToIdeaNestTransferTests.Backlog_DoesNotContainLk3AsOpenItem 側で確認する）。
-        // LK-2 はその後 v2.23.0 で実装され、同様に open backlog から削除された
-        // （LK2TempNestToNoteNestTransferTests.Backlog_DoesNotContainLk2AsOpenItem 側で確認する）。
-        var backlog = TestPaths.ReadBacklog();
-
-        Assert.False(backlog.Contains("| LK-2 |", StringComparison.Ordinal));
-    }
-
     // ── helpers ─────────────────────────────────────────────────────────────
 
     private static System.Collections.Generic.List<char> ExtractAccessKeys(string region)

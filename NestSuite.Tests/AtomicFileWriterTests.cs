@@ -206,13 +206,6 @@ public class AtomicFileWriterTests : IDisposable
         Assert.False(File.Exists(path + ".tmp"));
     }
 
-    // ── バージョン / スキーマ ────────────────────────────────────────────
-
-    private static readonly string RepoRoot = TestPaths.RepoRoot;
-
-
-    // ── バージョン ────────────────────────────────────────────────────────
-
     // ── AtomicFileWriter: tmp cleanup ─────────────────────────────────────
 
     [Fact]
@@ -489,53 +482,10 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Equal(typeof(Exception), parameters[1].ParameterType);
     }
 
-    // ── GuardNest 方針文書の確認 ─────────────────────────────────────────
-
-    [Fact]
-    public void PolicyDocument_DescribesAtomicFileWriter()
-    {
-        Assert.Contains("AtomicFileWriter", ReadPolicyDocument());
-    }
-
-    [Fact]
-    public void PolicyDocument_DescribesCloseConfirmationService()
-    {
-        Assert.Contains("CloseConfirmationService", ReadPolicyDocument());
-    }
-
-    [Fact]
-    public void PolicyDocument_DescribesErrorLogService()
-    {
-        Assert.Contains("ErrorLogService", ReadPolicyDocument());
-    }
-
-    [Fact]
-    public void PolicyDocument_StatesErrorOnlyPolicy()
-    {
-        var text = ReadPolicyDocument();
-        Assert.Contains("Error", text);
-        Assert.Contains("Info", text); // "Info / Warning 不可" という形で含まれる
-    }
-
-    [Fact]
-    public void PolicyDocument_StatesPersonalDataNotLogged()
-    {
-        var text = ReadPolicyDocument();
-        Assert.Contains("本文", text);
-        Assert.Contains("個人情報", text);
-    }
-
-    // TD-75a-2 (v2.16.27): TD-26 の backlog 完了確認・v2.10.13 存在確認は
-    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
-    // （(v2.10.13, TD-26) のデータ行）。検証内容は変えていない。
-
-    // ── helpers ──────────────────────────────────────────────────────────
-
-    private string ReadPolicyDocument()
-    {
-        var path = Path.Combine(RepoRoot, "docs", "architecture", "sessionnest-guardnest-policy.md");
-        Assert.True(File.Exists(path), $"Policy document not found: {path}");
-        return File.ReadAllText(path);
-    }
-
+    // TD-94 (v2.24.1): GuardNest 方針文書の本文 assert（PolicyDocument_* 5 件）は削除した。
+    // ErrorLog が Error のみを扱うという実際の契約は、上の
+    // ErrorLogService_HasNoLogInfoMethod / _HasNoLogWarningMethod /
+    // _HasLogMethod_WithOperationAndException が API レベルで固定しており、
+    // 文書に同じ単語が書かれているかどうかは production の振る舞いに影響しないため
+    //（方針: docs/development/test-suite-policy.md）。
 }

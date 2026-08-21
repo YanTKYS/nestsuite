@@ -8,7 +8,6 @@ namespace NestSuite.Tests;
 
 public class ChatNestExportFormatterTests
 {
-    private static readonly string RepoRoot = TestPaths.RepoRoot;
 
     // ── CH-14: BuildPlainTextConversation ────────────────────────────────
 
@@ -188,13 +187,9 @@ public class ChatNestExportFormatterTests
         Assert.Contains("\n\n## 自分\n\nA\nB", result);
     }
 
-    // TD-75a-2 (v2.16.27): CH-14 / CH-9 の backlog 完了確認・v2.10.6 / v2.10.7 存在確認は
-    // NestSuiteDocsContractTests.ReleaseNoteVersionAndIdRecords へ移設した
-    // （(v2.10.6, CH-14) / (v2.10.7, CH-9) のデータ行）。検証内容は変えていない。
 
     // ── helpers ──────────────────────────────────────────────────────────
 
     private static string NormalizeLineEndings(string value) => value.Replace("\r\n", "\n");
 
-    private string ReadBacklog() => TestPaths.ReadBacklog();
 }

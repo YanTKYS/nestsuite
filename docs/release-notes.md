@@ -7,6 +7,28 @@
 
 ---
 
+## v2.24.1 — TD-94 テストスイート棚卸し・低価値な静的契約テストの縮退
+
+- **TD-94: テストスイートを棚卸しし、docs 文言や実装コード文字列へ過剰に結合した低価値なテストを縮退した。production code の新機能追加はなく、production の振る舞いは一切変更していない。** 目的はテスト件数の削減ではなく、「CI が赤い ≒ アプリ・データ・互換性・ビルドに実際の問題がある」という状態へ近づけること（CI failure の signal-to-noise 改善）。
+- **方針文書 `docs/development/test-suite-policy.md` を新設した。** 何をテストするか（データ保護・互換性・振る舞い・構造契約）／何をテストしないか（docs 本文の日本語 assert・release notes 歴代履歴 assert・backlog 文言 assert・test-of-test・単純な production source 文字列検索）／テスト追加前の問い／XAML・アーキテクチャテストの判断基準／skip へ逃がさない原則／既存テスト削除の扱いを明文化した。`docs/development/nestsuite-development-guidelines.md` の「テスト整合性の原則」から参照するようにした。**この文書の本文を検証するテストは作っていない。**
+- **テスト件数**: 静的集計で 3631 → 3056（-575）。テストファイル数 198 → 184。削除 16 ファイル・新設 2 ファイル。
+- **docs 本文 assert を原則削除した（約 444 ケース）。** `NestSuiteDocsContractTests`（315 ケース。release notes の歴代 version / ID 存在確認・backlog の完了 ID 表行不在確認・planning / review 文書の見出し確認）を筆頭に、`ExpertProposalPlanningTests` / `TD92WorkspaceTransferDesignDocsTests` / `TestClassificationAnalysisTests` / `SchemaVersioningPolicyTests` / `PromptStandardContractTests` / `CoordinatorNotificationPatternDocsTests` / `SessionNestGuardNestPolicyTests` / `ChatNestWorkspaceFeatureRecordsTests` / `SaveAllCommandTests` を削除し、`AtomicFileWriterTests` の方針文書 assert 5 件、user guide 本文 assert 2 件、LK-2 / LK-3 / LK-4 / TD-91 / TD-93 各クラスの backlog・release notes・設計文書 assert も削除した。文書の正しさは人／AI レビュー・PR レビュー・Git diff で担保する。
+- **release notes の歴代 version / ID 存在確認を廃止した。** 履歴の正本は release notes 自身と Git 履歴であり、xUnit を履歴台帳の監視装置として使わない方針を明文化した。
+- **test-of-test を削除した（18 ケース）。** `NestSuiteSmokeSupportTests`（UI Smoke ランナーのソースに特定文字列が含まれるかを確認していた。実際の UI Smoke は CI の `ui-smoke` ジョブが実行しており二重）、`ApplicationVersionTests` の「他テストクラスが `MainViewModel.ApplicationVersion` / schema version リテラルを含まないこと」を走査する 2 件、`TD93WorkspaceTransferRegressionTests` の「既存テストファイルが存在すること」5 ケース、テストクラス命名規約を走査していた 1 件。
+- **production source を文字列として読むテストを個別再評価し、49 ケースを削除した。** `Assert.Contains("ctrl && e.Key == Key.Tab", src)` のように特定の実装式を固定するものは、等価な書き換えで失敗する一方 production の振る舞いを何も保証しないため削除した（`NestSuiteShellOpenGuidanceTests` / `ShellTabNavigationShortcutTests` を削除。対象ロジックは `ShellOpenFailureGuidanceProviderTests` / `MultipleOpenFailureMessageBuilderTests` が振る舞いレベルで確認済み）。転送導線の `Assert.DoesNotContain("ActivateTab", src)` / `Assert.Contains("candidates.Count == 0", src)` 等も同様に削除した。
+- **XAML テストは一律削除せず個別判断した（42 ケース削除）。** 削除したのは表示文言そのもの・ToolTip の完全一致・要素のソース上の並び順・他クラスと重複していたもの。**維持したのは** 重要な `Command` binding・`AutomationProperties.AutomationId`・キーボードアクセシビリティ上の重要属性（`Focusable` / `IsTabStop` / アクセスキー一意性）・`IsDefault` / `IsCancel`・可視テキスト要素へ内部 ID を `AutomationProperties.Name` として設定していないこと。
+- **`TD93WorkspaceTransferRegressionTests` を `WorkspaceTransferContractTests` へ縮退・改名した（46 → 9 ケース）。** 残したのは `WorkspaceTransferContent` の型構造・`WorkspaceTransferResult` の 5 値・`WorkspaceTransferTarget` の TabId 識別・4 本の転送が別々の配線メソッドとして存在すること・TN-3 が共通ヘルパーへ吸収されていないこと・`TempNestSlotViewModel` の 3 つの delegate が同型であることと `Dispose` で解放されること・転送先選択ダイアログが呼出元ごとの読み上げ名を受け取れること。backlog / release notes / 設計文書 assert とソース文字列 assert は削除した。クラス名から backlog ID を外したのは開発ルールの命名方針（backlog ID・version 番号だけをテストクラス名にしない）に沿った段階的整理。
+- **`TD91KeyboardAccessibilityCloseoutTests` を削除した（20 ケース）。** K-1〜K-6 の「まだ存在すること」を再確認する総点検記録クラスであり、内容はすべて `SH44CrossSearchEscapeFocusTests` / `L26` / `L27` / `L28` / `CH19` / `SH45` / `SH46` の各専用クラス（合計 144 ケース）が より詳細に確認している重複だった。専用クラスはいずれも維持している。
+- **`DocsArchiveTd83Tests` を `DocsLinkIntegrityTests` へ置き換えた（37 → 2 ケース）。** TD-83 の archive 移設に関する docs 本文 assert は削除し、価値のあった「相対 Markdown リンクが実在するファイルへ解決できること」だけを残した。対象ファイルのハードコード一覧をやめて `docs/` 配下と README を走査する形にしたため、文書の追加・移動へ自動追従し、リンク切れという実際の不具合だけを検出する。現状 79 ファイル・リンク切れ 0 件。
+- **維持したテスト**: 保存 → 読込 round-trip・既存形式の互換読込・schema 検証・session 復元・draft 保護・rollback・`.bak` / `.tmp` の扱い・文字コード（BOM）保持・dirty / save 契約・Command の CanExecute / Execute・タイトル生成 / 重複解決・例外処理といったデータ保護／互換性／振る舞いテストは削減対象にしていない。session 復元・`dirty` / `save` に直結するソース走査ガード（`NestSuiteShellSessionRestoreContractTests` / `NestSuiteShellSessionPersistenceTests` / `AppExitAndTabCloseRegressionTests` / `NestSuiteShellMultipleOpenFailureTests`）は、ソース走査であってもデータ保護領域として維持した。
+- **`ArchitectureBoundaryTests` は全件維持した。** リフレクションによる禁止依存・Window 継承不在・インスタンス化可否の確認に加え、Workspace 層が `MessageBox.Show` / ダイアログ型 / `Application.Current` を参照していないことを確認するソース走査も維持している。これは「禁止されたものが出現していないこと」を確認する `DoesNotContain` 型のガードであり、コメント追加や無関係な改名で誤検出しにくく、アーキテクチャ境界の回帰を実際に検出できるため（判断基準は `test-suite-policy.md` §5.1）。
+- **skip へは逃がしていない。** 価値があるものは通常テストとして維持し、価値がないものは削除した。`Skip` 属性・`Trait` による CI 除外・環境変数による無効化は追加していない（既存 Performance 系の意図的な環境変数ゲートは今回対象外）。
+- **production code は変更していない。** テスト容易化のための public API 追加・DI 導入・interface 追加・責務分割・service 新設は行っていない。変更したのは `NestSuite.csproj` のバージョンのみ。
+- **保存形式・NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式への変更なし。外部依存の追加なし。test framework（xUnit）の変更・E2E 基盤・coverage 目標の導入なし。**
+- **実機でしか確認できない項目はない**（本 version はテストと docs のみの変更で、UI・挙動を変更していないため）。
+
+---
+
 ## v2.24.0 — TD-93 Workspace間手動転送の総点検・回帰確認
 
 - **TD-93: TD-92〜LK-2 までの Workspace 間手動転送シリーズ（TN-3・LK-4・LK-3・LK-2）を現行 `main` 上で横断的に総点検・回帰確認した。新しい転送機能は追加していない。**
