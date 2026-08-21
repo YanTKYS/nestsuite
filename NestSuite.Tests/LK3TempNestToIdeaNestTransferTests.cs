@@ -45,13 +45,7 @@ public class LK3TempNestToIdeaNestTransferTests
         Assert.Single(parameters);
         Assert.Equal(typeof(TempNestSlotViewModel), parameters[0].ParameterType);
     }
-", start, StringComparison.Ordinal);
-        Assert.True(end >= 0);
-        var body = src.Substring(start, end - start);
 
-        Assert.Contains("WireTempNestPromotion(vm)", body);
-        Assert.Contains("WireTempNestToIdeaNestTransfer(vm)", body);
-    }
     // ── 3. 共通ヘルパー InvalidContent 補正: Title または Body があれば有効 ──
 
     [Fact]
@@ -294,4 +288,5 @@ public class LK3TempNestToIdeaNestTransferTests
         Assert.Contains($"Command=\"{{Binding Slot{slot}.TransferToIdeaNestCommand}}\"", xaml);
         Assert.Contains("Content=\"IdeaNestカードに追加\"", xaml);
     }
+
 }

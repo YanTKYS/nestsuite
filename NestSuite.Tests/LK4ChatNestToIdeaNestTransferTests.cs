@@ -25,6 +25,7 @@ public class LK4ChatNestToIdeaNestTransferTests
     private static readonly string RepoRoot = TestPaths.RepoRoot;
     private static readonly BindingFlags InstanceNonPublic =
         BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
     [Fact]
     public void NestSuiteShellWindow_HasChatNestToIdeaNestWiringMethods()
     {
@@ -104,6 +105,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains("IsCancel=\"True\"", xaml);
         Assert.Contains("MouseDoubleClick=\"TargetList_MouseDoubleClick\"", xaml);
     }
+
     // ── 6. ChatNest 本文マッピング: Title=null、Body=本文全文のみ ────────────
 
     [Fact]
@@ -211,6 +213,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Empty(vm.AllCards);
         Assert.False(vm.HasChanges);
     }
+
     // ── 8. ChatNest ContextMenu: 項目追加・アクセスキー一意性・配置 ──────────
 
     private static string ReadChatNestXaml() =>
@@ -232,6 +235,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains("Header=\"IdeaNestカードに追加(_I)\"", menu);
         Assert.Contains("Command=\"{Binding TransferToIdeaNestCommand}\"", menu);
     }
+
     [Fact]
     public void MessageContextMenu_AccessKeys_AreUnique()
     {
@@ -241,6 +245,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Contains('I', keys);
         Assert.Equal(keys.Count, keys.Distinct().Count());
     }
+
     // ── 10. 保存形式・schema 非変更（IdeaNest 側） ───────────────────────────
 
     [Fact]
@@ -256,6 +261,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.Empty(saved.Ideas[0].Tags);
         Assert.Equal("yellow", saved.Ideas[0].Color);
     }
+
     // ── helpers ─────────────────────────────────────────────────────────────
 
     private static System.Collections.Generic.List<char> ExtractAccessKeys(string region)

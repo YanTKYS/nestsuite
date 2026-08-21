@@ -46,14 +46,7 @@ public class LK2TempNestToNoteNestTransferTests
         Assert.Single(parameters);
         Assert.Equal(typeof(TempNestSlotViewModel), parameters[0].ParameterType);
     }
-", start, StringComparison.Ordinal);
-        Assert.True(end >= 0);
-        var body = src.Substring(start, end - start);
 
-        Assert.Contains("WireTempNestPromotion(vm)", body);
-        Assert.Contains("WireTempNestToIdeaNestTransfer(vm)", body);
-        Assert.Contains("WireTempNestToNoteNestTransfer(vm)", body);
-    }
     // ── 3. NoteNest 受入 API 拡張: CreateNoteFromTransfer(string) / (string?, string) ──
 
     [Fact]
@@ -326,13 +319,6 @@ public class LK2TempNestToNoteNestTransferTests
         Assert.Equal("", slot.Body);
     }
 
-    // ── 6. LK-2 導線ソース: Title=slot.Title(空ならnull)/Body=slot.Body、余計な付加情報なし ──
-
-', src.IndexOf('{', candidatesZeroBranchStart));
-        var branch = src.Substring(candidatesZeroBranchStart, branchEnd - candidatesZeroBranchStart);
-        Assert.DoesNotContain("ErrorLogService", branch);
-        Assert.Contains("return null", branch);
-    }
     // ── 8. TempNest 側 XAML: 各スロットへの入口ボタン ────────────────────────
 
     private static string ReadTempNestWorkspaceViewXaml() =>
