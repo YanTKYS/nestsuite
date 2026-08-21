@@ -391,6 +391,16 @@ public class TD93WorkspaceTransferRegressionTests
     }
 
     [Fact]
+    public void Backlog_TD10Section_DoesNotClaimLK2StillUnimplemented()
+    {
+        // TD-92 (v2.20.1) 時点の記述「LK-2 は本 version でも未着手のまま。」が、
+        // LK-2 が v2.23.0 で実際に実装された後も §10 に取り残されていないことを確認する
+        // （TD-93 の「docs/backlog が現在地と一致しているか」の総点検対象そのもの）。
+        var backlog = TestPaths.ReadBacklog();
+        Assert.DoesNotContain("LK-2 は本 version でも未着手のまま", backlog);
+    }
+
+    [Fact]
     public void Backlog_LK5_TriggerStillNotEstablished_RequiresActualUsage()
     {
         // LK-4/LK-3/LK-2 の3本が実装されたという事実だけではLK-5相当のトリガーが
