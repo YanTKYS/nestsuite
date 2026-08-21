@@ -6,7 +6,7 @@ using NestSuite.IdeaNest.Services;
 namespace NestSuite.IdeaNest.Behaviors;
 
 /// <summary>
-/// ID-7: TextBlock へ「表示対象文字列 + 検索語」の読み取り専用ハイライト表示を付与する
+/// TextBlock へ「表示対象文字列 + 検索語」の読み取り専用ハイライト表示を付与する
 /// 添付プロパティ。<see cref="IdeaNestSearchHighlightHelper"/>（既存3-Run分割helperの薄いラッパー）
 /// が返すセグメントを <see cref="TextBlock.Inlines"/> の <see cref="Run"/> として並べるだけで、
 /// RichTextBox・FlowDocument・独自テキストレンダラーは使用しない。

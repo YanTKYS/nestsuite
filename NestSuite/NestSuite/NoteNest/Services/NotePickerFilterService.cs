@@ -20,7 +20,7 @@ public static class NotePickerFilterService
         => notes.Count(n => string.Equals(n.Title, title, StringComparison.OrdinalIgnoreCase)) > 1;
 
     /// <summary>
-    /// L24: NotePickerDialog の絞り込みを、ノート名だけでなくノートブック名・
+    /// NotePickerDialog の絞り込みを、ノート名だけでなくノートブック名・
     /// 「ノートブック名 / ノート名」表示文字列でも一致させる（大文字小文字を区別しない、部分一致）。
     /// filterText が空の場合は常に true（絞り込みなし）。
     /// </summary>

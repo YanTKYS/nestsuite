@@ -68,7 +68,7 @@ public sealed class DialogService
     public string? SelectNotebookExportFolder() =>
         SelectFolderPath("出力先フォルダを選択してください");
 
-    // v2.14.1 FM-1: 新規保存 / 名前を付けて保存の既定拡張子は .nestsuite（filter 先頭 + DefaultExt）。
+    // 新規保存 / 名前を付けて保存の既定拡張子は .nestsuite（filter 先頭 + DefaultExt）。
     // legacy 拡張子は Workspace 種別に応じた filter として残し、読み取り・上書き互換を維持する。
 
     public string? SelectProjectOpenPath()
@@ -124,7 +124,7 @@ public sealed class DialogService
     {
         var dialog = new OpenFileDialog
         {
-            // v2.19.0 SH-43: 共通「開く」ダイアログへ .txt を追加する（PlainTextWorkspace として開く）。
+            // 共通「開く」ダイアログへ .txt を追加する（PlainTextWorkspace として開く）。
             Filter = "NestSuite対応ファイル (*.nestsuite;*.notenest;*.chatnest;*.ideanest;*.txt)|*.nestsuite;*.notenest;*.chatnest;*.ideanest;*.txt" +
                      "|NestSuite Workspace (*.nestsuite)|*.nestsuite" +
                      "|NoteNestファイル (*.notenest)|*.notenest" +
@@ -137,7 +137,7 @@ public sealed class DialogService
         return dialog.ShowDialog(_owner) == true ? dialog.FileNames : [];
     }
 
-    /// <summary>v2.19.0 SH-43: PlainTextWorkspace の「開く」ダイアログ。既定拡張子は .txt。</summary>
+    /// <summary>PlainTextWorkspace の「開く」ダイアログ。既定拡張子は .txt。</summary>
     public string? SelectPlainTextOpenPath()
     {
         var dialog = new OpenFileDialog
@@ -148,7 +148,7 @@ public sealed class DialogService
         return dialog.ShowDialog(_owner) == true ? dialog.FileName : null;
     }
 
-    /// <summary>v2.19.0 SH-43: PlainTextWorkspace の「名前を付けて保存」ダイアログ。既定拡張子は .txt。</summary>
+    /// <summary>PlainTextWorkspace の「名前を付けて保存」ダイアログ。既定拡張子は .txt。</summary>
     public string? SelectPlainTextSavePath(string defaultFileName) =>
         SelectSaveFilePath("テキスト ファイル (*.txt)|*.txt|すべてのファイル (*.*)|*.*", ".txt", defaultFileName);
 
@@ -231,7 +231,7 @@ public sealed class DialogService
         MessageBox.Show(_owner, message, title, MessageBoxButton.YesNo, icon) == MessageBoxResult.Yes;
 
     /// <summary>
-    /// TN-3: 既定ボタンを「いいえ」にした確認ダイアログ。安全側（変更しない）を既定にしたい場面に使う。
+    /// 既定ボタンを「いいえ」にした確認ダイアログ。安全側（変更しない）を既定にしたい場面に使う。
     /// TempNest 昇格後の元スロット消去確認で、既定を「残す」にするために使用する。
     /// </summary>
     public bool ConfirmWithSafeDefault(string message, string title) =>

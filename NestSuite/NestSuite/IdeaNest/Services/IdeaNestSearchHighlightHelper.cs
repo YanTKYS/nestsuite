@@ -4,12 +4,12 @@ using NestSuite.Services;
 
 namespace NestSuite.IdeaNest.Services;
 
-/// <summary>ID-7: カードタイトル・本文プレビュー内の1区間（通常 or 一致）。</summary>
+/// <summary>カードタイトル・本文プレビュー内の1区間（通常 or 一致）。</summary>
 public readonly record struct IdeaNestHighlightSegment(string Text, bool IsMatch);
 
 /// <summary>
-/// ID-7: IdeaNestカード一覧のタイトル・本文プレビューで、検索語との一致箇所を
-/// 表示用セグメントへ分割する。M17（v2.16.50）で実装済みの3-Run分割 helper
+/// IdeaNestカード一覧のタイトル・本文プレビューで、検索語との一致箇所を
+/// 表示用セグメントへ分割する。3-Run分割 helper
 /// （<see cref="SearchMatchSegments.Split"/>）を繰り返し呼び出す薄いラッパーであり、
 /// 同一の IndexOf 分割ロジックを複製していない。
 /// 大文字・小文字判定は既存IdeaNest検索（<see cref="NestSuite.IdeaNest.ViewModels.FilterViewModel"/>）

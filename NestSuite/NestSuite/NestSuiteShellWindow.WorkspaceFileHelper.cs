@@ -25,7 +25,7 @@ public partial class NestSuiteShellWindow
         ActivateTab(tab);
         _recentFiles.Add(path);
         UpdateRecentFilesMenu();
-        // v2.16.14 TD-66: ファイルを開いて新規タブが確定した直後に session を保存する。
+        // ファイルを開いて新規タブが確定した直後に session を保存する。
         // セッション復元中（TryRestoreSession が同じ経路を使う）は _isRestoringSession により抑止される。
         SaveSessionAfterTabChange();
     }
@@ -92,7 +92,7 @@ public partial class NestSuiteShellWindow
     /// <summary>
     /// 名前を付けて保存の際に、別タブで同じパスが開かれている場合はエラーを表示して
     /// 既存タブをアクティブ化し true を返す。重複なければ false を返す。
-    /// v2.9.2 SH-21: excludeTabId を指定することで、別ウィンドウ保存時も正しいタブを除外できる。
+    /// excludeTabId を指定することで、別ウィンドウ保存時も正しいタブを除外できる。
     /// </summary>
     private bool CheckAndActivateDuplicateTabForSave(
         NestSuiteWorkspaceKind kind, string path, string? excludeTabId = null)
@@ -111,7 +111,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.13.6 TD-45: 保存先パスを解決する（SaveForTabId / SaveAll 共通）。
+    /// 保存先パスを解決する（SaveForTabId / SaveAll 共通）。
     /// タブに FilePath があれば正規化して返す（重複チェックなし＝上書き保存）。
     /// なければ selectSavePath で選択させ、キャンセル時・重複タブ検出時は null を返す。
     /// 呼び出し側は null を「保存中止（キャンセル扱い）」として処理する。
@@ -154,17 +154,16 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3 / v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): probe
+    /// probe 済み context
     /// （<see cref="ShellFileOpenPlanner.Plan"/> が返す <see cref="WorkspaceFileOpenContext"/>）を、
     /// 追加のファイル読込なしで対応する prepared Load*FileAt メソッドへ委譲する。共通・種別別 Open、
-    /// 起動引数、最近ファイル、pipe、session 復元のすべての Shell 読込経路がこのメソッドを使う
-    /// （TD-59b-4 で session 復元専用の path 版 <c>LoadWorkspaceFileAt(kind, path)</c> は撤去した）。
+    /// 起動引数、最近ファイル、pipe、session 復元のすべての Shell 読込経路がこのメソッドを使う。
     /// <paramref name="context"/>.FilePath が open operation 内の唯一の path 正本であり、
     /// ここで path を再生成・再正規化しない。
     /// </summary>
     private void LoadWorkspaceFileAt(WorkspaceFileOpenContext context)
     {
-        // v2.16.37 TD-59b-3 §9: LoadWorkspace decision で OpenContext が欠けているのは
+        // LoadWorkspace decision で OpenContext が欠けているのは
         // 内部契約違反。path ベース読込への暗黙フォールバックはしない。
         ArgumentNullException.ThrowIfNull(context);
 

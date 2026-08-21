@@ -6,7 +6,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // ── v1.7.6: タブを閉じる操作 ──────────────────────────────────────────
+    // ── タブを閉じる操作 ──────────────────────────────────────────
 
     /// <summary>
     /// タブの × ボタンクリックハンドラ。Button.Tag にバインドされたタブモデルを取り出し、
@@ -20,7 +20,7 @@ public partial class NestSuiteShellWindow
         e.Handled = true;
     }
 
-    // ── v2.4.0 SH-2: タブコンテキストメニュー ────────────────────────────
+    // ── タブコンテキストメニュー ────────────────────────────
 
     private void TabContextClose_Click(object sender, RoutedEventArgs e)
     {
@@ -63,7 +63,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.4.0 SH-2: keepTab 以外のすべてのタブを順に閉じる。未保存確認を各タブで行う。
+    /// keepTab 以外のすべてのタブを順に閉じる。未保存確認を各タブで行う。
     /// いずれかのタブでユーザーがキャンセルした場合、そのタブ以降の処理を中断する。
     /// </summary>
     private void CloseOtherTabs(NestSuiteDocumentTab keepTab)
@@ -75,7 +75,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.4.0 SH-2: pivotTab より右側（インデックスが大きい）のタブを順に閉じる。未保存確認を各タブで行う。
+    /// pivotTab より右側（インデックスが大きい）のタブを順に閉じる。未保存確認を各タブで行う。
     /// いずれかのタブでユーザーがキャンセルした場合、そのタブ以降の処理を中断する。
     /// </summary>
     private void CloseTabsToRight(NestSuiteDocumentTab pivotTab)
@@ -88,9 +88,9 @@ public partial class NestSuiteShellWindow
         }
     }
 
-    // ── v2.4.0 SH-3: 中クリックでタブを閉じる ────────────────────────────
+    // ── 中クリックでタブを閉じる ────────────────────────────
 
-    /// <summary>v2.4.0 SH-3: 中ボタンクリックで対象タブを閉じる。未保存確認を通す。</summary>
+    /// <summary>中ボタンクリックで対象タブを閉じる。未保存確認を通す。</summary>
     private void TabStrip_PreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Middle) return;

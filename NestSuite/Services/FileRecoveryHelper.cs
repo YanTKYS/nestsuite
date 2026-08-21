@@ -4,7 +4,7 @@ using System.IO;
 namespace NestSuite.Services;
 
 /// <summary>
-/// M19: 読込失敗した設定・履歴ファイルの退避結果。
+/// 読込失敗した設定・履歴ファイルの退避結果。
 /// </summary>
 /// <param name="Succeeded">退避（移動）に成功した場合 true。</param>
 /// <param name="OriginalPath">退避対象だった元のファイルパス。</param>
@@ -17,7 +17,7 @@ public sealed record CorruptFileRecoveryResult(
     Exception? Exception);
 
 /// <summary>
-/// M19: 読込に失敗した設定・履歴ファイルを同一ディレクトリ内で退避するだけの小さなヘルパー。
+/// 読込に失敗した設定・履歴ファイルを同一ディレクトリ内で退避するだけの小さなヘルパー。
 /// 退避先パス生成・衝突回避・ファイル移動・結果返却のみを担当する。
 /// 設定サービス統合・session/draft 復旧との共通化・汎用バックアップ基盤・リトライ管理・
 /// UI通知・ErrorLog 出力・JSON 読込は行わない（呼び出し側の責務）。

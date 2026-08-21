@@ -3,7 +3,7 @@ using System.IO;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.14.0 TD-57 (LT-12): エラーログのサイズベース最小ローテーション。
+/// エラーログのサイズベース最小ローテーション。
 /// <see cref="ErrorLogService"/> が追記直前に呼び出す。
 /// ローテーション失敗はアプリ本体・ログ追記を止めない（例外を外へ投げない）。
 /// 方針は docs/development/error-log-policy.md 参照。

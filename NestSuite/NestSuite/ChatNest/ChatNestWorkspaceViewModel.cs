@@ -9,21 +9,16 @@ using NestSuite.Services;
 namespace NestSuite.ChatNest;
 
 /// <summary>
-/// ChatNest Workspace の ViewModel。参照ソース ChatNest v0.4.1
-/// ViewModels/ChatNestWorkspaceViewModel.cs より、Workspace 部分を中心に取り込み。
+/// ChatNest Workspace の ViewModel。
 ///
-/// <para><b>v2.3.0 変更点</b><br/>
-/// CH-3: 発言追加時の自動スクロールを <see cref="ChatNestWorkspaceView"/> 側で制御。<br/>
-/// CH-4: 発言削除確認を <see cref="IsDeleteConfirmVisible"/> ＋ <see cref="ConfirmDeleteCommand"/> で制御し、
-///        MessageBox を廃止した。<br/>
-/// CH-6: 発言編集を <see cref="MessageViewModel"/> に委譲し、インライン編集を実現した。<br/>
-/// <see cref="Messages"/> の型を <see cref="ObservableCollection{MessageViewModel}"/> に変更した。<br/>
-/// ファイル保存用に <see cref="MessageModels"/> を提供する。</para>
+/// <para>発言追加時の自動スクロールは <see cref="ChatNestWorkspaceView"/> 側で制御する。<br/>
+/// 発言削除確認は <see cref="IsDeleteConfirmVisible"/> ＋ <see cref="ConfirmDeleteCommand"/> で行い、MessageBox は使わない。<br/>
+/// 発言編集は <see cref="MessageViewModel"/> へ委譲する（インライン編集）。<br/>
+/// ファイル保存用には <see cref="MessageModels"/> を提供する。</para>
 ///
-/// <para><b>v2.7.11 変更点</b><br/>
-/// CH-10: <see cref="HandleCopyRequest"/> で発言本文のみのコピーを処理する。<br/>
-/// CH-5:  <see cref="SearchText"/> / <see cref="SearchNextCommand"/> / <see cref="SearchPreviousCommand"/> で
-///         会話内検索を提供する。<see cref="ScrollToMessageRequested"/> で View にスクロールを要求する。<br/>
+/// <para><see cref="HandleCopyRequest"/> で発言本文のみのコピーを処理する。<br/>
+/// <see cref="SearchText"/> / <see cref="SearchNextCommand"/> / <see cref="SearchPreviousCommand"/> で
+/// 会話内検索を提供し、<see cref="ScrollToMessageRequested"/> で View にスクロールを要求する。<br/>
 /// 検索状態は保存しない（<see cref="LoadMessages"/> / <see cref="Clear"/> でリセット）。</para>
 /// </summary>
 public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
@@ -37,13 +32,13 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private DispatcherTimer? _copyStatusTimer;
     private bool _disposed;
 
-    // CH-8: タイムスタンプ表示切替（起動中のみ保持。既定 false）
+    // タイムスタンプ表示切替（起動中のみ保持。既定 false）
     private bool _showTimestamps = false;
 
-    // L22: Workspace 共通のメッセージ本文・入力欄フォント種類（既定 "Yu Gothic UI"）
+    // Workspace 共通のメッセージ本文・入力欄フォント種類（既定 "Yu Gothic UI"）
     private string _contentFontFamily = "Yu Gothic UI";
 
-    // CH-5 search state
+    // 会話内検索の状態
     private string _searchText = string.Empty;
     private bool _isSearchBarVisible;
     private int _searchCurrentIndex = -1;
@@ -60,7 +55,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     public ObservableCollection<MessageViewModel> Messages { get; } = new();
     public Speaker[] Speakers { get; } = (Speaker[])Enum.GetValues(typeof(Speaker));
 
-    /// <summary>v2.3.0: ファイル保存用に Message モデルシーケンスを返す。</summary>
+    /// <summary>ファイル保存用に Message モデルシーケンスを返す。</summary>
     public IEnumerable<Message> MessageModels => Messages.Select(m => m.Model);
 
     public ChatNestTransientDraftState CreateTransientDraftState()
@@ -105,30 +100,30 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         || !string.IsNullOrWhiteSpace(InputText)
         || Messages.Any(m => m.IsEditing && m.EditingText != m.Text);
 
-    /// <summary>v1.16.5: コピー操作後に一時表示するステータスメッセージ。</summary>
+    /// <summary>コピー操作後に一時表示するステータスメッセージ。</summary>
     public string CopyStatusText
     {
         get => _copyStatusText;
         private set { _copyStatusText = value; OnPropertyChanged(); }
     }
 
-    /// <summary>v2.3.0 CH-4: 発言削除確認ダイアログの表示状態。</summary>
+    /// <summary>発言削除確認ダイアログの表示状態。</summary>
     public bool IsDeleteConfirmVisible
     {
         get => _isDeleteConfirmVisible;
         private set { _isDeleteConfirmVisible = value; OnPropertyChanged(); }
     }
 
-    // ── CH-5: 会話内検索 ─────────────────────────────────────────────────
+    // ── 会話内検索 ─────────────────────────────────────────────────
 
-    /// <summary>CH-5: 検索バーの表示状態。</summary>
+    /// <summary>検索バーの表示状態。</summary>
     public bool IsSearchBarVisible
     {
         get => _isSearchBarVisible;
         private set { _isSearchBarVisible = value; OnPropertyChanged(); }
     }
 
-    /// <summary>CH-5: 検索語。空にすると検索状態を解除する。</summary>
+    /// <summary>検索語。空にすると検索状態を解除する。</summary>
     public string SearchText
     {
         get => _searchText;
@@ -141,7 +136,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    /// <summary>CH-5: 検索結果件数と現在位置のサマリー。例: "2 / 5件"、"0件"。</summary>
+    /// <summary>検索結果件数と現在位置のサマリー。例: "2 / 5件"、"0件"。</summary>
     public string SearchResultSummary
     {
         get
@@ -152,44 +147,44 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    /// <summary>CH-5: 検索バーを開くコマンド。</summary>
+    /// <summary>検索バーを開くコマンド。</summary>
     public ICommand OpenSearchCommand { get; }
 
-    /// <summary>CH-5: 検索バーを閉じるコマンド。検索状態もリセットする。</summary>
+    /// <summary>検索バーを閉じるコマンド。検索状態もリセットする。</summary>
     public ICommand CloseSearchCommand { get; }
 
-    /// <summary>CH-5: 次の検索結果へ移動するコマンド。</summary>
+    /// <summary>次の検索結果へ移動するコマンド。</summary>
     public ICommand SearchNextCommand => _searchNextCommand;
 
-    /// <summary>CH-5: 前の検索結果へ移動するコマンド。</summary>
+    /// <summary>前の検索結果へ移動するコマンド。</summary>
     public ICommand SearchPreviousCommand => _searchPreviousCommand;
 
-    /// <summary>CH-5: 指定インデックスのメッセージへのスクロールを View に要求するイベント。</summary>
+    /// <summary>指定インデックスのメッセージへのスクロールを View に要求するイベント。</summary>
     public event EventHandler<int>? ScrollToMessageRequested;
 
     // ── コマンド ──────────────────────────────────────────────────────────
 
     public ICommand PostCommand => _postCommand;
 
-    /// <summary>v2.3.0 CH-4: 削除確認ダイアログで「削除」を選択した時のコマンド。</summary>
+    /// <summary>削除確認ダイアログで「削除」を選択した時のコマンド。</summary>
     public ICommand ConfirmDeleteCommand { get; }
 
-    /// <summary>v2.3.0 CH-4: 削除確認ダイアログで「キャンセル」を選択した時のコマンド。</summary>
+    /// <summary>削除確認ダイアログで「キャンセル」を選択した時のコマンド。</summary>
     public ICommand CancelDeleteCommand { get; }
 
     public ICommand CopyNestSuiteCommand    => _copyNestSuiteCommand;
     public ICommand CopyMarkdownCommand     => _copyMarkdownCommand;
 
-    /// <summary>CH-14: 会話全体を「発言者: 本文」形式でコピーするコマンド。</summary>
+    /// <summary>会話全体を「発言者: 本文」形式でコピーするコマンド。</summary>
     public ICommand CopyConversationCommand => _copyConversationCommand;
 
-    /// <summary>CH-9: 会話全体をテキスト / Markdown ファイルとして保存するコマンド。</summary>
+    /// <summary>会話全体をテキスト / Markdown ファイルとして保存するコマンド。</summary>
     public ICommand ExportConversationCommand => _exportConversationCommand;
 
-    /// <summary>CH-9: View がファイル保存ダイアログを開いてエクスポートを処理するためのイベント。</summary>
+    /// <summary>View がファイル保存ダイアログを開いてエクスポートを処理するためのイベント。</summary>
     public event EventHandler? ConversationExportRequested;
 
-    /// <summary>CH-8: タイムスタンプ表示状態。起動中のみ保持（保存ファイルには反映しない）。既定は true。</summary>
+    /// <summary>タイムスタンプ表示状態。起動中のみ保持（保存ファイルには反映しない）。既定は true。</summary>
     public bool ShowTimestamps
     {
         get => _showTimestamps;
@@ -197,7 +192,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// L22: メッセージ本文・入力欄に適用する Workspace 共通フォント種類。
+    /// メッセージ本文・入力欄に適用する Workspace 共通フォント種類。
     /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
     /// 発言者ラベル・ボタン・ツールバーなどの UI フォントには適用しない。
     /// .chatnest（<see cref="MessageModels"/>）へは保存しないため、変更しても <see cref="IsDirty"/> は立たない。
@@ -211,7 +206,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     public event EventHandler? WorkspaceModified;
 
     /// <summary>
-    /// LK-4 (v2.21.0): Shell が配線する、発言 1 件を IdeaNest カードへ転送する要求。
+    /// Shell が配線する、発言 1 件を IdeaNest カードへ転送する要求。
     /// 引数は発言本文のみ（IdeaNest / Shell の型を ChatNest 側は一切参照しない）。
     /// null = 未配線（通常発生しない。Shell が ChatNest ViewModel 生成時に必ず配線する）。
     /// </summary>
@@ -248,7 +243,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 
     public void MarkSaved() => IsDirty = false;
 
-    /// <summary>CH-13: 指定インデックスの発言を別インデックスへ移動する。同一位置・範囲外は無視する。</summary>
+    /// <summary>指定インデックスの発言を別インデックスへ移動する。同一位置・範囲外は無視する。</summary>
     public void MoveMessage(int oldIndex, int newIndex)
     {
         if (oldIndex < 0 || oldIndex >= Messages.Count) return;
@@ -261,7 +256,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// CH-11: 現在の <see cref="Messages"/> の表示順を基準に、各メッセージの日付区切り表示
+    /// 現在の <see cref="Messages"/> の表示順を基準に、各メッセージの日付区切り表示
     /// （<see cref="MessageViewModel.ShowDateSeparator"/>）を再計算する。timestamp順への自動整列は
     /// 行わない（並び替え後の表示順をそのまま使う）。呼び出し側（Load・Post・削除・並び替え）が
     /// 明示的なタイミングでのみ呼ぶ。本文編集はタイムスタンプ・順序を変えないため呼ばない。
@@ -299,7 +294,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// SH-36b: 下書き復元専用。通常の <see cref="LoadMessages"/> は clean のまま維持し、
+    /// 下書き復元専用。通常の <see cref="LoadMessages"/> は clean のまま維持し、
     /// こちらだけ無題・未保存タブとして扱うため dirty にする。
     /// </summary>
     public void LoadMessagesAsDraft(
@@ -346,20 +341,20 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     // ── エクスポートテキスト生成（NoteNest 転記・Markdown） ──────────────────
 
     /// <summary>
-    /// v1.16.7: NoteNest への貼り付けに適した形式を生成する。
+    /// NoteNest への貼り付けに適した形式を生成する。
     /// 連続する同一発言者のメッセージは 1 ブロックに集約する。
     /// </summary>
     public string BuildNestSuiteText() =>
         ChatNestExportFormatter.BuildNestSuiteGrouped(MessageModels);
 
     /// <summary>
-    /// v1.16.5: Markdown 形式のエクスポートテキストを生成する。
+    /// Markdown 形式のエクスポートテキストを生成する。
     /// 連続する同一発言者のメッセージは 1 ブロックに集約する。
     /// </summary>
     public string BuildMarkdownText() =>
         ChatNestExportFormatter.BuildMarkdownGrouped(MessageModels);
 
-    // ── CH-5: 検索 ────────────────────────────────────────────────────────
+    // ── 検索 ────────────────────────────────────────────────────────
 
     private void ExecuteCloseSearch()
     {
@@ -448,11 +443,11 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         WorkspaceModified?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>CH-10: 発言本文のみをコピーする。発言者名・タイムスタンプは含めない。</summary>
+    /// <summary>発言本文のみをコピーする。発言者名・タイムスタンプは含めない。</summary>
     private void HandleCopyRequest(MessageViewModel vm) => CopyToClipboard(vm.Text);
 
     /// <summary>
-    /// LK-4: 発言本文のみを Shell へ渡す。発言者名・タイムスタンプ・ヘッダは付加しない。
+    /// 発言本文のみを Shell へ渡す。発言者名・タイムスタンプ・ヘッダは付加しない。
     /// 転送元（ChatNest）はこの発言・会話の状態を一切変更しない。
     /// </summary>
     private void HandleTransferToIdeaNestRequest(MessageViewModel vm) => TransferMessageToIdeaNestRequested?.Invoke(vm.Text);
@@ -525,7 +520,7 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
         ConversationExportRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>CH-9: View がエクスポート保存完了後に呼び出す通知メソッド。</summary>
+    /// <summary>View がエクスポート保存完了後に呼び出す通知メソッド。</summary>
     internal void ShowExportStatus(string message) => ShowCopyStatus(message);
 
     private void CopyToClipboard(string text) => CopyToClipboard(text, "コピーしました");

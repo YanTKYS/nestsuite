@@ -51,9 +51,9 @@ public sealed class EditorStateViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// v2.14.16 BUG: NoteNest 本文エディタの表示フォント種類。UI 設定（Shell の
-    /// WorkspaceEditorFontFamily、v2.14.17 L22 で IdeaNest/ChatNest/TempNest と共通化。
-    /// 旧 NoteNestEditorFontFamily）駆動の値であり、変更しても Workspace を dirty にせず、
+    /// NoteNest 本文エディタの表示フォント種類。UI 設定（Shell の
+    /// WorkspaceEditorFontFamily。IdeaNest/ChatNest/TempNest と共通）
+    /// 駆動の値であり、変更しても Workspace を dirty にせず、
     /// 保存対象（<see cref="SavedFontFamily"/>）にも影響しない。ファイルへ永続化したい
     /// 値は <see cref="LoadSettings"/> 経由でのみ <see cref="SavedFontFamily"/> に反映される。
     /// </summary>
@@ -64,7 +64,7 @@ public sealed class EditorStateViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// v2.14.16 BUG: プロジェクト読込時点の FontFamily（Workspace ファイルへ保存する値）。
+    /// プロジェクト読込時点の FontFamily（Workspace ファイルへ保存する値）。
     /// <see cref="FontFamily"/>（表示用・UI 設定で上書きされ得る）とは独立して保持する。
     /// </summary>
     public string SavedFontFamily => _savedFontFamily;
@@ -76,7 +76,7 @@ public sealed class EditorStateViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// v2.19.3 L4: NoteNest 本文エディタの折り返し表示（true=Wrap／false=NoWrap+横スクロール）。
+    /// NoteNest 本文エディタの折り返し表示（true=Wrap／false=NoWrap+横スクロール）。
     /// UI 設定（Shell の NoteNestWordWrap）駆動の純粋な表示設定であり、変更しても Workspace を
     /// dirty にせず、保存対象（本文・schema）にも影響しない（<see cref="FontFamily"/> と同様の位置づけ）。
     /// </summary>

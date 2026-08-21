@@ -1,7 +1,7 @@
 namespace NestSuite;
 
 /// <summary>
-/// v2.16.4 SH-19: ヘルプメニューに表示するキーボードショートカット一覧。
+/// ヘルプメニューに表示するキーボードショートカット一覧。
 /// 現行コードに存在するショートカットのみを静的に列挙する。
 /// </summary>
 public static class ShortcutHelpProvider

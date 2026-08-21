@@ -19,7 +19,7 @@ public partial class NoteNestWorkspaceView
             e.Handled = true;
     }
 
-    /// <summary>L27: Enterキーは選択中のアウトバウンドリンクをマウスクリックと同じ処理で実行する。</summary>
+    /// <summary>Enterキーは選択中のアウトバウンドリンクをマウスクリックと同じ処理で実行する。</summary>
     private void OutboundLinkList_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || e.Handled) return;
@@ -30,7 +30,7 @@ public partial class NoteNestWorkspaceView
         e.Handled = true;
     }
 
-    /// <summary>L27: Enterキーは選択中のバックリンクをマウスクリックと同じ処理で実行する。</summary>
+    /// <summary>Enterキーは選択中のバックリンクをマウスクリックと同じ処理で実行する。</summary>
     private void BacklinkList_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || e.Handled) return;

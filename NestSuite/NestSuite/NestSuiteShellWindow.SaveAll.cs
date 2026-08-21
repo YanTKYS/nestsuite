@@ -6,7 +6,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // Ctrl+Shift+S による全タブ一括保存（SH-20）を扱う partial。
+    // Ctrl+Shift+S による全タブ一括保存を扱う partial。
     // 個別の保存処理は FileSave.cs・FileSaveStateSync.cs に委譲する。
 
     public static readonly RoutedCommand SaveAllCommand = new RoutedCommand(
@@ -17,11 +17,11 @@ public partial class NestSuiteShellWindow
 
     private void CommandSaveAll_Executed(object sender, ExecutedRoutedEventArgs e) => SaveAllTabs();
 
-    /// <summary>v2.16.10 SH-30: ファイルメニュー「すべて保存」の Click ハンドラ。Ctrl+Shift+S と同じ SaveAllTabs に委譲する。</summary>
+    /// <summary>ファイルメニュー「すべて保存」の Click ハンドラ。Ctrl+Shift+S と同じ SaveAllTabs に委譲する。</summary>
     private void MenuSaveAll_Click(object sender, RoutedEventArgs e) => SaveAllTabs();
 
     /// <summary>
-    /// v2.10.4 SH-20: 未保存の全タブ（NoteNest/IdeaNest/ChatNest）を順に保存する。
+    /// 未保存の全タブ（NoteNest/IdeaNest/ChatNest）を順に保存する。
     /// TempNest は CanClose=false のため対象外。SaveAs キャンセル・保存失敗時は中断する。
     /// </summary>
     private void SaveAllTabs()
@@ -47,7 +47,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.10.4 SH-20: 指定タブを SaveAll 用に保存する。
+    /// 指定タブを SaveAll 用に保存する。
     /// 既存パスがある場合は上書き保存、ない場合は SaveAs ダイアログを表示する。
     /// キャンセル・保存失敗時は Cancelled/Failed を返す。
     /// </summary>
@@ -90,9 +90,8 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.13.6 TD-45: 保存実体を TrySaveIdeaNestToPath へ委譲する。
-    /// 従来はここに FileService.Save + MarkSaved の複製があり、FileSave.cs 側との
-    /// ドリフトリスクがあったため、シリアライズは各 Workspace につき 1 箇所に統一した。
+    /// 保存実体を TrySaveIdeaNestToPath へ委譲する。
+    /// シリアライズは FileSave.cs 側とのドリフトを避けるため、各 Workspace につき 1 箇所に集約する。
     /// </summary>
     private SaveAllTabResult TrySaveIdeaNestForSaveAll(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
@@ -105,7 +104,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.13.6 TD-45: 保存実体を TrySaveChatNestToPath へ委譲する。
+    /// 保存実体を TrySaveChatNestToPath へ委譲する。
     /// isModifiedAfterSave（InputText 残留時の HasUnsavedChanges 引き継ぎ）は
     /// UpdateChatNestTabPath（FileSaveStateSync.cs）に集約されている。
     /// </summary>
@@ -119,7 +118,7 @@ public partial class NestSuiteShellWindow
             : SaveAllTabResult.Failed;
     }
 
-    /// <summary>v2.19.0 SH-43: 保存実体を TrySaveTextToPath へ委譲する（IdeaNest/ChatNest と対称）。</summary>
+    /// <summary>保存実体を TrySaveTextToPath へ委譲する（IdeaNest/ChatNest と対称）。</summary>
     private SaveAllTabResult TrySaveTextForSaveAll(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
         var targetPath = ResolveSaveTargetPath(tab, NestSuiteWorkspaceKind.PlainText,

@@ -1,13 +1,13 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.16.9 SH-29: 終了時の未保存確認 1 件分を表す軽量な情報。件数サマリの表示にのみ使う
+/// 終了時の未保存確認 1 件分を表す軽量な情報。件数サマリの表示にのみ使う
 /// （保存・破棄の判断自体は既存の個別確認フローが担う）。
 /// </summary>
 public sealed record UnsavedCloseTarget(NestSuiteWorkspaceKind WorkspaceKind, string DisplayName);
 
 /// <summary>
-/// v2.16.9 SH-29: NestSuiteShellWindow.OnClosing の個別未保存確認に入る前に表示する
+/// NestSuiteShellWindow.OnClosing の個別未保存確認に入る前に表示する
 /// 件数サマリの、UI 非依存の判断・文言組み立てロジック。
 /// 対象が 2 件未満のときはサマリを出さず、既存の個別確認フローへそのまま進む。
 /// </summary>

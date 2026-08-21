@@ -4,7 +4,7 @@ using System.Windows.Data;
 namespace NestSuite.Converters;
 
 /// <summary>
-/// v2.13.5 M16 フォローアップ: NoteNest 右ペインのタスク行の最小高さを、既存タスクがない場合は
+/// NoteNest 右ペインのタスク行の最小高さを、既存タスクがない場合は
 /// 0（コンテンツに合わせて縮む）にし、ある場合は従来どおり 100 を維持する。
 /// </summary>
 public class HasNoTasksToRowMinHeightConverter : IValueConverter

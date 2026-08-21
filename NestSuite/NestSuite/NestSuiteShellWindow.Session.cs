@@ -7,17 +7,17 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // ── v1.14.0: 最近使ったファイル ──────────────────────────────────────────
+    // ── 最近使ったファイル ──────────────────────────────────────────
 
     /// <summary>
-    /// SH-40: recent filesの最新読込結果をメモリ上に保持し、TempNest上部の「続きから」表示が
+    /// recent filesの最新読込結果をメモリ上に保持し、TempNest上部の「続きから」表示が
     /// 起動時追加I/Oなしで再利用できるようにする（<see cref="UpdateRecentFilesMenu"/>が
     /// 呼ばれるたびに更新される。新たな読込経路は追加しない）。
     /// </summary>
     private IReadOnlyList<string> _recentFilesCache = [];
 
     /// <summary>
-    /// v1.14.0: 最近使ったファイルメニューを現在のリストで再構築する。
+    /// 最近使ったファイルメニューを現在のリストで再構築する。
     /// 空の場合は「（履歴なし）」の無効項目を表示する。
     /// </summary>
     private void UpdateRecentFilesMenu()
@@ -39,11 +39,11 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.14.0: 最近使ったファイル一覧の項目クリック。パス検証・重複チェック後に対応する Load*FileAt を呼ぶ。
+    /// 最近使ったファイル一覧の項目クリック。パス検証・重複チェック後に対応する Load*FileAt を呼ぶ。
     /// ファイルが見つからない場合は一覧から削除してメニューを更新する。
-    /// v1.14.1: 未対応拡張子の場合もエラーダイアログを表示して履歴から削除する。
-    /// v1.14.1: 既存タブをアクティブ化する場合も最近ファイルの先頭へ移動する。
-    /// SH-40: 実処理は<see cref="OpenRecentFile"/>へ切り出し、TempNest上部の
+    /// 未対応拡張子の場合もエラーダイアログを表示して履歴から削除する。
+    /// 既存タブをアクティブ化する場合も最近ファイルの先頭へ移動する。
+    /// 実処理は<see cref="OpenRecentFile"/>へ切り出し、TempNest上部の
     /// 「続きから」recentリンクと共有する（パネル専用のオープン処理を複製しない）。
     /// </summary>
     private void MenuRecentFile_Click(object sender, RoutedEventArgs e)
@@ -53,9 +53,9 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// SH-40: 最近使ったファイルメニューとTempNest上部の「続きから」recentリンクが共有する
+    /// 最近使ったファイルメニューとTempNest上部の「続きから」recentリンクが共有する
     /// オープン処理。既存の<c>ShellFileOpenPlanner.Plan</c>経由の判定・通知・最近ファイル更新を
-    /// そのまま使い、ファイル不存在時は一覧から削除したうえでSH-40側の表示も合わせて更新する。
+    /// そのまま使い、ファイル不存在時は一覧から削除したうえで「続きから」パネルの表示も合わせて更新する。
     /// </summary>
     private void OpenRecentFile(string path)
     {
@@ -72,7 +72,7 @@ public partial class NestSuiteShellWindow
         }
         if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
-            // v2.14.7 SH-31: 未対応拡張子は従来どおり履歴から削除する。
+            // 未対応拡張子は従来どおり履歴から削除する。
             // 一方 `.nestsuite` の種別判定失敗は「一時的に読めない」だけの可能性があるため、
             // 理由に応じた文言で通知し、履歴からは削除しない。
             if (decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension)
@@ -95,16 +95,16 @@ public partial class NestSuiteShellWindow
             ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
             return;
         }
-        // v2.16.37 TD-59b-3: prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
+        // prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
         LoadWorkspaceFileAt(decision.OpenContext!);
     }
 
-    // ── v1.15.0: セッション復元 ──────────────────────────────────────────────
+    // ── セッション復元 ──────────────────────────────────────────────
 
     /// <summary>
-    /// v1.15.0: ウィンドウ終了確定時に保存済みファイルタブのパスとアクティブタブを保存する。
+    /// ウィンドウ終了確定時に保存済みファイルタブのパスとアクティブタブを保存する。
     /// 未保存タブ（FilePath == null）はセッションに含めない。
-    /// v2.16.7 TD-65: 前回起動時に復元できなかった entry（<see cref="_pendingSessionRestoreEntries"/>）を、
+    /// 前回起動時に復元できなかった entry（<see cref="_pendingSessionRestoreEntries"/>）を、
     /// 現在開いているタブと重複しない範囲で持ち越す。session.json の形式は変更しない。
     /// </summary>
     private void SaveSession()
@@ -113,15 +113,13 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.14 TD-66 (review1-fable5.md R-6): タブ追加・タブ閉鎖・ピン留め変更・並び替えなど、
-    /// session に影響する操作の直後に呼び session の鮮度を上げる。従来 session は終了時の
-    /// <see cref="OnClosing"/> でのみ保存されており、クラッシュ・強制終了時にタブ構成が
-    /// 前回正常終了時点へ巻き戻る可能性があった。
+    /// タブ追加・タブ閉鎖・ピン留め変更・並び替えなど、
+    /// session に影響する操作の直後に呼び session の鮮度を上げる。<see cref="OnClosing"/> だけで
+    /// 保存すると、クラッシュ・強制終了時にタブ構成が前回正常終了時点へ巻き戻るため。
     /// セッション復元処理中（<see cref="_isRestoringSession"/>）は、復元途中の中途半端な
-    /// タブ構成を保存して TD-65 の持ち越し entry（<see cref="_pendingSessionRestoreEntries"/>）を
+    /// タブ構成を保存して持ち越し entry（<see cref="_pendingSessionRestoreEntries"/>）を
     /// 消してしまわないよう、保存を抑止する。復元完了後の保存はコンストラクターが
-    /// <see cref="TryRestoreSession"/> の戻り値を見て別途 1 回だけ行う。
-    /// session.json の形式・OnClosing 時保存は変更しない。atomic write 済みの
+    /// <see cref="TryRestoreSession"/> の戻り値を見て別途 1 回だけ行う。atomic write 済みの
     /// <see cref="NestSuiteSessionStateService"/> をそのまま使うため、随時呼んでも安全。
     /// </summary>
     private void SaveSessionAfterTabChange()
@@ -131,13 +129,13 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.15.0: 前回セッションのタブを復元する。
+    /// 前回セッションのタブを復元する。
     /// 未対応拡張子・空パスのエントリはスキップする。
     /// 1 件以上復元できた場合 true を返す。復元対象がない場合 false を返し、呼び元が無題タブを作成する。
-    /// v2.14.7 SH-31: 読めない `.nestsuite`（存在するのに種別判定できない）は無言でスキップせず、
+    /// 読めない `.nestsuite`（存在するのに種別判定できない）は無言でスキップせず、
     /// まとめて 1 回通知する。session からの削除はしない（次回起動時に再試行される）。
-    /// v2.16.7 TD-65: 存在しないファイルも同様に通知・持ち越し対象にする（<see cref="_pendingSessionRestoreEntries"/>）。
-    /// v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9): <see cref="SessionRestoreTarget.OpenContext"/>
+    /// 存在しないファイルも同様に通知・持ち越し対象にする（<see cref="_pendingSessionRestoreEntries"/>）。
+    /// <see cref="SessionRestoreTarget.OpenContext"/>
     /// を復元ループへそのまま渡す。target 生成時に probe した wrapper 内容（`.nestsuite`）を再読込しない。
     /// </summary>
     private bool TryRestoreSession()
@@ -145,8 +143,8 @@ public partial class NestSuiteShellWindow
         var state = _sessionState.Load();
         if (state.FilePaths.Count == 0 && (state.Tabs?.Count ?? 0) == 0) return false;
 
-        // v2.16.14 TD-66: 復元の間、タブ追加ごとの随時保存（SaveSessionAfterTabChange）を抑止する。
-        // 復元途中の中途半端なタブ構成を保存して、TD-65 の持ち越し entry（_pendingSessionRestoreEntries）を
+        // 復元の間、タブ追加ごとの随時保存（SaveSessionAfterTabChange）を抑止する。
+        // 復元途中の中途半端なタブ構成を保存して、持ち越し entry（_pendingSessionRestoreEntries）を
         // 消してしまわないようにするため。復元完了後の保存は呼び出し元（コンストラクター）が担う。
         _isRestoringSession = true;
         try
@@ -156,7 +154,7 @@ public partial class NestSuiteShellWindow
             int restoredCount = 0;
             foreach (var target in targets)
             {
-                // v2.16.38 TD-59b-4: target.OpenContext は CreateRestoreTargets が
+                // target.OpenContext は CreateRestoreTargets が
                 // NestSuiteTabFactory.TryPrepareOpen で 1 回だけ読んだ結果（.nestsuite の wrapper 内容を含む）。
                 // ここでは再読込せず、Planner の既存タブ判定にだけ使う。
                 var decision = ShellFileOpenPlanner.Plan(
@@ -202,17 +200,14 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.14.7 SH-31: セッション復元で復元できなかったファイルをまとめて 1 回通知する。
+    /// セッション復元で復元できなかったファイルをまとめて 1 回通知する。
     /// 1 件ずつ MessageBox を出さない。復元可能なタブの復元は既に完了している。
-    /// v2.16.7 TD-65: 「次回起動時にも再試行します」は <see cref="_pendingSessionRestoreEntries"/> 経由で
-    /// 実際に session へ持ち越されるようになったため、文言と実挙動が一致する
-    /// （review1-fable5.md R-2）。理由ごとに文言が変わるため、失敗理由を決めつける
-    /// 固定の補足文（「破損とは限りません」等）は付けず、理由別メッセージのみを列挙する。
-    /// v2.16.21 SH-34 (review4-fable5.md LT-9 フェーズ1): FileNotFound を含む場合、従来は本通知
-    /// （ShowError）の後に別ダイアログで再試行解除確認を出しており、起動時に最大 2 枚表示されていた。
-    /// 1 つの Yes/No ダイアログに統合し、認知負荷を下げる。FileNotFound を含まない場合は
-    /// 従来どおり ShowError（OK 通知）のみ。解除対象は FileNotFound のみで、InvalidFormat /
-    /// AccessDenied / SchemaVersionTooNew の解除対象拡張は行わない（TD-70 の方針を維持）。
+    /// 失敗した entry は <see cref="_pendingSessionRestoreEntries"/> 経由で session へ持ち越すため、
+    /// 「次回起動時にも再試行します」の文言と実挙動が一致する。理由ごとに文言が変わるため、
+    /// 失敗理由を決めつける固定の補足文（「破損とは限りません」等）は付けず、理由別メッセージのみを列挙する。
+    /// FileNotFound を含む場合は、通知と再試行解除確認を 1 つの Yes/No ダイアログへまとめる
+    /// （起動時にダイアログが 2 枚出るのを避けるため）。含まない場合は ShowError（OK 通知）のみ。
+    /// 解除対象は FileNotFound に限り、InvalidFormat / AccessDenied / SchemaVersionTooNew へは広げない。
     /// </summary>
     private void NotifyRestoreFailures(IReadOnlyList<SessionRestoreFailure> failures)
     {
@@ -239,21 +234,20 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.18 TD-70: _pendingSessionRestoreEntries から FileNotFound の entry のみを除外する。
+    /// _pendingSessionRestoreEntries から FileNotFound の entry のみを除外する。
     /// 実際の除外ロジックは UI 非依存の <see cref="SessionTabMapper.RemoveFileNotFoundEntries"/> に委ねる。
-    /// session.json の形式・重複排除ロジック（TD-65/TD-69）は変更しない。
     /// </summary>
     private void ForgetFileNotFoundRestoreFailures()
     {
         _pendingSessionRestoreEntries = SessionTabMapper.RemoveFileNotFoundEntries(_pendingSessionRestoreEntries);
     }
 
-    // ── v1.18.1: パイプ経由ファイルオープン（シングルインスタンス） ──────────
+    // ── パイプ経由ファイルオープン（シングルインスタンス） ──────────
 
     /// <summary>
-    /// v1.18.1: Named Pipe 経由で受け取ったファイルパスを UI スレッドで開く。
+    /// Named Pipe 経由で受け取ったファイルパスを UI スレッドで開く。
     /// 既存の Load*FileAt メソッドを再利用し、重複タブ検出・最近ファイル更新を維持する。
-    /// v2.14.7 SH-31: 開けないファイル（存在しない・種別判定不能）を無言で捨てず、
+    /// 開けないファイル（存在しない・種別判定不能）を無言で捨てず、
     /// 既存ウィンドウ側で理由に応じた文言を通知する（ダブルクリック起動の受け口）。
     /// </summary>
     internal void OpenFileFromPipe(string rawPath)
@@ -264,7 +258,7 @@ public partial class NestSuiteShellWindow
             var decision = ShellFileOpenPlanner.Plan(rawPath, _tabs);
             if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
             {
-                // v2.16.11 SH-1: ファイル関連付け等からの 2 重起動転送で失敗した場合も、
+                // ファイル関連付け等からの 2 重起動転送で失敗した場合も、
                 // NestSuite（ウィンドウは既に前面表示済み）が引き続き使えることを添える。
                 _dialogs.ShowError(
                     ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
@@ -285,7 +279,7 @@ public partial class NestSuiteShellWindow
                 ActivateExistingTabForOpen(decision.ExistingTab!, decision.Path);
                 return;
             }
-            // v2.16.37 TD-59b-3: prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
+            // prepared context 経路へ切替（.nestsuite の追加読込を省略する）。
             LoadWorkspaceFileAt(decision.OpenContext!);
         });
     }

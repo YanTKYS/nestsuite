@@ -1,7 +1,7 @@
 namespace NestSuite;
 
 /// <summary>
-/// v1.9.1: <see cref="NestSuiteWorkspaceSession"/> のコレクションを TabId をキーに管理するクラス。
+/// <see cref="NestSuiteWorkspaceSession"/> のコレクションを TabId をキーに管理するクラス。
 ///
 /// <para>タブコレクション（<c>ObservableCollection&lt;NestSuiteDocumentTab&gt;</c>）と
 /// Session コレクションは常に 1:1 の対応を維持する。

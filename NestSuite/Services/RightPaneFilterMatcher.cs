@@ -1,7 +1,7 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// L10: NoteNest右ペイン（マーカー一覧・互換タスク一覧）共通の文字列絞り込み判定。
+/// NoteNest右ペイン（マーカー一覧・互換タスク一覧）共通の文字列絞り込み判定。
 /// 通常の <see cref="string.IndexOf(string, StringComparison)"/> による大文字小文字を
 /// 区別しない部分一致のみを行い、正規表現は使用しない。
 /// </summary>

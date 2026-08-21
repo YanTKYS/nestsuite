@@ -5,14 +5,14 @@ using NestSuite.Services;
 namespace NestSuite.ViewModels;
 
 /// <summary>
-/// v2.15.0 SH: Shell 横断検索パネルの状態。パネルの表示状態・検索語・検索結果はすべて
+/// Shell 横断検索パネルの状態。パネルの表示状態・検索語・検索結果はすべて
 /// セッション内のみで保持し、ui-settings.json など永続化ファイルには一切書き込まない。
 ///
 /// <para><see cref="_getTabs"/> は現在開いているタブ一覧（<see cref="ShellSearchTabEntry"/>）を
 /// 都度取得するコールバック。NestSuiteShellWindow 側は呼び出すたびに最新の _sessionManager /
 /// _tabs の状態を反映したコレクションを返す。</para>
 ///
-/// <para>SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」（<see cref="IncludeRecentFiles"/>、既定OFF）を
+/// <para>「最近のファイルも検索」（<see cref="IncludeRecentFiles"/>、既定OFF）を
 /// ONにした場合だけ、<see cref="_getRecentFilePaths"/>・<see cref="_getOpenFilePaths"/> から
 /// 現在開いていないrecent files上位件数を1回だけ非同期読込し、以後はキー入力ごとに
 /// メモリ内スナップショットへ検索する（キー入力ごとのファイルI/Oはしない）。
@@ -61,7 +61,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
     /// <summary>開いているタブの検索結果。</summary>
     public ObservableCollection<ShellSearchResult> Results { get; } = new();
 
-    /// <summary>SH-41: 未オープンrecent filesの検索結果（<see cref="IncludeRecentFiles"/> OFF中は常に空）。</summary>
+    /// <summary>未オープンrecent filesの検索結果（<see cref="IncludeRecentFiles"/> OFF中は常に空）。</summary>
     public ObservableCollection<ShellSearchResult> UnopenedResults { get; } = new();
 
     public bool HasResults => Results.Count > 0;
@@ -82,7 +82,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
     }
 
     /// <summary>
-    /// SH-41: 「最近のファイルも検索」チェック。既定OFF・永続化しない。ONにした時点で
+    /// 「最近のファイルも検索」チェック。既定OFF・永続化しない。ONにした時点で
     /// 未オープンrecent files上位件数を1回だけ非同期読込する。OFFにすると読込中の処理を
     /// キャンセルし、スナップショットを破棄する。
     /// </summary>
@@ -100,7 +100,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
         }
     }
 
-    /// <summary>SH-41: 未オープンrecent filesを読込中かどうか。読込中表示のバインド用。</summary>
+    /// <summary>未オープンrecent filesを読込中かどうか。読込中表示のバインド用。</summary>
     public bool IsLoadingRecentFiles
     {
         get => _isLoadingRecentFiles;
@@ -125,7 +125,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
         _searchText = "";
         OnPropertyChanged(nameof(SearchText));
         Results.Clear();
-        // SH-41: パネルを閉じて再度開いた場合も、原則OFFへ戻す（既定値・永続化しない）。
+        // パネルを閉じて再度開いた場合も、原則OFFへ戻す（既定値・永続化しない）。
         _includeRecentFiles = false;
         OnPropertyChanged(nameof(IncludeRecentFiles));
         CancelAndClearRecentFilesSnapshot();
@@ -152,7 +152,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
             IReadOnlyList<UnopenedFileLoadResult> loadResults;
             try
             {
-                // SH-41: 候補選定（recent files・開いているファイルの取得と除外）も含め、
+                // 候補選定（recent files・開いているファイルの取得と除外）も含め、
                 // 読込タスク全体を1つの保護区間として扱う（候補選定コールバック自体が
                 // 例外を投げる場合も、読込タスク全体の予期しない例外としてErrorLogへ記録する）。
                 var candidatePaths = ShellSearchService.SelectUnopenedRecentFilePaths(_getRecentFilePaths(), _getOpenFilePaths());
@@ -160,7 +160,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
             }
             catch (OperationCanceledException)
             {
-                // SH-41: チェックOFF・パネル閉鎖・再ON等によるキャンセル。エラー表示・ErrorLog記録はしない。
+                // チェックOFF・パネル閉鎖・再ON等によるキャンセル。エラー表示・ErrorLog記録はしない。
                 return;
             }
             catch (Exception ex)
@@ -215,7 +215,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
 
         if (_includeRecentFiles && _unopenedSnapshot.Count > 0)
         {
-            // SH-41: 未オープン結果からファイルを開いた後は、同じファイルを次回検索で
+            // 未オープン結果からファイルを開いた後は、同じファイルを次回検索で
             // 開いているタブ側へ委ね、未オープン側から除外する（dirty内容の優先・重複防止）。
             // スナップショット自体は直ちに再読込しない。
             var openPaths = _getOpenFilePaths();
@@ -252,7 +252,7 @@ public sealed class ShellSearchPanelViewModel : BaseViewModel, IDisposable
         OnPropertyChanged(nameof(HasUnopenedResults));
     }
 
-    /// <summary>SH-41: Shell終了時等に読込中の処理をキャンセルする。</summary>
+    /// <summary>Shell終了時等に読込中の処理をキャンセルする。</summary>
     public void Dispose()
     {
         if (_disposed) return;

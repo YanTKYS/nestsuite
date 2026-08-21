@@ -44,7 +44,7 @@ public partial class NoteNestWorkspaceView
     }
 
     /// <summary>
-    /// L28: タスクタイトルはButton化したが、既存どおりダブルクリックのみでコメント表示を切り替える。
+    /// タスクタイトルはButton化したが、既存どおりダブルクリックのみでコメント表示を切り替える。
     /// PreviewMouseLeftButtonDownで受けるため、Buttonの標準クリック処理より先に判定できる
     /// （単発クリックはe.Handledを立てず、ButtonBase標準処理へ素通りするが、Clickハンドラを
     /// 持たないため何も起きない）。
@@ -58,7 +58,7 @@ public partial class NoteNestWorkspaceView
         }
     }
 
-    /// <summary>L28: タスクタイトルへフォーカス中のEnterのみでコメント表示を切り替える（Spaceは割り当てない）。</summary>
+    /// <summary>タスクタイトルへフォーカス中のEnterのみでコメント表示を切り替える（Spaceは割り当てない）。</summary>
     private void TaskTitle_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || e.Handled) return;
@@ -96,7 +96,7 @@ public partial class NoteNestWorkspaceView
             ShowInfo("関連ノートが見つかりません。");
     }
 
-    // L24: ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
+    // ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
     // 絞り込み）を再利用する。保存値は従来どおり SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
     // 文字列入力・保存形式は変更しない。
     private void SetRelatedNote_Click(object sender, RoutedEventArgs e)

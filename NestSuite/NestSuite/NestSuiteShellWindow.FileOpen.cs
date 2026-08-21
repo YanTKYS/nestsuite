@@ -15,7 +15,7 @@ public partial class NestSuiteShellWindow
     // 読込成功後の後処理は WorkspaceFileHelper.cs の RegisterLoadedTab に委譲する。
 
     /// <summary>
-    /// v2.19.0 SH-43: .txt ファイルを開き、新しい PlainText タブ／Session を作成してロードする。
+    /// .txt ファイルを開き、新しい PlainText タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
     /// 文字コードを安全に判定できない場合はタブを作らず、元ファイルも変更しない。
     /// </summary>
@@ -32,7 +32,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: probe 済み context から .txt ファイルを読み込みタブを作成する。共通・種別別 Open、
+    /// probe 済み context から .txt ファイルを読み込みタブを作成する。共通・種別別 Open、
     /// 起動引数、最近ファイル、pipe、session 復元の読込経路から使用する（他 Workspace と同じ経路）。
     /// </summary>
     private void LoadTextFileAt(WorkspaceFileOpenContext context)
@@ -53,7 +53,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: 起動時に .txt ファイルを新しい PlainText タブ／Session として読み込む。
+    /// 起動時に .txt ファイルを新しい PlainText タブ／Session として読み込む。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため）。
     /// </summary>
     private void LoadInitialTextFile(WorkspaceFileOpenContext context)
@@ -77,10 +77,10 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.7: .ideanest ファイルを開き、新しい IdeaNest タブ／Session を作成してロードする。
+    /// .ideanest ファイルを開き、新しい IdeaNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
-    /// v1.10.1: 読込ロジックを LoadIdeaNestFileAt に分離した。
-    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を IdeaNest の
+    /// 読込ロジックを LoadIdeaNestFileAt に分離した。
+    /// 選択後に probe を 1 回だけ行い、prepared context を IdeaNest の
     /// 期待 loader へ渡す（実体が別 Workspace の場合も IdeaNest 側へ自動ルーティングしない。
     /// <see cref="IdeaNestFileService.LoadPrepared"/> 内の EnsureKind が既存文言で失敗する）。
     /// </summary>
@@ -97,7 +97,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// probe 済み context から
     /// 追加読込なしで IdeaNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
     /// 最近ファイル、pipe、session 復元の読込経路から使用する。
     /// </summary>
@@ -119,10 +119,10 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.2: .chatnest ファイルを開き、新しい ChatNest タブ／Session を作成してロードする。
+    /// .chatnest ファイルを開き、新しい ChatNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
-    /// v1.10.1: 読込ロジックを LoadChatNestFileAt に分離した。
-    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を ChatNest の
+    /// 読込ロジックを LoadChatNestFileAt に分離した。
+    /// 選択後に probe を 1 回だけ行い、prepared context を ChatNest の
     /// 期待 loader へ渡す（異なる Workspace の自動ルーティングはしない）。
     /// </summary>
     private void OpenChatNestFile()
@@ -138,7 +138,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// probe 済み context から
     /// 追加読込なしで ChatNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
     /// 最近ファイル、pipe、session 復元の読込経路から使用する。
     /// </summary>
@@ -164,12 +164,12 @@ public partial class NestSuiteShellWindow
     private void MenuOpen_Click(object sender, RoutedEventArgs e) => OpenNestSuiteFile();
 
     /// <summary>
-    /// v1.10.1: 共通「開く」ダイアログ。3 形式すべてに対応した OpenFileDialog を表示し、
+    /// 共通「開く」ダイアログ。3 形式すべてに対応した OpenFileDialog を表示し、
     /// 拡張子から自動的に種別を判定してタブを作成する。ツール選択中に関わらず任意の形式を開ける。
-    /// v1.16.0: 複数ファイル選択に対応。選択されたファイルを順番に開き、ファイル単位タブとして追加する。
+    /// 複数ファイル選択に対応。選択されたファイルを順番に開き、ファイル単位タブとして追加する。
     /// 既に開いているファイルは重複タブを作らず既存タブをアクティブ化する。
-    /// v2.16.15 TD-67 (review1-fable5.md R-7): 開けなかったファイルがある場合、件数・ファイル名・
-    /// 理由を示す（従来は件数のみの汎用メッセージで、decision.Failure を捨てていた）。
+    /// 開けなかったファイルがある場合、件数・ファイル名・
+    /// 理由を示す（decision.Failure を捨てない）。
     /// 1 件失敗しても他の成功ファイルは巻き戻さず、loop 全体も止めない。
     /// </summary>
     private void OpenNestSuiteFile()
@@ -195,12 +195,12 @@ public partial class NestSuiteShellWindow
                 continue;
             }
 
-            // v2.16.37 TD-59b-3: LoadWorkspace decision では OpenContext が非 null であることが
+            // LoadWorkspace decision では OpenContext が非 null であることが
             // 内部契約。null なら明示的に失敗させ（ArgumentNullException）、path ベース読込へ
             // 暗黙フォールバックしない。
             int tabsBefore = _tabs.Count;
             LoadWorkspaceFileAt(decision.OpenContext!);
-            // v2.16.15 TD-67: 種別判定後の実読込失敗（例外）は Load*FileAt が既に個別ダイアログを
+            // 種別判定後の実読込失敗（例外）は Load*FileAt が既に個別ダイアログを
             // 出しているため、ここでは具体理由を持たず Unknown（汎用文言）で件数・ファイル名のみ添える。
             if (_tabs.Count == tabsBefore)
                 failures.Add(new OpenFileFailure(decision.Path, WorkspaceKindDetectionFailure.Unknown));
@@ -214,16 +214,16 @@ public partial class NestSuiteShellWindow
     /// 起動時にファイルパスを受け取り、拡張子に応じて適切な Workspace で開く。
     /// App_Startup で <c>--nestsuite + ファイルパス</c> 指定時に呼び出す。
     ///
-    /// <para>v1.7.7: .chatnest ファイルの読込に対応。
+    /// <para>.chatnest ファイルの読込に対応。
     /// .notenest → NoteNest タブ（既存挙動維持）、.chatnest → ChatNest タブとして開く。
     /// 未対応拡張子・ファイル不存在はエラーダイアログを表示してアプリを継続する。</para>
     ///
-    /// <para>v1.8.3: .ideanest を IdeaNest タブとして読み込む。</para>
+    /// <para>.ideanest を IdeaNest タブとして読み込む。</para>
     ///
-    /// <para>v1.8.6: 読込失敗時（ファイル不存在・未対応拡張子・読込エラー）は
+    /// <para>読込失敗時（ファイル不存在・未対応拡張子・読込エラー）は
     /// EnsureDefaultTab() でフォールバック NoteNest タブを保証する。</para>
     ///
-    /// <para>v1.10.2: App_Startup で Show() より前に呼ぶよう変更した。指定ファイルの
+    /// <para>App_Startup で Show() より前に呼ぶよう変更した。指定ファイルの
     /// タブをウィンドウ表示前に生成することで起動時ちらつきを防ぐ。
     /// エラーダイアログは Show() 前でも MessageBox として表示できる。</para>
     /// </summary>
@@ -232,7 +232,7 @@ public partial class NestSuiteShellWindow
         var decision = ShellFileOpenPlanner.Plan(path, _tabs);
         if (decision.DecisionKind == ShellFileOpenDecisionKind.MissingFile)
         {
-            // v2.16.11 SH-1: 起動引数由来の失敗は pipe/最近ファイルと同じ FileErrorMessages の
+            // 起動引数由来の失敗は pipe/最近ファイルと同じ FileErrorMessages の
             // 文言（外部/ネットワークドライブ・移動済み確認）に揃える。加えて、起動直後で
             // ウィンドウがまだ見えていない可能性があるため「NestSuite は起動している」ことを添える。
             _dialogs.ShowError(
@@ -245,8 +245,8 @@ public partial class NestSuiteShellWindow
 
         if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
-            // v2.14.7 SH-31: 理由に応じた文言で通知する（「壊れています」と断定しない）
-            // v2.16.11 SH-1: 起動引数由来の失敗のため「NestSuite は起動している」ことを添える。
+            // 理由に応じた文言で通知する（「壊れています」と断定しない）
+            // 起動引数由来の失敗のため「NestSuite は起動している」ことを添える。
             _dialogs.ShowError(
                 ShellOpenFailureGuidanceProvider.AppendStillUsableHint(
                     $"{FileErrorMessages.ForKindDetectionFailure(decision.Failure, decision.Path)}\n\n{decision.Path}"),
@@ -263,7 +263,7 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        // v2.16.37 TD-59b-3: Plan が既に prepared context を probe 済みのため、ここで種別を
+        // Plan が既に prepared context を probe 済みのため、ここで種別を
         // 再判定しない。context.FilePath を正本のまま、対応する起動時 loader へ渡す。
         var context = decision.OpenContext!;
         switch (context.WorkspaceKind)
@@ -290,7 +290,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3: 種別別 Open ダイアログ共通の probe 結果処理。
+    /// 種別別 Open ダイアログ共通の probe 結果処理。
     /// MissingFile / KindDetectionFailed は通知して false を返す。ActivateExistingTab は
     /// 既存タブをアクティブ化して false を返す。LoadWorkspace のときだけ true を返し、
     /// 呼び出し側が期待する Workspace の prepared loader へ <c>decision.OpenContext</c> を渡す。
@@ -321,10 +321,10 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.5: .notenest ファイルを開き、新しい NoteNest タブ／Session を作成してロードする。
+    /// .notenest ファイルを開き、新しい NoteNest タブ／Session を作成してロードする。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する。
-    /// v1.10.1: 読込ロジックを LoadNoteNestFileAt に分離した。
-    /// v2.16.37 TD-59b-3: 選択後に probe を 1 回だけ行い、prepared context を NoteNest の
+    /// 読込ロジックを LoadNoteNestFileAt に分離した。
+    /// 選択後に probe を 1 回だけ行い、prepared context を NoteNest の
     /// 期待 loader へ渡す（異なる Workspace の自動ルーティングはしない）。
     /// </summary>
     private void OpenNoteNestFile()
@@ -340,7 +340,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): probe 済み context から
+    /// probe 済み context から
     /// 追加読込なしで NoteNest ファイルを読み込みタブを作成する。共通・種別別 Open、起動引数、
     /// 最近ファイル、pipe、session 復元の読込経路から使用する。kind 不一致等の失敗は
     /// <see cref="MainViewModel.OpenPreparedFileAtStartup"/> が内部で通知・ログ済みのため、
@@ -369,7 +369,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.5: 起動時に .notenest ファイルを新しい NoteNest タブ／Session として読み込む。
+    /// 起動時に .notenest ファイルを新しい NoteNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。
     /// <see cref="LoadInitialFile"/> の Plan で既に判定済みだが、context の kind/path だけを
@@ -406,7 +406,7 @@ public partial class NestSuiteShellWindow
     /// </summary>
     private void EnsureDefaultTab()
     {
-        // v2.6.0: Temp タブが常に存在するためフォールバックとして Temp をアクティブ化する
+        // Temp タブが常に存在するためフォールバックとして Temp をアクティブ化する
         var tempTab = _tabs.FirstOrDefault(t => t.WorkspaceKind == NestSuiteWorkspaceKind.Temp);
         if (tempTab != null) { ActivateTab(tempTab); return; }
 
@@ -420,7 +420,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.2: 起動時に .chatnest ファイルを新しい ChatNest タブ／Session として読み込む。
+    /// 起動時に .chatnest ファイルを新しい ChatNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。context の
     /// kind/path だけを使い、ファイルを読み直さない）。
@@ -449,7 +449,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.7: 起動時に .ideanest ファイルを新しい IdeaNest タブ／Session として読み込む。
+    /// 起動時に .ideanest ファイルを新しい IdeaNest タブ／Session として読み込む。
     /// 読込成功後のタブは FilePath 設定済み・IsModified=false になる。
     /// 同じファイルが既に開かれている場合は既存タブをアクティブ化する（念のため。context の
     /// kind/path だけを使い、ファイルを読み直さない）。

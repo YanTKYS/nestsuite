@@ -4,7 +4,7 @@ using NestSuite.ViewModels;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.10.5 M10: NoteNest ノートの Markdown エクスポート文字列を生成する。
+/// NoteNest ノートの Markdown エクスポート文字列を生成する。
 /// UI 処理・ファイル保存・クリップボード操作は呼び出し元で行う。
 /// 保存形式・スキーマには一切影響しない。
 /// </summary>

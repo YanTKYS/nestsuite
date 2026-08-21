@@ -9,8 +9,8 @@ namespace NestSuite;
 /// ツールは複数タブを生み出せる（例：NoteNest タブを 2 つ同時に開く）が、
 /// 各タブは必ず 1 つの WorkspaceKind に属する。</para>
 ///
-/// <para><b>現在の役割</b><br/>
-/// ファイル単位タブ設計（v1.7.2 で導入）の中核モデル。<c>NestSuiteShellWindow</c> は
+/// <para><b>役割</b><br/>
+/// ファイル単位タブ設計の中核モデル。<c>NestSuiteShellWindow</c> は
 /// 選択中タブの <c>WorkspaceKind</c> に応じて Workspace 表示を切り替える。</para>
 /// </summary>
 public enum NestSuiteWorkspaceKind
@@ -40,7 +40,7 @@ public enum NestSuiteWorkspaceKind
     Temp,
 
     /// <summary>
-    /// v2.19.0 SH-43: 通常の <c>.txt</c> ファイルを扱う最小プレーンテキスト Workspace。
+    /// 通常の <c>.txt</c> ファイルを扱う最小プレーンテキスト Workspace。
     /// Nest ではなく、`.txt` そのものが正本（NestSuite 独自情報は埋め込まない）。
     /// <c>.nestsuite</c> wrapper へは格納しない。
     /// </summary>

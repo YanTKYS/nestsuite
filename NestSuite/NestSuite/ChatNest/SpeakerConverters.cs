@@ -61,7 +61,7 @@ internal static class SpeakerVisualPalette
 }
 
 /// <summary>
-/// 発言者ごとの吹き出し背景色。参照ソース ChatNest v0.4.1 Converters より取り込み。
+/// 発言者ごとの吹き出し背景色。
 /// </summary>
 public class SpeakerBackgroundConverter : IValueConverter
 {
@@ -73,7 +73,7 @@ public class SpeakerBackgroundConverter : IValueConverter
 }
 
 /// <summary>
-/// 発言者ごとのアクセント色。参照ソース ChatNest v0.4.1 Converters より取り込み。
+/// 発言者ごとのアクセント色。
 /// </summary>
 public class SpeakerAccentConverter : IValueConverter
 {
@@ -85,7 +85,7 @@ public class SpeakerAccentConverter : IValueConverter
 }
 
 /// <summary>
-/// 発言者ごとの吹き出し配置（自分＝右寄せ／他＝左寄せ）。参照ソース ChatNest v0.4.1 より取り込み。
+/// 発言者ごとの吹き出し配置（自分＝右寄せ／他＝左寄せ）。
 /// </summary>
 public class SpeakerAlignmentConverter : IValueConverter
 {

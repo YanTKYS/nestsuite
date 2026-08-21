@@ -9,24 +9,19 @@ using NestSuite.Services;
 namespace NestSuite.ChatNest;
 
 /// <summary>
-/// ChatNest Workspace ビュー。参照ソース ChatNest v0.4.1
-/// Views/ChatNestWorkspaceView.xaml(.cs) より、Workspace 部分を中心に取り込み。
+/// ChatNest Workspace ビュー。
 /// メッセージ追加時の自動スクロールと、入力欄のショートカット（Ctrl+Enter 投稿、
-/// Ctrl+←→ 発言者切替）を処理する。AppShell（NestSuiteShellWindow）は移植しない。
+/// Ctrl+←→ 発言者切替）を処理する。
 ///
-/// <para><b>v2.3.0 変更点</b><br/>
-/// CH-3: 最下部付近なら自動スクロール。遡り閲覧中は「最新へ」ボタンを表示する。<br/>
-/// CH-6: EditBox の PreviewKeyDown / IsVisibleChanged でインライン編集キー操作を処理する。</para>
-///
-/// <para><b>v2.7.11 追加</b><br/>
-/// CH-5: Ctrl+F で検索バーを開く。Esc で閉じる。ScrollToMessageRequested で BringIntoView。<br/>
-/// CH-10: 発言単体コピーは ViewModel 側で処理するためビュー側の追加なし。</para>
+/// <para>最下部付近なら自動スクロールし、遡り閲覧中は「最新へ」ボタンを表示する。<br/>
+/// EditBox の PreviewKeyDown / IsVisibleChanged でインライン編集キー操作を処理する。<br/>
+/// Ctrl+F で検索バーを開き、Esc で閉じる。ScrollToMessageRequested で BringIntoView する。</para>
 /// </summary>
 public partial class ChatNestWorkspaceView : UserControl
 {
     private const double NearBottomThreshold = 100.0;
 
-    // CH-13: ドラッグ並び替え状態
+    // ドラッグ並び替え状態
     private Point _dragStartPoint;
     private MessageViewModel? _pendingDragSource;
     private FrameworkElement? _pendingDragSourceElement;
@@ -58,7 +53,7 @@ public partial class ChatNestWorkspaceView : UserControl
         }
     }
 
-    // ── CH-5: スクロール ──────────────────────────────────────────────────────
+    // ── スクロール ──────────────────────────────────────────────────────
 
     private void OnScrollToMessageRequested(object? sender, int index)
     {
@@ -69,7 +64,7 @@ public partial class ChatNestWorkspaceView : UserControl
         }, DispatcherPriority.Background);
     }
 
-    // ── CH-5: キーボード ─────────────────────────────────────────────────────
+    // ── キーボード ─────────────────────────────────────────────────────
 
     /// <summary>Ctrl+F で検索バーを開く。Escape で閉じる（SearchBox 以外でも有効）。</summary>
     private void OnGlobalPreviewKeyDown(object sender, KeyEventArgs e)
@@ -93,7 +88,7 @@ public partial class ChatNestWorkspaceView : UserControl
         }
     }
 
-    /// <summary>CH-5: 検索ボックス内キー操作。Enter→次、Shift+Enter→前、Esc→閉じる。</summary>
+    /// <summary>検索ボックス内キー操作。Enter→次、Shift+Enter→前、Esc→閉じる。</summary>
     private void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (DataContext is not ChatNestWorkspaceViewModel vm) return;
@@ -154,7 +149,7 @@ public partial class ChatNestWorkspaceView : UserControl
         ChatScrollViewer.ScrollToBottom();
     }
 
-    // CH-15: 空エリア右クリックメニューの「最下部へ移動」
+    // 空エリア右クリックメニューの「最下部へ移動」
     private void ScrollToBottomMenuItem_Click(object sender, RoutedEventArgs e)
     {
         ChatScrollViewer.ScrollToBottom();
@@ -187,7 +182,7 @@ public partial class ChatNestWorkspaceView : UserControl
         }
     }
 
-    // ── CH-9: 会話エクスポート ───────────────────────────────────────────────
+    // ── 会話エクスポート ───────────────────────────────────────────────
 
     private void OnConversationExportRequested(object? sender, EventArgs e)
     {
@@ -222,7 +217,7 @@ public partial class ChatNestWorkspaceView : UserControl
             ? ChatNestExportFormatter.BuildMarkdownConversation(messages)
             : ChatNestExportFormatter.BuildPlainTextConversation(messages);
 
-    // ── CH-13: ドラッグ並び替え ──────────────────────────────────────────────
+    // ── ドラッグ並び替え ──────────────────────────────────────────────
 
     private void DragHandle_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

@@ -11,7 +11,7 @@ using NestSuite.Views;
 
 namespace NestSuite;
 
-/// <summary>v2.9.0 SH-21: NoteNest / IdeaNest / ChatNest / PlainText タブの別ウィンドウ分離／再統合処理。</summary>
+/// <summary>NoteNest / IdeaNest / ChatNest / PlainText タブの別ウィンドウ分離／再統合処理。</summary>
 public partial class NestSuiteShellWindow
 {
     private readonly Dictionary<string, DetachedWorkspaceWindow> _detachedWindows = new();
@@ -70,14 +70,14 @@ public partial class NestSuiteShellWindow
 
         var capturedTabId = tab.Id;
         var capturedWindow = detachedWindow;
-        // v2.9.2 SH-21: SaveAs ダイアログが別ウィンドウ上に出るよう SelectProjectSavePath を差し替える
+        // SaveAs ダイアログが別ウィンドウ上に出るよう SelectProjectSavePath を差し替える
         detachedWindow.SaveAction = () => SaveNoteNestForTabId(capturedTabId,
             defaultName => capturedWindow.SelectProjectSavePath(defaultName));
         detachedWindow.OnDetachedClosed = ReAttachNoteNestTab;
 
         _detachedWindows[tab.Id] = detachedWindow;
 
-        // v2.9.1 SH-21: タブの IsDetached フラグを立てる（コンテキストメニューとプレースホルダー制御に使う）
+        // タブの IsDetached フラグを立てる（コンテキストメニューとプレースホルダー制御に使う）
         ReplaceTab(tab, tab with { IsDetached = true });
         ActivateTab(_tabs.First(t => t.Id == tab.Id));
 
@@ -118,7 +118,7 @@ public partial class NestSuiteShellWindow
         if (!_sessionManager.TryGet(tab.Id, out var session) || session == null) return;
 
         var vm = (ChatNestWorkspaceViewModel)session.WorkspaceViewModel;
-        // v2.9.4 SH-21: 新規 View を生成してデタッチウィンドウに渡す。
+        // 新規 View を生成してデタッチウィンドウに渡す。
         // Shell 側の ChatWorkspaceView とは独立したインスタンスを使用する（WPF single-parent 制約）。
         var view = new ChatNestWorkspaceView { DataContext = vm };
         var detachedWindow = new DetachedWorkspaceWindow(tab.Id, tab.DisplayName, view) { Owner = this };
@@ -137,7 +137,7 @@ public partial class NestSuiteShellWindow
         detachedWindow.Show();
     }
 
-    /// <summary>v2.19.0 SH-43: PlainText（.txt）タブを別ウィンドウへ分離する。ChatNest と対称な実装。</summary>
+    /// <summary>PlainText（.txt）タブを別ウィンドウへ分離する。ChatNest と対称な実装。</summary>
     private void DetachTextTab(NestSuiteDocumentTab tab)
     {
         if (_detachedWindows.ContainsKey(tab.Id)) return;
@@ -172,7 +172,7 @@ public partial class NestSuiteShellWindow
         // 閉じた別ウィンドウへの参照を外す。選択中タブか否かに関係なく常に実施する。
         WireNoteNestViewCallbacks(vm, WorkspaceView);
 
-        // v2.9.1 SH-21: IsDetached フラグを落とす
+        // IsDetached フラグを落とす
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {
@@ -191,7 +191,7 @@ public partial class NestSuiteShellWindow
         if (!_detachedWindows.ContainsKey(tabId)) return;
         _detachedWindows.Remove(tabId);
 
-        // v2.9.3 SH-21: detached window が閉じた後、owner resolver を Shell 側へ明示的に戻す。
+        // detached window が閉じた後、owner resolver を Shell 側へ明示的に戻す。
         // Shell の IdeaNestWorkspaceView は detach 前から同じ VM を DataContext に持つため、
         // ActivateTab での DataContext 再代入だけでは DataContextChanged が発火せず
         // ConfigureWorkspace() が実行されない。SetOwnerResolver を直接呼ぶことで解決する。
@@ -216,7 +216,7 @@ public partial class NestSuiteShellWindow
         if (!_detachedWindows.ContainsKey(tabId)) return;
         _detachedWindows.Remove(tabId);
 
-        // v2.9.4 SH-21: ChatNest の DataContextChanged / event subscription は
+        // ChatNest の DataContextChanged / event subscription は
         // ChatNestWorkspaceView が自動で管理するため、ActivateTab 経由の再表示で正しく再接続される。
         // IdeaNest のような外部 owner resolver や NoteNest のような view callback の再バインドは不要。
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
@@ -231,7 +231,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: PlainText の DataContextChanged / event subscription は
+    /// PlainText の DataContextChanged / event subscription は
     /// PlainTextWorkspaceView が特別な再配線を必要としないため、ActivateTab 経由の再表示で
     /// 正しく再接続される（ChatNest と対称）。
     /// </summary>

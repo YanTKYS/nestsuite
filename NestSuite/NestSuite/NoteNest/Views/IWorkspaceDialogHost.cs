@@ -5,8 +5,8 @@ using NestSuite.ViewModels;
 namespace NestSuite.Views;
 
 /// <summary>
-/// v1.5.x で導入した AppShell と Workspace View の間のダイアログ操作橋渡しインターフェース。
-/// v1.11.0 以降、実装者は <c>NestSuiteShellWindow</c>（AppShell）のみ。
+/// AppShell と Workspace View の間のダイアログ操作橋渡しインターフェース。
+/// 実装者は <c>NestSuiteShellWindow</c>（AppShell）のみ。
 ///
 /// <para>
 /// <see cref="NoteNestWorkspaceView"/> はダイアログの生成・Owner 管理・ファイル選択を
@@ -37,7 +37,7 @@ public interface IWorkspaceDialogHost
 
     /// <summary>
     /// ノート選択ダイアログを表示し、選択されたノートを返す。キャンセル時は null。
-    /// L24: <paramref name="preselect"/> と厳密一致するノートがあれば初期選択する。一致しない場合、
+    /// <paramref name="preselect"/> と厳密一致するノートがあれば初期選択する。一致しない場合、
     /// <paramref name="selectFirstWhenNoMatch"/> が true なら従来どおり先頭候補を選択する
     /// （既定 true。ノートリンク挿入など、選択なしから開始する既存呼び出しの挙動を変えないため）。
     /// </summary>
@@ -70,7 +70,7 @@ public interface IWorkspaceDialogHost
     string? SelectMarkdownSavePath(string defaultFileName);
 
     /// <summary>
-    /// v2.16.5 SH-28: 操作完了を伝える一時通知（1〜2 秒程度で自動的に消える）を表示する。
+    /// 操作完了を伝える一時通知（1〜2 秒程度で自動的に消える）を表示する。
     /// モーダルダイアログではなく、AppShell 側のステータス表示領域を更新する想定。
     /// </summary>
     void ShowTransientStatus(string message);

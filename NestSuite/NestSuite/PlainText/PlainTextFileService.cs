@@ -5,7 +5,7 @@ using NestSuite.Services;
 namespace NestSuite.PlainText;
 
 /// <summary>
-/// v2.19.0 SH-43: `.txt` の読込・保存・文字コード/改行コード判定を担当する。
+/// `.txt` の読込・保存・文字コード/改行コード判定を担当する。
 ///
 /// <para><b>位置づけ</b><br/>
 /// `.txt` は <see cref="NestSuiteWorkspaceEnvelope"/>（`.nestsuite` wrapper）へ格納しない。
@@ -43,7 +43,7 @@ public static class PlainTextFileService
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: 共通 Open 計画（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が
+    /// 共通 Open 計画（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が
     /// probe 済みの <see cref="WorkspaceFileOpenContext"/> から読み込む。`.txt` は wrapper を
     /// 持たないため <c>Preloaded</c> は常に null で、実体は <see cref="Load(string)"/> と同じ
     /// 1 回のファイル読込になる（他 FileService の LoadPrepared と契約の形を揃えるための薄いラッパー）。
@@ -73,7 +73,7 @@ public static class PlainTextFileService
     /// <summary>
     /// 指定した文字コード・改行コードで保存する。<see cref="AtomicFileWriter"/> による
     /// tmp 経由 atomic write を使う。手動保存では 1 世代 <c>.bak</c> を作成する
-    /// （<paramref name="createBackup"/>=false の自動保存では作成しない。TD-64 と同方針）。
+    /// （<paramref name="createBackup"/>=false の自動保存では作成しない）。
     /// </summary>
     public static void Save(
         string path,

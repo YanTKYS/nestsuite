@@ -23,11 +23,11 @@ public sealed class TaskBoardViewModel
     public event EventHandler? Loaded;
     public ObservableCollection<TaskGroupViewModel> TaskGroups { get; }
 
-    /// <summary>v2.13.4 M16: タスク欄を互換表示するかどうかの判定。既存タスクが1件もない場合は false。</summary>
+    /// <summary>タスク欄を互換表示するかどうかの判定。既存タスクが1件もない場合は false。</summary>
     public bool HasAnyTasks => TaskGroups.Any(g => g.Tasks.Count > 0);
 
     /// <summary>
-    /// L10: 右ペイン共通絞り込み文字列（Trim済み）。各 <see cref="TaskGroupViewModel"/> へ配布するだけの
+    /// 右ペイン共通絞り込み文字列（Trim済み）。各 <see cref="TaskGroupViewModel"/> へ配布するだけの
     /// 表示専用の一時状態で、保存対象ではない。データ変更ではないため <see cref="Changed"/> は発火しない。
     /// </summary>
     public string FilterText
@@ -42,7 +42,7 @@ public sealed class TaskBoardViewModel
         }
     }
 
-    /// <summary>L10: 絞り込み後に1件でも表示対象のタスクがあるグループが存在するかどうか。</summary>
+    /// <summary>絞り込み後に1件でも表示対象のタスクがあるグループが存在するかどうか。</summary>
     public bool HasAnyVisibleTasks => TaskGroups.Any(g => g.HasVisibleTasks);
 
     public string TotalIncompleteTaskCountText

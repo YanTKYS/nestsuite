@@ -12,7 +12,7 @@ public partial class NestSuiteShellWindow
     // タブクローズ確認・Workspace 破棄・タブ 0 件時の空タブ自動生成を扱う partial。
 
     /// <summary>
-    /// v1.9.7: IdeaNest タブを閉じる前の確認と PropertyChanged 購読解除。
+    /// IdeaNest タブを閉じる前の確認と PropertyChanged 購読解除。
     /// ViewModel はタブごとの独立インスタンスのため LoadFromWorkspace リセットは不要。
     /// </summary>
     private bool ConfirmAndResetIdeaNest(NestSuiteDocumentTab tab) =>
@@ -52,14 +52,14 @@ public partial class NestSuiteShellWindow
         }
         if (idx < 0) return false;
 
-        // v2.6.0: Temp タブなど CanClose=false のタブは閉じない
+        // Temp タブなど CanClose=false のタブは閉じない
         if (!tab.CanClose) return false;
 
         switch (tab.WorkspaceKind)
         {
             case NestSuiteWorkspaceKind.NoteNest:
                 if (!ConfirmAndResetNoteNest(tab)) return false;
-                // v2.9.0 SH-21: 確認が通った後に別ウィンドウを閉じる。
+                // 確認が通った後に別ウィンドウを閉じる。
                 // キャンセル時はウィンドウも _detachedWindows も変更しない。
                 if (_detachedWindows.TryGetValue(tab.Id, out var dw))
                 {
@@ -71,7 +71,7 @@ public partial class NestSuiteShellWindow
 
             case NestSuiteWorkspaceKind.ChatNest:
                 if (!ConfirmAndResetChatNest(tab)) return false;
-                // v2.9.4 SH-21: ChatNest 別ウィンドウが開いていれば閉じる（確認後）
+                // ChatNest 別ウィンドウが開いていれば閉じる（確認後）
                 if (_detachedWindows.TryGetValue(tab.Id, out var dwChat))
                 {
                     dwChat.OnDetachedClosed = null;
@@ -82,7 +82,7 @@ public partial class NestSuiteShellWindow
 
             case NestSuiteWorkspaceKind.IdeaNest:
                 if (!ConfirmAndResetIdeaNest(tab)) return false;
-                // v2.9.3 SH-21: IdeaNest 別ウィンドウが開いていれば閉じる（確認後）
+                // IdeaNest 別ウィンドウが開いていれば閉じる（確認後）
                 if (_detachedWindows.TryGetValue(tab.Id, out var dwIdea))
                 {
                     dwIdea.OnDetachedClosed = null;
@@ -93,7 +93,7 @@ public partial class NestSuiteShellWindow
 
             case NestSuiteWorkspaceKind.PlainText:
                 if (!ConfirmAndResetText(tab)) return false;
-                // v2.19.0 SH-43: PlainText 別ウィンドウが開いていれば閉じる（確認後）
+                // PlainText 別ウィンドウが開いていれば閉じる（確認後）
                 if (_detachedWindows.TryGetValue(tab.Id, out var dwText))
                 {
                     dwText.OnDetachedClosed = null;
@@ -103,22 +103,22 @@ public partial class NestSuiteShellWindow
                 break;
         }
 
-        // v1.9.1: タブ削除と同時に対応 Session を破棄する
+        // タブ削除と同時に対応 Session を破棄する
         _sessionManager.Remove(tab.Id);
         _tabs.RemoveAt(idx);
         TryDeleteDraftForTab(tab.Id, "DraftDeleteAfterClose");
 
-        // v2.6.0: Temp タブが常に存在するため _tabs.Count == 0 にはならない
+        // Temp タブが常に存在するため _tabs.Count == 0 にはならない
         // 右隣を優先、なければ左隣（最後のタブなら idx-1）
         var nextIdx = Math.Min(idx, _tabs.Count - 1);
         ActivateTab(_tabs[nextIdx]);
-        // v2.16.14 TD-66: タブが実際に閉じられた（確認キャンセルされていない）場合のみ session を保存する。
+        // タブが実際に閉じられた（確認キャンセルされていない）場合のみ session を保存する。
         SaveSessionAfterTabChange();
         return true;
     }
 
     /// <summary>
-    /// v2.9.7: NoteNest タブを閉じる前の確認とリセット。
+    /// NoteNest タブを閉じる前の確認とリセット。
     /// 未保存の場合は Save / Discard / Cancel の3択を表示する。
     /// 保存を選んだ場合は保存を試み、成功時のみ閉じる。
     /// 確認後は PropertyChanged 購読を解除し Dispose する。
@@ -169,7 +169,7 @@ public partial class NestSuiteShellWindow
         });
 
     /// <summary>
-    /// v2.19.0 SH-43: PlainText タブを閉じる前の確認とリセット。
+    /// PlainText タブを閉じる前の確認とリセット。
     /// 未保存の場合は Save / Discard / Cancel の3択を表示する（NoteNest と対称）。
     /// 保存を選んだ場合は保存を試み、成功時のみ閉じる。
     /// 確認後は PropertyChanged 購読を解除し Dispose する。

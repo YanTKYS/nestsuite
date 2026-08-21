@@ -140,7 +140,7 @@ public partial class NoteNestWorkspaceView
         if (string.IsNullOrWhiteSpace(input)) return;
         var newTitle = input.Trim();
 
-        // M9: タイトルが実質的に変わる場合のみバックリンク影響チェック
+        // タイトルが実質的に変わる場合のみバックリンク影響チェック
         if (!string.Equals(note.Title, newTitle, StringComparison.OrdinalIgnoreCase))
         {
             var impact = BacklinkService.FindBacklinks(note.Title, ViewModel.AllNotes, note);

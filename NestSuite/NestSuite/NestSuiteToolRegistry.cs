@@ -3,7 +3,7 @@ namespace NestSuite;
 /// <summary>
 /// NestSuite に登録された内蔵ツールの定義・一覧・統合状態を管理する。
 /// <see cref="ToolDefinitions"/> を唯一の情報源とし、他の API はここから導出する。
-/// v2.0.0: NoteNest・ChatNest・IdeaNest すべて統合済み。
+/// NoteNest・ChatNest・IdeaNest すべて統合済み。
 /// </summary>
 public static class NestSuiteToolRegistry
 {

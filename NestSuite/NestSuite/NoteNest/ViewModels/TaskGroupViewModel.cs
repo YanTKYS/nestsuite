@@ -42,7 +42,7 @@ public class TaskGroupViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// L10: 右ペイン共通絞り込み文字列（Trim済み）。<see cref="TaskBoardViewModel.FilterText"/> から
+    /// 右ペイン共通絞り込み文字列（Trim済み）。<see cref="TaskBoardViewModel.FilterText"/> から
     /// 各グループへ配布される表示専用の一時状態で、保存対象ではない。
     /// </summary>
     public string FilterText
@@ -56,7 +56,7 @@ public class TaskGroupViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// L10: 絞り込み文字列がグループ名に一致した場合はグループ内の全タスクを表示し、
+    /// 絞り込み文字列がグループ名に一致した場合はグループ内の全タスクを表示し、
     /// それ以外はタスクタイトルが一致したものだけを表示する。
     /// </summary>
     public IEnumerable<TaskViewModel> IncompleteTasks => FilterTasks(Tasks.Where(t => !t.IsCompleted));
@@ -65,10 +65,10 @@ public class TaskGroupViewModel : BaseViewModel
     public string CompletedCountText => $"完了済み（{CompletedTasks.Count()}）";
     public string CountText => $"{Tasks.Count(t => !t.IsCompleted)}/{Tasks.Count}";
 
-    /// <summary>v2.13.4 M16: 既存タスクがないグループを右ペインに表示しないための判定。</summary>
+    /// <summary>既存タスクがないグループを右ペインに表示しないための判定。</summary>
     public bool HasTasks => Tasks.Count > 0;
 
-    /// <summary>L10: 絞り込み後にこのグループへ表示する項目が1件以上あるかどうか。</summary>
+    /// <summary>絞り込み後にこのグループへ表示する項目が1件以上あるかどうか。</summary>
     public bool HasVisibleTasks => IncompleteTasks.Any() || CompletedTasks.Any();
 
     private IEnumerable<TaskViewModel> FilterTasks(IEnumerable<TaskViewModel> source)

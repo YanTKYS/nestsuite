@@ -12,7 +12,7 @@ public partial class NestSuiteShellWindow
 {
     /// <summary>
     /// 指定タブをアクティブ化し、Workspace 表示・サイドバーハイライト・メニュー・ステータスバーを同期する。
-    /// v1.7.3: SelectTool を置き換え、タブモデルを通じてツール切替を一元管理する。
+    /// SelectTool を置き換え、タブモデルを通じてツール切替を一元管理する。
     /// <see cref="_isActivatingTab"/> ガードにより TabStrip の SelectionChanged との再帰を防ぐ。
     /// </summary>
     private void ActivateTab(NestSuiteDocumentTab tab)
@@ -24,7 +24,7 @@ public partial class NestSuiteShellWindow
             _selectedTab = tab;
             TabStrip.SelectedItem = tab;
 
-            // v2.6.0: TempNest は ToolDefinitions に登録されていないため先に処理する
+            // TempNest は ToolDefinitions に登録されていないため先に処理する
             if (tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp)
             {
                 WorkspaceView.Visibility           = Visibility.Collapsed;
@@ -36,13 +36,13 @@ public partial class NestSuiteShellWindow
                 if (_sessionManager.TryGet(tab.Id, out var tempSession) && tempSession != null)
                     TempNestWorkspaceView.DataContext = tempSession.WorkspaceViewModel;
 
-                // v2.13.3 SH-30: TempNest にはファイル名表示がないため「/」を前置しない
+                // TempNest にはファイル名表示がないため「/」を前置しない
                 NestSuiteModeSuffix.Text = "TempNest";
                 RefreshWorkspaceStatus();
                 return;
             }
 
-            // v2.19.0 SH-43: PlainText は Nest ではなく NestSuiteToolRegistry に登録しないため、
+            // PlainText は Nest ではなく NestSuiteToolRegistry に登録しないため、
             // TempNest と同様に ToolDefinitions 参照前にここで処理する。
             if (tab.WorkspaceKind == NestSuiteWorkspaceKind.PlainText)
             {
@@ -72,11 +72,11 @@ public partial class NestSuiteShellWindow
             bool isChatNest = toolId == NestSuiteToolRegistry.ChatNestToolId;
             bool isIdeaNest = toolId == NestSuiteToolRegistry.IdeaNestToolId;
 
-            // v2.9.0 SH-21: 別ウィンドウ表示中のタブにはプレースホルダーを出す
+            // 別ウィンドウ表示中のタブにはプレースホルダーを出す
             bool isDetachedNoteNest = isNoteNest && _detachedWindows.ContainsKey(tab.Id);
-            // v2.9.3 SH-21: IdeaNest も別ウィンドウ表示に対応
+            // IdeaNest も別ウィンドウ表示に対応
             bool isDetachedIdeaNest = isIdeaNest && _detachedWindows.ContainsKey(tab.Id);
-            // v2.9.4 SH-21: ChatNest も別ウィンドウ表示に対応
+            // ChatNest も別ウィンドウ表示に対応
             bool isDetachedChatNest = isChatNest && _detachedWindows.ContainsKey(tab.Id);
 
             // Workspace 表示切替（選択タブに対応する Workspace のみ表示）
@@ -87,17 +87,17 @@ public partial class NestSuiteShellWindow
             UnintegratedPlaceholder.Visibility     = tool.IsIntegrated ? Visibility.Collapsed : Visibility.Visible;
             DetachedNoteNestPlaceholder.Visibility = (isDetachedNoteNest || isDetachedIdeaNest || isDetachedChatNest) ? Visibility.Visible : Visibility.Collapsed;
 
-            // v1.9.5: NoteNest タブ切替時（非別ウィンドウ）に選択タブの MainViewModel に DataContext を差し替える
+            // NoteNest タブ切替時（非別ウィンドウ）に選択タブの MainViewModel に DataContext を差し替える
             if (isNoteNest && !isDetachedNoteNest &&
                 _sessionManager.TryGet(tab.Id, out var noteNestSession) && noteNestSession != null)
                 DataContext = noteNestSession.WorkspaceViewModel;
 
-            // v1.9.2: ChatNest タブ切替時（非別ウィンドウ）に選択タブの ViewModel に DataContext を差し替える
+            // ChatNest タブ切替時（非別ウィンドウ）に選択タブの ViewModel に DataContext を差し替える
             if (isChatNest && !isDetachedChatNest &&
                 _sessionManager.TryGet(tab.Id, out var chatSession) && chatSession != null)
                 ChatWorkspaceView.DataContext = chatSession.WorkspaceViewModel;
 
-            // v1.9.7: IdeaNest タブ切替時（非別ウィンドウ）に選択タブの ViewModel に DataContext を差し替える
+            // IdeaNest タブ切替時（非別ウィンドウ）に選択タブの ViewModel に DataContext を差し替える
             if (isIdeaNest && !isDetachedIdeaNest &&
                 _sessionManager.TryGet(tab.Id, out var ideaNestSession) && ideaNestSession != null)
                 IdeaNestWorkspaceView.DataContext = ideaNestSession.WorkspaceViewModel;
@@ -118,13 +118,13 @@ public partial class NestSuiteShellWindow
         }
     }
 
-    // ── v2.4.0 SH-4: タブ切替キーボードショートカット ───────────────────
+    // ── タブ切替キーボードショートカット ───────────────────
 
     /// <summary>
-    /// v2.4.0 SH-4: Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 でタブを切り替える。
+    /// Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+1〜9 でタブを切り替える。
     /// NoteNest の Ctrl+Enter / Escape など既存ショートカットは e.Handled = false のままにして
     /// WPF の通常ルーティングへ流す。
-    /// v2.15.1 SH: Shift+←→ によるタブ切替は廃止した。テキスト入力中の範囲選択操作
+    /// Shift+←→ はタブ切替に割り当てない。テキスト入力中の範囲選択操作
     /// （TextBox 等の Shift+←→ による文字選択）と競合するため、Shell 側では横取りしない。
     /// </summary>
     protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -132,7 +132,7 @@ public partial class NestSuiteShellWindow
         base.OnPreviewKeyDown(e);
         if (e.Handled) return;
 
-        // SH-44: 横断検索パネル内のEscapeで閉じる。パネル外のEscapeは処理しない。
+        // 横断検索パネル内のEscapeで閉じる。パネル外のEscapeは処理しない。
         if (TryHandleCrossSearchEscape(e)) return;
 
         var ctrl  = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
@@ -175,7 +175,7 @@ public partial class NestSuiteShellWindow
         }
     }
 
-    /// <summary>v2.4.0 SH-4: タブを前後方向に循環移動する。</summary>
+    /// <summary>タブを前後方向に循環移動する。</summary>
     private void NavigateTab(bool forward)
     {
         if (_tabs.Count == 0) return;
@@ -216,7 +216,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.13.3 SH-30: ステータスバー左側（ファイル名・未保存表示）を、
+    /// ステータスバー左側（ファイル名・未保存表示）を、
     /// 現在アクティブな <see cref="_selectedTab"/> を基準に再計算する。
     /// Window.DataContext（NoteNest 固有の MainViewModel）には依存しない。
     /// 閉じたタブや非アクティブな Workspace の状態が残らないよう、タブ切替・タブクローズ・
@@ -233,7 +233,7 @@ public partial class NestSuiteShellWindow
             return;
         }
 
-        // TempNest はファイルに紐づかないため、ファイル名欄は空のままにする（L20/SH-29 とは別軸）
+        // TempNest はファイルに紐づかないため、ファイル名欄は空のままにする
         ShellStatusFileText.Text = tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp ? "" : tab.DisplayName;
 
         // NoteNest はアクティブ Session の MainViewModel から経過時間つき表示を引き継ぐ。
@@ -249,7 +249,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.10 SH-30: File メニューの保存系コマンド（上書き保存・名前を付けて保存・すべて保存）の
+    /// File メニューの保存系コマンド（上書き保存・名前を付けて保存・すべて保存）の
     /// IsEnabled とツールチップ文言を、現在のタブ状態から再計算する。
     /// RefreshWorkspaceStatus と同じタイミング（タブ切替・タブクローズ・アクティブタブの
     /// 未保存状態変化）で呼び出す。
@@ -291,7 +291,7 @@ public partial class NestSuiteShellWindow
         $"  |  発言 {vm.Messages.Count}  発言者: {vm.SelectedSpeaker}";
 
     /// <summary>
-    /// v1.9.7: 指定 IdeaNest ViewModel に対応するタブの IsModified を HasChanges に同期する。
+    /// 指定 IdeaNest ViewModel に対応するタブの IsModified を HasChanges に同期する。
     /// Session Manager で ViewModel から逆引きしてタブを特定する。
     /// </summary>
     private void SyncIdeaNestTabForViewModel(IdeaNestWorkspaceViewModel vm) =>

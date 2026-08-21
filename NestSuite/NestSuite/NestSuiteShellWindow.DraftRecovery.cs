@@ -37,7 +37,7 @@ public partial class NestSuiteShellWindow
         bool CollisionWriteFailed = false);
 
     /// <summary>
-    /// 戻り値: SH-40用に、このメソッドの決定（復元・破棄・キャンセル）を反映した後に残る
+    /// 戻り値: このメソッドの決定（復元・破棄・キャンセル）を反映した後に残る
     /// 保持中（次回起動時に再確認予定）draft件数。<see cref="ShellStateSummaryCalculator"/>の
     /// 既存算出（開いているタブの自動保存分を除外する）を、ここで既に列挙済みのdraftPathsに
     /// そのまま適用するだけで、追加のdraft再走査は行わない。
@@ -72,7 +72,7 @@ public partial class NestSuiteShellWindow
         {
             var discardSummary = DiscardStartupDrafts(draftPaths);
             ShowDraftRestoreSummary(discardSummary);
-            return 0; // SH-40: 破棄後は保持中候補なし
+            return 0; // 破棄後は保持中候補なし
         }
 
         if (choice != MessageBoxResult.Yes)
@@ -105,9 +105,9 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// SH-40: <paramref name="draftPaths"/>（RestoreDraftsAtStartupが既に列挙した結果）と
-    /// 現在開いているタブIDから、SH-37と同じ計算（<see cref="ShellStateSummaryCalculator.CountDraftRecoveryCandidates"/>）
-    /// で保持中候補件数を求める。ファイルシステムへの追加アクセスはしない。
+    /// <paramref name="draftPaths"/>（RestoreDraftsAtStartupが既に列挙した結果）と
+    /// 現在開いているタブIDから、状態サマリーと同じ計算
+    /// （<see cref="ShellStateSummaryCalculator.CountDraftRecoveryCandidates"/>）で保持中候補件数を求める。ファイルシステムへの追加アクセスはしない。
     /// </summary>
     private int CountRetainedDraftCandidates(IReadOnlyList<string> draftPaths) =>
         ShellStateSummaryCalculator.CountDraftRecoveryCandidates(draftPaths, _tabs.Select(t => t.Id));

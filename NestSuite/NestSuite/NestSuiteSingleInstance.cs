@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NestSuite;
 
 /// <summary>
-/// v1.18.1: NestSuite のシングルインスタンス制御。
+/// NestSuite のシングルインスタンス制御。
 /// Mutex で先着プロセスを判定し、後続プロセスは Named Pipe 経由でファイルパスを転送してから終了する。
 /// </summary>
 public sealed class NestSuiteSingleInstance : IDisposable

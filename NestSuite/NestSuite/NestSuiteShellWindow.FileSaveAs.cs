@@ -9,7 +9,7 @@ public partial class NestSuiteShellWindow
     // 名前を付けて保存ダイアログと保存処理を扱う partial。
     // 保存成功後の同期は FileSaveStateSync.cs の UpdateXxxTabPath に委譲する。
 
-    /// <summary>v1.9.7: 選択中 IdeaNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
+    /// <summary>選択中 IdeaNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。</summary>
     private void SaveIdeaNestFileAs()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest) return;
@@ -19,7 +19,7 @@ public partial class NestSuiteShellWindow
             : DefaultIdeaNestFileName;
         var rawPath = _dialogs.SelectIdeaNestSavePath(defaultName);
         if (rawPath == null) return;
-        // v1.9.7 fix: 選択中タブ以外の IdeaNest タブが同じパスを開いていないか確認する
+        // 選択中タブ以外の IdeaNest タブが同じパスを開いていないか確認する
         // 2 つの独立 ViewModel が同じファイルを指す状態を防ぐ
         var normalizedPath = NormalizeFilePath(rawPath);
         if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.IdeaNest, normalizedPath)) return;
@@ -27,8 +27,8 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.2: 選択中 ChatNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
-    /// v1.9.8: 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
+    /// 選択中 ChatNest タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
+    /// 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
     /// </summary>
     private void SaveChatNestFileAs()
     {
@@ -45,7 +45,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: 選択中 PlainText タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
+    /// 選択中 PlainText タブの Session で名前を付けて保存。ダイアログでパスを選択し保存する。
     /// </summary>
     private void SaveTextFileAs()
     {
@@ -81,8 +81,8 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.5: 選択中 NoteNest タブを名前を付けて保存する。
-    /// v1.9.8 fix: 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
+    /// 選択中 NoteNest タブを名前を付けて保存する。
+    /// 別タブで同じパスが開かれている場合はエラーを表示して既存タブをアクティブ化する。
     /// </summary>
     private void SaveNoteNestFileAs()
     {

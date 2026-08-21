@@ -3,7 +3,6 @@ using System.IO;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.1, §16):
 /// 解析済み wrapper に読込元パスを刻印したもの。<see cref="Envelope"/> 単体では
 /// 「どのファイルを読んだ結果か」が失われるため、必ず <see cref="SourcePath"/> と対で運ぶ。
 ///
@@ -28,7 +27,6 @@ public sealed class PreloadedWorkspaceEnvelope
 }
 
 /// <summary>
-/// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.1):
 /// 1 回の open operation に限定した、判定済みファイル読込コンテキスト。
 /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> が 1 回だけ読んだ結果を本読込まで運ぶ。
 ///

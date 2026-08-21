@@ -6,7 +6,7 @@ using NestSuite.IdeaNest.Services;
 namespace NestSuite.Services;
 
 /// <summary>
-/// SH-41 (AT-2 フェーズ1): 未オープンrecent filesを、Workspace ViewModelを生成せず
+/// 未オープンrecent filesを、Workspace ViewModelを生成せず
 /// 保存モデルまでだけ読み込む。既存の <see cref="NestSuiteTabFactory.TryPrepareOpen"/> と
 /// 各 <c>*FileService.LoadPrepared</c>（NoteNest/IdeaNest/ChatNestで既に確立済みの、
 /// UI非依存・副作用なし・schema検証込みの読込経路）をそのまま再利用する。
@@ -61,7 +61,7 @@ public static class UnopenedRecentFileLoader
         }
         catch
         {
-            // SH-41: 破損・未対応形式・アクセス不可等、理由を問わず該当ファイルだけスキップする。
+            // 破損・未対応形式・アクセス不可等、理由を問わず該当ファイルだけスキップする。
             // recent files からの削除・個別通知は行わない（呼び出し側が失敗件数として集計する）。
             return new UnopenedFileLoadResult(path, null);
         }

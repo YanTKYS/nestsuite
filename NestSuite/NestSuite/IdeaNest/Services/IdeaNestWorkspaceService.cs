@@ -38,7 +38,7 @@ public static class IdeaNestWorkspaceService
         DeserializeFromJson(File.ReadAllText(path, Encoding.UTF8));
 
     /// <summary>
-    /// v2.14.1 FM-1: JSON 文字列から Workspace を復元する（正規化含む）。
+    /// JSON 文字列から Workspace を復元する（正規化含む）。
     /// .nestsuite wrapper の payload を読む経路と legacy ファイル読込で同じ正規化を共有する。
     /// </summary>
     internal static Workspace DeserializeFromJson(string json)
@@ -80,24 +80,24 @@ public static class IdeaNestWorkspaceService
 
     public static void Save(string path, Workspace workspace) => Save(path, workspace, createBackup: true);
 
-    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    /// <summary>createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
     public static void Save(string path, Workspace workspace, bool createBackup) =>
         WriteJson(path, SerializeToJson(workspace), createBackup);
 
-    /// <summary>v2.14.1 FM-1: Workspace を保存 JSON へ直列化する（wrapper の payload 生成と legacy 保存で共有）。</summary>
+    /// <summary>Workspace を保存 JSON へ直列化する（wrapper の payload 生成と legacy 保存で共有）。</summary>
     internal static string SerializeToJson(Workspace workspace) =>
         JsonSerializer.Serialize(workspace, JsonOptions);
 
     /// <summary>
-    /// v2.14.1 FM-1: .bak バックアップ + atomic write（wrapper 保存と legacy 保存で共有）。
-    /// v2.14.5 FM-5: 保存前 File.Copy（失敗を silent catch）方式をやめ、NoteNest と同じ
+    /// .bak バックアップ + atomic write（wrapper 保存と legacy 保存で共有）。
+    /// 保存前 File.Copy（失敗を silent catch）方式をやめ、NoteNest と同じ
     /// AtomicFileWriter の File.Replace 統合 .bak 方式へ統一。既存ファイルがあり .bak を
     /// 作れない場合は File.Replace が例外で失敗し、旧ファイルを壊さず保存失敗として扱われる。
     /// </summary>
     internal static void WriteJson(string path, string json) => WriteJson(path, json, createBackup: true);
 
     /// <summary>
-    /// v2.16.6 TD-64: createBackup=false は .bak を作成・更新せず、atomic write のみ行う
+    /// createBackup=false は .bak を作成・更新せず、atomic write のみ行う
     /// （自動保存経路向け。手動保存 / Save All は既定の true のまま）。
     /// </summary>
     internal static void WriteJson(string path, string json, bool createBackup)

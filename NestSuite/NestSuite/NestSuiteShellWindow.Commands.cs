@@ -49,7 +49,7 @@ public partial class NestSuiteShellWindow
         RestoreFocusToWorkspace();
     }
 
-    // v2.16.8 L8 (review1-fable5.md R-5): .bak の手動復元手順を案内するだけのダイアログ。
+    // .bak の手動復元手順を案内するだけのダイアログ。
     // 自動復元・自動コピーは行わない。
     private void MenuBackupRestoreGuide_Click(object sender, RoutedEventArgs e)
     {

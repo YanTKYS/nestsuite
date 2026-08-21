@@ -50,7 +50,7 @@ public sealed class NoteChangeCoordinator
     }
 
     /// <summary>
-    /// L25 (review7-fable5 REV7-2): project 読込直後、<see cref="NoteWorkspaceViewModel.Load"/> は
+    /// project 読込直後、<see cref="NoteWorkspaceViewModel.Load"/> は
     /// 内部で <c>Changed</c> を発火しないため、空状態表示等の派生プロパティが古いまま残っていた。
     /// 読込はデータ変更ではないため isDataChanged=false で通知し、IsModified を変更しない。
     /// </summary>

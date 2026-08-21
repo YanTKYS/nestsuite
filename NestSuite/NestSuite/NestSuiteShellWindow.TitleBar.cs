@@ -6,7 +6,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // v2.14.11 SH-32: ダークテーマ選択時、OS 標準タイトルバーが白いままだと Shell 全体の
+    // ダークテーマ選択時、OS 標準タイトルバーが白いままだと Shell 全体の
     // 見た目と不釣り合いになるため、DWM の immersive dark mode 属性でタイトルバーを
     // ダークモードへ寄せる。カスタムタイトルバー化（WindowChrome 全面作り直し）は行わない。
 

@@ -1,7 +1,7 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// CH-11: ChatNest 会話一覧の日付区切り表示位置を計算する。WPF・保存処理に依存しない純粋関数として
+/// ChatNest 会話一覧の日付区切り表示位置を計算する。WPF・保存処理に依存しない純粋関数として
 /// 単体テストしやすい形にしている。区切りは表示専用の派生状態であり、<c>.chatnest</c> へは保存しない。
 /// </summary>
 public static class ChatDateSeparatorService

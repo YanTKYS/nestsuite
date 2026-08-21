@@ -3,7 +3,7 @@ using NestSuite.ViewModels;
 namespace NestSuite.Services;
 
 /// <summary>
-/// M14: 左ペインのノート一覧の表示順を計算する。WPF・保存処理に依存しない純粋関数として、
+/// 左ペインのノート一覧の表示順を計算する。WPF・保存処理に依存しない純粋関数として、
 /// 単体テストしやすい形にしている。並べ替えは表示専用（<see cref="NotebookViewModel.DisplayNotes"/>）
 /// に適用し、保存対象の <see cref="NotebookViewModel.Notes"/> は変更しない。
 /// </summary>

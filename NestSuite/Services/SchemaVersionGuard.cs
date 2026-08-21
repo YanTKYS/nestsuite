@@ -3,7 +3,7 @@ using System.IO;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.14.4 FM-4: 現在のアプリより新しい schema のファイルを検出した場合に読み込みを止めるための例外。
+/// 現在のアプリより新しい schema のファイルを検出した場合に読み込みを止めるための例外。
 /// <see cref="InvalidDataException"/> は sealed のため派生できず、代わりに <see cref="Exception"/> を直接継承する。
 /// 呼び出し元の読込処理は broad <c>catch (Exception ex)</c> でこの例外も含めて捕捉するため、
 /// 既存の読込 catch 経路には影響しない。
@@ -18,7 +18,7 @@ public sealed class SchemaVersionTooNewException : Exception
 }
 
 /// <summary>
-/// v2.14.4 FM-4 / TD-58: schema version の数値比較と前方互換ガード。
+/// schema version の数値比較と前方互換ガード。
 ///
 /// <para><b>比較方針:</b> 文字列比較ではなく <see cref="Version"/> による数値比較を行う
 /// （<c>1.4.2 &lt; 1.4.10</c> を正しく判定できる）。<c>major.minor.patch</c> 形式を基本とし、
@@ -68,7 +68,7 @@ public static class SchemaVersionGuard
     }
 
     /// <summary>
-    /// v2.14.4 FM-4: `.nestsuite` wrapper の payloadSchemaVersion と payload 内 schema version の整合を確認する。
+    /// `.nestsuite` wrapper の payloadSchemaVersion と payload 内 schema version の整合を確認する。
     ///
     /// <para><b>不整合の定義:</b> payload 内 version が payloadSchemaVersion より<b>新しい</b>場合のみ失敗させる。
     /// 逆方向（payloadSchemaVersion の方が新しい）は正常として許容する。これは v2.14.1〜v2.14.3 のアプリが

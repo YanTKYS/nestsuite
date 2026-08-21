@@ -7,7 +7,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // SH-37: Shell操作の現在地サマリー表示。利用者が明示的に開いたときだけ現在状態を収集し、
+    // Shell操作の現在地サマリー表示。利用者が明示的に開いたときだけ現在状態を収集し、
     // 読み取り専用ダイアログとして表示する。自動更新タイマー・バックグラウンド監視・
     // 履歴保存は行わない。既存の未保存判定・pending restore・下書き検出・TempNest状態を
     // そのまま再利用し、判定条件を新規に複製しない。

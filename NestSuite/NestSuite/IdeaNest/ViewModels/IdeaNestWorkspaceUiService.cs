@@ -5,7 +5,7 @@ using Microsoft.Win32;
 namespace NestSuite.IdeaNest.ViewModels;
 
 /// <summary>Centralizes the WPF host-dependent operations used by the IdeaNest workspace.</summary>
-// ID-10: テストから実クリップボード/実SaveFileDialogに依存せず差し替えられるよう、sealedを外しvirtualにしている。
+// テストから実クリップボード/実SaveFileDialogに依存せず差し替えられるよう、sealedを外しvirtualにしている。
 public class IdeaNestWorkspaceUiService
 {
     private Func<Window?> _ownerResolver = () => Application.Current?.MainWindow;
@@ -23,7 +23,7 @@ public class IdeaNestWorkspaceUiService
 
     public virtual void SetClipboardText(string text) => Clipboard.SetText(text);
 
-    /// <summary>ID-10: Markdownファイルの保存先を選択するダイアログ。キャンセル時は null。</summary>
+    /// <summary>Markdownファイルの保存先を選択するダイアログ。キャンセル時は null。</summary>
     public virtual string? ShowSaveMarkdownDialog(string defaultFileName)
     {
         var dlg = new SaveFileDialog

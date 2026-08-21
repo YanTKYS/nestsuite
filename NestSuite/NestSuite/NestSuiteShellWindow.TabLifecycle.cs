@@ -12,9 +12,8 @@ namespace NestSuite;
 public partial class NestSuiteShellWindow
 {
     // タブ生成・ViewModel 置換・PropertyChanged 購読を扱う partial。
-    // v2.15.1 SH: 各 Nest の新規作成はファイル > 新規作成・タブバー ＋ ボタン（NewWorkspaceSession）に
-    // 一本化した。かつてのツールメニュー由来の「既存タブがあれば切替、なければ新規作成」という
-    // タブランチャー（EnsureTabForToolId）はツールメニューの Nest 項目撤去に伴い削除した。
+    // 各 Nest の新規作成はファイル > 新規作成・タブバー ＋ ボタン（NewWorkspaceSession）に
+    // 一本化されている。「既存タブがあれば切替、なければ新規作成」というタブランチャーは持たない。
 
     private void TabStrip_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -32,7 +31,7 @@ public partial class NestSuiteShellWindow
         var index = _tabs.IndexOf(oldTab);
         if (index < 0) return;
         _tabs[index] = newTab;
-        // v1.9.1: TabId は変わらないため Session は既存のものを更新する（削除・再追加しない）
+        // TabId は変わらないため Session は既存のものを更新する（削除・再追加しない）
         if (_sessionManager.TryGet(oldTab.Id, out var session) && session != null)
         {
             session.FilePath = newTab.FilePath;
@@ -48,7 +47,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.16.3 SH-15: 通常タブのピン留め状態を切り替え、Temp 直後のピン留め領域へ並べ直す。
+    /// 通常タブのピン留め状態を切り替え、Temp 直後のピン留め領域へ並べ直す。
     /// </summary>
     private void SetTabPinned(NestSuiteDocumentTab tab, bool isPinned)
     {
@@ -56,7 +55,7 @@ public partial class NestSuiteShellWindow
         if (tab.IsPinned == isPinned) return;
         ReplaceTab(tab, tab with { IsPinned = isPinned });
         ApplyPinnedTabLayout();
-        // v2.16.14 TD-66: IsPinned が実際に変わった場合のみ（上の 2 つの early return を通過した場合のみ）
+        // IsPinned が実際に変わった場合のみ（上の 2 つの early return を通過した場合のみ）
         // session を保存する。セッション復元中（TryRestoreSession 内の SetTabPinned 呼び出し）は
         // _isRestoringSession により抑止される。
         SaveSessionAfterTabChange();
@@ -77,10 +76,10 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.5: 指定した NoteNest MainViewModel に対応するタブの FilePath・IsModified を同期する。
+    /// 指定した NoteNest MainViewModel に対応するタブの FilePath・IsModified を同期する。
     /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// ChatNest の <see cref="SyncChatNestTabForViewModel"/> と対称な実装。
-    /// v2.16.39 TD-59b-5 (nestsuite-double-read-design-review.md §9, §24): <paramref name="vm"/> が
+    /// <paramref name="vm"/> が
     /// <see cref="MainViewModel"/> である時点で WorkspaceKind は NoteNest に確定しているため、
     /// <see cref="NestSuiteTabFactory.TryGetKind"/> / <see cref="NestSuiteTabFactory.FromFilePath"/>
     /// による `.nestsuite` の再読込は行わない（<see cref="MainViewModel.IsModified"/> /
@@ -103,7 +102,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v1.9.2: 指定した ChatNest ViewModel に対応するタブの IsModified を同期する。
+    /// 指定した ChatNest ViewModel に対応するタブの IsModified を同期する。
     /// Session Manager から ViewModel に対応する Session を逆引きしてタブを更新する。
     /// </summary>
     private void SyncChatNestTabForViewModel(ChatNestWorkspaceViewModel vm) =>
@@ -124,13 +123,12 @@ public partial class NestSuiteShellWindow
             sender is MainViewModel vm)
         {
             SyncNoteNestTabForViewModel(vm);
-            // v2.13.3 SH-30: タブ同期後にステータスバー（ファイル名・未保存表示）を再計算する。
-            // 従来は Window.DataContext への直接 Binding が自動更新していたが、
-            // アクティブタブ基準の表示に変更したため明示的な再計算が必要になった。
+            // タブ同期後にステータスバー（ファイル名・未保存表示）を再計算する。
+            // 表示はアクティブタブ基準で、Window.DataContext への Binding では自動更新されないため。
             if (IsActiveVm(vm)) RefreshWorkspaceStatus();
         }
 
-        // v1.14.0: CurrentFilePath 変化時にセッションがすでに存在する場合は保存先として最近ファイルに追加する
+        // CurrentFilePath 変化時にセッションがすでに存在する場合は保存先として最近ファイルに追加する
         // （セッション登録前の OpenFileAtStartup による変化は session == null で除外される）
         if (e.PropertyName == nameof(MainViewModel.CurrentFilePath) &&
             sender is MainViewModel noteVm &&
@@ -163,7 +161,7 @@ public partial class NestSuiteShellWindow
             uiSvc.Save(ui);
         }
 
-        // L22: NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
+        // NoteNest 本文エディタのフォント種類。EditorFontSize と対称の伝播・永続化経路。
         // _suppressFontSizePropagation は「ファイル読込中の自前設定適用」を示す既存フラグを
         // フォント種類にも共用する（ファイル自身の AppSettings.FontFamily 読込時の再伝播を防ぐ）。
         if (e.PropertyName == nameof(MainViewModel.EditorFontFamily) &&
@@ -178,7 +176,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// L22/v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、
+    /// NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定を、
     /// 変更元以外の全セッションへ伝播し ui-settings.json（WorkspaceEditorFontFamily）へ永続化する。
     /// Workspace ファイル本体（.notenest/.nestsuite/.ideanest/.chatnest/tempnest.json）には
     /// 一切保存しない（各 ViewModel の ContentFontFamily/EditorFontFamily は保存モデルに含まれない）。
@@ -218,7 +216,7 @@ public partial class NestSuiteShellWindow
             sender is ChatNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
 
-        // L22: ChatNest メッセージ本文・入力欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        // ChatNest メッセージ本文・入力欄のフォント種類。Workspace 共通設定への伝播・永続化。
         if (e.PropertyName == nameof(ChatNestWorkspaceViewModel.ContentFontFamily) &&
             sender is ChatNestWorkspaceViewModel familyVm &&
             familyVm.ContentFontFamily != _workspaceEditorFontFamily)
@@ -237,7 +235,7 @@ public partial class NestSuiteShellWindow
             sender is IdeaNestWorkspaceViewModel statusVm && IsActiveVm(statusVm))
             RefreshWorkspaceStatus();
 
-        // L22: IdeaNest カード本文・カード編集欄のフォント種類。Workspace 共通設定への伝播・永続化。
+        // IdeaNest カード本文・カード編集欄のフォント種類。Workspace 共通設定への伝播・永続化。
         if (e.PropertyName == nameof(IdeaNestWorkspaceViewModel.ContentFontFamily) &&
             sender is IdeaNestWorkspaceViewModel familyVm &&
             familyVm.ContentFontFamily != _workspaceEditorFontFamily)
@@ -245,7 +243,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// L22: TempNest 各スロットのタイトル欄・本文欄のフォント種類。Workspace 共通設定への伝播・永続化。
+    /// TempNest 各スロットのタイトル欄・本文欄のフォント種類。Workspace 共通設定への伝播・永続化。
     /// TempNest は保存対象の変化を検知する必要がないため、フォント種類変更以外は扱わない。
     /// </summary>
     private void OnTempNestPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -257,7 +255,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: PlainText（.txt）タブの IsDirty をタブの IsModified へ同期する。
+    /// PlainText（.txt）タブの IsDirty をタブの IsModified へ同期する。
     /// ChatNest/IdeaNest の Sync*TabForViewModel と対称な、<see cref="SyncTabModifiedState"/> 共有実装。
     /// </summary>
     private void OnPlainTextPropertyChanged(object? sender, PropertyChangedEventArgs e)

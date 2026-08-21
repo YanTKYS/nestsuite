@@ -1,7 +1,7 @@
 namespace NestSuite.ChatNest;
 
 /// <summary>
-/// ChatNest の発言者種別。参照ソース ChatNest v0.4.1 の Models/Message.cs より取り込み。
+/// ChatNest の発言者種別。
 /// </summary>
 public enum Speaker
 {
@@ -12,8 +12,7 @@ public enum Speaker
 }
 
 /// <summary>
-/// ChatNest の 1 発言を表すモデル。参照ソース ChatNest v0.4.1 より取り込み。
-/// v1.7.0 ではメモリ内保持のみ（.chatnest ファイル永続化は次段階）。
+/// ChatNest の 1 発言を表すモデル。
 /// </summary>
 public class Message
 {

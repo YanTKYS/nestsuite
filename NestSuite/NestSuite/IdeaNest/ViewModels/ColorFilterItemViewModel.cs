@@ -8,7 +8,7 @@ public class ColorFilterItemViewModel : IdeaNestViewModelBase
     private int _count;
 
     /// <summary>
-    /// ID-14: 現在の検索・タグ・アーカイブ条件を反映し、色フィルタ自身は除外した
+    /// 現在の検索・タグ・アーカイブ条件を反映し、色フィルタ自身は除外した
     /// この色のカード枚数。保存しない派生値（<see cref="FilterViewModel.ComputeColorCounts"/> 参照）。
     /// </summary>
     public int Count

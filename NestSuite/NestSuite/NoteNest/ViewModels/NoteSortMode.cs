@@ -1,7 +1,7 @@
 namespace NestSuite.ViewModels;
 
 /// <summary>
-/// M14: 左ペインのノート一覧の表示順。保存データの並び順（<see cref="NotebookViewModel.Notes"/>）は
+/// 左ペインのノート一覧の表示順。保存データの並び順（<see cref="NotebookViewModel.Notes"/>）は
 /// 変更しない派生の表示設定であり、<c>UiSettings.NoteSortMode</c> としてアプリ全体で1つ保存する。
 /// </summary>
 public enum NoteSortMode

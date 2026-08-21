@@ -39,7 +39,7 @@ public class NotebookViewModel : BaseViewModel
     public ObservableCollection<NoteViewModel> Notes { get; }
 
     /// <summary>
-    /// M14: 左ペイン表示専用の並び替え済みコレクション。保存対象は引き続き <see cref="Notes"/>
+    /// 左ペイン表示専用の並び替え済みコレクション。保存対象は引き続き <see cref="Notes"/>
     /// （作成順の実データ）。<see cref="RefreshDisplayOrder"/> が呼ばれるまでは <see cref="Notes"/> と
     /// 同じ順序を保つ。Move/Add/Remove のみで更新し Clear は使わないため、WPF 側の選択状態・
     /// 展開状態を壊さない。

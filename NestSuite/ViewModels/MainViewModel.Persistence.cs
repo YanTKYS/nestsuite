@@ -29,7 +29,6 @@ public partial class MainViewModel
     public bool OpenFileAtStartup(string path) => TryOpenProject(path);
 
     /// <summary>
-    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6):
     /// probe（<see cref="NestSuite.NestSuiteTabFactory.TryPrepareOpen"/>）で得た
     /// <paramref name="context"/> を、<see cref="ProjectLifecycleService.OpenPrepared"/> 経由で
     /// 追加読込なしで開く。成功時の StatusMessage・失敗時のログ／ダイアログ経路は
@@ -82,13 +81,13 @@ public partial class MainViewModel
     public bool SaveToPath(string path) => DoSave(path, notifyOnError: true, createBackup: true);
 
     /// <summary>
-    /// v2.14.12 SH-33: 自動保存など、失敗をユーザーへ都度ダイアログ通知したくない呼び出し用。
+    /// 自動保存など、失敗をユーザーへ都度ダイアログ通知したくない呼び出し用。
     /// 失敗時も <see cref="ErrorLogService"/> へは記録するが、<see cref="ShowErrorDialog"/> は呼ばない。
     /// </summary>
     public bool SaveToPath(string path, bool notifyOnError) => DoSave(path, notifyOnError, createBackup: true);
 
     /// <summary>
-    /// v2.16.6 TD-64: 自動保存など、正本は更新するが .bak を更新したくない呼び出し用。
+    /// 自動保存など、正本は更新するが .bak を更新したくない呼び出し用。
     /// createBackup=false でも atomic write（tmp 経由の安全な書き込み）は維持する。
     /// </summary>
     public bool SaveToPath(string path, bool notifyOnError, bool createBackup) =>
@@ -104,7 +103,7 @@ public partial class MainViewModel
         {
             _lifecycle.Save(path, createBackup);
             StatusMessage = $"保存しました: {System.IO.Path.GetFileName(path)}";
-            // M14: 保存完了は明示的な区切りのため、更新日順の表示へ最新の編集結果を反映する。
+            // 保存完了は明示的な区切りのため、更新日順の表示へ最新の編集結果を反映する。
             _notes.RefreshDisplayOrder();
             return true;
         }
@@ -123,7 +122,7 @@ public partial class MainViewModel
 
     private void Exit()
     {
-        // v2.9.7: 未保存確認は Shell の OnClosing で Save / Discard / Cancel として行う。
+        // 未保存確認は Shell の OnClosing で Save / Discard / Cancel として行う。
         RequestClose?.Invoke();
     }
 
@@ -142,7 +141,7 @@ public partial class MainViewModel
     private bool TryOpenProject(string path) =>
         TryOpenProjectCore(() => _lifecycle.Open(path), path);
 
-    /// <summary>v2.16.35 TD-59b-2: prepared 経路。既存 <see cref="TryOpenProject"/> と同じ成功/失敗処理を共有する。</summary>
+    /// <summary>prepared 経路。既存 <see cref="TryOpenProject"/> と同じ成功/失敗処理を共有する。</summary>
     private bool TryOpenPreparedProject(WorkspaceFileOpenContext context) =>
         TryOpenProjectCore(() => _lifecycle.OpenPrepared(context), context.FilePath);
 

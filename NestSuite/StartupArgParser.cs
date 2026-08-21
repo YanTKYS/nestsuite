@@ -3,20 +3,20 @@ namespace NestSuite;
 /// <summary>
 /// 起動引数解析。App_Startup から呼び出す。
 ///
-/// <para><b>引数仕様（v1.19.3）</b></para>
+/// <para><b>引数仕様</b></para>
 /// <list type="bullet">
 ///   <item>引数なし         → NestSuite 起動（無題 NoteNest タブ）</item>
 ///   <item>ファイルパス     → NestSuite 起動し、拡張子に応じてタブを開く</item>
-///   <item>--nestsuite      → NestSuite 起動（v1.6.1 互換。既定と同じ動作）</item>
+///   <item>--nestsuite      → NestSuite 起動（互換フラグ。既定と同じ動作）</item>
 ///   <item>--nestsuite + パス → NestSuite 起動し、拡張子に応じてタブを開く</item>
-///   <item>その他のフラグ   → 無視して NestSuite 起動（--classic-notenest は v1.19.3 で廃止）</item>
+///   <item>その他のフラグ   → 無視して NestSuite 起動</item>
 /// </list>
 /// </summary>
 public static class StartupArgParser
 {
     /// <summary>
     /// --nestsuite フラグが含まれているか（大文字小文字を区別しない）。
-    /// v1.11.0 以降は既定が NestSuite のため、このフラグは互換として維持する。
+    /// 既定が NestSuite のため、このフラグは互換として維持する。
     /// </summary>
     public static bool IsNestSuiteMode(string[] args) =>
         args.Contains("--nestsuite", StringComparer.OrdinalIgnoreCase);

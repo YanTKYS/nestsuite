@@ -112,7 +112,7 @@ public partial class NoteEditorHost : UserControl
 
     private void EditorBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        // v2.9.5 SH-21 hotfix: Unloaded 後（DataContext 解除中含む）は補完更新をスキップする。
+        // Unloaded 後（DataContext 解除中含む）は補完更新をスキップする。
         // DetachedWorkspaceWindow.OnClosed で Children.Clear() → DataContext=null の順に処理するが、
         // WPF が TextChanged を同期的に発火する場合に UpdateCompletion 内で NullReferenceException が
         // 起こりうる。_editorEventsAttached = false は NoteEditorHost_Unloaded で設定される。
@@ -138,7 +138,7 @@ public partial class NoteEditorHost : UserControl
     private void EditorBox_SizeChanged(object sender, SizeChangedEventArgs e) =>
         Dispatcher.InvokeAsync(UpdateLayoutDependentUI, DispatcherPriority.Render);
 
-    // ── L14 / L15: Status bar — caret position, char count, line count ───
+    // ── Status bar — caret position, char count, line count ───
 
     private void UpdateStatusBar()
     {
@@ -181,7 +181,7 @@ public partial class NoteEditorHost : UserControl
     }
 
     /// <summary>
-    /// v2.19.3 L4: DataContext（MainViewModel.EditorWordWrap）の折り返し表示設定を
+    /// DataContext（MainViewModel.EditorWordWrap）の折り返し表示設定を
     /// EditorBox の TextWrapping / HorizontalScrollBarVisibility へ反映する。
     /// DataContext が未設定・対象プロパティを持たない場合は現状（折り返しON相当）を維持する。
     /// </summary>
@@ -257,7 +257,7 @@ public partial class NoteEditorHost : UserControl
             return;
         }
 
-        // v2.9.5 SH-21 hotfix: provider 呼び出しが例外を投げても補完を閉じるだけにとどめる。
+        // provider 呼び出しが例外を投げても補完を閉じるだけにとどめる。
         IEnumerable<string> titles;
         try
         {

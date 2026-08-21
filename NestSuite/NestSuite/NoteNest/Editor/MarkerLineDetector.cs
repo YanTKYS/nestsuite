@@ -9,7 +9,7 @@ public sealed record LineHighlightInfo(int LogicalIndex, LineHighlightKind Kind)
 public static class MarkerLineDetector
 {
     /// <summary>
-    /// バグ修正 v2.14.19: 1 行につき 1 件、行頭（または行頭の空白後）にある角括弧付きマーカー
+    /// 1 行につき 1 件、行頭（または行頭の空白後）にある角括弧付きマーカー
     /// （<c>[TODO]</c> / <c>[FIXME]</c> / <c>[NOTE]</c>、<see cref="NestSuite.Services.MarkerExtractorService"/>
     /// と同一の判定ルール・大文字小文字区別）を検出する。単語単体や文中の角括弧は対象外。
     /// 行頭に該当マーカーがない場合のみ、行内のどこにあっても <c>[[</c>（NoteLink）を検出する。

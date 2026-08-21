@@ -30,7 +30,7 @@ public partial class NoteNestWorkspaceView : UserControl
         EditorHost.EditorReady += (_, _) =>
         {
             EditorHost.Editor.SelectionChanged += EditorAdapter_SelectionChanged;
-            // v2.9.5 SH-21 hotfix: DataContext が null の間は空を返す。
+            // DataContext が null の間は空を返す。
             // DetachedWorkspaceWindow.OnClosed で DataContext を解除する際、WPF Binding 更新により
             // EditorBox_TextChanged → UpdateCompletion → provider が呼ばれる経路で NullReferenceException
             // が発生していた。DataContext が MainViewModel でない間は安全に空候補を返す。
@@ -86,7 +86,7 @@ public partial class NoteNestWorkspaceView : UserControl
         _isRightPaneCollapsed = true;
         RightPaneExpandButton.Content = "»";
         RightPaneExpandButton.ToolTip = "右ペインを表示";
-        // SH-45: 記号のみのボタンのため、状態に追従するAutomationProperties.NameをToolTipと同じ文言で設定する。
+        // 記号のみのボタンのため、状態に追従するAutomationProperties.NameをToolTipと同じ文言で設定する。
         AutomationProperties.SetName(RightPaneExpandButton, "右ペインを表示");
     }
 
@@ -181,7 +181,7 @@ public partial class NoteNestWorkspaceView : UserControl
     private bool Confirm(string message, string title = "確認",
         MessageBoxImage icon = MessageBoxImage.Warning) => Host.Confirm(message, title, icon);
 
-    // ── NoteNest Markdown エクスポート（SH-25: Shell File メニューから移管） ──
+    // ── NoteNest Markdown エクスポート ──
 
     private void ExportNoteMarkdownCopy_Click(object sender, RoutedEventArgs e)
     {
@@ -200,7 +200,7 @@ public partial class NoteNestWorkspaceView : UserControl
         }
     }
 
-    // ── v2.19.4 M15: 右ペイン（マーカー／タスク）の一括コピー ────────────────
+    // ── 右ペイン（マーカー／タスク）の一括コピー ────────────────
 
     private void CopyAllMarkers_Click(object sender, RoutedEventArgs e)
     {
@@ -221,7 +221,7 @@ public partial class NoteNestWorkspaceView : UserControl
 
     private void CopyAllTasks_Click(object sender, RoutedEventArgs e)
     {
-        // L10: 通知件数は画面表示中（絞り込み後）の件数と一致させる。IncompleteTasks/CompletedTasks は
+        // 通知件数は画面表示中（絞り込み後）の件数と一致させる。IncompleteTasks/CompletedTasks は
         // TaskGroupViewModel.FilterText 適用後の表示用一覧であり、FormatTasks が使う一覧と同じもの。
         var tasks = ViewModel.TaskGroups.SelectMany(g => g.IncompleteTasks.Concat(g.CompletedTasks)).ToList();
         var markdown = NoteNestRightPaneMarkdownFormatter.FormatTasks(ViewModel.TaskGroups);

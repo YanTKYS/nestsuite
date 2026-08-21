@@ -45,7 +45,7 @@ public partial class IdeaNestWorkspaceView : UserControl
     {
         Workspace?.SetOwnerResolver(() => Window.GetWindow(this));
 
-        // ID-15: DataContext が切り替わった場合に、以前の Workspace の購読を残さない。
+        // DataContext が切り替わった場合に、以前の Workspace の購読を残さない。
         if (!ReferenceEquals(_wiredWorkspace, Workspace))
         {
             if (_wiredWorkspace != null) _wiredWorkspace.ScrollRequested -= OnCardScrollRequested;
@@ -55,7 +55,7 @@ public partial class IdeaNestWorkspaceView : UserControl
     }
 
     /// <summary>
-    /// ID-15: 新規カード作成直後の一時的なスクロール要求を、コンテナ生成後に一度だけ処理する。
+    /// 新規カード作成直後の一時的なスクロール要求を、コンテナ生成後に一度だけ処理する。
     /// 固定時間の待機や再試行タイマーは使わず、DispatcherPriority.Loaded で 1 回だけ実行する。
     /// </summary>
     private void OnCardScrollRequested(object? sender, IdeaCardViewModel card)
@@ -128,7 +128,7 @@ public partial class IdeaNestWorkspaceView : UserControl
     }
 
     /// <summary>
-    /// v2.19.1 ID-4 (TD-88必須範囲): フォーカス中のカードで Enter を押したとき、
+    /// フォーカス中のカードで Enter を押したとき、
     /// マウスクリックと同じ <see cref="OnCardMouseLeftButtonUp"/> の遷移先（PreviewIdeaCommand）を
     /// そのまま呼び出す。プレビュー処理自体は複製しない。
     /// フッターボタン（ピン留め等）にフォーカスがある場合の Enter は、既存の
@@ -178,7 +178,7 @@ public partial class IdeaNestWorkspaceView : UserControl
     {
         if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
         var paths = e.Data.GetData(DataFormats.FileDrop) as string[] ?? Array.Empty<string>();
-        // v1.16.6 fix: 拡張子のみで絞り込む。存在確認は CreateCardsFromFiles の catch に委ねることで
+        // 拡張子のみで絞り込む。存在確認は CreateCardsFromFiles の catch に委ねることで
         // 削除済みファイルなど読み込み失敗時にも警告ダイアログを表示できる
         var textFiles = paths.Where(HasAcceptableExtension).ToArray();
         if (textFiles.Length == 0) return;

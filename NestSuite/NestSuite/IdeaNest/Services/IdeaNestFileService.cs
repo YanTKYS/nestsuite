@@ -27,7 +27,7 @@ public static class IdeaNestFileService
 
     public static void Save(string path, Workspace workspace) => Save(path, workspace, createBackup: true);
 
-    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    /// <summary>createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
     public static void Save(string path, Workspace workspace, bool createBackup)
     {
         if (workspace == null) throw new ArgumentNullException(nameof(workspace));
@@ -45,14 +45,14 @@ public static class IdeaNestFileService
 
     public static Workspace Load(string path)
     {
-        // v2.14.1 FM-1: .nestsuite の場合は wrapper を剥がして既存のデシリアライズ・検証経路へ渡す
+        // .nestsuite の場合は wrapper を剥がして既存のデシリアライズ・検証経路へ渡す
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
         {
             if (!File.Exists(path))
                 throw new FileNotFoundException("IdeaNest ファイルが見つかりません。", path);
             var envelope = NestSuiteWorkspaceEnvelope.Read(File.ReadAllText(path));
             NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindIdeaNest);
-            // v2.14.4 FM-4: payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
+            // payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
             SchemaVersionGuard.EnsureNotNewer(envelope.PayloadSchemaVersion, SchemaVersion, "IdeaNest");
             var workspace = ValidatePayload(envelope.PayloadJson);
             SchemaVersionGuard.EnsureEnvelopeConsistent(
@@ -67,7 +67,6 @@ public static class IdeaNestFileService
     }
 
     /// <summary>
-    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6, §10):
     /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が既に読んだ wrapper を追加読込なしで
     /// デシリアライズする。<paramref name="context"/> の path と解析済み内容は分離できない
     /// （path のみを別引数で受ける overload は追加しない）。
@@ -99,7 +98,7 @@ public static class IdeaNestFileService
             // (d) (c) を通過したのに enum が異なる = context の改変等の契約違反
             if (context.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest)
                 throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-            // (e) FM-4: wrapper 宣言 schema の too-new 事前確認（現行と同一の SchemaVersionGuard 例外）
+            // (e) wrapper 宣言 schema の too-new 事前確認
             SchemaVersionGuard.EnsureNotNewer(preloaded.Envelope.PayloadSchemaVersion, SchemaVersion, "IdeaNest");
             // (f) 追加のファイル読込は行わない（0 回）。デシリアライズ+検証は既存 ValidatePayload を共有する
             var workspace = ValidatePayload(preloaded.Envelope.PayloadJson);
@@ -114,7 +113,7 @@ public static class IdeaNestFileService
         // (h) レガシー誤配線（他 Workspace の拡張子を含む）
         if (context.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest)
             throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-        // (h2) v2.16.36 TD-59b-2-2: WorkspaceKind は一致していても、FilePath のレガシー拡張子が
+        // (h2) WorkspaceKind は一致していても、FilePath のレガシー拡張子が
         // 別 Workspace のもの（例: .notenest）である不正 context をファイル I/O 前に拒否する。
         // 既存 ValidateExtension は NotSupportedException を投げるため、契約が合わない
         // prepared 読込用にはここで明示的な ArgumentException ガードを追加する。
@@ -135,7 +134,7 @@ public static class IdeaNestFileService
             throw new InvalidDataException("必須フィールド version がありません。");
 
         var workspace = IdeaNestWorkspaceService.DeserializeFromJson(json);
-        // v2.14.4 FM-4: 現行より新しい schema は「未対応」ではなく「新しいバージョンで作成された可能性」として
+        // 現行より新しい schema は「未対応」ではなく「新しいバージョンで作成された可能性」として
         // 専用の失敗にする（数値比較）。それ以外の不一致は従来どおり NotSupportedException（既存挙動維持）。
         if (SchemaVersionGuard.TryParse(workspace.Version, out _))
             SchemaVersionGuard.EnsureNotNewer(workspace.Version, SchemaVersion, "IdeaNest");
