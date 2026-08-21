@@ -35,7 +35,7 @@ public static class NestSuiteOpenFilePolicy
     /// <paramref name="existingTabKind"/> が保存先 <paramref name="savePath"/> と重複するかどうかの判定。
     ///
     /// <para>legacy 拡張子（.notenest / .ideanest / .chatnest）は拡張子だけで WorkspaceKind が
-    /// 一意に定まるため、従来どおり <paramref name="saveKind"/> が一致する場合のみ重複とみなす。</para>
+    /// 一意に定まるため、<paramref name="saveKind"/> が一致する場合のみ重複とみなす。</para>
     ///
     /// <para><c>.nestsuite</c> は拡張子だけでは WorkspaceKind が定まらず、ファイル内容の
     /// <c>workspaceKind</c> で判定される形式のため、WorkspaceKind に関係なく同じパスであれば

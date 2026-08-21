@@ -8,9 +8,8 @@ namespace NestSuite.Services;
 public class ProjectFileService
 {
     /// <summary>
-    /// `.notenest` 拡張子の定数。ChatNest / IdeaNest の FileService には従来から
-    /// FileExtension 定数があり NoteNest だけリテラル分散していた非対称
-    /// （compatibility-identifiers-audit.md §1-4 補足）を解消する。値は恒久維持（分類 A）。
+    /// `.notenest` 拡張子の定数。各 Workspace の FileService が自分の拡張子の単一情報源になる。
+    /// 値は互換性識別子として恒久維持する（docs/development/compatibility-identifiers-audit.md 分類 A）。
     /// </summary>
     public const string FileExtension = ".notenest";
 
@@ -88,7 +87,7 @@ public class ProjectFileService
         if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
                 $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
-        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        // (i) レガシー拡張子は path ベース読込（読込 1 回）
         return Load(context.FilePath);
     }
 

@@ -38,7 +38,7 @@ public interface IWorkspaceDialogHost
     /// <summary>
     /// ノート選択ダイアログを表示し、選択されたノートを返す。キャンセル時は null。
     /// <paramref name="preselect"/> と厳密一致するノートがあれば初期選択する。一致しない場合、
-    /// <paramref name="selectFirstWhenNoMatch"/> が true なら従来どおり先頭候補を選択する
+    /// <paramref name="selectFirstWhenNoMatch"/> が true なら先頭候補を選択する
     /// （既定 true。ノートリンク挿入など、選択なしから開始する既存呼び出しの挙動を変えないため）。
     /// </summary>
     NoteViewModel? PickNote(

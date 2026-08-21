@@ -72,7 +72,7 @@ public partial class NestSuiteShellWindow
         }
         if (decision.DecisionKind == ShellFileOpenDecisionKind.KindDetectionFailed)
         {
-            // 未対応拡張子は従来どおり履歴から削除する。
+            // 未対応拡張子は履歴から削除する。
             // 一方 `.nestsuite` の種別判定失敗は「一時的に読めない」だけの可能性があるため、
             // 理由に応じた文言で通知し、履歴からは削除しない。
             if (decision.Failure == WorkspaceKindDetectionFailure.UnsupportedExtension)

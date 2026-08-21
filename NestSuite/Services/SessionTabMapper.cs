@@ -159,7 +159,7 @@ public static class SessionTabMapper
     /// <see cref="SessionRestoreTarget.OpenContext"/> として復元ループ・本読込まで運ばれる。
     ///
     /// <para><paramref name="fileExists"/> が指定された場合、まずここで 1 回だけ存在確認する
-    /// （従来どおり不存在は <see cref="WorkspaceKindDetectionFailure.FileNotFound"/>）。
+    /// （不存在は <see cref="WorkspaceKindDetectionFailure.FileNotFound"/>）。
     /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> 側は legacy 拡張子では元々 <paramref name="fileExists"/> を
     /// 呼ばないが、<c>.nestsuite</c> では呼ぶため、二重の存在確認を避けるためここでの事前確認が
     /// 成功した後は <c>_ =&gt; true</c> を渡す。</para>

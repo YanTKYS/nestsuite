@@ -130,7 +130,7 @@ public static class ChatNestFileService
         if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
                 $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
-        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        // (i) レガシー拡張子は path ベース読込（読込 1 回）
         return Load(context.FilePath);
     }
 
@@ -143,7 +143,7 @@ public static class ChatNestFileService
         var data = JsonSerializer.Deserialize<ChatSessionData>(payloadJson, JsonOptions)
             ?? throw new InvalidDataException(".chatnest ファイルの形式が無効です。");
         // 現行より新しい version の読み込みを止め、保存で未知データを失う経路を防ぐ
-        // （未知 speaker の読込時スキップ仕様自体は従来どおり。新 version 検出時のみ失敗させる）
+        // （未知 speaker は読込時にスキップする。失敗させるのは新しい version を検出したときだけ）
         SchemaVersionGuard.EnsureNotNewer(data.Version, FileVersionString, "ChatNest");
         if (envelope != null)
             SchemaVersionGuard.EnsureEnvelopeConsistent(

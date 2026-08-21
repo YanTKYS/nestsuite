@@ -120,7 +120,7 @@ public static class IdeaNestFileService
         if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
                 $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
-        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        // (i) レガシー拡張子は path ベース読込（読込 1 回）
         return Load(context.FilePath);
     }
 
@@ -135,7 +135,7 @@ public static class IdeaNestFileService
 
         var workspace = IdeaNestWorkspaceService.DeserializeFromJson(json);
         // 現行より新しい schema は「未対応」ではなく「新しいバージョンで作成された可能性」として
-        // 専用の失敗にする（数値比較）。それ以外の不一致は従来どおり NotSupportedException（既存挙動維持）。
+        // 専用の失敗にする（数値比較）。それ以外の不一致は NotSupportedException にする。
         if (SchemaVersionGuard.TryParse(workspace.Version, out _))
             SchemaVersionGuard.EnsureNotNewer(workspace.Version, SchemaVersion, "IdeaNest");
         if (!string.Equals(workspace.Version, SchemaVersion, StringComparison.Ordinal))

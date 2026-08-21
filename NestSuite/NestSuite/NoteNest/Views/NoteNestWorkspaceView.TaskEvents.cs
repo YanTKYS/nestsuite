@@ -81,7 +81,7 @@ public partial class NoteNestWorkspaceView
     }
 
     // ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
-    // 絞り込み）を再利用する。保存値は従来どおり SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
+    // 絞り込み）を再利用する。保存値は SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
     // 文字列入力・保存形式は変更しない。
     private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
     {

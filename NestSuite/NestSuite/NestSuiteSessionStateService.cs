@@ -20,7 +20,7 @@ public class NestSuiteSessionStateService
 
     /// <summary>
     /// 読込失敗（破損 JSON 等）を完全に黙殺しない。
-    /// session は利用者データではなく作業状態のため、失敗時は従来どおり空 session を返し
+    /// session は利用者データではなく作業状態のため、失敗時は空 session を返し
     /// 起動は継続するが、原因を ErrorLog（Error のみ）に記録し、可能であれば破損ファイルを
     /// <c>.corrupt</c> へ退避する。退避に失敗しても起動は妨げない。
     /// </summary>

@@ -21,7 +21,7 @@ public partial class NotePickerDialog : Window
     /// <summary>
     /// <paramref name="preselect"/> と一致するノートがあれば、開いた時点でそれを選択状態にする
     /// （厳密一致のみ。曖昧な候補は選択しない）。一致しない場合、<paramref name="selectFirstWhenNoMatch"/>
-    /// が true なら従来どおり先頭候補を選択する（挿入リンク選択の既存動作）。false なら何も選択しない
+    /// が true なら先頭候補を選択する（挿入リンク選択の動作）。false なら何も選択しない
     /// （タスクの関連ノート設定で、既存の関連ノートが未設定・削除済みの場合に誤って選択させないため）。
     /// </summary>
     public NotePickerDialog(
