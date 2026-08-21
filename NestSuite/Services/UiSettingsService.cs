@@ -145,6 +145,7 @@ public class UiSettingsService
     public static NoteSortMode NormalizeNoteSortMode(NoteSortMode mode) =>
         Enum.IsDefined(typeof(NoteSortMode), mode) ? mode : NoteSortMode.Created;
 
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string DefaultDataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "ui-settings.json");

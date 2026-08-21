@@ -7,6 +7,7 @@ namespace NestSuite.TempNest;
 
 public static class TempNestStoreService
 {
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string DataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "tempnest.json");

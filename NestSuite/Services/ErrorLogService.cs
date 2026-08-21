@@ -11,6 +11,7 @@ namespace NestSuite.Services;
 /// </summary>
 internal static class ErrorLogService
 {
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string LogPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "logs", "nestsuite-error.log");

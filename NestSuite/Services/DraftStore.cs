@@ -17,6 +17,7 @@ public static class DraftStore
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     public static string DefaultRootDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NoteNest", "drafts");
 
