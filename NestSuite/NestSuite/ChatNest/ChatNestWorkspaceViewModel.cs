@@ -53,7 +53,6 @@ public class ChatNestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
     private readonly ChatNestRelayCommand _searchPreviousCommand;
 
     public ObservableCollection<MessageViewModel> Messages { get; } = new();
-    public Speaker[] Speakers { get; } = (Speaker[])Enum.GetValues(typeof(Speaker));
 
     /// <summary>ファイル保存用に Message モデルシーケンスを返す。</summary>
     public IEnumerable<Message> MessageModels => Messages.Select(m => m.Model);

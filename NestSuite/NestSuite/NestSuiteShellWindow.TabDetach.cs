@@ -172,7 +172,6 @@ public partial class NestSuiteShellWindow
         // 閉じた別ウィンドウへの参照を外す。選択中タブか否かに関係なく常に実施する。
         WireNoteNestViewCallbacks(vm, WorkspaceView);
 
-        // IsDetached フラグを落とす
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {

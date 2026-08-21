@@ -20,7 +20,6 @@ public static class IdeaNestWorkspaceService
     public static string NormalizeTag(string raw)
     {
         var s = (raw ?? string.Empty).Trim();
-        // Strip one or more leading '#' characters
         while (s.StartsWith("#")) s = s.Substring(1).TrimStart();
         return s;
     }

@@ -36,9 +36,6 @@ public class IdeaNestWorkspaceUiService
         return dlg.ShowDialog(Owner) == true ? dlg.FileName : null;
     }
 
-    public virtual void ShowInformation(string message) =>
-        MessageBox.Show(Owner, message, "IdeaNest", MessageBoxButton.OK, MessageBoxImage.Information);
-
     public virtual void ShowWarning(string message) =>
         MessageBox.Show(Owner, message, "IdeaNest", MessageBoxButton.OK, MessageBoxImage.Warning);
 

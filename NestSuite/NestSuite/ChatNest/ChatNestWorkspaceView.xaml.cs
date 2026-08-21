@@ -149,7 +149,6 @@ public partial class ChatNestWorkspaceView : UserControl
         ChatScrollViewer.ScrollToBottom();
     }
 
-    // 空エリア右クリックメニューの「最下部へ移動」
     private void ScrollToBottomMenuItem_Click(object sender, RoutedEventArgs e)
     {
         ChatScrollViewer.ScrollToBottom();

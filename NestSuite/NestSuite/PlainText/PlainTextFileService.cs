@@ -134,23 +134,23 @@ public static class PlainTextFileService
     {
         // 4 byte BOM は 2 byte BOM の接頭辞（UTF-32 LE の FF FE 00 00 は UTF-16 LE の FF FE を含む）
         // のため、長い BOM から先に判定する。
-        if (StartsWith(bytes, Utf32LEBom))
+        if (bytes.AsSpan().StartsWith(Utf32LEBom))
             return DecodeWith(bytes, Utf32LEBom.Length,
                 new UTF32Encoding(bigEndian: false, byteOrderMark: false, throwOnInvalidCharacters: true),
                 PlainTextEncodingKind.Utf32LE);
-        if (StartsWith(bytes, Utf32BEBom))
+        if (bytes.AsSpan().StartsWith(Utf32BEBom))
             return DecodeWith(bytes, Utf32BEBom.Length,
                 new UTF32Encoding(bigEndian: true, byteOrderMark: false, throwOnInvalidCharacters: true),
                 PlainTextEncodingKind.Utf32BE);
-        if (StartsWith(bytes, Utf8Bom))
+        if (bytes.AsSpan().StartsWith(Utf8Bom))
             return DecodeWith(bytes, Utf8Bom.Length,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true),
                 PlainTextEncodingKind.Utf8Bom);
-        if (StartsWith(bytes, Utf16LEBom))
+        if (bytes.AsSpan().StartsWith(Utf16LEBom))
             return DecodeWith(bytes, Utf16LEBom.Length,
                 new UnicodeEncoding(bigEndian: false, byteOrderMark: false, throwOnInvalidBytes: true),
                 PlainTextEncodingKind.Utf16LE);
-        if (StartsWith(bytes, Utf16BEBom))
+        if (bytes.AsSpan().StartsWith(Utf16BEBom))
             return DecodeWith(bytes, Utf16BEBom.Length,
                 new UnicodeEncoding(bigEndian: true, byteOrderMark: false, throwOnInvalidBytes: true),
                 PlainTextEncodingKind.Utf16BE);
@@ -180,14 +180,6 @@ public static class PlainTextFileService
         {
             throw new PlainTextUnsupportedEncodingException(ex);
         }
-    }
-
-    private static bool StartsWith(byte[] bytes, byte[] prefix)
-    {
-        if (bytes.Length < prefix.Length) return false;
-        for (var i = 0; i < prefix.Length; i++)
-            if (bytes[i] != prefix[i]) return false;
-        return true;
     }
 
     // ── 改行コード判定 ──────────────────────────────────────────────────

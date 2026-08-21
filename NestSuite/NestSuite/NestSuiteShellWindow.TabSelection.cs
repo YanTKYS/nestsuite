@@ -72,11 +72,9 @@ public partial class NestSuiteShellWindow
             bool isChatNest = toolId == NestSuiteToolRegistry.ChatNestToolId;
             bool isIdeaNest = toolId == NestSuiteToolRegistry.IdeaNestToolId;
 
-            // 別ウィンドウ表示中のタブにはプレースホルダーを出す
+            // 別ウィンドウ表示中のタブは Workspace を隠してプレースホルダーを出す
             bool isDetachedNoteNest = isNoteNest && _detachedWindows.ContainsKey(tab.Id);
-            // IdeaNest も別ウィンドウ表示に対応
             bool isDetachedIdeaNest = isIdeaNest && _detachedWindows.ContainsKey(tab.Id);
-            // ChatNest も別ウィンドウ表示に対応
             bool isDetachedChatNest = isChatNest && _detachedWindows.ContainsKey(tab.Id);
 
             // Workspace 表示切替（選択タブに対応する Workspace のみ表示）
@@ -108,7 +106,6 @@ public partial class NestSuiteShellWindow
                     $"{tool.DisplayName} はまだ統合されていません。\n将来のバージョンで統合予定です。";
             }
 
-            // ステータスバー更新
             NestSuiteModeSuffix.Text = $"  /  {tool.DisplayName}";
             RefreshWorkspaceStatus();
         }

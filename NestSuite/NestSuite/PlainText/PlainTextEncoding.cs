@@ -46,7 +46,7 @@ public enum PlainTextNewlineKind
 
 /// <summary>
 /// `.txt` の文字コードを外部依存なしで安全に判定できなかったことを表す例外。
-/// 「対応外として開かず、文字コードを判定できない旨を通知する」方針（フェーズA）の実装。
+/// 対応外として開かず、文字コードを判定できない旨を通知する。
 /// 元ファイルは一切変更しない（読込専用の判定失敗であり、この例外を投げる前に書込は行わない）。
 /// </summary>
 public sealed class PlainTextUnsupportedEncodingException : Exception

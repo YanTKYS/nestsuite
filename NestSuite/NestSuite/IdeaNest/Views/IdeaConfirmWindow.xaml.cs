@@ -5,8 +5,7 @@ namespace NestSuite.IdeaNest.Views;
 
 public enum ConfirmResult
 {
-    Primary,    // Yes / OK / 保存
-    Secondary,  // No / 破棄
+    Primary,
     Cancel,
 }
 
@@ -17,40 +16,6 @@ public partial class IdeaConfirmWindow : Window
     private IdeaConfirmWindow()
     {
         InitializeComponent();
-    }
-
-    public static ConfirmResult ShowYesNoCancel(
-        Window? owner,
-        string header,
-        string message,
-        string primaryText,
-        string secondaryText,
-        string cancelText)
-    {
-        var dlg = new IdeaConfirmWindow { Owner = owner };
-        dlg.HeaderText.Text = header;
-        dlg.MessageText.Text = message;
-
-        dlg.ButtonStack.Children.Add(MakeButton(cancelText, "Secondary", () =>
-        {
-            dlg.Result = ConfirmResult.Cancel;
-            dlg.Close();
-        }, isCancel: true));
-
-        dlg.ButtonStack.Children.Add(MakeButton(secondaryText, "Secondary", () =>
-        {
-            dlg.Result = ConfirmResult.Secondary;
-            dlg.Close();
-        }));
-
-        dlg.ButtonStack.Children.Add(MakeButton(primaryText, "Primary", () =>
-        {
-            dlg.Result = ConfirmResult.Primary;
-            dlg.Close();
-        }, isDefault: true));
-
-        dlg.ShowDialog();
-        return dlg.Result;
     }
 
     public static ConfirmResult ShowOkCancel(

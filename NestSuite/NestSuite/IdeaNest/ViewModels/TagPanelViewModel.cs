@@ -65,7 +65,6 @@ public class TagPanelViewModel : IdeaNestViewModelBase
 
     public bool HasTagSearch => !string.IsNullOrEmpty(_tagSearch.Trim());
 
-    public void ClearTagSearch() => TagSearch = string.Empty;
 
     // ── Tag list ──────────────────────────────────────────────────────────────
 

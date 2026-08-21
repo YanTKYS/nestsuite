@@ -125,8 +125,6 @@ public class CardDisplayViewModel : IdeaNestViewModelBase
 
     public void ClearShuffleOrder() => _shuffleOrder.Clear();
 
-    public IReadOnlyList<string> ShuffleOrderSnapshot => _shuffleOrder.AsReadOnly();
-
     public IEnumerable<IdeaCardViewModel> OrderByShuffle(
         IEnumerable<IdeaCardViewModel> source,
         IEnumerable<IdeaCardViewModel> allCards)

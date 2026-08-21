@@ -16,11 +16,6 @@ public static class RightPaneFilterMatcher
     }
 
     /// <summary>候補のいずれか1つでも一致すれば true。</summary>
-    public static bool MatchesAny(string? filterText, params string?[] candidates)
-    {
-        if (string.IsNullOrEmpty(filterText)) return true;
-        foreach (var candidate in candidates)
-            if (Matches(candidate, filterText)) return true;
-        return false;
-    }
+    public static bool MatchesAny(string? filterText, params string?[] candidates) =>
+        string.IsNullOrEmpty(filterText) || candidates.Any(c => Matches(c, filterText));
 }

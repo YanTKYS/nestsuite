@@ -101,12 +101,9 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         };
         UpdateWorkspaceFontMenuChecks();
 
-        // NoteNest ノートの並び順メニュー（表示 > ノートの並び順）の選択状態初期化。
         UpdateNoteSortModeMenuChecks();
-        // NoteNest 本文エディタのワードラップメニューの選択状態初期化。
         UpdateNoteNestWordWrapMenuCheck();
 
-        // 前回の NestSuite ウィンドウサイズを復元する
         ApplyWindowSize(uiSettings);
         UpdateRecentFilesMenu();
 
@@ -311,7 +308,6 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
 
         // ウィンドウが実際に閉じることが確定した時点でセッション状態を保存する
         SaveSession();
-        // NestSuite ウィンドウサイズを保存する
         SaveWindowSize();
 
         base.OnClosing(e);

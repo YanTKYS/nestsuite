@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using NestSuite.ViewModels;
 
@@ -8,21 +7,6 @@ namespace NestSuite.Views;
 
 public partial class NoteNestWorkspaceView
 {
-    private void AddTaskMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = new ContextMenu();
-        foreach (var group in ViewModel.TaskGroups)
-        {
-            var key = group.Key;
-            var item = new MenuItem { Header = group.Title };
-            item.Click += (_, _) => ViewModel.AddTaskCommand.Execute(key);
-            menu.Items.Add(item);
-        }
-        menu.PlacementTarget = (Button)sender;
-        menu.Placement = PlacementMode.Bottom;
-        menu.IsOpen = true;
-    }
-
     private void MoveTaskToToday_Click(object sender, RoutedEventArgs e)   => MoveTaskFromMenu(sender, TaskGroupKeys.Today);
     private void MoveTaskToWeek_Click(object sender, RoutedEventArgs e)    => MoveTaskFromMenu(sender, TaskGroupKeys.Week);
     private void MoveTaskToBacklog_Click(object sender, RoutedEventArgs e) => MoveTaskFromMenu(sender, TaskGroupKeys.Backlog);
