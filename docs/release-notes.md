@@ -9,23 +9,11 @@
 
 ## v2.25.2 — TD-98 リポジトリ残存資産・歴史的成果物の縮退
 
-- **TD-98: `src` / `tests` / `docs` の外側を含めてリポジトリ全体を点検し、現在の NestSuite を build / test / release / use / maintain するのに不要な歴史的成果物を削除した。** TD-94（テスト）・TD-95（production source）・TD-97（docs）に続く仕上げで、**production の振る舞い・保存形式・互換性識別子の変更はない**。判断基準は「build / test / release / runtime で使われているか」「現行仕様の正本か」「現在の互換性維持に必要か」「現在の運用手順に必要か」で、いずれも No かつ Git 履歴・元リポジトリで代替できるものだけを削除した。
-- **ルート構成が 11 → 8 項目になった。** `NestSuite.Net48Test/` `architecture/` `reference/` の 3 ディレクトリを削除（**96 ファイル**）。残るのは `.github/` `NestSuite/` `NestSuite.Tests/` `NestSuite.UiSmoke/` `docs/` `tools/` `NestSuite.sln` `README.md`（と `.gitignore`）。**退避用の新ディレクトリ（`unused/` `archive/` `reference/net48/` 等）は作っていない。**
-- **`NestSuite.Net48Test/` を削除した。** `NestSuite.sln` に含まれておらず、CI（`ci.yml`）・release（`release.yml`）・UI Smoke のいずれからも参照されない、正式配布対象でもない検証専用プロジェクトだった（csproj / `Polyfills/Net48Polyfills.cs` / `README_net48_test.txt`）。検証手順・検証 version・Polyfill 一覧は残していない。
-- **ルート `architecture/` をディレクトリごと削除した（3 文書）。** `cross-platform-options.md`（Android / Mac / HTML / MAUI の将来可能性メモ。backlog に着手トリガーを持つ案件として存在しない）、`net48-adoption-decision.md`（過去の .NET Framework 4.8 検証結果の詳細記録）、`workspace-detached-window.md`（別ウィンドウ表示の**実装前**の計画メモ。「最初の実装対象は NoteNest のみでもよい」「想定フェーズ 1. backlog 追記」といった記述のままで、実装済みの現行仕様書として読める文書ではない）。保存形式・schema の方針正本は `docs/architecture/` であり、ルートと docs の二重構造を解消した。
-- **失われてはいけない現行判断だけを既存正本へ吸収した。** 開発ガイドライン §4 を「ターゲット・外部依存・通信」とし、**正式ターゲットは .NET 8 WPF（`net8.0-windows`）・配布形態は self-contained single-file、`.NET Framework 4.8` は正式非対応でその検証系は再開しない、クロスプラットフォームは現時点で対象外**という 3 行を追記した。別ウィンドウ表示の不変条件（Shell と同一プロセス・ViewModel は session が単一所有・detached 状態は `session.json` へ保存しない）は同 §12 に既にあるため追記していない。過去の検証内容は Git 履歴に委ねた。
-- **`reference/` をディレクトリごと削除した。** `reference/legacy/` は production から撤去した NoteNest Classic 時代の自動保存コードを `.cs.txt` として複製保持していたもので、**リポジトリ内へ履歴を二重保存する運用**だったため廃止した（コードの履歴は Git で確認できる）。`reference/external/chatnest-v0.4.1/` と `reference/external/ideanest-v1.1.4/` は統合前の旧アプリのソース snapshot（App.xaml / MainWindow / Services / Models / csproj 等 88 ファイル）で、統合は完了済み・production も tests も compile / runtime 依存しておらず、現行仕様の正本でもなく、元リポジトリ（`YanTKYS/chatnest` / `YanTKYS/ideanest`）と Git 履歴から確認できる。現在用途のあるファイルが残らなかったため `reference/` 自体を削除した。
-- **現役資産は件数削減を目的に触っていない。** `tools/register-nestsuite-file-association.ps1` / `unregister-…` は `docs/operations/file-association.md` から利用手順として参照され、4 拡張子・ProgId が `FileAssociationService.Targets` と一致し、register / unregister が対になっていることを確認したうえで**そのまま維持**した（PowerShell のリファクタリングもしていない）。`.github/workflows/` の `ci.yml` / `release.yml` / `ui-smoke.yml` はいずれも現役で、廃止ターゲット専用処理・net48 専用処理・存在しない project / path への参照がないことを確認して**全て維持**した。
-- **`NestSuite.sln` は変更していない。** 元から `NestSuite` / `NestSuite.Tests` / `NestSuite.UiSmoke` の 3 project のみで、削除した歴史 project は含まれていなかった。現役 project を「数を減らしたい」という理由で統合していない。
-- **`.gitignore` を軽く整理した。** NuGet 旧形式時代の `project.lock.json` / `packages/`（現在生成されない）を削除し、release workflow が生成する `publish/` / `stage/` / `artifacts/` を追加した。`artifacts/performance-results/` は広い `artifacts/` に含まれるため個別行を落としている。全面書き換えはしていない。
-- **削除したパス・名前への現在参照は 0 件。** production source / tests / UiSmoke / `README.md` / `docs/` / `.github/` / `tools/` / `*.sln` / `*.csproj` / `.gitignore` を対象に、`NestSuite.Net48Test` `README_net48_test` `net48-adoption-decision` `cross-platform-options` `workspace-detached-window` `reference/legacy` `reference/external` `chatnest-v0.4.1` `ideanest-v1.1.4` `MainViewModel.AutoSave.legacy` `net48_test` `Polyfills` を全走査した。残っていた 2 件（backlog RJ-1 の「`NestSuite.Net48Test/` は検証履歴として保持する」、開発ガイドライン §11 の禁止事項「net48_test の再開」）を、プロジェクトが存在しない現状に合わせて修正した。ルート `README.md` は元から削除対象への参照を持たず、変更していない。**過去 version の release notes に出てくる旧パスは、履歴記述として書き換えていない。**
-- **production code の変更はない。** 削除に伴う build 設定の削除も不要だった（削除したディレクトリはどの csproj / sln からも参照されていなかった）。
-- **テストは追加していない。** 「削除したディレクトリが存在しないこと」「net48 project がないこと」を xUnit で固定するテストは、TD-94 のテスト方針（リポジトリ構造をテストで固定しない）に反するため作っていない。変更したのは `ApplicationVersionTests` の version 文字列のみ。
-- **新しい整理報告文書・棚卸し一覧は作っていない。** backlog への「追加 → 同一 version で完了 → 削除」の往復も行っておらず、今回の点検から「いつか整理できそう」という理由だけの新規 backlog も追加していない。
-- **`docs/release-notes.md` は今回の縮退対象外。** 完了済み backlog ID と version 追跡の正本として現在も用途があるため、削除・分割・GitHub Releases への移行はしていない。
-- **保存・読込・dirty / save・session / draft・autosave・rollback・recent files・起動 / 二重起動・file association・Workspace transfer・Detached window・ErrorLog の挙動変更なし。NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式の変更なし。schema bump なし。互換性識別子（AppData パス・ProgId・Mutex / Pipe 名・ファイル拡張子）の変更なし。外部依存の追加なし。**
-- **TD-98 をもって、整理を目的とする version は終了する。** 以後は実利用で見つかった問題・利用者要望・着手トリガーが成立した backlog へ戻る。この方針は新規文書ではなく開発ガイドライン §1 へ 1 行だけ追記した。
-- **実機でしか確認できない項目はない**（削除したのはビルドにも実行にも参加しない資産のみで、UI・挙動を変更していないため）。
+- **TD-98: リポジトリ全体（`src` / `tests` / `docs` の外側を含む）の歴史的成果物を最終整理した。**
+- **`NestSuite.Net48Test/` / ルート `architecture/` / `reference/` を削除した（96 ファイル）。** いずれも build / test / release / runtime に参加せず、現行仕様の正本でも運用手順でもなく、Git 履歴・元リポジトリで代替できる資産。退避用ディレクトリは作っていない。
+- **.NET 8 WPF self-contained single-file を現行ターゲットとして開発ガイドライン §4 へ明記した。** `.NET Framework 4.8` は正式非対応で検証系は再開しない。
+- **`tools/` / `.github/workflows/` / `NestSuite.sln` は現役性を確認して維持した。** 件数削減目的の削除・統合はしていない。
+- **production の振る舞い・保存形式（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` ほか）・互換性識別子（AppData パス・ProgId・Mutex / Pipe 名・拡張子）の変更なし。外部依存の追加なし。**
 
 ---
 

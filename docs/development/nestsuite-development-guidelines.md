@@ -20,7 +20,7 @@ NestSuite の開発で共通して守るルールの正本。**実装者と設�
 | 旧 NoteNest Classic へ戻さない | `--classic-notenest` / `MainWindow` / `StartDialog` は復元しない |
 | Workspace として扱う | NoteNest / IdeaNest / ChatNest / TempNest / PlainText は NestSuite 上の Workspace |
 | 1 version = 1 purpose | 複数の大きな変更を同時に入れない。docs 整理を機能実装へ便乗させない |
-| 棚卸しのための棚卸しをしない | 整理を目的とする version は TD-98 で終了した。以後は実利用で見つかった問題・利用者要望・トリガーが成立した backlog へ戻る |
+| 棚卸しのための棚卸しをしない | 整理自体を目的とする version は原則作らず、実利用で見つかった問題・利用者要望・着手トリガーが成立した backlog を優先する |
 | 既存機能の回帰を避ける | 変更範囲外の動作を壊さない |
 | 実装範囲を勝手に広げない | backlog に記載のない機能を勝手に追加しない |
 | ユーザーに見える UI 変更は明示する | UI が変わる変更は release notes に明記する |
