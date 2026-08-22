@@ -219,8 +219,6 @@ public sealed class DialogService
         _findReplaceDialog.Close();
     }
 
-    public void ShowTutorial() => new TutorialWindow { Owner = _owner }.Show();
-
     public void ShowError(string message, string title = "エラー") =>
         MessageBox.Show(_owner, message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 

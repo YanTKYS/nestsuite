@@ -7,6 +7,14 @@
 
 ---
 
+## v2.25.4 — TD-85 旧TutorialWindow資産の削除
+
+- **TD-85: 現行 UI から到達できない旧チュートリアル資産を削除した。** `TutorialWindow.xaml(.cs)`・`tutorial.png`・`DialogService.ShowTutorial()`（唯一の呼出元だった導線は既にない）を削除し、`ArchitectureBoundaryTests` の禁止コールサイトパターンから型が存在しなくなった `"new TutorialWindow"` を除いた。
+- **削除条件が成立していたことを確認して実施した。** 初回空状態の一行ガイド（`NestSuiteShellWindow.GettingStartedHint.cs`）が同種の初回案内ニーズを軽量に充足しており、着手トリガーは既に満たされていた。
+- **production の振る舞い・保存形式・schema の変更なし。現行の初回案内・UI の挙動に変更なし。** `TutorialWindow` / `ShowTutorial` / `tutorial.png` への参照は残っていない。
+
+---
+
 ## v2.25.3 — TD-99 開発ガイドラインの縮退・プロンプト標準契約の軽量化
 
 - **TD-99: `docs/development/nestsuite-development-guidelines.md` を 16 節 321 行から 8 節 258 行へ再構成し、重複ルールと他文書の再掲を削除した。** 「共通禁止事項」節は各ルールを本来の節へ一本化して廃止し、二重管理をやめた。
