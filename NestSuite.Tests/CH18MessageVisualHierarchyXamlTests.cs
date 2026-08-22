@@ -72,12 +72,18 @@ public class CH18MessageVisualHierarchyXamlTests
     }
 
     [Fact]
-    public void NoNewFixedColors_IntroducedByCH18Changes()
+    public void MessageTemplate_UsesNoFixedColors()
     {
         var src = ReadChatNestWorkspaceViewXaml();
-        // CH-18 のコメント範囲内に固定色（# リテラル）が追加されていないことを確認する
-        var idx = src.IndexOf("CH-18", StringComparison.Ordinal);
-        Assert.True(idx >= 0);
+        var start = src.IndexOf("<DataTemplate x:Key=\"MessageTemplate\"", StringComparison.Ordinal);
+        Assert.True(start >= 0, "MessageTemplate が見つからない");
+        var end = src.IndexOf("</DataTemplate>", start, StringComparison.Ordinal);
+        Assert.True(end > start);
+        var template = src.Substring(start, end - start);
+
+        // 発言表示の色は DynamicResource と Speaker コンバーター由来のみとし、
+        // テーマ切替で追従しない固定色リテラルを持たせない。
+        Assert.DoesNotContain("=\"#", template);
     }
 
     [Fact]
