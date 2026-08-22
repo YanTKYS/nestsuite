@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.38 TD-59b-4 (nestsuite-double-read-design-review.md §9, §17):
+/// v2.16.38 TD-59b-4:
 /// <see cref="SessionTabMapper.CreateRestoreTargets"/> → <see cref="ShellFileOpenPlanner.Plan"/>
 /// （session 復元と同じ prepareOpen 注入方法） → 各 FileService の <c>LoadPrepared</c> →
 /// <see cref="NestSuiteTabFactory.FromResolvedKind"/> の合成を、WPF ウィンドウを生成せずに検証する。

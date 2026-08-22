@@ -13,7 +13,7 @@ public class NestSuiteShellXamlTests
 
     // ── SH-25: Shell 上部バー削除・メニュー導線整理 ──────────────────────
 
-    // TD-75e (v2.16.31): TD-75d（v2.16.30, static-test-deletion-candidate-review.md）で
+    // TD-75e (v2.16.31): TD-75d (v2.16.30) で
     // Delete candidate と判断された、SH-25（v2.10.21）の削除決定ガード 2 件
     // （ShellXaml_DoesNotContain_TopBarLaunchButtons / _NoteExportMenuItems）を削除した。
     // 削除決定から十分に安定しており、現行導線は下の ShellXaml_NewMenu_HasDescriptions /
@@ -223,7 +223,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Title=\"キーボードショートカット\"", src);
     }
 
-    // ── v2.16.8 L8 (review1-fable5.md R-5): バックアップ復元ガイド ─────────
+    // ── v2.16.8 L8: バックアップ復元ガイド ─────────
 
     [Fact]
     public void ShellXaml_HelpMenu_ContainsBackupRestoreGuideMenuItem()

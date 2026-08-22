@@ -10,8 +10,7 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// v2.23.0 LK-2: TempNest スロット → 既存 NoteNest タブへ新規ノートとして追加。
-/// 設計正本 docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1）に対する
-/// 実装の回帰確認。
+/// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、
 /// <see cref="LK3TempNestToIdeaNestTransferTests"/> / <see cref="LK4ChatNestToIdeaNestTransferTests"/> と

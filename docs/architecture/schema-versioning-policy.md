@@ -178,19 +178,49 @@ major bump（例: 1.4.1 → 2.0.0）
 
 ---
 
+## 変更の種類別 判断表
+
+schema bump / migration / backup / 利用者確認の要否は、変更の種類で決まる。
+
+| 変更の種類 | schema bump | wrapper bump | migration | 専用 backup | 利用者確認 | 旧 version サンプルテスト |
+|------------|------------|--------------|-----------|------------|-----------|--------------------------|
+| optional field 追加（既定値で補完可） | **必須**（minor/patch） | 不要 | 不要（読込時メモリ補完） | 不要（通常 `.bak` で足りる） | 不要 | **必須** |
+| 必須 field 追加・意味変更・構造変更 | 必須（major/minor） | 不要 | **必須（明示的 migration）** | **必須**（通常 `.bak` と別の保全） | **必須** | 必須 + migration 失敗時の元ファイル保持テスト |
+| field 削除・型変更 | 必須 | 不要 | 必須 | 必須 | 必須 | 必須（原則回避。最終手段） |
+| wrapper 構造変更（payload 位置・必須項目） | — | **必須** + 旧版拒否ガード | 場合による | 必須 | 必須 | wrapper 新旧両サンプル |
+| 保存先パス・ファイル名変更（補助状態） | — | — | 旧パス読込 + 新パス保存の段階移行 | 推奨 | 不要 | 旧パス互換テスト |
+| Save As による形式変更（legacy ↔ wrapper） | 不要 | 不要 | 不要（別ファイルとして書くだけ） | 不要（元ファイル不変） | 利用者自身の操作 | 既存カバー済み |
+
+`optional field 追加` は NoteNest `IsStarred`（`1.4.1` → `1.4.2`）が先例で、
+backlog の M13 / ID-8 / CH-12 もこの想定。`必須 field 追加` 以降は現行に先例がなく、
+エキスパート設計を経てから実装する。
+
+---
+
 ## テスト方針
 
 ### スキーマ変更時に追加すべきテスト
 
-| テスト内容 | 目的 |
-|-----------|------|
-| 旧 schema サンプルを読み込める | 後方互換性の確認 |
-| 新 schema サンプルを読み込める | 新仕様の確認 |
-| 旧 schema 読み込み後に保存してもデータ欠落しない | ラウンドトリップ保証 |
-| optional field がなくても読み込める | null / 既定値補完の確認 |
-| 不明フィールドを含む場合の扱いが明確 | 前方互換性（将来バージョンのファイルを旧アプリで開いたとき） |
-| マイグレーション失敗時に元ファイルを保持する | データ保護確認 |
-| schema version 定数と ApplicationVersion を混同しない | 独立管理の確認 |
+文字列検索ではなく、実ファイル / 実 JSON での読み書きテストにする。
+
+1. **旧 version サンプル読込** — bump 前の実 JSON を読み、欠落 field が既定値で補完される
+2. **現行 version round-trip** — Save → Load で全 field 等価
+3. **未来 version 拒否** — bump 後より新しい version が `SchemaVersionTooNewException`
+   （wrapper 経由は `SchemaVersionTooNew` failure）になる
+4. **version 欠落 / 空文字** — 形式ごとの契約どおり（NoteNest / ChatNest = 許容、IdeaNest = 必須エラー）
+5. **version 不正文字列** — 読込失敗になり元ファイルが変更されない
+6. **未知 field** — 同一 version に未知 field を注入した JSON が読める（再保存で消える現契約も明示）
+7. **Save 失敗** — 書込例外時に dirty 維持・元ファイル / `.bak` 不変
+8. **migration 失敗**（構造変更時のみ） — 元ファイルと専用 backup が残る
+9. **legacy → 上書き保存** — legacy 拡張子のまま・wrapper 化しない
+10. **legacy → Save As** — `.nestsuite` で保存され元ファイルが残る
+11. **wrapper kind 不一致** — `EnsureKind` の専用文言で失敗する
+12. **wrapper formatVersion** — 未来 formatVersion の拒否
+13. **`.bak`** — 手動保存で更新・自動保存で不変
+
+既存テストは 1〜7・9〜11・13 を現行 version についてカバー済み
+（`SchemaVersionGuardTests` / 各 `FileServiceTests` / `FormatSchemaRegressionTests` /
+`AtomicFileWriterTests` / `NoteNestFormatRoundTripTests` 等）。bump 時にこの表へ従って追加する。
 
 ### テストデータ方針
 
@@ -237,19 +267,16 @@ schema version（例: `Project.CurrentSchemaVersion`）を更新する際は、�
 
 1. `Project.CurrentSchemaVersion`（`Project.cs`）
 2. `ApplicationVersionTests.NoteNestSchemaVersion_IsPinned` のリテラル
-3. guideline 本文の「NoteNest schema x.y.z 維持」表記（`PromptStandardContractTests` が
-   補間参照で強制検出する）
-4. `docs/development/nestsuite-development-guidelines.md` 内の schema 表記各所
-5. 本文書と `docs/development/workspace-file-extension-unification.md` / `docs/guide/nestsuite-user-guide.md`
-   の現行 version 表記
-6. release notes に bump 理由を記載
+3. `docs/development/nestsuite-development-guidelines.md` §3 の schema 表記
+4. 本文書と `docs/guide/nestsuite-user-guide.md` の現行 version 表記
+5. release notes に bump 理由を記載
 
 ---
 
 ## 参照
 
 - `docs/backlog.md` — FM-1 および schema 変更を伴う候補一覧
-- `docs/development/nestsuite-development-guidelines.md` — §4 保存形式・スキーマ
-- `docs/design/nestsuite-known-limitations.md` — 既知の制約
+- `docs/development/nestsuite-development-guidelines.md` — §3 保存形式・スキーマ
+- `docs/guide/nestsuite-user-guide.md` — 既知の制約
 - `NestSuite/Models/Project.cs` — `CurrentSchemaVersion` 定数
 - `NestSuite/Services/AtomicFileWriter.cs` — 通常保存の atomic write 実装

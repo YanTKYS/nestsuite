@@ -5,8 +5,7 @@ namespace NestSuite;
 /// <summary>
 /// 通常Workspaceのsession復元・起動引数によるファイル指定が
 /// 一切なかった起動時にだけ、TempNest上部へ「続きから」（recent files上位3件・保持中draft件数）を
-/// 表示するための、Shell側の最小限の配線。設計根拠は
-/// docs/planning/at1-continue-start-panel-design-review.md。
+/// 表示するための、Shell側の最小限の配線。
 ///
 /// <para>責務分離: 表示条件・上位抽出の純粋ロジックは <see cref="ContinueFromPanelPolicy"/>、
 /// 表示用データ・排他状態は <see cref="TempNestWorkspaceViewModel"/> が保持する。Shellは

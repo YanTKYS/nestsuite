@@ -1,7 +1,5 @@
 # ErrorLogService 方針 — Error 専用ログとローテーション
 
-> **TD-57** | v2.14.0 | LT-12 の最小実装。後続開発者が ErrorLogService を変更するときの判断基準。
-
 ## 基本方針
 
 - **ErrorLogService は Error のみを扱う。** Info / Warning ログは追加しない（guideline の共通制約）

@@ -62,7 +62,7 @@ public class NoteChangeCoordinatorTests
         Assert.Contains(nameof(MainViewModel.CurrentNotebookName), published.PropertyNames);
     }
 
-    // L25 (review7-fable5 REV7-2): NoteWorkspaceViewModel.Load 完了後に Reloaded が発火し、
+    // L25: NoteWorkspaceViewModel.Load 完了後に Reloaded が発火し、
     // NoteChangeCoordinator は空状態等の派生プロパティを isDataChanged=false で 1 回だけ通知する。
     // データ変更として扱われないため MainViewModel.IsModified を変化させない。
     [Fact]

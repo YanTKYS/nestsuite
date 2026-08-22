@@ -154,7 +154,7 @@ public class NestSuiteRecentFilesServiceTests : IDisposable
         Assert.Equal(updated, _svc.Load());
     }
 
-    // ── v2.19.2 TD-87 (state-data-protection-boundary-review.md L1): 破損時の診断性 ──
+    // ── v2.19.2 TD-87: 破損時の診断性 ──
 
     [Fact]
     public void Load_CorruptedJson_QuarantinesOriginalFile_ToCorruptSuffix()

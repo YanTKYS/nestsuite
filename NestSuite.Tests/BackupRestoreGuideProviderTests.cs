@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.8 L8 (review1-fable5.md R-5): ヘルプメニュー「バックアップ復元ガイド」の
+/// v2.16.8 L8: ヘルプメニュー「バックアップ復元ガイド」の
 /// 案内文言を確認するテスト。自動復元・自動コピーは行わず、案内のみであることを前提とする。
 /// </summary>
 public class BackupRestoreGuideProviderTests

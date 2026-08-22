@@ -8,7 +8,7 @@ public partial class NestSuiteShellWindow
 {
     // TempNest スロット本文の NoteNest 新規ノートへの昇格。
     //
-    // 責務分離（docs/design/nestsuite-attractiveness-direction.md 4.2 節）:
+    // 責務分離:
     //   TempNest 側 - 昇格要求を発行し、成功後に元スロットを消去するかどうかを実行する
     //   Shell 側   - 新規 NoteNest タブの作成・転送の調整・タブ選択・通知・確認を担当する
     //   NoteNest 側 - 新規ノートを作成し、タイトルと本文を設定する（MainViewModel.CreateNoteFromTransfer）

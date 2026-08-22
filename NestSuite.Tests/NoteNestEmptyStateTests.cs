@@ -273,7 +273,7 @@ public class NoteNestEmptyStateTests : IDisposable
         Assert.Contains(nameof(MainViewModel.ShowMarkerEmptyState), changed);
     }
 
-    // ── L25 (review7-fable5 REV7-2): ファイル読込直後の空状態表示更新 ──────────
+    // ── L25: ファイル読込直後の空状態表示更新 ──────────
 
     [Fact]
     public void OpeningFileWithNotebooksAndNotes_ClearsEmptyStates_WithoutMarkingModified()

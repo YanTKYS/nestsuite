@@ -766,8 +766,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// Workspace 間手動転送共通ヘルパー（<c>WorkspaceTransferContent</c>、
-    /// docs/planning/workspace-manual-transfer-helper-design.md）からの受入 API。
+    /// Workspace 間手動転送共通ヘルパー（<c>WorkspaceTransferContent</c>）からの受入 API。
     /// <paramref name="title"/> が空の場合、タイトル生成は行わずそのまま <see cref="CardOperationsService.CommitAdd"/>
     /// へ渡す。既存の「Title が空なら本文先頭行から生成する」契約（<see cref="CommitAddFromFileContent"/> 等と同じ）
     /// にそのまま委ねるため、ここでは新しいタイトル生成ロジックを持たない。

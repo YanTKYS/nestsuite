@@ -130,7 +130,7 @@ public partial class MainViewModel
     public bool HasAnyNotes => _notes.AllNotes.Any();
 
     // 空状態での次操作ガイド表示条件。優先順位はノートブック > ノート > タスク/マーカーの順で、
-    // 上位が空の間は下位の案内を重複表示しない（docs/design/nestsuite-attractiveness-direction.md 4.5節）。
+    // 上位が空の間は下位の案内を重複表示しない。
     public bool HasNotebooks => _notes.Notebooks.Count > 0;
     public bool ShowNotebookEmptyState => !HasNotebooks;
     public bool ShowNoteEmptyState => HasNotebooks && IsNoteListEmpty;

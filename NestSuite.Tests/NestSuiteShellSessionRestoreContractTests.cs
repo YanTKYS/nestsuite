@@ -31,12 +31,12 @@ public class NestSuiteShellSessionRestoreContractTests
         Assert.Contains("LoadWorkspaceFileAt(", body);
     }
 
-    // ── v2.16.18 TD-70 (review2-fable5.md 新リスク①): pending entry の再試行解除 ─────────
+    // ── v2.16.18 TD-70: pending entry の再試行解除 ─────────
 
     [Fact]
     public void OfferToForgetFileNotFoundRestoreFailures_MethodIsRemoved()
     {
-        // v2.16.21 SH-34 (review4-fable5.md LT-9 フェーズ1): 復元失敗通知と再試行解除確認を
+        // v2.16.21 SH-34: 復元失敗通知と再試行解除確認を
         // 1 ダイアログへ統合したため、別ダイアログを出していた旧 helper は不要になった。
         var src = ReadSessionSource();
         Assert.DoesNotContain("private void OfferToForgetFileNotFoundRestoreFailures", src);

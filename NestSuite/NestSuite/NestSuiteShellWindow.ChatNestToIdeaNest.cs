@@ -6,7 +6,7 @@ namespace NestSuite;
 
 /// <summary>
 /// ChatNest 発言 → IdeaNest カード化。
-/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md。
+/// 転送契約は <see cref="NestSuiteShellWindow.WorkspaceTransfer.cs"/> の共通ヘルパーが正本。
 ///
 /// <para>ChatNest 側は IdeaNest の型・内部構造を一切参照せず、発言本文（string）だけを
 /// <see cref="ChatNestWorkspaceViewModel.TransferMessageToIdeaNestRequested"/> 経由で渡す
