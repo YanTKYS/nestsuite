@@ -102,8 +102,13 @@ public class CH16OperationDiscoverabilityXamlTests
         var separatorBlock = src.Substring(separatorStart, separatorEnd - separatorStart);
         Assert.DoesNotContain("ContextMenu", separatorBlock);
 
+        // 入力エリアは、その背景ブラシから削除確認オーバーレイ（IsDeleteConfirmVisible で
+        // 表示制御する Grid）の直前までとする。境界はコメントではなく実際の XAML 構造で取る。
         var inputAreaIdx = src.IndexOf("ChatInputPanelBackgroundBrush", StringComparison.Ordinal);
-        var inputAreaEnd = src.IndexOf("<!-- 発言削除確認ダイアログ", inputAreaIdx, StringComparison.Ordinal);
+        Assert.True(inputAreaIdx >= 0);
+        var deleteConfirmIdx = src.IndexOf("IsDeleteConfirmVisible", inputAreaIdx, StringComparison.Ordinal);
+        Assert.True(deleteConfirmIdx > inputAreaIdx, "削除確認オーバーレイが入力エリアより後に見つからない");
+        var inputAreaEnd = src.LastIndexOf("<Grid", deleteConfirmIdx, StringComparison.Ordinal);
         var inputAreaBlock = src.Substring(inputAreaIdx, inputAreaEnd - inputAreaIdx);
         Assert.DoesNotContain("StackPanel.ContextMenu", inputAreaBlock);
     }
