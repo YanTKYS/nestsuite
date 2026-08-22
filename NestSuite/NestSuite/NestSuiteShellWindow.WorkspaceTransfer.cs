@@ -3,13 +3,15 @@ using NestSuite.Services;
 namespace NestSuite;
 
 /// <summary>
-/// Workspace 間手動転送（TempNest → NoteNest / TempNest → IdeaNest / ChatNest → IdeaNest）の
+/// Workspace 間手動転送（TempNest → 既存 NoteNest タブ / TempNest → IdeaNest / ChatNest → IdeaNest）の
 /// 共通ヘルパー。<b>ここが転送契約の正本</b>で、新しい転送導線を足す場合も共通化するのは
 /// 以下の範囲だけに留め、UI 文言・ダイアログ・保存・session 操作は各導線側へ置く。
+/// TempNest → <b>新規</b> NoteNest タブへの昇格は、新規タブ生成・session 登録・rollback・タブ切替を
+/// 伴うためこのヘルパーへ寄せていない（<see cref="NestSuiteShellWindow.TempNestPromotion.cs"/>）。
 ///
 /// <para><b>責務</b><br/>
 /// 転送先候補の列挙・TabId + WorkspaceKind による対象解決・session からの ViewModel 解決・
-/// 本文の空判定・受入 delegate の呼び出し・結果の返却・予期しない例外の ErrorLog 記録のみを行う。</para>
+/// 転送内容の空判定・受入 delegate の呼び出し・結果の返却・予期しない例外の ErrorLog 記録のみを行う。</para>
 ///
 /// <para><b>持たない責務</b><br/>
 /// 利用者向け文言・ダイアログ表示・タブ生成／削除／切替・ファイル保存・session 保存・
