@@ -43,7 +43,7 @@ public partial class MainViewModel
     public string FilteredMarkerCountText => _markers.FilteredMarkerCountText;
 
     /// <summary>
-    /// v2.19.4 M15: 右ペインのマーカー一括コピー操作の有効判定。フィルタ後（画面表示中）の
+    /// 右ペインのマーカー一括コピー操作の有効判定。フィルタ後（画面表示中）の
     /// 件数で判定し、フィルタ前の総数（<see cref="HasAnyMarkers"/>）とは独立して扱う。
     /// </summary>
     public bool HasFilteredMarkers => _markers.FilteredMarkers.Any();
@@ -54,7 +54,7 @@ public partial class MainViewModel
     private string _rightPaneFilterText = string.Empty;
 
     /// <summary>
-    /// L10: NoteNest右ペイン（マーカー一覧・互換タスク一覧）共通の絞り込み文字列。
+    /// NoteNest右ペイン（マーカー一覧・互換タスク一覧）共通の絞り込み文字列。
     /// TextBox表示用にユーザー入力をそのまま保持し、一致判定に使う実効値は
     /// <see cref="MarkerPanelViewModel.FilterText"/> / <see cref="TaskBoardViewModel.FilterText"/> へ
     /// Trimして配布する。表示専用の一時状態であり、NoteNest保存データ・sessionへは保存しない。
@@ -82,7 +82,7 @@ public partial class MainViewModel
     public bool HasAnyVisibleTasks => _tasks.HasAnyVisibleTasks;
 
     /// <summary>
-    /// L10: 絞り込みの結果タスクが0件になった場合の空状態。タスクが元々0件の場合の
+    /// 絞り込みの結果タスクが0件になった場合の空状態。タスクが元々0件の場合の
     /// <see cref="ShowTaskEmptyState"/> とは区別する（そちらは絞り込みと無関係）。
     /// </summary>
     public bool ShowTaskFilterEmptyState => HasAnyTasks && HasRightPaneFilterText && !HasAnyVisibleTasks;
@@ -90,7 +90,7 @@ public partial class MainViewModel
     public bool IsTaskCommentMode => _editor.IsTaskCommentMode;
     public bool IsNoteEditMode => _editor.IsNoteEditMode;
     public string EditorTitle => _editor.EditorTitle;
-    /// <summary>L24: 関連ノート選択ボタン（タスク編集パネル）が対象タスクを特定するために使う。</summary>
+    /// <summary>関連ノート選択ボタン（タスク編集パネル）が対象タスクを特定するために使う。</summary>
     public TaskViewModel? EditingTask => _editor.EditingTask;
     public IEnumerable<NoteViewModel> RelatedNoteChoices => _notes.AllNotes;
     public NoteViewModel? EditingTaskRelatedNote
@@ -101,7 +101,7 @@ public partial class MainViewModel
     public bool HasEditingTaskRelatedNote => _editor.HasEditingTaskRelatedNote;
 
     /// <summary>
-    /// M14: 左ペインのノート一覧表示順（作成順・更新日順・タイトル順）。アプリ全体で1つの
+    /// 左ペインのノート一覧表示順（作成順・更新日順・タイトル順）。アプリ全体で1つの
     /// 表示設定として扱われ、Shell（NestSuiteShellWindow）が UiSettings.NoteSortMode との同期と
     /// 開いている全 NoteNest タブへの伝播を担う（<c>EditorFontFamily</c> と同様のパターン）。
     /// 保存データ（Notebooks/Notes のコレクション順）には影響しない。
@@ -129,7 +129,7 @@ public partial class MainViewModel
     public bool HasSelectedNote => _editor.SelectedNote != null;
     public bool HasAnyNotes => _notes.AllNotes.Any();
 
-    // L23: 空状態での次操作ガイド表示条件。優先順位はノートブック > ノート > タスク/マーカーの順で、
+    // 空状態での次操作ガイド表示条件。優先順位はノートブック > ノート > タスク/マーカーの順で、
     // 上位が空の間は下位の案内を重複表示しない（docs/design/nestsuite-attractiveness-direction.md 4.5節）。
     public bool HasNotebooks => _notes.Notebooks.Count > 0;
     public bool ShowNotebookEmptyState => !HasNotebooks;
@@ -139,21 +139,21 @@ public partial class MainViewModel
     public bool ShowTaskEmptyState => HasAnyNotes && HasNoTasks;
 
     /// <summary>
-    /// L10: マーカーが0件（種別フィルタのみ／絞り込み文字列のみ／両方／元々0件のいずれか）の場合の空状態。
+    /// マーカーが0件（種別フィルタのみ／絞り込み文字列のみ／両方／元々0件のいずれか）の場合の空状態。
     /// 既存の種別フィルタによる0件状態と絞り込み文字列による0件状態は区別しない。
     /// </summary>
     public bool ShowMarkerEmptyState => HasAnyNotes && !HasFilteredMarkers;
 
-    /// <summary>L10: マーカーが元から0件か、絞り込みで0件になったかで空状態の文言を切り替える。</summary>
+    /// <summary>マーカーが元から0件か、絞り込みで0件になったかで空状態の文言を切り替える。</summary>
     public string MarkerEmptyStateText => HasNoMarkers
         ? "マーカーはありません\n本文の [TODO] [FIXME] [NOTE] がここに表示されます"
         : "一致するマーカーはありません";
 
-    /// <summary>v2.16.10 SH-30: Markdown エクスポート（選択ノート対象）の無効理由ツールチップ。</summary>
+    /// <summary>Markdown エクスポート（選択ノート対象）の無効理由ツールチップ。</summary>
     public string MarkdownExportSelectedNoteTooltip =>
         NestSuite.Services.ShellCommandTooltipProvider.MarkdownExportSelectedNoteTooltip(HasSelectedNote);
 
-    /// <summary>v2.16.10 SH-30: Markdown エクスポート（全ノート対象）の無効理由ツールチップ。</summary>
+    /// <summary>Markdown エクスポート（全ノート対象）の無効理由ツールチップ。</summary>
     public string MarkdownExportAllNotesTooltip =>
         NestSuite.Services.ShellCommandTooltipProvider.MarkdownExportAllNotesTooltip(HasAnyNotes);
 
@@ -177,7 +177,7 @@ public partial class MainViewModel
     public static readonly IReadOnlyList<double> EditorFontSizeChoices = [12, 14, 16, 18, 20];
 
     /// <summary>
-    /// L22: NoteNest 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。
+    /// NoteNest 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。
     /// L21 時点では NoteNest 限定の一覧だったが、Workspace 共通設定への拡大に伴い
     /// IdeaNest / ChatNest / TempNest とも共有する <see cref="NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies"/> を参照する。
     /// </summary>

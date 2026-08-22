@@ -28,7 +28,7 @@ public partial class MainViewModel : BaseViewModel, IDisposable
         _session.PropertyChanged += SessionPropertyChanged;
         _lifecycle = new ProjectLifecycleService(_session, _notes, _tasks, _markers, _editor);
         var recentFilesResult = _lifecycle.InitializeRecentFiles();
-        // M19: 読込失敗（破損 JSON・IO 例外等）を検出した場合のみ、既存の一時ステータス通知
+        // 読込失敗（破損 JSON・IO 例外等）を検出した場合のみ、既存の一時ステータス通知
         // （StatusMessage）で 1 回だけ知らせる。ファイル不存在・正常読込では通知しない。
         if (recentFilesResult.Recovery != null)
         {
@@ -91,13 +91,12 @@ public partial class MainViewModel : BaseViewModel, IDisposable
     }
 
     /// <summary>
-    /// v1.9.5: タイマーを停止し、内部イベント購読を解除する。
+    /// タイマーを停止し、内部イベント購読を解除する。
     /// NestSuite で NoteNest タブを閉じる際（<see cref="NestSuite.NestSuiteShellWindow"/>）に呼ぶ。
     /// 停止しないと DispatcherTimer が Dispatcher の内部リストに残り、
     /// 閉じたタブの ViewModel が GC されず未保存ステータス更新が呼び続ける。
-    /// v2.14.13 TD-61: 旧 NoteNest Classic 由来の自動保存タイマーは撤去済み。
-    /// 現行の自動保存は <see cref="NestSuite.NestSuiteShellWindow"/> の
-    /// <c>NestSuiteShellWindow.AutoSave.cs</c>（SH-33）が担う。
+    /// 自動保存は <see cref="NestSuite.NestSuiteShellWindow"/> の
+    /// <c>NestSuiteShellWindow.AutoSave.cs</c> が担う。
     /// </summary>
     public void Dispose()
     {

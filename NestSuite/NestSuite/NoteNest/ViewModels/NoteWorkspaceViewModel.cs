@@ -16,7 +16,7 @@ public sealed class NoteWorkspaceViewModel
     public NoteWorkspaceViewModel() => Notebooks.CollectionChanged += CollectionChanged;
 
     /// <summary>
-    /// M14: 左ペインの表示順。既定は作成順（<see cref="NotebookViewModel.Notes"/> のコレクション順）。
+    /// 左ペインの表示順。既定は作成順（<see cref="NotebookViewModel.Notes"/> のコレクション順）。
     /// 変更時は全ノートブックの <see cref="NotebookViewModel.DisplayNotes"/> を即時再計算する。
     /// アプリ全体で1つの表示設定として扱う（呼び出し側の <c>MainViewModel.NoteSortMode</c> 経由で
     /// UiSettings と同期する。保存データ・Workspace ファイルへは反映しない）。
@@ -33,7 +33,7 @@ public sealed class NoteWorkspaceViewModel
     }
 
     /// <summary>
-    /// M14: 現在の <see cref="SortMode"/> で全ノートブックの表示順を再計算する。ノート追加・削除・
+    /// 現在の <see cref="SortMode"/> で全ノートブックの表示順を再計算する。ノート追加・削除・
     /// 移動・複製・Workspace 読込・保存完了・選択切替・タイトル確定など、明示的なタイミングでのみ
     /// 呼ぶ（本文・タイトルの1文字入力ごとには呼ばない。呼び出し側の責務）。
     /// </summary>
@@ -46,7 +46,7 @@ public sealed class NoteWorkspaceViewModel
     public event EventHandler? Changed;
 
     /// <summary>
-    /// L25 (review7-fable5 REV7-2): <see cref="Load"/> 完了後に 1 回だけ発火する。
+    /// <see cref="Load"/> 完了後に 1 回だけ発火する。
     /// <see cref="Changed"/> はデータ変更（未保存化）を伴う通知だが、ファイル読込は利用者編集ではないため
     /// 別イベントとして分離する。<c>NestSuite.Services.NoteChangeCoordinator</c> はこれを購読し、
     /// 空状態表示等の派生プロパティだけを isDataChanged=false で通知する。
@@ -118,7 +118,7 @@ public sealed class NoteWorkspaceViewModel
     }
 
     /// <summary>
-    /// M14: タイトル変更は名前変更ダイアログ経由の明示的な1回確定であり、本文入力のような
+    /// タイトル変更は名前変更ダイアログ経由の明示的な1回確定であり、本文入力のような
     /// 1文字ごとの通知ではないため、成功時に表示順を再計算してよい。
     /// </summary>
     public bool RenameNote(NoteViewModel note, string newTitle)
@@ -132,7 +132,7 @@ public sealed class NoteWorkspaceViewModel
 
     public void UpdateContent(NoteViewModel note, string content) => note.Content = content;
 
-    /// <summary>v2.14.3 M12: ノートのスター状態を反転する。</summary>
+    /// <summary>ノートのスター状態を反転する。</summary>
     public void ToggleStar(NoteViewModel note) => note.IsStarred = !note.IsStarred;
 
     public bool DeleteNote(NoteViewModel note)

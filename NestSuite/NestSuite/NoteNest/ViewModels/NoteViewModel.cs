@@ -37,7 +37,7 @@ public class NoteViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// v2.14.3 M12: スター（お気に入り）状態。
+    /// スター（お気に入り）状態。
     /// 本文編集ではないため Touch()（UpdatedAt 更新）は行わない。
     /// 未保存扱いは NoteWorkspaceViewModel.NotePropertyChanged 経由で伝播する。
     /// </summary>

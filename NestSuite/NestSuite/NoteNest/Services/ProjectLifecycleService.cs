@@ -40,7 +40,7 @@ public sealed class ProjectLifecycleService
     }
 
     /// <summary>
-    /// M19: 最近使ったファイルの履歴を読み込む。読込失敗時の復旧結果は呼び出し側（<c>MainViewModel</c>）
+    /// 最近使ったファイルの履歴を読み込む。読込失敗時の復旧結果は呼び出し側（<c>MainViewModel</c>）
     /// へ返し、利用者への一時通知判断はそちらへ委ねる（このサービス層は View/Shell を参照しない）。
     /// </summary>
     public RecentFilesLoadResult InitializeRecentFiles()
@@ -67,7 +67,6 @@ public sealed class ProjectLifecycleService
     public void Open(string path) => Load(_files.Load(path), path);
 
     /// <summary>
-    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6):
     /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）で得た <paramref name="context"/> を
     /// 追加読込なしで開く。現在ファイルとして関連付ける path は <see cref="WorkspaceFileOpenContext.FilePath"/>
     /// のみ（別引数の path は受けない。読み込んだ内容と保存先が乖離しない）。
@@ -76,7 +75,7 @@ public sealed class ProjectLifecycleService
         Load(_files.LoadPrepared(context), context.FilePath);
 
     /// <summary>
-    /// SH-36b: AppData の下書きから読み込んだ Project を、通常ファイルとは関連付けず
+    /// AppData の下書きから読み込んだ Project を、通常ファイルとは関連付けず
     /// 無題・未保存状態として配置する。recent files や保存済み状態は更新しない。
     /// </summary>
     public void OpenSnapshotAsUntitled(Project project)
@@ -87,7 +86,7 @@ public sealed class ProjectLifecycleService
 
     public void Save(string path) => Save(path, createBackup: true);
 
-    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    /// <summary>createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
     public void Save(string path, bool createBackup)
     {
         _files.Save(path, CreateSnapshot(), createBackup);

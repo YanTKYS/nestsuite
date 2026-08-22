@@ -17,7 +17,7 @@ namespace NestSuite.IdeaNest.ViewModels;
 
 public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 {
-    /// <summary>ID-6: 直前1操作だけを対象とするUndoの操作種別。</summary>
+    /// <summary>直前1操作だけを対象とするUndoの操作種別。</summary>
     private enum IdeaNestUndoOperation
     {
         Delete,
@@ -25,7 +25,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-6: 直前1操作分のUndo情報。メモリ上だけに保持し、保存対象（<see cref="BuildWorkspaceForSave"/>）
+    /// 直前1操作分のUndo情報。メモリ上だけに保持し、保存対象（<see cref="BuildWorkspaceForSave"/>）
     /// には含めない。<see cref="Card"/>は削除・変更対象と同一インスタンス（新しいIDは発行しない）。
     /// </summary>
     private sealed class IdeaNestUndoState
@@ -133,7 +133,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     private string _contentFontFamily = "Yu Gothic UI";
 
     /// <summary>
-    /// L22: カード本文・カード編集欄に適用する Workspace 共通フォント種類。
+    /// カード本文・カード編集欄に適用する Workspace 共通フォント種類。
     /// NestSuite の UI 設定（ui-settings.json の WorkspaceEditorFontFamily）駆動の表示専用値であり、
     /// カードの枠・ボタン・タグ・ツールバーなどの UI フォントには適用しない。
     /// .ideanest（<see cref="BuildWorkspaceForSave"/>）へは保存しないため、変更しても <see cref="HasChanges"/> は立たない。
@@ -150,7 +150,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         private set => SetField(ref _hasChanges, value);
     }
 
-    /// <summary>ID-6: 直前1操作（削除・アーカイブ・アーカイブ解除）をUndoできる状態か。</summary>
+    /// <summary>直前1操作（削除・アーカイブ・アーカイブ解除）をUndoできる状態か。</summary>
     public bool CanUndo => _undoState != null;
 
     public ICommand AddIdeaCommand { get; }
@@ -192,8 +192,8 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     private IdeaCardViewModel? _selectedCard;
 
     /// <summary>
-    /// ID-15: 新規カード作成後の位置フィードバック専用の一時選択。
-    /// 複数選択（ID-5）の先行実装ではなく、保存対象にも含めない単一選択。
+    /// 新規カード作成後の位置フィードバック専用の一時選択。
+    /// 複数選択ではなく、保存対象にも含めない単一選択。
     /// </summary>
     public IdeaCardViewModel? SelectedCard
     {
@@ -209,7 +209,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-15: 新規カード作成直後の一時的なスクロール要求。View がコンテナ生成後に
+    /// 新規カード作成直後の一時的なスクロール要求。View がコンテナ生成後に
     /// BringIntoView を実行するために購読する。一覧の再構築だけでは発火しない。
     /// </summary>
     public event EventHandler<IdeaCardViewModel>? ScrollRequested;
@@ -267,11 +267,11 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         TagPanel = new TagPanelViewModel(OnTagPanelChanged, tag => SelectedTag = tag);
         TagPanel.PropertyChanged += OnSubVmPropertyChanged;
 
-        // ID-10: 表示中カードのMarkdown出力（保存・コピー）。表示中カードが1件もない場合は無効。
+        // 表示中カードのMarkdown出力（保存・コピー）。表示中カードが1件もない場合は無効。
         ExportMarkdownCommand   = new IdeaNestRelayCommand(_ => ExportVisibleCardsAsMarkdown(), _ => VisibleCards.Count > 0);
         CopyCardMarkdownCommand = new IdeaNestRelayCommand(_ => { });
         CopyAllMarkdownCommand  = new IdeaNestRelayCommand(_ => CopyVisibleCardsAsMarkdown(), _ => VisibleCards.Count > 0);
-        // No-op export commands（NoteNest形式は今回のID-10対象外）
+        // No-op export commands（NoteNest 形式のエクスポートは IdeaNest では提供しない）
         ExportNoteNestCommand   = new IdeaNestRelayCommand(_ => { });
         CopyNoteNestCommand     = new IdeaNestRelayCommand(_ => { });
 
@@ -325,7 +325,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
             _statusClearTimer.Tick -= StatusClearTimer_Tick;
             _statusClearTimer = null;
         }
-        _undoState = null; // ID-6: Workspaceを閉じた後に古いUndoが実行されないようにする
+        _undoState = null; // Workspaceを閉じた後に古いUndoが実行されないようにする
         CardDisplay.PropertyChanged -= OnSubVmPropertyChanged;
         Filter.PropertyChanged     -= OnSubVmPropertyChanged;
         TagPanel.PropertyChanged   -= OnSubVmPropertyChanged;
@@ -366,7 +366,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-15: 新規カード作成後の位置フィードバック。作成カードは <see cref="PreviewIdeaWindow.AddedCard"/>
+    /// 新規カード作成後の位置フィードバック。作成カードは <see cref="PreviewIdeaWindow.AddedCard"/>
     /// （<see cref="CardOperationsService.CommitAdd"/> の戻り値そのもの）で明示的に識別し、
     /// タイトルや一覧位置からは推測しない。表示対象判定は既存の <see cref="VisibleCards"/>
     /// （<see cref="RefreshVisible"/> 済み）をそのまま基準にし、フィルター条件を再判定しない。
@@ -430,7 +430,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-6: 削除確認ダイアログ（WPF Window）を介さずに、削除＋Undo登録の一連を単体テストできるよう
+    /// 削除確認ダイアログ（WPF Window）を介さずに、削除＋Undo登録の一連を単体テストできるよう
     /// 分離した部分。<see cref="DeleteIdea"/>は確認後にこのメソッドを呼ぶ。
     /// </summary>
     public void CommitDeleteWithUndo(IdeaCardViewModel card)
@@ -470,7 +470,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
         ShowStatus(card.IsArchived ? "アーカイブしました" : "アーカイブを解除しました");
     }
 
-    // ── ID-6: 削除・アーカイブのUndo ─────────────────────────────────────────
+    // ── 削除・アーカイブのUndo ─────────────────────────────────────────
 
     private void RegisterDeletedCard(IdeaCardViewModel card, int index)
     {
@@ -541,7 +541,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-6: ID-15と同じ「表示中の場合だけ選択・スクロールする」既存パターンを再利用する。
+    /// 「表示中の場合だけ選択・スクロールする」既存パターンを再利用する。
     /// フィルター条件を変更してまで対象カードを強制表示することはしない。
     /// </summary>
     private void SelectRestoredCardIfVisible(IdeaCardViewModel card)
@@ -587,7 +587,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// SH-36b: 下書き復元専用。通常 Open の clean 契約は維持しつつ、
+    /// 下書き復元専用。通常 Open の clean 契約は維持しつつ、
     /// 復元後の無題タブが次 tick の下書き候補になるよう dirty として扱う。
     /// </summary>
     public void LoadFromWorkspaceAsDraft(Workspace workspace)
@@ -624,9 +624,9 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     private void ReloadFromWorkspace()
     {
-        // ID-15: 再構築で AllCards が総入れ替えされるため、旧カードへの選択・スクロール要求を残さない。
+        // 再構築で AllCards が総入れ替えされるため、旧カードへの選択・スクロール要求を残さない。
         SelectedCard = null;
-        // ID-6: 別ファイル読み込み・再読込時は、古いUndo情報（別の正本コレクションを指す）を残さない。
+        // 別ファイル読み込み・再読込時は、古いUndo情報（別の正本コレクションを指す）を残さない。
         ClearUndo();
         _cardOps = CreateCardOps();
         AllCards.Clear();
@@ -690,10 +690,10 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
 
     // ── クリップボード・ファイルインポート ────────────────────────────────────
 
-    // ── ID-10: 表示中カードのMarkdown出力 ─────────────────────────────────────
+    // ── 表示中カードのMarkdown出力 ─────────────────────────────────────
 
     /// <summary>
-    /// ID-10: 表示中カード（<see cref="VisibleCards"/>）を、現在の表示順のまま Markdown へ変換し
+    /// 表示中カード（<see cref="VisibleCards"/>）を、現在の表示順のまま Markdown へ変換し
     /// クリップボードへコピーする。フィルタ・ソート・アーカイブ表示条件の再判定はせず、
     /// 表示中コレクションをそのままスナップショット化するだけの読み取り専用操作（dirty化しない）。
     /// </summary>
@@ -720,7 +720,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-10: 表示中カードを Markdown ファイルとして保存する。保存先はSaveFileDialogで選択させ、
+    /// 表示中カードを Markdown ファイルとして保存する。保存先はSaveFileDialogで選択させ、
     /// キャンセル時は何もしない（通知もErrorLog記録もしない）。読み取り専用操作でdirty化しない。
     /// </summary>
     private void ExportVisibleCardsAsMarkdown()
@@ -766,7 +766,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// LK-4 (v2.21.0): Workspace 間手動転送共通ヘルパー（<c>WorkspaceTransferContent</c>、
+    /// Workspace 間手動転送共通ヘルパー（<c>WorkspaceTransferContent</c>、
     /// docs/planning/workspace-manual-transfer-helper-design.md）からの受入 API。
     /// <paramref name="title"/> が空の場合、タイトル生成は行わずそのまま <see cref="CardOperationsService.CommitAdd"/>
     /// へ渡す。既存の「Title が空なら本文先頭行から生成する」契約（<see cref="CommitAddFromFileContent"/> 等と同じ）
@@ -830,7 +830,7 @@ public class IdeaNestWorkspaceViewModel : IdeaNestViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// ID-14: 色フィルタチップの件数を、現在の検索・タグ・アーカイブ条件を反映し
+    /// 色フィルタチップの件数を、現在の検索・タグ・アーカイブ条件を反映し
     /// 色フィルタ自身は除外した集合から再計算する。カード追加・削除・色変更・アーカイブ・
     /// 検索語やタグの変更・Workspace再読込など、<see cref="RefreshVisible"/> が呼ばれる
     /// すべての経路で自動的に更新される。

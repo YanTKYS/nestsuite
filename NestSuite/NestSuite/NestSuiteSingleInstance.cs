@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NestSuite;
 
 /// <summary>
-/// v1.18.1: NestSuite のシングルインスタンス制御。
+/// NestSuite のシングルインスタンス制御。
 /// Mutex で先着プロセスを判定し、後続プロセスは Named Pipe 経由でファイルパスを転送してから終了する。
 /// </summary>
 public sealed class NestSuiteSingleInstance : IDisposable
@@ -22,6 +22,9 @@ public sealed class NestSuiteSingleInstance : IDisposable
     // Mutex の Local\ プレフィックスもセッションスコープのため、識別子の粒度が一致する。
     private static int SessionId { get; } = System.Diagnostics.Process.GetCurrentProcess().SessionId;
 
+    // `NoteNest_` 接頭辞は旧ビルドとの互換のために維持する。名前を変えると、
+    // 新旧ビルドが同時に動くアップグレード境界で二重起動検出とファイル転送の双方が壊れる。
+    // 変更する場合は Mutex と Pipe を同一リリースで同時に切り替える必要がある。
     private static string MutexName => $"Local\\NoteNest_NestSuite_{SafeUserTag}";
     private static string PipeName  => $"NoteNest_NestSuite_{SafeUserTag}_S{SessionId}";
 

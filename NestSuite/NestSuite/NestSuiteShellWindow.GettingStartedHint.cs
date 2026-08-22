@@ -5,7 +5,7 @@ using NestSuite.TempNest;
 namespace NestSuite;
 
 /// <summary>
-/// AT-5: TempNestの「初回相当の空状態」一行ガイド（<see cref="TempNestWorkspaceViewModel.ShouldShowGettingStartedHint"/>）を
+/// TempNestの「初回相当の空状態」一行ガイド（<see cref="TempNestWorkspaceViewModel.ShouldShowGettingStartedHint"/>）を
 /// 同一起動中だけ抑止するための、Shell側の最小限の配線。
 ///
 /// <para>責務分担: TempNest自身は自分のスロットが空かどうかだけを把握する
@@ -15,7 +15,7 @@ namespace NestSuite;
 /// 呼ぶだけに留める。初回フラグの永続化・新しい状態管理基盤は追加しない。</para>
 ///
 /// <para>通常タブの追加は、新規作成メニュー・ファイルを開く・session復元・draft復元・
-/// TN-3昇格・pipe/二重起動転送のいずれの経路でも最終的に <c>_tabs.Add(tab)</c> を通るため、
+/// TempNest昇格・pipe/二重起動転送のいずれの経路でも最終的に <c>_tabs.Add(tab)</c> を通るため、
 /// <see cref="_tabs"/> の <see cref="ObservableCollection{T}.CollectionChanged"/> を
 /// 1箇所だけ購読することで、個々の経路へ重複してフックする必要をなくしている。</para>
 /// </summary>
@@ -33,15 +33,15 @@ public partial class NestSuiteShellWindow
         {
             if (tab.WorkspaceKind == NestSuiteWorkspaceKind.Temp) continue;
             MarkGettingStartedHintDismissedIfPresent();
-            // SH-40: 「続きから」も同じ通常タブ追加の到達点で抑止する。AT-5とは別ラッチのため、
-            // 個別に呼ぶ（TempNest自身への入力ではこちらは呼ばない＝フェーズ1方針）。
+            // 「続きから」も同じ通常タブ追加の到達点で抑止する。次操作ガイドとは別ラッチのため
+            // 個別に呼ぶ（TempNest自身への入力ではこちらは呼ばない）。
             MarkContinueFromDismissedIfPresent();
             return;
         }
     }
 
     /// <summary>
-    /// AT-5: session復元保留 entry（<see cref="_pendingSessionRestoreEntries"/>）は
+    /// session復元保留 entry（<see cref="_pendingSessionRestoreEntries"/>）は
     /// タブを伴わないため、上記 CollectionChanged 経路では検出できない。起動時に一度だけ確認する。
     /// </summary>
     private void MarkGettingStartedHintDismissedIfRestoreEntriesPending()

@@ -5,6 +5,7 @@ namespace NestSuite.Services;
 
 public class RecentFilesService
 {
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string DefaultDataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "recent-files.json");
@@ -20,7 +21,7 @@ public class RecentFilesService
     public List<string> Load() => LoadWithRecovery().Files;
 
     /// <summary>
-    /// M19: 読込結果に加え、破損ファイルの退避結果（発生した場合のみ）を返す。
+    /// 読込結果に加え、破損ファイルの退避結果（発生した場合のみ）を返す。
     /// ファイル不存在は正常な初期状態として扱い、<see cref="RecentFilesLoadResult.Recovery"/> は null のまま。
     /// 呼び出し側（<c>ProjectLifecycleService.InitializeRecentFiles</c>）はこれを見て、
     /// 利用者への一時通知を判断する。
@@ -96,12 +97,12 @@ public class RecentFilesService
         }
     }
 
-    // v2.14.8: ランダム tmp 名の atomic write は AtomicFileWriter.WriteAllTextWithRandomTemp へ集約（挙動同一）
+    // ランダム tmp 名の atomic write は AtomicFileWriter.WriteAllTextWithRandomTemp へ集約（挙動同一）
     private void WriteAtomically(IReadOnlyList<string> files) =>
         AtomicFileWriter.WriteAllTextWithRandomTemp(_dataPath, JsonSerializer.Serialize(files));
 }
 
-/// <summary>M19: <see cref="RecentFilesService.LoadWithRecovery"/> の結果。</summary>
+/// <summary><see cref="RecentFilesService.LoadWithRecovery"/> の結果。</summary>
 /// <param name="Files">読込に成功した履歴、または失敗時の空リスト。</param>
 /// <param name="Recovery">読込に失敗し破損ファイル退避を試みた場合のみ設定される。正常時・ファイル不存在時は null。</param>
 public sealed record RecentFilesLoadResult(List<string> Files, CorruptFileRecoveryResult? Recovery);

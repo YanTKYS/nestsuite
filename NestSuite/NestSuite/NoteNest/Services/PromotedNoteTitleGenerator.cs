@@ -1,7 +1,7 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// TN-3: TempNest スロット本文から NoteNest 新規ノートのタイトル候補を生成する。
+/// TempNest スロット本文から NoteNest 新規ノートのタイトル候補を生成する。
 /// 本文の最初の空でない行をそのままタイトルとし、既存の省略表示（IdeaBodyTrimConverter 等）と
 /// 同じ「…」で長すぎる場合だけ切り詰める。要約・整形・AIによる補正は行わない。
 /// </summary>

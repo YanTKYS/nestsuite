@@ -6,6 +6,7 @@ namespace NestSuite;
 
 public class NestSuiteSessionStateService
 {
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string DefaultDataPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "nestsuite-session.json");
@@ -18,8 +19,8 @@ public class NestSuiteSessionStateService
     }
 
     /// <summary>
-    /// v2.16.7 TD-65 (review1-fable5.md R-4): 読込失敗（破損 JSON 等）を完全に黙殺しない。
-    /// session は利用者データではなく作業状態のため、失敗時は従来どおり空 session を返し
+    /// 読込失敗（破損 JSON 等）を完全に黙殺しない。
+    /// session は利用者データではなく作業状態のため、失敗時は空 session を返し
     /// 起動は継続するが、原因を ErrorLog（Error のみ）に記録し、可能であれば破損ファイルを
     /// <c>.corrupt</c> へ退避する。退避に失敗しても起動は妨げない。
     /// </summary>
@@ -45,12 +46,12 @@ public class NestSuiteSessionStateService
         catch (Exception ex) { ErrorLogService.Log("SessionSave", ex); }
     }
 
-    // v2.14.8: ランダム tmp 名の atomic write は AtomicFileWriter.WriteAllTextWithRandomTemp へ集約（挙動同一）
+    // ランダム tmp 名の atomic write は AtomicFileWriter.WriteAllTextWithRandomTemp へ集約（挙動同一）
     private void WriteAtomically(NestSuiteSessionState state) =>
         AtomicFileWriter.WriteAllTextWithRandomTemp(_dataPath, JsonSerializer.Serialize(state));
 
     /// <summary>
-    /// v2.16.7 TD-65: 破損した session.json を <c>.corrupt</c>（既存なら日時付き）へ退避する。
+    /// 破損した session.json を <c>.corrupt</c>（既存なら日時付き）へ退避する。
     /// あくまで診断用のベストエフォートで、失敗しても ErrorLog に記録するのみで例外は投げない。
     /// </summary>
     private void TryQuarantineCorruptSession()

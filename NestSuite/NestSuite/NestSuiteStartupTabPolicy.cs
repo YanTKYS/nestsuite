@@ -1,7 +1,7 @@
 namespace NestSuite;
 
 /// <summary>
-/// v1.8.6: 起動時の初期タブ生成判断をUIから分離したポリシークラス。
+/// 起動時の初期タブ生成判断をUIから分離したポリシークラス。
 /// WPFウィンドウを生成せずにテスト可能な純粋ロジックを提供する。
 /// </summary>
 public static class NestSuiteStartupTabPolicy

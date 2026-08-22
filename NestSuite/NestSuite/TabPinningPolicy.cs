@@ -1,7 +1,7 @@
 namespace NestSuite;
 
 /// <summary>
-/// v2.16.3 SH-15: タブピン留め時の並び順を UI 非依存で扱う小さなポリシー。
+/// タブピン留め時の並び順を UI 非依存で扱う小さなポリシー。
 /// Temp タブを先頭、ピン留め通常タブをその直後、未ピン留め通常タブを末尾に保つ。
 /// </summary>
 public static class TabPinningPolicy

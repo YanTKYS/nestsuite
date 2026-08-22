@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using NestSuite.ViewModels;
 
@@ -8,21 +7,6 @@ namespace NestSuite.Views;
 
 public partial class NoteNestWorkspaceView
 {
-    private void AddTaskMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = new ContextMenu();
-        foreach (var group in ViewModel.TaskGroups)
-        {
-            var key = group.Key;
-            var item = new MenuItem { Header = group.Title };
-            item.Click += (_, _) => ViewModel.AddTaskCommand.Execute(key);
-            menu.Items.Add(item);
-        }
-        menu.PlacementTarget = (Button)sender;
-        menu.Placement = PlacementMode.Bottom;
-        menu.IsOpen = true;
-    }
-
     private void MoveTaskToToday_Click(object sender, RoutedEventArgs e)   => MoveTaskFromMenu(sender, TaskGroupKeys.Today);
     private void MoveTaskToWeek_Click(object sender, RoutedEventArgs e)    => MoveTaskFromMenu(sender, TaskGroupKeys.Week);
     private void MoveTaskToBacklog_Click(object sender, RoutedEventArgs e) => MoveTaskFromMenu(sender, TaskGroupKeys.Backlog);
@@ -44,7 +28,7 @@ public partial class NoteNestWorkspaceView
     }
 
     /// <summary>
-    /// L28: タスクタイトルはButton化したが、既存どおりダブルクリックのみでコメント表示を切り替える。
+    /// タスクタイトルはButton化したが、既存どおりダブルクリックのみでコメント表示を切り替える。
     /// PreviewMouseLeftButtonDownで受けるため、Buttonの標準クリック処理より先に判定できる
     /// （単発クリックはe.Handledを立てず、ButtonBase標準処理へ素通りするが、Clickハンドラを
     /// 持たないため何も起きない）。
@@ -58,7 +42,7 @@ public partial class NoteNestWorkspaceView
         }
     }
 
-    /// <summary>L28: タスクタイトルへフォーカス中のEnterのみでコメント表示を切り替える（Spaceは割り当てない）。</summary>
+    /// <summary>タスクタイトルへフォーカス中のEnterのみでコメント表示を切り替える（Spaceは割り当てない）。</summary>
     private void TaskTitle_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || e.Handled) return;
@@ -96,8 +80,8 @@ public partial class NoteNestWorkspaceView
             ShowInfo("関連ノートが見つかりません。");
     }
 
-    // L24: ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
-    // 絞り込み）を再利用する。保存値は従来どおり SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
+    // ノート名の記憶・完全入力を不要にするため、既存 NotePickerDialog（NotebookTitle 付き一覧・
+    // 絞り込み）を再利用する。保存値は SetTaskRelatedNote 経由（LinkedNoteId=note.Id）で、
     // 文字列入力・保存形式は変更しない。
     private void SetRelatedNote_Click(object sender, RoutedEventArgs e)
     {

@@ -46,7 +46,7 @@ public class EditIdeaViewModel : IdeaNestViewModelBase
     public bool IsPinned { get => _isPinned; set => SetField(ref _isPinned, value); }
     public bool IsArchived { get => _isArchived; set => SetField(ref _isArchived, value); }
 
-    /// <summary>L22: カード編集欄（BodyBox）に適用する Workspace 共通フォント種類。カード自体には保存しない。</summary>
+    /// <summary>カード編集欄（BodyBox）に適用する Workspace 共通フォント種類。カード自体には保存しない。</summary>
     public string ContentFontFamily { get => _contentFontFamily; set => SetField(ref _contentFontFamily, value); }
 
     public List<string> AvailableColors { get; } = new()

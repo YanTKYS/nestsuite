@@ -45,7 +45,7 @@ public static class ChatNestFileService
         Save(path, messages, createBackup: true);
 
     /// <summary>
-    /// v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。
+    /// createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。
     /// </summary>
     /// <exception cref="IOException">ファイル書き込みに失敗した場合。</exception>
     public static void Save(string path, IEnumerable<Message> messages, bool createBackup)
@@ -53,8 +53,8 @@ public static class ChatNestFileService
         var json = NestSuiteWorkspaceEnvelope.IsEnvelopePath(path)
             ? SerializeWrapped(messages)
             : SerializePayload(messages);
-        // v2.14.5 FM-5: 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
-        // v2.16.6 TD-64: createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
+        // 既存ファイルがある場合は .bak を残す（NoteNest / IdeaNest と同方針に統一）
+        // createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
         if (createBackup)
             AtomicFileWriter.WriteAllTextWithBackup(path, json, System.Text.Encoding.UTF8);
         else
@@ -67,13 +67,13 @@ public static class ChatNestFileService
     public static List<Message> Load(string path)
     {
         var json = File.ReadAllText(path, System.Text.Encoding.UTF8);
-        // v2.14.1 FM-1: .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
+        // .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
         NestSuiteWorkspaceEnvelope.EnvelopeContent? envelope = null;
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
         {
             envelope = NestSuiteWorkspaceEnvelope.Read(json);
             NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindChatNest);
-            // v2.14.4 FM-4: payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
+            // payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
             SchemaVersionGuard.EnsureNotNewer(envelope.PayloadSchemaVersion, FileVersionString, "ChatNest");
             json = envelope.PayloadJson;
         }
@@ -81,7 +81,6 @@ public static class ChatNestFileService
     }
 
     /// <summary>
-    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6, §10):
     /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が既に読んだ wrapper を追加読込なしで
     /// デシリアライズする。<paramref name="context"/> の path と解析済み内容は分離できない
     /// （path のみを別引数で受ける overload は追加しない）。
@@ -113,7 +112,7 @@ public static class ChatNestFileService
             // (d) (c) を通過したのに enum が異なる = context の改変等の契約違反
             if (context.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest)
                 throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-            // (e) FM-4: wrapper 宣言 schema の too-new 事前確認（現行と同一の SchemaVersionGuard 例外）
+            // (e) wrapper 宣言 schema の too-new 事前確認
             SchemaVersionGuard.EnsureNotNewer(preloaded.Envelope.PayloadSchemaVersion, FileVersionString, "ChatNest");
             // (f) 追加のファイル読込は行わない（0 回）
             return DeserializeAndValidate(preloaded.Envelope.PayloadJson, preloaded.Envelope);
@@ -125,13 +124,13 @@ public static class ChatNestFileService
         // (h) レガシー誤配線（他 Workspace の拡張子を含む）
         if (context.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest)
             throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-        // (h2) v2.16.36 TD-59b-2-2: WorkspaceKind は一致していても、FilePath のレガシー拡張子が
+        // (h2) WorkspaceKind は一致していても、FilePath のレガシー拡張子が
         // 別 Workspace のもの（例: .ideanest）である不正 context をファイル I/O 前に拒否する。
         // 通常の TryPrepareOpen からは生成されないが、FileService 境界で防御する。
         if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
                 $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
-        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        // (i) レガシー拡張子は path ベース読込（読込 1 回）
         return Load(context.FilePath);
     }
 
@@ -143,8 +142,8 @@ public static class ChatNestFileService
     {
         var data = JsonSerializer.Deserialize<ChatSessionData>(payloadJson, JsonOptions)
             ?? throw new InvalidDataException(".chatnest ファイルの形式が無効です。");
-        // v2.14.4 FM-4: 現行より新しい version の読み込みを止め、保存で未知データを失う経路を防ぐ
-        // （未知 speaker の読込時スキップ仕様自体は従来どおり。新 version 検出時のみ失敗させる）
+        // 現行より新しい version の読み込みを止め、保存で未知データを失う経路を防ぐ
+        // （未知 speaker は読込時にスキップする。失敗させるのは新しい version を検出したときだけ）
         SchemaVersionGuard.EnsureNotNewer(data.Version, FileVersionString, "ChatNest");
         if (envelope != null)
             SchemaVersionGuard.EnsureEnvelopeConsistent(

@@ -29,12 +29,12 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     }
 
     /// <summary>
-    /// AT-5: スロットが空かどうか。既存の<see cref="ClearCommand"/>の活性化条件
+    /// スロットが空かどうか。既存の<see cref="ClearCommand"/>の活性化条件
     /// （空白文字だけの入力は「空でない」として扱う）と同じ判定を再利用する。
     /// </summary>
     public bool IsEmpty => string.IsNullOrEmpty(Title) && string.IsNullOrEmpty(Body);
 
-    /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知の文言。空文字なら非表示。</summary>
+    /// <summary>コピー/クリア完了などの一時通知の文言。空文字なら非表示。</summary>
     public string FeedbackMessage => _feedbackMessage;
 
     public bool HasFeedback => !string.IsNullOrEmpty(_feedbackMessage);
@@ -52,14 +52,14 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     public Func<bool>? ConfirmClear { get; set; }
 
     /// <summary>
-    /// TN-3: Shell が配線する昇格処理本体。null=未配線、実行時は昇格失敗として扱う。
+    /// Shell が配線する昇格処理本体。null=未配線、実行時は昇格失敗として扱う。
     /// 戻り値: null=失敗（元スロットは変更しない）、true=成功し利用者が消去を選択、
     /// false=成功し残すを選択。実際の消去はこのスロット自身が行う。
     /// </summary>
     public Func<TempNestSlotViewModel, bool?>? PromoteRequested { get; set; }
 
     /// <summary>
-    /// LK-3 (v2.22.0): Shell が配線する、既存 IdeaNest タブへのカード転送処理本体。
+    /// Shell が配線する、既存 IdeaNest タブへのカード転送処理本体。
     /// null=未配線、実行時は転送失敗として扱う。戻り値の意味は<see cref="PromoteRequested"/>と同じ
     /// （null=失敗・キャンセル・対象なし=元スロット不変、true=成功し利用者が消去を選択、
     /// false=成功し残すを選択）。実際の消去はこのスロット自身が行う。
@@ -67,7 +67,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
     public Func<TempNestSlotViewModel, bool?>? TransferToIdeaNestRequested { get; set; }
 
     /// <summary>
-    /// LK-2 (v2.23.0): Shell が配線する、既存 NoteNest タブへのノート追加処理本体。
+    /// Shell が配線する、既存 NoteNest タブへのノート追加処理本体。
     /// null=未配線、実行時は転送失敗として扱う。戻り値の意味は<see cref="PromoteRequested"/>と同じ
     /// （null=失敗・キャンセル・対象なし=元スロット不変、true=成功し利用者が消去を選択、
     /// false=成功し残すを選択）。実際の消去はこのスロット自身が行う。
@@ -137,7 +137,7 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
                     CommandManager.InvalidateRequerySuggested();
                 }
             },
-            // LK-3: Title・Body のどちらか一方でもあれば実行可能（TransferToWorkspaceTab の
+            // Title・Body のどちらか一方でもあれば実行可能（TransferToWorkspaceTab の
             // InvalidContent 判定と同じ基準）。
             _ => !_isTransferringToIdeaNest
                  && (!string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Body)));
@@ -159,13 +159,13 @@ public class TempNestSlotViewModel : BaseViewModel, IDisposable
                     CommandManager.InvalidateRequerySuggested();
                 }
             },
-            // LK-2: Title・Body のどちらか一方でもあれば実行可能（TransferToWorkspaceTab の
-            // InvalidContent 判定と同じ基準、LK-3 と同じ CanExecute の考え方）。
+            // Title・Body のどちらか一方でもあれば実行可能（TransferToWorkspaceTab の
+            // InvalidContent 判定と同じ基準）。
             _ => !_isTransferringToNoteNest
                  && (!string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Body)));
     }
 
-    /// <summary>v2.16.5 SH-28: コピー/クリア完了などの一時通知を表示する。1つ前の通知は上書きする。</summary>
+    /// <summary>コピー/クリア完了などの一時通知を表示する。1つ前の通知は上書きする。</summary>
     private void ShowFeedback(string message)
     {
         if (_disposed) return;

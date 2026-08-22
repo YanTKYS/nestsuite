@@ -7,7 +7,7 @@ using NestSuite.ViewModels;
 
 namespace NestSuite.Services;
 
-/// <summary>v2.15.0 SH: 横断検索の一致箇所の種類。</summary>
+/// <summary>横断検索の一致箇所の種類。</summary>
 public enum ShellSearchSourceKind
 {
     NoteTitle,
@@ -21,10 +21,10 @@ public enum ShellSearchSourceKind
 }
 
 /// <summary>
-/// v2.15.0 SH: 横断検索の 1 件の結果。
+/// 横断検索の 1 件の結果。
 /// <see cref="TabId"/> はクリック時に <c>ActivateTab</c> でジャンプする先を一意に特定するために使う
 /// （開いているタブの結果のみ非 null）。
-/// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ONで得られる未オープン結果は
+/// 「最近のファイルも検索」ONで得られる未オープン結果は
 /// <see cref="IsUnopened"/> が true になり、<see cref="FilePath"/> でクリック時のopen先を示す
 /// （この場合 <see cref="TabId"/> は null）。
 /// </summary>
@@ -52,7 +52,7 @@ public sealed record ShellSearchResult(
 }
 
 /// <summary>
-/// v2.15.0 SH: 横断検索の対象となる 1 タブ分の情報。
+/// 横断検索の対象となる 1 タブ分の情報。
 /// <see cref="WorkspaceViewModel"/> は現在開いている Workspace の ViewModel インスタンスそのもの
 /// （<see cref="NestSuiteWorkspaceSession.WorkspaceViewModel"/> と同一参照）を渡す。
 /// </summary>
@@ -63,7 +63,7 @@ public sealed record ShellSearchTabEntry(
     object WorkspaceViewModel);
 
 /// <summary>
-/// v2.15.0 SH: Shell 横断検索の最小実装。開いているタブ（<see cref="ShellSearchTabEntry"/>）のみを対象に、
+/// Shell 横断検索の最小実装。開いているタブ（<see cref="ShellSearchTabEntry"/>）のみを対象に、
 /// 単純な大文字小文字を区別しない部分一致で NoteNest / IdeaNest / ChatNest / TempNest を横断検索する。
 ///
 /// <para>対象外（意図的にスコープ外）: 未オープンのファイル・最近使ったファイル・フォルダ検索・
@@ -75,13 +75,13 @@ public static class ShellSearchService
     public const int MaxResults = 100;
 
     /// <summary>
-    /// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時に読み込む未オープンrecent filesの上限件数。
-    /// SH-40の表示件数（3件）とは独立の定数。
+    /// 「最近のファイルも検索」ON時に読み込む未オープンrecent filesの上限件数。
+    /// 「続きから」パネルの表示件数（3件）とは独立の定数。
     /// </summary>
     public const int MaxUnopenedRecentFiles = 5;
 
     /// <summary>
-    /// SH-41: recent filesのMRU順一覧から、現在開いているファイルを除外したうえで上位
+    /// recent filesのMRU順一覧から、現在開いているファイルを除外したうえで上位
     /// <see cref="MaxUnopenedRecentFiles"/> 件を返す。独自の並べ替え・スコアリングは行わない。
     /// 同一ファイル判定は既存の <see cref="NestSuiteOpenFilePolicy.IsSameFile"/> を使う。
     /// </summary>
@@ -143,7 +143,7 @@ public static class ShellSearchService
     }
 
     /// <summary>
-    /// SH-41 (AT-2 フェーズ1): 「最近のファイルも検索」ON時、未オープンrecent files
+    /// 「最近のファイルも検索」ON時、未オープンrecent files
     /// （<see cref="UnopenedSearchDocument"/>）を対象に検索する。開いているタブ検索
     /// （<see cref="Search(string, IEnumerable{ShellSearchTabEntry}, out bool)"/>）と同じ一致仕様
     /// （<see cref="Matches"/>・<see cref="BuildPreview"/>）・検索対象項目を使う。

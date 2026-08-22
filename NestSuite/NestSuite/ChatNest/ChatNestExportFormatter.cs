@@ -7,7 +7,7 @@ using NestSuite.ChatNest;
 namespace NestSuite.Services;
 
 /// <summary>
-/// CH-14: ChatNest 会話を整形テキストに変換するヘルパー。UI 処理から分離し単体テスト可能にする。
+/// ChatNest 会話を整形テキストに変換するヘルパー。UI 処理から分離し単体テスト可能にする。
 /// </summary>
 public static class ChatNestExportFormatter
 {
@@ -31,7 +31,7 @@ public static class ChatNestExportFormatter
     }
 
     /// <summary>
-    /// CH-9: 会話全体を Markdown 形式に変換する。見出し「# ChatNest 会話」の後に
+    /// 会話全体を Markdown 形式に変換する。見出し「# ChatNest 会話」の後に
     /// 各発言を「**発言者**: 本文」形式で空行区切りで出力する。
     /// 会話が空の場合は空文字を返す。空本文の発言があっても破綻しない。
     /// </summary>

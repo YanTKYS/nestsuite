@@ -9,7 +9,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // v2.14.12 SH-33: 既存Workspaceの自動保存。
+    // 既存Workspaceの自動保存。
     // 保存先パスを持つ NoteNest / IdeaNest / ChatNest タブのうち未保存のものだけを、
     // 一定間隔で既存の保存経路（Try*ToPath / vm.SaveToPath）を通じて保存する。
     // 新規未保存タブ・TempNest は対象外（AutoSaveCandidatePolicy 参照）。
@@ -65,7 +65,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.14.12 SH-33 レビュー対応: 自動保存の dirty 判定には、原則 <c>tab.IsModified</c> を使う。
+    /// 自動保存の dirty 判定には、原則 <c>tab.IsModified</c> を使う。
     /// ただし ChatNest だけは例外で、<c>ChatNestWorkspaceViewModel.HasUnsavedChanges</c>
     /// （= tab.IsModified の元）が投稿前の入力欄テキスト・編集中差分という
     /// **永続化されない一時状態**を含むため、保存しても解消されず無限に自動保存が
@@ -82,7 +82,7 @@ public partial class NestSuiteShellWindow
         {
             NestSuiteWorkspaceKind.NoteNest => tab.IsModified,
             NestSuiteWorkspaceKind.IdeaNest => ((IdeaNestWorkspaceViewModel)session.WorkspaceViewModel).HasChanges,
-            // SH-36 drafts intentionally use HasUnsavedChanges, unlike SH-33 auto-save's IsDirty,
+            // Drafts intentionally use HasUnsavedChanges, unlike auto-save's IsDirty,
             // because InputText and EditingText are not covered by normal ChatNest save files.
             NestSuiteWorkspaceKind.ChatNest => ((ChatNestWorkspaceViewModel)session.WorkspaceViewModel).HasUnsavedChanges,
             _ => false,
@@ -125,8 +125,7 @@ public partial class NestSuiteShellWindow
     private bool AutoSaveTab(NestSuiteDocumentTab tab, NestSuiteWorkspaceSession session)
     {
         var path = NormalizeFilePath(tab.FilePath!);
-        // v2.16.6 TD-64: 自動保存は正本を更新するが .bak は更新しない
-        // （createBackup: false。atomic write は維持する。docs/planning/review1-fable5.md R-1）
+        // 自動保存は正本を更新するが .bak は更新しない
         var succeeded = tab.WorkspaceKind switch
         {
             NestSuiteWorkspaceKind.NoteNest => AutoSaveNoteNestTab(session, path),
@@ -141,7 +140,7 @@ public partial class NestSuiteShellWindow
 
         if (succeeded)
         {
-            // v2.14.12 SH-33: 常時表示 UI を増やさないため、通知はアクティブタブの自動保存時のみ短時間表示する。
+            // 常時表示 UI を増やさないため、通知はアクティブタブの自動保存時のみ短時間表示する。
             // バックグラウンドタブは未保存マーク（●）が消えることで結果が分かる。
             if (tab.Id == _selectedTab?.Id)
                 ShowStatusNotification("  |  自動保存しました");
@@ -157,7 +156,7 @@ public partial class NestSuiteShellWindow
     private bool AutoSaveNoteNestTab(NestSuiteWorkspaceSession session, string path)
     {
         var vm = (MainViewModel)session.WorkspaceViewModel;
-        // v2.16.6 TD-64: 自動保存では .bak を更新しない
+        // 自動保存では .bak を更新しない
         if (!vm.SaveToPath(path, notifyOnError: false, createBackup: false)) return false;
         UpdateNoteNestTabPath(session, path, showNotification: false);
         return true;

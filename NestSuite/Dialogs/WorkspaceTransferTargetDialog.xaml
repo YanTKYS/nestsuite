@@ -7,8 +7,8 @@
         ResizeMode="CanResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
-    <!-- LK-4 (v2.21.0): 転送先タブが複数件の場合にだけ表示する最小の選択ダイアログ
-         （docs/planning/workspace-manual-transfer-helper-design.md §13.5）。
+    <!-- 転送先タブが複数件の場合にだけ表示する最小の選択ダイアログ
+         （設計正本: docs/planning/workspace-manual-transfer-helper-design.md §13.5）。
          検索・複数選択・新規Workspace作成・履歴・お気に入り・「今後表示しない」は設けない。 -->
     <Grid Margin="14">
         <Grid.RowDefinitions>
@@ -21,8 +21,8 @@
 
         <TextBlock x:Name="PromptText" Grid.Row="0" Text="転送先のタブを選択してください:" FontSize="13"/>
 
-        <!-- LK-4-1 (v2.21.1): AutomationId は内部識別子として維持し、AutomationProperties.Name は
-             利用者向けの読み上げ名として別に設定する（v2.19.14 SH-45 以降の方針）。 -->
+        <!-- AutomationId は内部識別子、AutomationProperties.Name は利用者向けの読み上げ名として
+             別々に設定する（内部 ID をそのまま読み上げさせない）。 -->
         <ListBox x:Name="TargetList"
                  Grid.Row="2"
                  AutomationProperties.AutomationId="Dialog.WorkspaceTransferTargetList"

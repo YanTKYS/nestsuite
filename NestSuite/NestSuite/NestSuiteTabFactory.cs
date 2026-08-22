@@ -31,11 +31,11 @@ public static class NestSuiteTabFactory
     private static readonly IReadOnlyDictionary<NestSuiteWorkspaceKind, string> ExtensionByKind =
         new Dictionary<NestSuiteWorkspaceKind, string>
         {
-            // v2.14.8: 各 FileService の FileExtension 定数を単一情報源として参照する
+            // 各 FileService の FileExtension 定数を単一情報源として参照する
             [NestSuiteWorkspaceKind.NoteNest] = ProjectFileService.FileExtension,
             [NestSuiteWorkspaceKind.ChatNest] = ChatNest.ChatNestFileService.FileExtension,
             [NestSuiteWorkspaceKind.IdeaNest] = IdeaNest.Services.IdeaNestFileService.FileExtension,
-            // v2.19.0 SH-43: .txt は他の 3 形式と異なり .nestsuite wrapper へは格納しない
+            // .txt は他の 3 形式と異なり .nestsuite wrapper へは格納しない
             // （IsPayloadSchemaTooNew の対象外・envelope kind マッピングも追加しない）が、
             // 拡張子 → WorkspaceKind の判定・タブ生成は同じ ExtensionByKind 経路を共有する。
             [NestSuiteWorkspaceKind.PlainText] = PlainText.PlainTextFileService.FileExtension,
@@ -78,7 +78,7 @@ public static class NestSuiteTabFactory
     /// <see cref="NestSuiteWorkspaceKind"/> を決定する。
     /// レガシー拡張子についてはファイル内容の読込は行わず、ViewModel の生成も行わない
     /// （いずれも呼び出し側の責務）。
-    /// v2.16.34 TD-59b-1: <see cref="TryGetKind(string, out NestSuiteWorkspaceKind)"/> +
+    /// <see cref="TryGetKind(string, out NestSuiteWorkspaceKind)"/> +
     /// <see cref="FromResolvedKind"/> の合成として実装する（挙動は不変）。
     /// </summary>
     /// <exception cref="ArgumentException">対応していない拡張子・種別判定不能の場合。</exception>
@@ -92,7 +92,6 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.4):
     /// 判定済み kind からタブを生成する。ファイル I/O を行わない（<see cref="TryGetKind(string, out NestSuiteWorkspaceKind)"/>
     /// を呼ばない）。<see cref="TryPrepareOpen"/> で probe 済みの呼び出し元が、読込#3（再判定）を
     /// 省略するために使う。Temp を含む未知の kind は <see cref="GetExtension"/> と同じ基準で
@@ -123,13 +122,12 @@ public static class NestSuiteTabFactory
         TryGetKind(filePath, out kind, out _);
 
     /// <summary>
-    /// v2.14.7 SH-31: 判定失敗理由つきの種別判定。呼び元（セッション復元・pipe・起動引数・最近ファイル）が
+    /// 判定失敗理由つきの種別判定。呼び元（セッション復元・pipe・起動引数・最近ファイル）が
     /// 失敗を無言でスキップせず、理由に応じた文言（<see cref="Services.FileErrorMessages.ForKindDetectionFailure"/>）で
     /// 通知できるようにする。
-    /// `.nestsuite` は wrapper の payloadSchemaVersion が現行より新しい場合、本読込（FM-4 ガード）まで
+    /// `.nestsuite` は wrapper の payloadSchemaVersion が現行より新しい場合、本読込の schema ガードまで
     /// 進む前にここで <see cref="WorkspaceKindDetectionFailure.SchemaVersionTooNew"/> として検出する。
-    /// v2.16.34 TD-59b-1: 実装を <see cref="TryPrepareOpen"/> へ委譲する（context は破棄する）。
-    /// 種別判定の集約点・公開挙動は不変。
+    /// 実装は <see cref="TryPrepareOpen"/> へ委譲する（context は破棄する）。
     /// </summary>
     public static bool TryGetKind(
         string filePath, out NestSuiteWorkspaceKind kind, out WorkspaceKindDetectionFailure failure)
@@ -140,7 +138,6 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.3, §16, §17):
     /// 種別判定と wrapper 解析を 1 回の読込で行い、本読込まで使えるコンテキストを返す。
     /// 種別判定の集約点は引き続きこのクラス（<see cref="TryGetKind(string, out NestSuiteWorkspaceKind, out WorkspaceKindDetectionFailure)"/>
     /// はこのメソッドへ委譲する）。
@@ -169,7 +166,7 @@ public static class NestSuiteTabFactory
         failure = WorkspaceKindDetectionFailure.None;
         context = default!;
 
-        // v2.16.35 TD-59b-2: null・空・空白のみ・Path.GetFullPath が例外になる不正 path は、
+        // null・空・空白のみ・Path.GetFullPath が例外になる不正 path は、
         // Try... API として例外を外へ出さず UnsupportedExtension（既存 enum で最も近い値）として扱う。
         if (string.IsNullOrWhiteSpace(filePath))
         {
@@ -229,8 +226,8 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// v2.14.7 SH-31: wrapper の payloadSchemaVersion が該当 Workspace の現行 schema より新しいかを判定する。
-    /// 解釈できない version はここでは失敗にせず false を返す（本読込側の FM-4 ガード・検証に委ねる）。
+    /// wrapper の payloadSchemaVersion が該当 Workspace の現行 schema より新しいかを判定する。
+    /// 解釈できない version はここでは失敗にせず false を返す（本読込側の schema ガード・検証に委ねる）。
     /// </summary>
     private static bool IsPayloadSchemaTooNew(NestSuiteWorkspaceKind kind, string payloadSchemaVersion)
     {
@@ -249,7 +246,6 @@ public static class NestSuiteTabFactory
     }
 
     /// <summary>
-    /// v2.16.39 TD-59b-5 (nestsuite-double-read-design-review.md §9, §24):
     /// 既に判定済み・信頼できる <paramref name="kind"/> と <paramref name="filePath"/> の拡張子の
     /// 組み合わせが妥当かどうかを、ファイル I/O なしで確認する。<b>WorkspaceKind を判定する API
     /// ではない</b>（それは <see cref="TryPrepareOpen"/> の役割のまま）。
@@ -301,7 +297,7 @@ public static class NestSuiteTabFactory
     };
 
     /// <summary>
-    /// v2.6.0: TempNest 固定タブを生成する。CanClose=false の固定タブ。
+    /// TempNest 固定タブを生成する。CanClose=false の固定タブ。
     /// </summary>
     public static NestSuiteDocumentTab CreateTempTab()
         => new NestSuiteDocumentTab

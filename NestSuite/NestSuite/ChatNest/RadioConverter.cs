@@ -5,7 +5,6 @@ namespace NestSuite.ChatNest;
 
 /// <summary>
 /// 発言者選択ラジオボタンと <see cref="Speaker"/> を双方向バインドする Converter。
-/// 参照ソース ChatNest v0.4.1 Converters/RadioConverter.cs より取り込み。
 /// </summary>
 public class RadioConverter : IValueConverter
 {

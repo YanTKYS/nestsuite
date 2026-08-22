@@ -66,11 +66,11 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"/>
-                    <!-- L28: TextBlock → Button化してTab到達可能にする。マウスは既存どおりダブルクリックのみで
-                         反応させたいため、Buttonの標準Click（単発クリック／Space）は使わず、
-                         PreviewMouseLeftButtonDown（既存のClickCount==2判定を再利用）と
-                         PreviewKeyDown（Enterのみ）で個別に処理する。Spaceは標準Clickへ素通りするが
-                         Clickハンドラを持たないため何も起きない（コメント切替に割り当てない）。 -->
+                    <!-- TextBlock ではなく Button にして Tab 到達可能にする。マウスはダブルクリックのみで
+                         反応させたいため、Button の標準 Click（単発クリック／Space）は使わず、
+                         PreviewMouseLeftButtonDown（ClickCount==2 判定）と PreviewKeyDown（Enter のみ）で
+                         個別に処理する。Space は標準 Click へ素通りするが Click ハンドラを持たないため
+                         何も起きない（コメント切替に割り当てない）。 -->
                     <Button Background="Transparent"
                             BorderThickness="0"
                             Padding="0"
@@ -146,7 +146,7 @@
                 </DockPanel>
             </Border>
 
-            <!-- L1: ノートタイトル絞り込みバー -->
+            <!-- ノートタイトル絞り込みバー -->
             <Border Grid.Row="1"
                     BorderBrush="{DynamicResource PaneBorder}" BorderThickness="0,0,0,1"
                     Padding="6,4">
@@ -206,7 +206,7 @@
                 <TreeView.Resources>
 
                     <!-- ── Notebook template ── -->
-                    <!-- M14: DisplayNotes は表示専用の並び替え済みコレクション。保存対象・「上に移動/下に移動」
+                    <!-- DisplayNotes は表示専用の並び替え済みコレクション。保存対象・「上に移動/下に移動」
                          等の実データ操作は引き続き NotebookViewModel.Notes（作成順の実データ）を使う。 -->
                     <HierarchicalDataTemplate DataType="{x:Type vm:NotebookViewModel}"
                                               ItemsSource="{Binding DisplayNotes}">
@@ -285,7 +285,7 @@
 
                 </TreeView.Resources>
             </TreeView>
-            <!-- L23: ノートブック0件の空状態案内。ノートブックがある場合はノート側の案内へ優先を譲る -->
+            <!-- ノートブック0件の空状態案内。ノートブックがある場合はノート側の案内へ優先を譲る -->
             <TextBlock AutomationProperties.AutomationId="NoteNest.EmptyState.Notebooks"
                        AutomationProperties.Name="NoteNest.EmptyState.Notebooks"
                        Foreground="{DynamicResource MutedFg}"
@@ -299,7 +299,7 @@
                        Visibility="{Binding ShowNotebookEmptyState, Converter={StaticResource BoolToVis}}">
                 ノートブックがありません<LineBreak/>「+ ノートブック」から最初のノートブックを作成できます
             </TextBlock>
-            <!-- L23: ノートブックはあるがノートが0件の場合の空状態案内。ノートブック0件時は上と重複表示しない -->
+            <!-- ノートブックはあるがノートが0件の場合の空状態案内。ノートブック0件時は上と重複表示しない -->
             <TextBlock AutomationProperties.AutomationId="NoteNest.EmptyState.Notes"
                        AutomationProperties.Name="NoteNest.EmptyState.Notes"
                        Foreground="{DynamicResource MutedFg}"
@@ -354,7 +354,7 @@
                     Padding="14,10"
                     Visibility="{Binding IsSampleProject, Converter={StaticResource BoolToVis}}">
                 <DockPanel>
-                    <!-- v1.16.4: Dock="Bottom" に変更。右側配置では TextBlock に残る幅が極端に狭くなり折り返し崩れが発生していた -->
+                    <!-- Dock="Bottom" に置く。右側へ配置すると TextBlock に残る幅が極端に狭くなり折り返しが崩れるため -->
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                                 Margin="0,6,0,0">
                         <Button Content="新規プロジェクト"
@@ -390,8 +390,8 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <!-- v2.16.10 SH-30: 無効理由ツールチップ（MarkdownExportSelectedNoteTooltip / MarkdownExportAllNotesTooltip）を追加。
-                     判定条件（HasSelectedNote / HasAnyNotes）自体は変更していない。 -->
+                <!-- 無効な項目は隠さず、無効理由をツールチップ（MarkdownExportSelectedNoteTooltip /
+                     MarkdownExportAllNotesTooltip）で示す。有効・無効の判定は HasSelectedNote / HasAnyNotes。 -->
                 <Border.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Markdown としてコピー(_M)"
@@ -439,8 +439,8 @@
                         <TextBlock Text="コメント編集中"
                                    FontSize="10.5" Foreground="{DynamicResource CommentBadgeFg}"/>
                     </Border>
-                    <!-- v2.14.18 SH: Workspace 共通フォント種類の ComboBox はメニューバー（表示 > 本文フォント）へ移動した。
-                         フォントサイズは NoteNest 固有設定のためここに残す。 -->
+                    <!-- ここに置くのはフォントサイズだけ（NoteNest 固有設定のため）。
+                         Workspace 共通のフォント種類はメニューバー（表示 > 本文フォント）が持つ。 -->
                     <ComboBox DockPanel.Dock="Right"
                               FontSize="11" Width="52" Margin="0,0,4,0"
                               VerticalAlignment="Center"
@@ -489,7 +489,7 @@
                             Style="{StaticResource IconButton}" FontSize="11.5"
                             Margin="4,0,0,0"
                             Visibility="{Binding HasEditingTaskRelatedNote, Converter={StaticResource BoolToVis}}"/>
-                    <!-- L24: ノートブック名付き一覧・絞り込みで選ぶ補助ボタン。既存 ComboBox は維持する -->
+                    <!-- ノートブック名付き一覧・絞り込みで選ぶ補助ボタン。既存 ComboBox は維持する -->
                     <Button DockPanel.Dock="Right" Content="選択..."
                             Click="PickRelatedNote_Click"
                             Style="{StaticResource IconButton}" FontSize="11.5"
@@ -543,7 +543,7 @@
             </Border>
         </Grid>
 
-        <!-- GridSplitter R（v1.16.3: 折り畳み時は非表示にし展開ボタンを Column 3 に表示する） -->
+        <!-- GridSplitter R（折り畳み時は非表示にし、展開ボタンを Column 3 に表示する） -->
         <GridSplitter x:Name="RightGridSplitter"
                       AutomationProperties.AutomationId="NoteNest.RightGridSplitter"
                       AutomationProperties.Name="NoteNest.RightGridSplitter"
@@ -570,13 +570,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="3*" MinHeight="150"/>
                 <RowDefinition Height="4"/>
-                <!-- v2.13.5 M16 フォローアップ: 既存タスクがない場合はヒント文のみの高さに縮め、
+                <!-- 既存タスクがない場合はヒント文のみの高さに縮め、
                      マーカー / リンク（Row 1）へ余った領域を譲る -->
                 <RowDefinition Height="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowHeight}}"
                                MinHeight="{Binding HasNoTasks, Converter={StaticResource HasNoTasksToRowMinHeight}}"/>
             </Grid.RowDefinitions>
 
-            <!-- L10: 右ペイン（マーカー・互換タスク）共通の絞り込み欄。マーカー用・タスク用に
+            <!-- 右ペイン（マーカー・互換タスク）共通の絞り込み欄。マーカー用・タスク用に
                  別々の入力欄は持たず、1つの文字列を両方へ AND 条件で適用する。 -->
             <Border Grid.Row="0"
                     BorderBrush="{DynamicResource PaneBorder}" BorderThickness="0,0,0,1"
@@ -623,8 +623,8 @@
                 </DockPanel>
             </Border>
 
-            <!-- ── Tasks（互換表示：縮退方針 TD-52/M16 第3段階。既存タスクがある場合のみ表示し、
-                 新規作成導線は通常UIから外す。作業ポイントは本文マーカーへ寄せる）── -->
+            <!-- ── Tasks（互換表示。既存タスクがある場合のみ表示し、新規作成導線は通常UIから外す。
+                 作業ポイントは本文マーカーへ寄せる。方針は docs/development/notenest-task-reduction-policy.md）── -->
             <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -633,7 +633,7 @@
 
                 <!-- タスクが1件もない場合: 空欄を大きく見せず、マーカー利用への一言のみ表示。
                      外側 RowDefinition が Auto へ縮むため、この行のみで完結させる -->
-                <!-- L23: ノートが1件もない間はタスク案内を出さない（ノート・ノートブック側の案内を優先） -->
+                <!-- ノートが1件もない間はタスク案内を出さない（ノート・ノートブック側の案内を優先） -->
                 <TextBlock Grid.Row="0"
                            AutomationProperties.AutomationId="NoteNest.EmptyState.Tasks"
                            AutomationProperties.Name="NoteNest.EmptyState.Tasks"
@@ -677,10 +677,10 @@
                                 <StackPanel Visibility="{Binding HasVisibleTasks, Converter={StaticResource BoolToVis}}">
 
                                     <!-- Group header -->
-                                    <!-- L28: Border＋MouseBinding → ToggleButton化。既存ToggleGroupCommand（IsExpandedの
-                                         唯一の変更経路）をCommandへそのまま割り当て、マウスクリック・Enter・Spaceの
-                                         いずれもWPF標準ButtonBase動作で同じCommandを呼ぶ（独自KeyDownは追加しない）。
-                                         IsCheckedはIsExpandedへOneWayで連動させ、AutomationのToggleStateへ反映させる。 -->
+                                    <!-- Border＋MouseBinding ではなく ToggleButton を使う。ToggleGroupCommand（IsExpanded の
+                                         唯一の変更経路）を Command へ割り当てれば、マウスクリック・Enter・Space の
+                                         いずれも WPF 標準 ButtonBase 動作で同じ Command を呼ぶため、独自 KeyDown が不要になる。
+                                         IsChecked は IsExpanded へ OneWay で連動させ、Automation の ToggleState へ反映させる。 -->
                                     <ToggleButton Padding="10,6,10,6"
                                                   Background="{DynamicResource GroupHeaderBg}"
                                                   BorderBrush="{DynamicResource PaneBorder}"
@@ -723,8 +723,8 @@
                                     <!-- Completed tasks section -->
                                     <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
                                         <!-- Completed section header: only shown when completed tasks exist -->
-                                        <!-- L28: Border＋MouseBinding → ToggleButton化。既存ToggleCompletedSectionCommand
-                                             （IsCompletedSectionExpandedの唯一の変更経路）をそのままCommandへ割り当てる。 -->
+                                        <!-- 上のグループヘッダーと同じ理由で ToggleButton を使う。ToggleCompletedSectionCommand
+                                             （IsCompletedSectionExpanded の唯一の変更経路）を Command へ割り当てる。 -->
                                         <ToggleButton Padding="10,5,10,5"
                                                       Background="{DynamicResource GroupHeaderBg}"
                                                       BorderBrush="{DynamicResource PaneBorder}"
@@ -779,7 +779,7 @@
                     </ItemsControl>
                 </ScrollViewer>
 
-                <!-- L10: タスクは存在するが絞り込みで0件になった場合の空状態 -->
+                <!-- タスクは存在するが絞り込みで0件になった場合の空状態 -->
                 <TextBlock Grid.Row="1"
                            AutomationProperties.AutomationId="NoteNest.EmptyState.TasksFilter"
                            AutomationProperties.Name="NoteNest.EmptyState.TasksFilter"
@@ -798,7 +798,7 @@
             <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch"
                           Background="{DynamicResource PaneBorder}" ShowsPreview="True"/>
 
-            <!-- ── Markers / Links TabControl（主役：縮退方針 TD-52 第2段階）── -->
+            <!-- ── Markers / Links TabControl（NoteNest 右ペインの主役）── -->
             <TabControl Grid.Row="1"
                         AutomationProperties.AutomationId="NoteNest.RightPaneTabControl"
                         AutomationProperties.Name="NoteNest.RightPaneTabControl"
@@ -894,10 +894,10 @@
                         </Border>
 
                         <!-- Marker list -->
-                        <!-- L26: ItemsControl → ListBox 化。Tab到達・上下キー選択・Enterジャンプに対応。
-                             ItemsSource は引き続き FilteredMarkers（種別フィルタ＋L10文字列絞り込み＋並び順）を
-                             そのまま使用し、表示・M15全件コピー対象の一致を維持する。選択変更自体はジャンプせず、
-                             ジャンプは既存の MarkerClickCommand（マウスクリックと共通）を Enter キーからも呼び出す。 -->
+                        <!-- ItemsControl ではなく ListBox を使う（Tab到達・上下キー選択・Enterジャンプのため）。
+                             ItemsSource は FilteredMarkers（種別フィルタ＋文字列絞り込み＋並び順）を使い、
+                             画面表示と一括コピー対象を一致させる。選択変更自体ではジャンプせず、
+                             ジャンプは MarkerClickCommand（マウスクリックと共通）を Enter キーからも呼び出す。 -->
                         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                             <ListBox x:Name="MarkerList"
                                      ItemsSource="{Binding FilteredMarkers}"
@@ -972,7 +972,7 @@
                             </ListBox>
                         </ScrollViewer>
 
-                        <!-- L23/L10: ノートはあるがマーカーが0件（元々0件、または種別・絞り込み文字列で0件）の場合の
+                        <!-- ノートはあるがマーカーが0件（元々0件、または種別・絞り込み文字列で0件）の場合の
                              空状態案内。ノートが1件もない間は表示しない。文言は元々0件かどうかで切り替える
                              （MarkerEmptyStateText）。 -->
                         <TextBlock Grid.Row="2"
@@ -1037,10 +1037,10 @@
                                            Visibility="{Binding LinkPanel.HasNoOutboundLinks, Converter={StaticResource BoolToVis}}"/>
 
                                 <!-- Outbound link items -->
-                                <!-- L27: ItemsControl → ListBox 化。外側ScrollViewerでの一括スクロールを維持するため、
-                                     ListBox自身の内部スクロールは無効化し、選択項目へのBringIntoViewは外側
-                                     ScrollViewerへそのまま伝播させる。0件時はIsEnabledをHasOutboundLinksへ
-                                     バインドし、Tabフォーカス・空フォーカス矩形が残らないようにする。 -->
+                                <!-- ItemsControl ではなく ListBox を使う（キーボード操作のため）。外側 ScrollViewer での
+                                     一括スクロールを保つため ListBox 自身の内部スクロールは無効化し、選択項目への
+                                     BringIntoView は外側 ScrollViewer へ伝播させる。0件時は IsEnabled を
+                                     HasOutboundLinks へバインドし、Tabフォーカス・空フォーカス矩形が残らないようにする。 -->
                                 <ListBox x:Name="OutboundLinkList"
                                          ItemsSource="{Binding LinkPanel.OutboundLinks}"
                                          SelectionMode="Single"
@@ -1116,8 +1116,8 @@
                                            Visibility="{Binding LinkPanel.HasNoBacklinks, Converter={StaticResource BoolToVis}}"/>
 
                                 <!-- Backlink items -->
-                                <!-- L27: ItemsControl → ListBox 化。OutboundLinkListと同様に、内部スクロールを
-                                     無効化して外側ScrollViewerでのスクロール・BringIntoView伝播を維持する。 -->
+                                <!-- OutboundLinkList と同じ理由で ListBox を使い、内部スクロールを無効化して
+                                     外側 ScrollViewer でのスクロール・BringIntoView 伝播を維持する。 -->
                                 <ListBox x:Name="BacklinkList"
                                          ItemsSource="{Binding LinkPanel.Backlinks}"
                                          SelectionMode="Single"

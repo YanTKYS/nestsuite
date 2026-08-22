@@ -123,7 +123,7 @@ public class FilterViewModel : IdeaNestViewModelBase
     }
 
     /// <summary>
-    /// ID-14: 色条件を除く、アーカイブ・タグ・検索語だけを適用する。
+    /// 色条件を除く、アーカイブ・タグ・検索語だけを適用する。
     /// 色フィルタチップの件数表示は、色条件を適用する直前のこの集合から計算する
     /// （選択中の色自身を件数計算から除外するため）。
     /// </summary>
@@ -154,7 +154,7 @@ public class FilterViewModel : IdeaNestViewModelBase
     }
 
     /// <summary>
-    /// ID-14: 色フィルタチップに表示する、色ごとのカード枚数を計算する。
+    /// 色フィルタチップに表示する、色ごとのカード枚数を計算する。
     /// 現在選択中の色フィルタ自身は除外した集合（<see cref="ApplyExceptColor"/>）から数えるため、
     /// 各色を選択した場合に表示されるカード数と一致する。件数は保存しない派生値。
     /// </summary>

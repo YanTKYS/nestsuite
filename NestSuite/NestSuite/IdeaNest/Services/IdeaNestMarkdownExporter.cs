@@ -7,7 +7,7 @@ using NestSuite.IdeaNest.ViewModels;
 namespace NestSuite.IdeaNest.Services;
 
 /// <summary>
-/// ID-10: 表示中の IdeaNest カードを Markdown へ変換する、WPF に依存しない純粋な整形処理。
+/// 表示中の IdeaNest カードを Markdown へ変換する、WPF に依存しない純粋な整形処理。
 /// フィルタ・ソート・アーカイブ表示条件の判定は行わない。呼び出し側が渡した順序・件数を
 /// そのまま出力するだけであり、並べ替えの再実装や非表示カードの除外は行わない。
 /// </summary>

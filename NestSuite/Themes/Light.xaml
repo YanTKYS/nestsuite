@@ -18,7 +18,7 @@
     <SolidColorBrush x:Key="TaskCommentTitleBg"   Color="#FFF8E1"/>
     <SolidColorBrush x:Key="TaskCommentIndicator" Color="#5B9BD5"/>
 
-    <!-- v2.14.3 M12: note star (favorite) indicator。WarningBrush の橙・未保存表示と混同しない金色系 -->
+    <!-- note star (favorite) indicator。WarningBrush の橙・未保存表示と混同しない金色系 -->
     <SolidColorBrush x:Key="NoteStarIndicator" Color="#C9A227"/>
     <SolidColorBrush x:Key="CommentBadgeBg"       Color="#FFE082"/>
     <SolidColorBrush x:Key="CommentBadgeFg"       Color="#8C6100"/>
@@ -76,7 +76,7 @@
     <SolidColorBrush x:Key="AppFg"    Color="#111111"/>
     <SolidColorBrush x:Key="EditorBg" Color="White"/>
 
-    <!-- SH-10 semantic theme resources -->
+    <!-- Semantic theme resources -->
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="White"/>
     <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#F5F5F5"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="White"/>

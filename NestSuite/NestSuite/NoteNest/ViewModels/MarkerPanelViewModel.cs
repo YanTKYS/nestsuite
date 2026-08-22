@@ -30,7 +30,7 @@ public sealed class MarkerPanelViewModel : BaseViewModel
     public bool FilterNote { get => _filterNote; set { if (SetProperty(ref _filterNote, value)) RaiseFilteredChanged(); } }
 
     /// <summary>
-    /// L10: 右ペイン共通絞り込み文字列（Trim済み）。既存の種別フィルタ（TODO/FIXME/NOTE）へ
+    /// 右ペイン共通絞り込み文字列（Trim済み）。既存の種別フィルタ（TODO/FIXME/NOTE）へ
     /// AND条件で追加適用する。表示専用の一時状態で保存対象ではない。
     /// </summary>
     public string FilterText { get => _filterText; set { if (SetProperty(ref _filterText, value ?? string.Empty)) RaiseFilteredChanged(); } }

@@ -63,7 +63,7 @@ public sealed class NoteLinkPanelViewModel : BaseViewModel
     public bool HasNoOutboundLinks => HasNote && OutboundLinks.Count == 0;
     public bool HasNoBacklinks => HasNote && Backlinks.Count == 0;
 
-    /// <summary>L27: 0件のListBoxへ不必要にTabフォーカスさせないための表示専用判定。保存対象ではない。</summary>
+    /// <summary>0件のListBoxへ不必要にTabフォーカスさせないための表示専用判定。保存対象ではない。</summary>
     public bool HasOutboundLinks => OutboundLinks.Count > 0;
     public bool HasBacklinks => Backlinks.Count > 0;
 

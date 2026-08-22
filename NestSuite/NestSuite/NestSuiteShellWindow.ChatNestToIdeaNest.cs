@@ -5,12 +5,12 @@ using NestSuite.IdeaNest.ViewModels;
 namespace NestSuite;
 
 /// <summary>
-/// LK-4 (v2.21.0): ChatNest 発言 → IdeaNest カード化。
-/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1）。
+/// ChatNest 発言 → IdeaNest カード化。
+/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md。
 ///
 /// <para>ChatNest 側は IdeaNest の型・内部構造を一切参照せず、発言本文（string）だけを
 /// <see cref="ChatNestWorkspaceViewModel.TransferMessageToIdeaNestRequested"/> 経由で渡す
-/// （TN-3 の <c>PromoteRequested</c> と同じ責務分離）。この partial が転送先解決・UX・通知・
+/// （TempNest の <c>PromoteRequested</c> と同じ責務分離）。この partial が転送先解決・UX・通知・
 /// エラー処理をすべて担う。<see cref="NestSuiteShellWindow.WorkspaceTransfer.cs"/> の共通ヘルパーは
 /// タブ解決・受入呼び出し・結果返却のみを行い、UI 文言・ダイアログ表示は持たない。</para>
 /// </summary>

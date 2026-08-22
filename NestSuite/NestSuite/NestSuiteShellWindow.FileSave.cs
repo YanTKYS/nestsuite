@@ -11,15 +11,15 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // v2.11.1: 名前を付けて保存ダイアログの既定ファイル名。
-    // v2.14.1 FM-1: 新規保存の標準拡張子は .nestsuite（NestSuiteWorkspaceEnvelope.FileExtension）。
+    // 名前を付けて保存ダイアログの既定ファイル名。
+    // 新規保存の標準拡張子は .nestsuite（NestSuiteWorkspaceEnvelope.FileExtension）。
     private const string DefaultIdeaNestFileName = "ideas" + NestSuiteWorkspaceEnvelope.FileExtension;
     private const string DefaultChatNestFileName = "chat"  + NestSuiteWorkspaceEnvelope.FileExtension;
-    // v2.19.0 SH-43: PlainText は .nestsuite wrapper を使わないため、既定拡張子は .txt のまま。
+    // PlainText は .nestsuite wrapper を使わないため、既定拡張子は .txt のまま。
     private const string DefaultTextFileName = "無題" + PlainTextFileService.FileExtension;
 
     /// <summary>
-    /// v2.13.6 TD-45: IdeaNest / ChatNest 保存の共通実体。
+    /// IdeaNest / ChatNest 保存の共通実体。
     /// パス正規化 → Workspace 固有シリアライズ + MarkSaved（serializeAndMark）→ 保存後状態更新（updateTabPath）。
     /// serializeAndMark が例外を投げた場合、MarkSaved と状態更新は実行されず未保存状態が維持される。
     /// isModifiedAfterSave の差異（ChatNest の InputText 残留）は updateTabPath 側
@@ -46,7 +46,7 @@ public partial class NestSuiteShellWindow
         }
         catch (Exception ex)
         {
-            // v2.14.12 SH-33: 自動保存など、失敗を都度ダイアログ通知したくない呼び出しでは
+            // 自動保存など、失敗を都度ダイアログ通知したくない呼び出しでは
             // ErrorLogService への記録のみ行い、ダイアログは表示しない。
             if (notifyOnError)
                 LogAndShowSaveError(errorOperation, errorWorkspaceKind, errorLabel, ex, path);
@@ -56,12 +56,12 @@ public partial class NestSuiteShellWindow
         }
     }
 
-    /// <summary>v1.9.7: 指定 Session の IdeaNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    /// <summary>指定 Session の IdeaNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
     private bool TrySaveIdeaNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveIdeaNestToPath(session, path, showNotification: true);
 
     /// <summary>
-    /// v2.16.6 TD-64: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
     /// 手動保存 / Save All は既定の true のまま。
     /// </summary>
     private bool TrySaveIdeaNestToPath(
@@ -77,7 +77,7 @@ public partial class NestSuiteShellWindow
             showNotification, notifyOnError);
     }
 
-    /// <summary>v1.9.7: 選択中 IdeaNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    /// <summary>選択中 IdeaNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveIdeaNestFile()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.IdeaNest) return;
@@ -88,12 +88,12 @@ public partial class NestSuiteShellWindow
             SaveIdeaNestFileAs();
     }
 
-    /// <summary>v1.9.2: 指定 Session の ChatNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    /// <summary>指定 Session の ChatNest を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
     private bool TrySaveChatNestToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveChatNestToPath(session, path, showNotification: true);
 
     /// <summary>
-    /// v2.16.6 TD-64: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
     /// 手動保存 / Save All は既定の true のまま。
     /// </summary>
     private bool TrySaveChatNestToPath(
@@ -109,7 +109,7 @@ public partial class NestSuiteShellWindow
             showNotification, notifyOnError);
     }
 
-    /// <summary>v1.9.2: 選択中 ChatNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    /// <summary>選択中 ChatNest タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveChatNestFile()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.ChatNest) return;
@@ -120,12 +120,12 @@ public partial class NestSuiteShellWindow
             SaveChatNestFileAs();
     }
 
-    /// <summary>v2.19.0 SH-43: 指定 Session の PlainText を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
+    /// <summary>指定 Session の PlainText を指定パスへ保存する。失敗時はエラーダイアログを表示し false を返す。</summary>
     private bool TrySaveTextToPath(NestSuiteWorkspaceSession session, string path) =>
         TrySaveTextToPath(session, path, showNotification: true);
 
     /// <summary>
-    /// v2.16.6 TD-64 と同方針: createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
+    /// createBackup=false（自動保存）は正本のみ更新し .bak を更新しない。
     /// 手動保存 / Save All は既定の true のまま。
     /// </summary>
     private bool TrySaveTextToPath(
@@ -141,7 +141,7 @@ public partial class NestSuiteShellWindow
             showNotification, notifyOnError);
     }
 
-    /// <summary>v2.19.0 SH-43: 選択中 PlainText タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    /// <summary>選択中 PlainText タブの Session で上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveTextFile()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.PlainText) return;
@@ -153,7 +153,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: 別ウィンドウ内の Ctrl+S から呼ばれる（PlainText）。タブ ID を直接受け取り保存する。
+    /// 別ウィンドウ内の Ctrl+S から呼ばれる（PlainText）。タブ ID を直接受け取り保存する。
     /// selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
     /// </summary>
     internal void SaveTextForTabId(string tabId, Func<string, string?>? selectSavePath = null)
@@ -168,7 +168,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.19.0 SH-43: タブ閉鎖・アプリ終了時の PlainText 保存ヘルパー。
+    /// タブ閉鎖・アプリ終了時の PlainText 保存ヘルパー。
     /// 保存パスがある場合は上書き保存、ない場合は名前を付けて保存ダイアログを表示する。
     /// 保存成功時のみ true を返す。キャンセル・保存失敗時は false を返す。
     /// </summary>
@@ -186,13 +186,13 @@ public partial class NestSuiteShellWindow
 
     private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e) => SaveActiveTab();
 
-    /// <summary>v2.16.10 SH-30: ファイルメニュー「上書き保存」の Click ハンドラ。Ctrl+S と同じ SaveActiveTab に委譲する。</summary>
+    /// <summary>ファイルメニュー「上書き保存」の Click ハンドラ。Ctrl+S と同じ SaveActiveTab に委譲する。</summary>
     private void MenuSave_Click(object sender, RoutedEventArgs e) => SaveActiveTab();
 
     /// <summary>
-    /// v2.9.0 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。
-    /// v2.9.2 SH-21: selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
-    ///               null の場合は Shell の _dialogs を使う。重複チェックも tabId を基準に行う。
+    /// 別ウィンドウ内の Ctrl+S から呼ばれる。タブ ID を直接受け取り保存する。
+    /// <paramref name="selectSavePath"/> は SaveAs ダイアログを呼び出し側の Window に出すための差し替え口で、
+    /// null の場合は Shell の _dialogs を使う。重複チェックも tabId を基準に行う。
     /// </summary>
     internal void SaveNoteNestForTabId(string tabId, Func<string, string?>? selectSavePath = null)
     {
@@ -212,7 +212,7 @@ public partial class NestSuiteShellWindow
             var rawPath = selector(vm.ProjectName);
             if (rawPath == null) return;
             var normalizedPath = NormalizeFilePath(rawPath);
-            // v2.9.2: 重複チェックは保存対象の tabId を除外基準にする（_selectedTab でなく）
+            // 重複チェックは保存対象の tabId を除外基準にする（_selectedTab でなく）
             if (CheckAndActivateDuplicateTabForSave(NestSuiteWorkspaceKind.NoteNest, normalizedPath, tabId)) return;
             if (vm.SaveToPath(normalizedPath))
                 UpdateNoteNestTabPath(session, normalizedPath);
@@ -220,7 +220,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.9.3 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる（IdeaNest）。タブ ID を直接受け取り保存する。
+    /// 別ウィンドウ内の Ctrl+S から呼ばれる（IdeaNest）。タブ ID を直接受け取り保存する。
     /// selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
     /// null の場合は Shell の _dialogs を使う。
     /// </summary>
@@ -236,7 +236,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.9.4 SH-21: 別ウィンドウ内の Ctrl+S から呼ばれる（ChatNest）。タブ ID を直接受け取り保存する。
+    /// 別ウィンドウ内の Ctrl+S から呼ばれる（ChatNest）。タブ ID を直接受け取り保存する。
     /// selectSavePath を受け取り、SaveAs ダイアログを呼び出し側の Window に出せるようにした。
     /// null の場合は Shell の _dialogs を使う。
     /// </summary>
@@ -252,7 +252,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// v2.9.7: タブ閉鎖・アプリ終了時の NoteNest 保存ヘルパー。
+    /// タブ閉鎖・アプリ終了時の NoteNest 保存ヘルパー。
     /// 保存パスがある場合は上書き保存、ない場合は名前を付けて保存ダイアログを表示する。
     /// 保存成功時のみ true を返す。キャンセル・保存失敗時は false を返す。
     /// dirty state は保存成功時のみ解除する（<see cref="UpdateNoteNestTabPath"/> 経由）。
@@ -290,7 +290,7 @@ public partial class NestSuiteShellWindow
         }
     }
 
-    /// <summary>v1.9.5: 選択中 NoteNest タブを上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
+    /// <summary>選択中 NoteNest タブを上書き保存。パスがなければ名前を付けて保存へ委譲する。</summary>
     private void SaveNoteNestFile()
     {
         if (_selectedTab?.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest) return;

@@ -1,18 +1,11 @@
 namespace NestSuite;
 
 /// <summary>
-/// v1.9.1: 1 タブのWorkspace実体を保持するセッションモデル。
+/// 1 タブのWorkspace実体を保持するセッションモデル。
 ///
-/// <para><b>v1.9.0 設計（案B）の実装</b><br/>
-/// <see cref="NestSuiteDocumentTab"/> は表示情報（DisplayName / IsModified など）を持つ不変 record。
+/// <para><see cref="NestSuiteDocumentTab"/> は表示情報（DisplayName / IsModified など）を持つ不変 record。
 /// <see cref="NestSuiteWorkspaceSession"/> は Workspace の実体（ViewModel・ファイルパス・未保存状態）を持つ。
 /// 両者は <see cref="TabId"/> で対応付けられる。</para>
-///
-/// <para><b>v1.9.1 の位置づけ（最小骨格）</b><br/>
-/// 同一ツール複数ファイル対応の前段階として「セッション管理」の構造を確立する。
-/// v1.9.1 では各ツールの ViewModel はまだ 1 インスタンス（既存シェルフィールド）を共有している。
-/// <see cref="WorkspaceViewModel"/> の型は将来型安全化する余地を残すため <see cref="object"/> とする。
-/// タブごとの ViewModel インスタンス独立化は v1.9.2〜v1.9.4 で行う。</para>
 /// </summary>
 public sealed class NestSuiteWorkspaceSession
 {
@@ -26,9 +19,8 @@ public sealed class NestSuiteWorkspaceSession
     public NestSuiteWorkspaceKind WorkspaceKind { get; }
 
     /// <summary>
-    /// Workspace の ViewModel インスタンス。
-    /// v1.9.1 では種別ごとに 1 つの既存インスタンスを参照する。
-    /// v1.9.2 以降でタブごとの独立インスタンスへ移行する。
+    /// Workspace の ViewModel インスタンス。Workspace 種別ごとに型が異なるため
+    /// <see cref="object"/> で保持し、利用側でキャストする。
     /// </summary>
     public object WorkspaceViewModel { get; }
 

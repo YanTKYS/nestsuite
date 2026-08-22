@@ -71,7 +71,7 @@ public class CardOperationsService
     {
         if (string.IsNullOrWhiteSpace(body)) return false;
 
-        // v1.16.8: ChatNest Copy NestSuite 転記形式を検出し、タイトルと本文を分離する
+        // ChatNest Copy NestSuite 転記形式を検出し、タイトルと本文を分離する
         var newlineIdx = body.IndexOf('\n');
         var firstLine = (newlineIdx >= 0 ? body.Substring(0, newlineIdx) : body).TrimEnd('\r');
         var match = ChatNestTransferHeaderPattern.Match(firstLine);
@@ -86,7 +86,7 @@ public class CardOperationsService
         }
         else
         {
-            // v1.16.6: タイトルを Paste_yyyyMMddHHmm 形式で自動生成する
+            // タイトルを Paste_yyyyMMddHHmm 形式で自動生成する
             title = $"Paste_{_now():yyyyMMddHHmm}";
             bodyText = body;
         }
@@ -96,7 +96,7 @@ public class CardOperationsService
 
     public bool CommitAddFromFileContent(string fileName, string body)
     {
-        // v1.16.6: 空ファイル（本文が空白のみ）はカード作成しない
+        // 空ファイル（本文が空白のみ）はカード作成しない
         if (string.IsNullOrWhiteSpace(body)) return false;
         var title = string.IsNullOrWhiteSpace(fileName) ? string.Empty : fileName;
         return CommitAdd(new Idea { Title = title, Body = body ?? string.Empty }) != null;
@@ -121,7 +121,7 @@ public class CardOperationsService
     }
 
     /// <summary>
-    /// ID-6: 削除Undo用。<paramref name="card"/>（削除時と同一インスタンス、新しいIDは発行しない）を
+    /// 削除Undo用。<paramref name="card"/>（削除時と同一インスタンス、新しいIDは発行しない）を
     /// 正本コレクション・表示用コレクションの両方へ、記録済みの位置（範囲外はクランプ）へ再挿入する。
     /// 既に存在する場合は重複を避けて何もしない。
     /// </summary>
@@ -146,7 +146,7 @@ public class CardOperationsService
 
     public void ToggleArchive(IdeaCardViewModel card) => SetArchived(card, !card.IsArchived);
 
-    /// <summary>ID-6: アーカイブUndo用。変更前の値へ直接戻すための共通経路。</summary>
+    /// <summary>アーカイブUndo用。変更前の値へ直接戻すための共通経路。</summary>
     public void SetArchived(IdeaCardViewModel card, bool isArchived)
     {
         card.IsArchived = isArchived;

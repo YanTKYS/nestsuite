@@ -20,7 +20,7 @@
 
         <TextBlock x:Name="PromptText" Grid.Row="0" Text="リンク先のノートを選択してください:" FontSize="13"/>
 
-        <!-- L2: ノートタイトル絞り込み TextBox -->
+        <!-- ノートタイトル絞り込み TextBox -->
         <Grid Grid.Row="2">
             <TextBox x:Name="NoteFilterBox"
                      AutomationProperties.AutomationId="Dialog.NoteFilterBox"
@@ -53,7 +53,7 @@
                      DisplayMemberPath="DisplayText"
                      FontSize="13"
                      MouseDoubleClick="NoteList_MouseDoubleClick"/>
-            <!-- L24: 絞り込み結果 0 件時の空状態表示 -->
+            <!-- 絞り込み結果 0 件時の空状態表示 -->
             <TextBlock x:Name="EmptyStateText"
                        AutomationProperties.AutomationId="Dialog.EmptyState"
                        AutomationProperties.Name="Dialog.EmptyState"

@@ -2,7 +2,7 @@ using System.Windows.Input;
 
 namespace NestSuite.Views;
 
-// L10: 右ペイン（マーカー・互換タスク）共通絞り込み欄のクリア・Esc操作。
+// 右ペイン（マーカー・互換タスク）共通絞り込み欄のクリア・Esc操作。
 // 絞り込み文字列自体は MainViewModel.RightPaneFilterText（タブごとに独立）が所有し、
 // ここでは View 側のクリア・キーボード操作の配線のみを担う。
 public partial class NoteNestWorkspaceView

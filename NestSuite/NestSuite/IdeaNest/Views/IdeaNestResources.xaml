@@ -10,9 +10,9 @@
     <conv:IdeaColorNameToBrushConverter x:Key="IdeaColorNameToBrush" />
     <conv:IdeaBodyTrimConverter x:Key="IdeaBodyTrim" />
 
-    <!-- IdeaNest uses SH-10 brushes supplied by the active app theme. -->
+    <!-- IdeaNest uses the semantic brushes supplied by the active app theme. -->
 
-    <!-- ID-9: Card hover / focus visual feedback -->
+    <!-- Card hover / focus visual feedback -->
     <DropShadowEffect x:Key="IdeaCardHoverShadow"
                       Color="#1F2937" Opacity="0.16" BlurRadius="20" ShadowDepth="4" Direction="270" />
 
@@ -74,12 +74,12 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <!-- ID-9: hover — border becomes visible, shadow deepens -->
+            <!-- hover — border becomes visible, shadow deepens -->
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource IdeaCardHoverBorderBrush}" />
                 <Setter Property="Effect"      Value="{StaticResource IdeaCardHoverShadow}" />
             </Trigger>
-            <!-- ID-9: keyboard focus — accent border clearly marks the active card -->
+            <!-- keyboard focus — accent border clearly marks the active card -->
             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource IdeaAccentBrush}" />
                 <Setter Property="Effect"      Value="{StaticResource IdeaCardHoverShadow}" />
@@ -176,7 +176,7 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ID-6: 削除・アーカイブUndo導線用の軽量リンク風ボタン。新しい固定色は追加せず既存DynamicResourceのみ使用 -->
+    <!-- 削除・アーカイブUndo導線用の軽量リンク風ボタン。新しい固定色は追加せず既存DynamicResourceのみ使用 -->
     <Style x:Key="IdeaUndoLinkButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource IdeaAccentBrush}" />

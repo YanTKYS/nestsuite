@@ -6,7 +6,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // TN-3: TempNest スロット本文の NoteNest 新規ノートへの昇格。
+    // TempNest スロット本文の NoteNest 新規ノートへの昇格。
     //
     // 責務分離（docs/design/nestsuite-attractiveness-direction.md 4.2 節）:
     //   TempNest 側 - 昇格要求を発行し、成功後に元スロットを消去するかどうかを実行する
@@ -74,7 +74,7 @@ public partial class NestSuiteShellWindow
             return null;
         }
 
-        // SH-38 (review7-fable5 REV7-1): CreateNoteFromTransfer 中の IsModified 変化により
+        // CreateNoteFromTransfer 中の IsModified 変化により
         // OnNoteNestSessionPropertyChanged 経由の SyncNoteNestTabForViewModel が ReplaceTab を
         // 実行し、_tabs 内の tab record は既に新しいインスタンスへ置き換わっている。
         // 古い tab をそのまま ActivateTab へ渡すとタブストリップの選択表示が一致しないため、

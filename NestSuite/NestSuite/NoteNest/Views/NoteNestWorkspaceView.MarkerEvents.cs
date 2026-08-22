@@ -5,7 +5,7 @@ using NestSuite.ViewModels;
 namespace NestSuite.Views;
 
 /// <summary>
-/// L26: マーカー一覧（ListBox）のキーボード操作。選択自体はジャンプせず、Enterキーのみ
+/// マーカー一覧（ListBox）のキーボード操作。選択自体はジャンプせず、Enterキーのみ
 /// 既存の MarkerClickCommand（マウスクリックと共通のジャンプ処理）を呼び出す。
 /// </summary>
 public partial class NoteNestWorkspaceView

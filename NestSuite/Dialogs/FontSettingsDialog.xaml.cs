@@ -16,7 +16,6 @@ public partial class FontSettingsDialog : Window
         SelectedFontFamily = currentFamily;
         SelectedFontSize   = currentSize;
 
-        // Select current font
         foreach (ComboBoxItem item in FontFamilyBox.Items)
         {
             if (item.Content?.ToString() == currentFamily)

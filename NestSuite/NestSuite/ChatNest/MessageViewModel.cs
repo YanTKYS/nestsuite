@@ -4,12 +4,11 @@ using System.Runtime.CompilerServices;
 namespace NestSuite.ChatNest;
 
 /// <summary>
-/// v2.3.0 CH-6: Message の UI ラッパー。インライン編集状態（IsEditing / EditingText）を管理する。
+/// Message の UI ラッパー。インライン編集状態（IsEditing / EditingText）を管理する。
 /// 編集開始・削除依頼は callback を通じて <see cref="ChatNestWorkspaceViewModel"/> へ委譲する。
 ///
-/// <para><b>v2.7.11 追加</b><br/>
-/// CH-10: <see cref="CopyMessageCommand"/> で発言本文のみをコピーする。<br/>
-/// CH-5:  <see cref="IsSearchCurrent"/> で現在の検索位置ハイライトを管理する。</para>
+/// <para><see cref="CopyMessageCommand"/> で発言本文のみをコピーする。<br/>
+/// <see cref="IsSearchCurrent"/> で現在の検索位置ハイライトを管理する。</para>
 /// </summary>
 public class MessageViewModel : INotifyPropertyChanged
 {
@@ -48,14 +47,14 @@ public class MessageViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>CH-5: 検索結果の現在位置マーカー。親 ViewModel が設定する。</summary>
+    /// <summary>検索結果の現在位置マーカー。親 ViewModel が設定する。</summary>
     public bool IsSearchCurrent
     {
         get => _isSearchCurrent;
         set { _isSearchCurrent = value; OnPropertyChanged(); }
     }
 
-    /// <summary>CH-13: ドラッグ中の視覚フィードバック用フラグ。View が設定し、Opacity バインディングに使用する。</summary>
+    /// <summary>ドラッグ中の視覚フィードバック用フラグ。View が設定し、Opacity バインディングに使用する。</summary>
     public bool IsDragging
     {
         get => _isDragging;
@@ -63,7 +62,7 @@ public class MessageViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// CH-11: このメッセージの直前に日付区切りを表示するか。表示専用の派生状態であり保存しない。
+    /// このメッセージの直前に日付区切りを表示するか。表示専用の派生状態であり保存しない。
     /// <see cref="ChatNestWorkspaceViewModel"/> が <c>NestSuite.Services.ChatDateSeparatorService</c> の
     /// 計算結果を反映する（<see cref="ChatNestWorkspaceViewModel.RefreshDateSeparators"/> 参照）。
     /// </summary>
@@ -78,11 +77,11 @@ public class MessageViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>CH-11: 日付区切りの表示文字列。絶対日付のみ（「今日」「昨日」等の相対表現は使わない）。</summary>
+    /// <summary>日付区切りの表示文字列。絶対日付のみ（「今日」「昨日」等の相対表現は使わない）。</summary>
     public string DateSeparatorText => CreatedAt.ToString("yyyy年M月d日");
 
     /// <summary>
-    /// CH-19: メッセージコンテナの AutomationProperties.Name 用の短い読み上げ名。
+    /// メッセージコンテナの AutomationProperties.Name 用の短い読み上げ名。
     /// 本文全文は複製せず、先頭の一部だけを含める表示専用の派生値（保存しない）。
     /// </summary>
     public string AccessibleSummary
@@ -100,11 +99,11 @@ public class MessageViewModel : INotifyPropertyChanged
     public ChatNestRelayCommand CancelEditCommand { get; }
     public ChatNestRelayCommand RequestDeleteCommand { get; }
 
-    /// <summary>CH-10: 発言本文のみをクリップボードへコピーするコマンド。</summary>
+    /// <summary>発言本文のみをクリップボードへコピーするコマンド。</summary>
     public ChatNestRelayCommand CopyMessageCommand { get; }
 
     /// <summary>
-    /// LK-4 (v2.21.0): この発言を IdeaNest カードへ転送する要求を発行するコマンド。
+    /// この発言を IdeaNest カードへ転送する要求を発行するコマンド。
     /// 常に実行可能とする（IdeaNest タブの有無を ChatNest 側で監視・分岐しない。
     /// 0 件時の案内は要求を受け取った Shell 側が行う）。
     /// </summary>

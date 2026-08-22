@@ -28,7 +28,7 @@ public sealed record NestSuiteDocumentTab
 
     /// <summary>
     /// このタブが属する Workspace の種類。
-    /// 将来の NestSuiteShellWindow は選択中タブの WorkspaceKind に応じて Workspace 表示を切り替える。
+    /// NestSuiteShellWindow は選択中タブの WorkspaceKind に応じて Workspace 表示を切り替える。
     /// <list type="bullet">
     ///   <item><term>NoteNest</term><description>NoteNestWorkspaceView を表示</description></item>
     ///   <item><term>ChatNest</term><description>ChatNestWorkspaceView を表示</description></item>
@@ -63,7 +63,7 @@ public sealed record NestSuiteDocumentTab
     public bool CanClose { get; init; } = true;
 
     /// <summary>
-    /// v2.16.3 SH-15: Temp タブ直後のピン留め領域に固定表示する通常タブかどうか。
+    /// Temp タブ直後のピン留め領域に固定表示する通常タブかどうか。
     /// Temp タブは対象外で、既定値 false のため旧 session.json では未ピン留め扱いになる。
     /// </summary>
     public bool IsPinned { get; init; }
@@ -78,7 +78,7 @@ public sealed record NestSuiteDocumentTab
     public bool ShowUnpinMenuItem => CanPin && IsPinned;
 
     /// <summary>
-    /// v2.16.10 SH-30: 「ピン留め」メニュー項目の表示制御。<see cref="ShowPinMenuItem"/> と異なり、
+    /// 「ピン留め」メニュー項目の表示制御。<see cref="ShowPinMenuItem"/> と異なり、
     /// ピン留め不可なタブ（Temp）でも項目自体は表示し、IsEnabled は <see cref="CanPin"/> に委ねる
     /// ことで、無効時ツールチップ（「Temp タブはピン留めできません」）を表示できるようにする。
     /// ShowPinMenuItem は既存テストが参照する「実際にピン留めできる未ピン留め状態か」を表す値として
@@ -86,14 +86,14 @@ public sealed record NestSuiteDocumentTab
     /// </summary>
     public bool PinActionVisible => !IsPinned;
 
-    /// <summary>v2.16.10 SH-30: 「このタブを閉じる」コンテキストメニュー項目の無効理由ツールチップ。</summary>
+    /// <summary>「このタブを閉じる」コンテキストメニュー項目の無効理由ツールチップ。</summary>
     public string CloseMenuTooltip => ShellCommandTooltipProvider.TabCloseTooltip(CanClose);
 
-    /// <summary>v2.16.10 SH-30: 「ピン留め」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
+    /// <summary>「ピン留め」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
     public string PinMenuTooltip => ShellCommandTooltipProvider.PinTooltip(
         CanPin, WorkspaceKind == NestSuiteWorkspaceKind.Temp);
 
-    /// <summary>v2.16.10 SH-30: 「ピン留めを解除」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
+    /// <summary>「ピン留めを解除」メニュー項目の有効時説明／無効理由ツールチップ。</summary>
     public string UnpinMenuTooltip => ShellCommandTooltipProvider.UnpinTooltip(CanPin && IsPinned);
 
     /// <summary>
@@ -112,14 +112,14 @@ public sealed record NestSuiteDocumentTab
         NestSuiteWorkspaceKind.ChatNest => NestSuiteToolRegistry.ChatNestToolId,
         NestSuiteWorkspaceKind.IdeaNest => NestSuiteToolRegistry.IdeaNestToolId,
         NestSuiteWorkspaceKind.Temp => "Temp",
-        // v2.19.0 SH-43: PlainText は Nest ではないため NestSuiteToolRegistry に登録しない。
+        // PlainText は Nest ではないため NestSuiteToolRegistry に登録しない。
         // ActivateTab は Temp と同様に ToolId 参照前の早期分岐で処理する（NestSuiteShellWindow.TabSelection.cs）。
         NestSuiteWorkspaceKind.PlainText => "PlainText",
         _ => throw new ArgumentOutOfRangeException(nameof(WorkspaceKind), WorkspaceKind, null)
     };
 
     /// <summary>
-    /// v2.6.4: タブ見出し用の拡張子なしファイル名。
+    /// タブ見出し用の拡張子なしファイル名。
     /// TempNest は DisplayName（"Temp"）をそのまま返す。
     /// </summary>
     public string ShortDisplayName =>
@@ -127,33 +127,33 @@ public sealed record NestSuiteDocumentTab
             ? DisplayName
             : Path.GetFileNameWithoutExtension(DisplayName);
 
-    /// <summary>v2.9.0 SH-21: NoteNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
+    /// <summary>NoteNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsNoteNest => WorkspaceKind == NestSuiteWorkspaceKind.NoteNest;
 
-    /// <summary>v2.9.3 SH-21: IdeaNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
+    /// <summary>IdeaNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsIdeaNest => WorkspaceKind == NestSuiteWorkspaceKind.IdeaNest;
 
-    /// <summary>v2.9.4 SH-21: ChatNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
+    /// <summary>ChatNest タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsChatNest => WorkspaceKind == NestSuiteWorkspaceKind.ChatNest;
 
-    /// <summary>v2.19.0 SH-43: PlainText タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
+    /// <summary>PlainText タブかどうか。別ウィンドウ表示メニューの表示制御に使う。</summary>
     public bool IsPlainText => WorkspaceKind == NestSuiteWorkspaceKind.PlainText;
 
-    /// <summary>v2.9.1 SH-21: 現在別ウィンドウで表示中かどうか。DetachNoteNestTab/ReAttachNoteNestTab で更新する。</summary>
+    /// <summary>現在別ウィンドウで表示中かどうか。DetachNoteNestTab/ReAttachNoteNestTab で更新する。</summary>
     public bool IsDetached { get; init; }
 
-    /// <summary>v2.9.4 SH-21: 別ウィンドウに分離できるかどうか（NoteNest / IdeaNest / ChatNest / PlainText かつ未分離）。</summary>
+    /// <summary>別ウィンドウに分離できるかどうか（NoteNest / IdeaNest / ChatNest / PlainText かつ未分離）。</summary>
     public bool IsDetachable => (IsNoteNest || IsIdeaNest || IsChatNest || IsPlainText) && !IsDetached;
 
     /// <summary>
-    /// v2.8.9: UI Automation 用 AutomationId。TempNest 固定タブのみ設定し、他は空文字。
+    /// UI Automation 用 AutomationId。TempNest 固定タブのみ設定し、他は空文字。
     /// </summary>
     public string TabAutomationId => WorkspaceKind == NestSuiteWorkspaceKind.Temp
         ? AutomationIds.Shell.TempTab
         : "";
 
     /// <summary>
-    /// v2.6.4: タブ見出し先頭の Workspace 種別プレフィックス。
+    /// タブ見出し先頭の Workspace 種別プレフィックス。
     /// </summary>
     public string KindPrefix => WorkspaceKind switch
     {
@@ -166,13 +166,13 @@ public sealed record NestSuiteDocumentTab
     };
 
     /// <summary>
-    /// v2.6.4: タブ見出しに表示するテキスト。種別プレフィックス＋拡張子なしファイル名。
+    /// タブ見出しに表示するテキスト。種別プレフィックス＋拡張子なしファイル名。
     /// 例: "📝 業務改善" / "💬 開発メモ" / "💡 ツール改修" / "Temp"
     /// </summary>
     public string TabHeaderText => $"{(IsPinned ? "📌 " : "")}{KindPrefix}{ShortDisplayName}";
 
     /// <summary>
-    /// v1.9.9 / v2.6.4: タブのツールチップ表示用テキスト。
+    /// タブのツールチップ表示用テキスト。
     /// 種類・完全ファイル名・フルパス・保存状態を含む。
     /// </summary>
     public string TooltipText

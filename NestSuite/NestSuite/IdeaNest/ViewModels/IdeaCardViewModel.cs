@@ -53,13 +53,13 @@ public class IdeaCardViewModel : IdeaNestViewModelBase
     }
 
     /// <summary>
-    /// SH-45: ピン留め切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
+    /// ピン留め切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
     /// 表示専用の派生値で、保存もdirty対象にもしない。
     /// </summary>
     public string PinActionName => IsPinned ? "カードのピン留めを解除" : "カードをピン留め";
 
     /// <summary>
-    /// SH-45: アーカイブ切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
+    /// アーカイブ切替ボタン（記号のみ表示）のAutomationProperties.Name用の状態依存名。
     /// 表示専用の派生値で、保存もdirty対象にもしない。
     /// </summary>
     public string ArchiveActionName => IsArchived ? "カードをアーカイブから戻す" : "カードをアーカイブ";
@@ -70,7 +70,7 @@ public class IdeaCardViewModel : IdeaNestViewModelBase
     private bool _isSelected;
 
     /// <summary>
-    /// ID-15: 新規カード作成後の位置フィードバック専用の一時選択状態。
+    /// 新規カード作成後の位置フィードバック専用の一時選択状態。
     /// <see cref="Model"/>（Idea、保存対象）には反映しない表示専用フラグで、
     /// 単一の情報源は <see cref="IdeaNestWorkspaceViewModel.SelectedCard"/>。
     /// </summary>

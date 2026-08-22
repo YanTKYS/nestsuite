@@ -7,6 +7,26 @@
 
 ---
 
+## v2.25.0 — TD-95 production source 現行化・冗長実装の縮退
+
+- **TD-95: production source（`NestSuite/` 配下の `.cs` と `.xaml` の両方）を横断的に点検し、履歴コメント・dead code・冗長実装・独自再実装を縮退した。利用者向け挙動と保存形式は一切変更していない。** 目的は行数削減ではなく、「現在の処理を理解するために保持しなければならない概念」を減らすこと。
+- **コメントを現行化した（履歴マーカーを含むコメント行 約 844 行を対象）。** `// v2.16.5 SH-28:` `// TD-59b-3 対応` `// LK-4 (v2.21.0):` のような version / backlog ID / review 由来のラベル接頭辞を除去し、本文の WHY だけを残した。`// 従来は … だった` `// v1.9.2 以降で … へ置き換える` のような変更履歴の語りは現在形の WHY へ書き換え、役割を終えた将来予定・段階説明（`<para><b>v1.7.3 の位置づけ</b>` 等の changelog 段落）は削除した。コメント行は 3681 → 3608 行だが、削減より **内容の現行化**が主眼である。
+- **XAML コメントも同じ基準で現行化した（コメントブロック約 126 件）。** `.xaml` も production source であるため、`<!-- v2.16.10 SH-30: … -->` `<!-- CH-5: 検索バー -->` `<!-- LK-4 (v2.21.0): … -->` 等のラベル接頭辞を除去し、`<!-- ItemsControl → ListBox 化。… -->` `<!-- 閉じるボタンが中央寄りに見える不具合を修正。旧実装は… -->` のような移行・修正の経緯を、現在その書き方を選んでいる理由（WPF の `LastChildFill` が `Dock="Right"` を無視する等）へ書き換えた。`<!-- Header -->` `<!-- Tag chips -->` のような構造の見出しラベルは、長い XAML の位置把握に役立ち履歴でもないため維持している。
+- **維持したコメント**: 理由（WHY）を説明するもの、一見不自然な処理の根拠、互換性、データ保護、プラットフォーム制約。特に ChatNest `v0.4.1` 保存形式互換と、`SchemaVersionGuard` の「`v2.14.1〜v2.14.3` のアプリが書いた wrapper では payloadSchemaVersion の方が新しい組み合わせが実在する」という記述は、**現在の読込互換の制約そのもの**であるため version 番号を含んだまま維持した。
+- **互換性識別子へ WHY コメントを補った。** `NestSuiteSingleInstance` の Mutex / Pipe 名（`NoteNest_NestSuite_*`）と、AppData 配下 7 箇所のフォルダ名 `"NoteNest"` に、旧名称を維持する理由を 1 行ずつ追記した。識別子そのものは一切変更していない（`docs/development/compatibility-identifiers-audit.md` の判定 A / B に従う）。
+- **到達不能コードを削除した。** XAML から参照されない WPF イベントハンドラ `AddTaskMenu_Click`（タスク新規作成ボタンは右ペインから撤去済み）、`ChatNestWorkspaceViewModel.Speakers`（XAML は `SelectedSpeaker` + `RadioConverter` で束縛）、`TagPanelViewModel.ClearTagSearch`、`CardDisplayViewModel.ShuffleOrderSnapshot`、`IdeaConfirmWindow.ShowYesNoCancel` と、それに伴い未使用となる `ConfirmResult.Secondary`、`IdeaNestWorkspaceUiService.ShowInformation`、および **実装 0 件・参照 0 件の `IExporter` インターフェイス**（ファイルごと削除）。
+- **BCL / .NET 標準へ置換した。** `PlainTextFileService` の独自 byte 配列前方一致ループを `ReadOnlySpan<byte>.StartsWith` へ置き換え private helper を削除（BOM 判定の境界条件を標準実装へ委譲）。`RightPaneFilterMatcher.MatchesAny` の手書きループを `Any` へ置換。**短くなるだけの書き換えは行っていない。**
+- **削除しなかったもの（参照数だけでは判断できないため）**: XAML 添付プロパティの `IdeaNestSearchHighlightBehavior.SetQuery`（`beh:…Query="…"` の解決に WPF が必要とする）、`AutomationIds` の TempNest スロット定数（XAML の文字列と対になる ID レジストリで、`AutomationIdTests` が形式・一意性を検証している）、`UiSettings` の未参照プロパティ（`ui-settings.json` の保存項目であり、削除すると保存形式が変わる）。
+- **利用者向け挙動・保存形式・互換性契約の変更はない。** ただし「public API 無変更」ではなく、未使用の C# `public` メンバー（`IExporter` interface、`IdeaConfirmWindow.ShowYesNoCancel`、`ConfirmResult.Secondary`、`ChatNestWorkspaceViewModel.Speakers` 等）は dead code として削除している。NestSuite は外部へライブラリ API を提供するプロジェクトではないため、内部的に public だった到達不能コードの削除は本 version の目的に含まれる。
+- **新しい抽象化・共通化は増やしていない。** DI・EventBus・Mediator・新規 interface / Service の追加なし。WorkspaceTransfer / NoteNest / IdeaNest / ChatNest / 保存 / session 周辺の汎用 service 化も行っていない。AppData パス文字列の 7 箇所重複も、保存パスの単一情報源化は保存挙動への影響が大きいため共通化せず、各所へ理由コメントを添える形に留めた。
+- **production 規模**: `.cs` はファイル 243 → 242、総行数 23575 → 23420、コメント行 3681 → 3608、コード行 16829 → 16759。`.xaml` は 29 ファイル・5733 → 5732 行（コメントブロック 287 → 285）。**行数削減率は成功指標にしていない。**
+- **テスト**: `docs/development/test-suite-policy.md` に従い、`Assert.DoesNotContain("昔のhelper名", source)` のようなリファクタリング固定テストは追加していない。既存テストの削除・skip もしていない。変更したのは 2 箇所のみ: `ApplicationVersionTests` の version 文字列（`2.24.1` → `2.25.0`）と、`CH16OperationDiscoverabilityXamlTests` が入力エリアの範囲区切りに使っていた `"<!-- CH-4:"` を、XAML の実構造（削除確認オーバーレイの `IsDeleteConfirmVisible` バインディングを持つ `<Grid>`）へ変更したもの。判定範囲は同一で、コメント文言に依存しなくなった。同じ PR で `CH18MessageVisualHierarchyXamlTests` も、`"CH-18"` というコメントの存在確認だけを行っていた実装をやめ、`<DataTemplate x:Key="MessageTemplate">` の範囲に固定色リテラルがないことを実際に確認する形へ直した。いずれも「production のコメントを書き換えただけで CI が落ちる」結合を残さないための対応で、`docs/development/test-suite-policy.md` の方針に沿う。回帰は既存の behavior / compatibility / data protection テストで確認した。
+- **保存・読込・dirty / save・session / draft・autosave・rollback・recent files・起動 / 二重起動・file association・Workspace transfer・Detached window・ErrorLog の挙動変更なし。NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式の変更なし。serializer 設定の変更なし。外部依存の追加なし。**
+- **docs**: `docs/development/nestsuite-development-guidelines.md` §3 へ「production source のコメント方針」を追記した（対象は `.cs` と `.xaml` の両方／WHY と制約を書く／version・backlog ID・PR 履歴は書かない／履歴は Git・release notes・planning docs へ置く／XAML の構造見出しラベルは残してよい／保存形式互換の記述だけは version 番号を含んでよい）。新規の長大な設計文書は作成していない。
+- **実機でしか確認できない項目はない**（UI・文言・挙動を変更していないため）。
+
+---
+
 ## v2.24.1 — TD-94 テストスイート棚卸し・低価値な静的契約テストの縮退
 
 - **TD-94: テストスイートを棚卸しし、docs 文言や実装コード文字列へ過剰に結合した低価値なテストを縮退した。production code の新機能追加はなく、production の振る舞いは一切変更していない。** 目的はテスト件数の削減ではなく、「CI が赤い ≒ アプリ・データ・互換性・ビルドに実際の問題がある」という状態へ近づけること（CI failure の signal-to-noise 改善）。

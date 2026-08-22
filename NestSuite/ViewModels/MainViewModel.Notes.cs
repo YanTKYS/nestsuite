@@ -7,7 +7,7 @@ public partial class MainViewModel
     public void SelectNote(NoteViewModel note)
     {
         _editor.SelectNote(note);
-        // M14: 選択切替は「入力中」ではない明示的な区切りのため、更新日順の表示へ
+        // 選択切替は「入力中」ではない明示的な区切りのため、更新日順の表示へ
         // 直近の編集結果を反映する自然なタイミングとして表示順を再計算する。
         _notes.RefreshDisplayOrder();
     }
@@ -53,7 +53,7 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// TN-3: TempNest スロット本文を新規ノートとして追加する。
+    /// TempNest スロット本文を新規ノートとして追加する。
     /// タイトルは <see cref="PromotedNoteTitleGenerator"/> で本文から生成し、既存ノートと重複する場合は
     /// 連番を付与して一意化する。本文はそのまま設定し、タグ・マーカー・スター等は追加しない。
     /// 対象ノートブックが存在しない場合（空プロジェクト）は新規ノートブックを作成する。
@@ -61,11 +61,10 @@ public partial class MainViewModel
     public NoteViewModel? CreateNoteFromTransfer(string content) => CreateNoteFromTransfer(title: null, content);
 
     /// <summary>
-    /// LK-2: TempNest スロット → 既存 NoteNest タブへの追加でも使う拡張版。
+    /// TempNest スロット → 既存 NoteNest タブへの追加でも使う拡張版。
     /// <paramref name="title"/> が指定されていればそれをタイトルとして使う（重複時は連番で一意化）。
-    /// 未指定（null／空白）の場合は TN-3 と同じ既存のタイトル生成規則
-    /// （<see cref="PromotedNoteTitleGenerator"/>）にフォールバックする。TN-3 の挙動（引数 1 個版）は
-    /// このオーバーロードへ委譲するだけで変更しない。
+    /// 未指定（null／空白）の場合は既存のタイトル生成規則
+    /// （<see cref="PromotedNoteTitleGenerator"/>）にフォールバックする。
     /// </summary>
     public NoteViewModel? CreateNoteFromTransfer(string? title, string content)
     {
@@ -104,7 +103,7 @@ public partial class MainViewModel
         return copy;
     }
 
-    /// <summary>v2.14.3 M12: ノートのスター（お気に入り）状態を反転する。</summary>
+    /// <summary>ノートのスター（お気に入り）状態を反転する。</summary>
     public void ToggleNoteStar(NoteViewModel note) => _notes.ToggleStar(note);
 
     public void MoveNoteUp(NoteViewModel note) => _notes.MoveNoteUp(note);

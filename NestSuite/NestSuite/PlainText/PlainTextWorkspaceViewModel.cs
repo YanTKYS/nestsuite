@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace NestSuite.PlainText;
 
 /// <summary>
-/// v2.19.0 SH-43: PlainTextWorkspace（`.txt`）の最小 ViewModel。
+/// PlainTextWorkspace（`.txt`）の最小 ViewModel。
 ///
 /// <para><b>責務</b><br/>
 /// 本文（<see cref="Text"/>）・未保存状態（<see cref="IsDirty"/>）・読込時に判定した
@@ -30,7 +30,7 @@ public sealed class PlainTextWorkspaceViewModel : INotifyPropertyChanged, IDispo
             if (_text == value) return;
             _text = value;
             OnPropertyChanged();
-            // v2.19.0 SH-43: 読込直後の初期反映（LoadContent 内）では dirty にしない。
+            // 読込直後の初期反映（LoadContent 内）では dirty にしない。
             // それ以外の変更は、同一内容へ戻した場合でも dirty を解除しない
             // （既存 Workspace の内容比較によらない dirty 契約に合わせる）。
             if (!_isLoading) IsDirty = true;

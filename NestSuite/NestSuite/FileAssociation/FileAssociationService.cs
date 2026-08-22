@@ -13,7 +13,7 @@ public sealed class FileAssociationService
     private const string ProgIdNotenest = "NoteNest.notenest";
     private const string ProgIdChatnest = "NoteNest.chatnest";
     private const string ProgIdIdeanest = "NoteNest.ideanest";
-    // v2.14.6 FM-3: .nestsuite は拡張子だけでは WorkspaceKind が確定しないため「NestSuite Workspace」として登録する。
+    // .nestsuite は拡張子だけでは WorkspaceKind が確定しないため「NestSuite Workspace」として登録する。
     // ProgId は既存の互換性識別子（NoteNest.* 族、compatibility-identifiers-audit.md 分類 A）の命名規則に合わせる。
     private const string ProgIdNestsuite = "NoteNest.nestsuite";
 
@@ -21,7 +21,7 @@ public sealed class FileAssociationService
     // tools/unregister-nestsuite-file-association.ps1 と 3 箇所同期必須（audit doc §1-4）。
     private static readonly (string Ext, string ProgId, string Description)[] Targets =
     [
-        // v2.14.8: 拡張子は各 FileService / Envelope の FileExtension 定数を単一情報源として参照する
+        // 拡張子は各 FileService / Envelope の FileExtension 定数を単一情報源として参照する
         (Services.NestSuiteWorkspaceEnvelope.FileExtension, ProgIdNestsuite, "NestSuite Workspace"),
         (Services.ProjectFileService.FileExtension, ProgIdNotenest, "NoteNest Document"),
         (ChatNest.ChatNestFileService.FileExtension, ProgIdChatnest, "ChatNest Document"),
@@ -29,7 +29,7 @@ public sealed class FileAssociationService
     ];
 
     /// <summary>
-    /// v2.14.6 FM-3: 関連付け対象（拡張子 / ProgId / 表示名）の読み取り専用ビュー。
+    /// 関連付け対象（拡張子 / ProgId / 表示名）の読み取り専用ビュー。
     /// ダイアログ表示とテスト（レジストリ非接触の定義確認）で使用する。
     /// </summary>
     public static IReadOnlyList<(string Ext, string ProgId, string Description)> AssociationTargets => Targets;
@@ -133,7 +133,7 @@ public sealed class FileAssociationService
         return anyRemoved ? UnregisterResult.Removed : UnregisterResult.NotFound;
     }
 
-    // v2.14.6 FM-3: 拡張子一覧が Targets と switch の 2 箇所に重複していた同期漏れの温床を解消し、
+    // 拡張子一覧が Targets と switch の 2 箇所に重複していた同期漏れの温床を解消し、
     // Targets を単一情報源として参照する。
     private static string GetProgId(string ext)
     {

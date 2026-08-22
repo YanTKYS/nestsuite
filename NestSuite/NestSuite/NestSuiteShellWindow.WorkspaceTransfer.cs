@@ -3,8 +3,8 @@ using NestSuite.Services;
 namespace NestSuite;
 
 /// <summary>
-/// LK-4 (v2.21.0): Workspace 間手動転送の共通ヘルパー。
-/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1）。
+/// Workspace 間手動転送の共通ヘルパー。
+/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md。
 ///
 /// <para><b>責務</b><br/>
 /// 転送先候補の列挙・TabId + WorkspaceKind による対象解決・session からの ViewModel 解決・
@@ -17,7 +17,7 @@ namespace NestSuite;
 public partial class NestSuiteShellWindow
 {
     /// <summary>
-    /// 転送内容。共通化するのはこの 2 フィールドのみ（TD-92 §7）。
+    /// 転送内容。共通化するのはこの 2 フィールドのみ（設計正本 §7）。
     /// Workspace 固有情報（タグ・色・発言者・スロット番号等）は含めない。
     /// </summary>
     internal sealed record WorkspaceTransferContent
@@ -27,7 +27,7 @@ public partial class NestSuiteShellWindow
     }
 
     /// <summary>
-    /// 転送先の識別（TD-92 §8: 案 B、WorkspaceKind + タブ Id）。
+    /// 転送先の識別（設計正本 §8: WorkspaceKind + タブ Id）。
     /// </summary>
     internal readonly record struct WorkspaceTransferTarget(
         NestSuiteWorkspaceKind Kind,
@@ -35,7 +35,7 @@ public partial class NestSuiteShellWindow
         string DisplayName);
 
     /// <summary>
-    /// 転送結果。5 値で確定（TD-92 §10）。これ以上増やさない。
+    /// 転送結果。5 値で確定（設計正本 §10）。これ以上増やさない。
     /// </summary>
     internal enum WorkspaceTransferResult
     {
@@ -62,7 +62,7 @@ public partial class NestSuiteShellWindow
 
     /// <summary>
     /// 転送先タブへ内容を追加する。<paramref name="accept"/> は転送先 Workspace の既存 public API を
-    /// 1 回呼ぶだけの薄い delegate（TD-92 §9: production interface は作らない）。
+    /// 1 回呼ぶだけの薄い delegate（設計正本 §9: production interface は作らない）。
     /// </summary>
     private WorkspaceTransferResult TransferToWorkspaceTab<TViewModel>(
         WorkspaceTransferTarget target,
@@ -70,8 +70,7 @@ public partial class NestSuiteShellWindow
         Func<TViewModel, WorkspaceTransferContent, bool> accept)
         where TViewModel : class
     {
-        // LK-3 (v2.22.0): Title と Body のどちらか一方でもあれば有効とする（TD-92 §7 の議論を LK-3 で確定）。
-        // LK-4（ChatNest）は常に Title=null で呼ぶため、この判定は Body のみの空判定と同値であり回帰しない。
+        // Title と Body のどちらか一方でもあれば有効とする（ChatNest 発言の転送は常に Title=null）。
         if (string.IsNullOrWhiteSpace(content.Title) && string.IsNullOrWhiteSpace(content.Body))
             return WorkspaceTransferResult.InvalidContent;
 

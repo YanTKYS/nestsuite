@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.14.1 FM-1: `.nestsuite` wrapper 形式の読み書き。
+/// `.nestsuite` wrapper 形式の読み書き。
 /// `.nestsuite` は 1 つの Workspace（NoteNest / IdeaNest / ChatNest）を表すラッパーで、
 /// 複数 Workspace を格納する統合コンテナではない（1タブ1ファイルを維持）。
 /// wrapper 自体の formatVersion と payload 側の schema version は分離して管理する。
@@ -112,7 +112,7 @@ public static class NestSuiteWorkspaceEnvelope
     }
 
     /// <summary>
-    /// v2.14.7 SH-31: ファイルからの workspaceKind 判定結果。失敗時は理由を保持する。
+    /// ファイルからの workspaceKind 判定結果。失敗時は理由を保持する。
     /// PayloadSchemaVersion は判定成功時のみ有効（呼び元での too-new 事前検出に使う）。
     /// </summary>
     public sealed record KindDetectionResult(
@@ -121,7 +121,7 @@ public static class NestSuiteWorkspaceEnvelope
         WorkspaceKindDetectionFailure Failure);
 
     /// <summary>
-    /// v2.16.34 TD-59b-1: ファイル読込 + wrapper 解析の結果。失敗時は Envelope=null + 理由。
+    /// ファイル読込 + wrapper 解析の結果。失敗時は Envelope=null + 理由。
     /// <see cref="ReadFromFile"/> の戻り値。
     /// </summary>
     public sealed record EnvelopeReadResult(
@@ -129,13 +129,12 @@ public static class NestSuiteWorkspaceEnvelope
         WorkspaceKindDetectionFailure Failure);
 
     /// <summary>
-    /// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.2, §17):
     /// ファイルを 1 回だけ読んで wrapper を解析する。例外を外へ投げない。
     /// <paramref name="fileExists"/> / <paramref name="readAllText"/> はテスト用の読取り delegate
     /// （省略時は実際の <see cref="File.Exists(string)"/> / <see cref="File.ReadAllText(string)"/>）。
     /// <see cref="ShellFileOpenPlanner.Plan"/> の fileExists/prepareOpen 注入と同じ流儀に揃える
     /// （DI 基盤・InternalsVisibleTo は導入しない）。
-    /// failure 分類は従来の <see cref="DetectKindFromFile"/> と同一。
+    /// failure 分類は <see cref="DetectKindFromFile"/> と同一。
     /// </summary>
     public static EnvelopeReadResult ReadFromFile(
         string path,
@@ -175,9 +174,9 @@ public static class NestSuiteWorkspaceEnvelope
     }
 
     /// <summary>
-    /// v2.14.7 SH-31: ファイルから workspaceKind を判定し、失敗時は理由つきで返す。
+    /// ファイルから workspaceKind を判定し、失敗時は理由つきで返す。
     /// 例外を外へ投げない（呼び元は Failure で文言を出し分ける）。
-    /// v2.16.34 TD-59b-1: 実装を <see cref="ReadFromFile"/> の上へ委譲した
+    /// 実装を <see cref="ReadFromFile"/> の上へ委譲した
     /// （読込・failure 分類ロジック自体は移動しただけで、挙動・戻り値の形は不変）。
     /// </summary>
     public static KindDetectionResult DetectKindFromFile(string path)

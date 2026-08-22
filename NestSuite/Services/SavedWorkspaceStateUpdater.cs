@@ -16,7 +16,7 @@ public sealed record SavedWorkspaceState(
 public static class SavedWorkspaceStateUpdater
 {
     /// <summary>
-    /// v2.16.39 TD-59b-5 (nestsuite-double-read-design-review.md §9, §24): <paramref name="savedPath"/>
+    /// <paramref name="savedPath"/>
     /// へファイル保存が成功した直後にだけ呼ばれる内部状態更新。保存した WorkspaceKind は
     /// <paramref name="currentTab"/>（保存を実行した Workspace 固有の FileService・呼び出し元）から
     /// 既に確定しているため、保存直後にファイルを再度開いて wrapper の kind を再検証する価値はない。

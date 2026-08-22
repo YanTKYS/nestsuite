@@ -4,7 +4,7 @@ using NestSuite.ViewModels;
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.19.4 M15: NoteNest右ペイン（マーカー一覧・タスク一覧）の一括コピー用 Markdown 生成。
+/// NoteNest右ペイン（マーカー一覧・タスク一覧）の一括コピー用 Markdown 生成。
 /// 入力は画面表示中のコレクション（<c>MainViewModel.FilteredMarkers</c> / <c>TaskGroups</c>）の
 /// 読み取り専用列挙のみとし、Clipboard・通知・View操作はここに持ち込まない
 /// （<see cref="NoteNestMarkdownExportService"/> ・<c>IdeaNestMarkdownExporter</c> と同じ責務分離）。

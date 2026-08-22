@@ -11,11 +11,12 @@ namespace NestSuite.Services;
 /// </summary>
 internal static class ErrorLogService
 {
+    // 既存ユーザーの AppData パス互換のため、フォルダ名は旧名称 "NoteNest" を維持する。
     private static readonly string LogPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                      "NoteNest", "logs", "nestsuite-error.log");
 
-    // v2.14.0 TD-57 (LT-12): サイズベース最小ローテーション。
+    // サイズベース最小ローテーション。
     // 現行ログが 1MB 以上なら追記前に世代退避し、3 世代を超える最古世代を削除する。
     // 値の根拠と方針は docs/development/error-log-policy.md 参照。
     private const long MaxLogSizeBytes = 1024 * 1024;

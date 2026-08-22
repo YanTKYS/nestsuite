@@ -42,7 +42,7 @@ public sealed class WorkspaceChangeCoordinator
         var facadeProperty = e.PropertyName == nameof(MarkerPanelViewModel.SortOrderIndex)
             ? nameof(MainViewModel.MarkerSortOrderIndex)
             : e.PropertyName;
-        // L23: MarkerCount 変化時は空状態ガイドの表示条件（HasAnyMarkers/HasNoMarkers/ShowMarkerEmptyState）も
+        // MarkerCount 変化時は空状態ガイドの表示条件（HasAnyMarkers/HasNoMarkers/ShowMarkerEmptyState）も
         // 併せて再評価させる。NoteChangeCoordinator 経由の通知が届かない Refresh() 呼び出し
         // （プロジェクト読込直後など）でも空状態表示が最新化されるようにするため。
         if (e.PropertyName == nameof(MarkerPanelViewModel.MarkerCount))
@@ -51,7 +51,7 @@ public sealed class WorkspaceChangeCoordinator
                 nameof(MainViewModel.HasNoMarkers),
                 nameof(MainViewModel.ShowMarkerEmptyState),
                 nameof(MainViewModel.MarkerEmptyStateText));
-        // L10: 種別フィルタ・絞り込み文字列の変更で FilteredMarkers が変わった際も、
+        // 種別フィルタ・絞り込み文字列の変更で FilteredMarkers が変わった際も、
         // 一括コピー有効判定・空状態を併せて再評価させる。
         else if (e.PropertyName == nameof(MarkerPanelViewModel.FilteredMarkers))
             Publish(false, facadeProperty,

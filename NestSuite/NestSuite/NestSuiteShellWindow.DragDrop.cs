@@ -8,7 +8,7 @@ namespace NestSuite;
 
 public partial class NestSuiteShellWindow
 {
-    // ── v1.17.0: タブドラッグ並び替え ─────────────────────────────────────
+    // ── タブドラッグ並び替え ─────────────────────────────────────
 
     private void TabStrip_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -70,7 +70,7 @@ public partial class NestSuiteShellWindow
         int sourceIdx = _tabs.IndexOf(sourceTab);
         if (sourceIdx < 0) return;
         // Temp タブ（index 0）の左側には挿入しない。
-        // v2.16.3 SH-15: pinned/normal の境界をまたぐドラッグは自動補正する。
+        // pinned/normal の境界をまたぐドラッグは自動補正する。
         int rawInsert = TabPinningPolicy.ClampInsertionIndexForDrag(_tabs, sourceTab, insertAt.Value);
         // ObservableCollection.Move(from, to) は「from 削除後の配列の to に挿入」する。
         // 右方向移動（sourceIdx < rawInsert）では削除でインデックスが 1 ずれるため補正する。
@@ -78,7 +78,7 @@ public partial class NestSuiteShellWindow
         targetIdx = Math.Max(1, Math.Min(targetIdx, _tabs.Count - 1));
         if (targetIdx == sourceIdx) return;
         _tabs.Move(sourceIdx, targetIdx);
-        // v2.16.14 TD-66: 挿入位置が実際に変わった場合（上の early return を通過した場合）のみ
+        // 挿入位置が実際に変わった場合（上の early return を通過した場合）のみ
         // session を保存する。並び順は session.json の Tabs[]/FilePaths の順序に反映される。
         SaveSessionAfterTabChange();
     }
@@ -100,7 +100,7 @@ public partial class NestSuiteShellWindow
         return false;
     }
 
-    // ── v2.6.5 SH-17: タブドラッグ挿入位置インジケーター ────────────────────
+    // ── タブドラッグ挿入位置インジケーター ────────────────────
 
     /// <summary>マウス位置から挿入インデックスを計算する。Temp タブ左側（index 0）への挿入は排除し、最小 1 を返す。</summary>
     private int GetInsertionIndex(DragEventArgs e)

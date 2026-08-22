@@ -5,8 +5,8 @@ using System.Windows.Data;
 namespace NestSuite.Converters;
 
 /// <summary>
-/// v2.13.5 M16 フォローアップ: NoteNest 右ペインのタスク行を、既存タスクがない場合は
-/// コンテンツに合わせて縮め、ある場合は従来どおり 2* 比率で確保する。
+/// NoteNest 右ペインのタスク行を、既存タスクがない場合は
+/// コンテンツに合わせて縮め、ある場合は 2* 比率で確保する。
 /// </summary>
 public class HasNoTasksToRowHeightConverter : IValueConverter
 {

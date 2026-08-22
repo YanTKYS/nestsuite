@@ -120,7 +120,7 @@
             </Popup>
         </Grid>
 
-        <!-- Row 1: status bar — L14 caret position / L15 char count and line count -->
+        <!-- Row 1: status bar — caret position / char count and line count -->
         <Border Grid.Row="1"
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0"

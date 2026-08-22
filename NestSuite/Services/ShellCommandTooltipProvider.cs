@@ -1,7 +1,7 @@
 namespace NestSuite.Services;
 
 /// <summary>
-/// v2.16.10 SH-30: NestSuite Shell の主要コマンド（保存・名前を付けて保存・すべて保存・
+/// NestSuite Shell の主要コマンド（保存・名前を付けて保存・すべて保存・
 /// タブを閉じる・ピン留め・ピン留め解除・NoteNest Markdown エクスポート）について、
 /// 有効時の短い説明と、無効時の「なぜ押せないか」を一貫した文言で返す UI 非依存の判断ロジック。
 ///
@@ -78,6 +78,6 @@ public static class ShellCommandTooltipProvider
     public const string BackupRestoreGuideTooltip = "バックアップからの復元手順を表示します";
     public const string FileAssociationTooltip    = "ファイルの関連付けを設定します";
 
-    /// <summary>SH-37: 現在の状態サマリー（読み取り専用）を表示するメニュー項目の説明。</summary>
+    /// <summary>現在の状態サマリー（読み取り専用）を表示するメニュー項目の説明。</summary>
     public const string StateSummaryTooltip = "開いているタブ数など、現在の状態を表示します";
 }

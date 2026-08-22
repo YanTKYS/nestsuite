@@ -5,15 +5,15 @@ using NestSuite.TempNest;
 namespace NestSuite;
 
 /// <summary>
-/// LK-3 (v2.22.0): TempNest スロット → IdeaNest カード化。
-/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1、§14）。
+/// TempNest スロット → IdeaNest カード化。
+/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md §14。
 ///
-/// <para>LK-4（<see cref="NestSuiteShellWindow.ChatNestToIdeaNest.cs"/>）と同じ共通ヘルパー
+/// <para>ChatNest → IdeaNest（<see cref="NestSuiteShellWindow.ChatNestToIdeaNest.cs"/>）と同じ共通ヘルパー
 /// （<c>EnumerateTransferTargets</c>・<c>TransferToWorkspaceTab</c>・<c>WorkspaceTransferTargetDialog</c>・
-/// <c>IdeaNestWorkspaceViewModel.AddCardFromTransfer</c>）をそのまま再利用する。この partial が持つのは
+/// <c>IdeaNestWorkspaceViewModel.AddCardFromTransfer</c>）を再利用する。この partial が持つのは
 /// TempNest 固有の入口（Title/Body の取り出し・転送成功後に元スロットを消去するかどうかの確認）のみで、
-/// 転送先解決・受入・エラー処理は共通ヘルパーに委ねる。TN-3（TempNest → NoteNest 昇格）とは責務が異なり、
-/// TN-3 の実装・挙動には一切触れない。</para>
+/// 転送先解決・受入・エラー処理は共通ヘルパーに委ねる。TempNest → NoteNest 昇格とは責務が異なり、
+/// そちらの実装・挙動には触れない。</para>
 /// </summary>
 public partial class NestSuiteShellWindow
 {
@@ -31,7 +31,7 @@ public partial class NestSuiteShellWindow
     /// IdeaNest タブが 0 件なら転送せず案内のみ（新規 IdeaNest タブは自動生成しない）。
     /// 1 件ならそのタブへ直接追加する。複数件なら既存の <see cref="WorkspaceTransferTargetDialog"/>
     /// で明示選択させる（キャンセル時は何もしない）。転送成功後は自動切替・自動保存を行わず、
-    /// 元スロットを消去するかどうかを TN-3 と同じ考え方（既定は「残す」の確認ダイアログ）で確認する。
+    /// 元スロットを消去するかどうかを他の転送経路と同じ考え方（既定は「残す」の確認ダイアログ）で確認する。
     /// 戻り値: null=失敗・キャンセル・対象なし（元スロットは変更しない）、
     /// true=成功し利用者が消去を選択、false=成功し残すを選択。実際の消去は呼び出し元（スロット自身）が行う。
     /// </summary>

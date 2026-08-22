@@ -8,9 +8,8 @@ namespace NestSuite.Services;
 public class ProjectFileService
 {
     /// <summary>
-    /// v2.14.8: `.notenest` 拡張子の定数。ChatNest / IdeaNest の FileService には従来から
-    /// FileExtension 定数があり NoteNest だけリテラル分散していた非対称
-    /// （compatibility-identifiers-audit.md §1-4 補足）を解消する。値は恒久維持（分類 A）。
+    /// `.notenest` 拡張子の定数。各 Workspace の FileService が自分の拡張子の単一情報源になる。
+    /// 値は互換性識別子として恒久維持する（docs/development/compatibility-identifiers-audit.md 分類 A）。
     /// </summary>
     public const string FileExtension = ".notenest";
 
@@ -23,13 +22,13 @@ public class ProjectFileService
     public Project Load(string path)
     {
         var json = File.ReadAllText(path, Encoding.UTF8);
-        // v2.14.1 FM-1: .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
+        // .nestsuite の場合は wrapper を剥がして既存のデシリアライズ経路へ渡す
         NestSuiteWorkspaceEnvelope.EnvelopeContent? envelope = null;
         if (NestSuiteWorkspaceEnvelope.IsEnvelopePath(path))
         {
             envelope = NestSuiteWorkspaceEnvelope.Read(json);
             NestSuiteWorkspaceEnvelope.EnsureKind(envelope, NestSuiteWorkspaceEnvelope.KindNoteNest);
-            // v2.14.4 FM-4: payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
+            // payload を読む前に、wrapper が宣言する payload schema が現行より新しくないか確認する
             SchemaVersionGuard.EnsureNotNewer(
                 envelope.PayloadSchemaVersion, Project.CurrentSchemaVersion, "NoteNest");
             json = envelope.PayloadJson;
@@ -38,7 +37,6 @@ public class ProjectFileService
     }
 
     /// <summary>
-    /// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6, §10):
     /// probe（<see cref="NestSuiteTabFactory.TryPrepareOpen"/>）が既に読んだ wrapper を追加読込なしで
     /// デシリアライズする。<paramref name="context"/> の path と解析済み内容は分離できない
     /// （path のみを別引数で受ける overload は追加しない）。
@@ -70,7 +68,7 @@ public class ProjectFileService
             // (d) (c) を通過したのに enum が異なる = context の改変等の契約違反
             if (context.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest)
                 throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-            // (e) FM-4: wrapper 宣言 schema の too-new 事前確認（現行と同一の SchemaVersionGuard 例外）
+            // (e) wrapper 宣言 schema の too-new 事前確認
             SchemaVersionGuard.EnsureNotNewer(
                 preloaded.Envelope.PayloadSchemaVersion, Project.CurrentSchemaVersion, "NoteNest");
             // (f) 追加のファイル読込は行わない（0 回）
@@ -83,13 +81,13 @@ public class ProjectFileService
         // (h) レガシー誤配線（他 Workspace の拡張子を含む）
         if (context.WorkspaceKind != NestSuiteWorkspaceKind.NoteNest)
             throw new ArgumentException("WorkspaceKind が読込先と一致しません。", nameof(context));
-        // (h2) v2.16.36 TD-59b-2-2: WorkspaceKind は一致していても、FilePath のレガシー拡張子が
+        // (h2) WorkspaceKind は一致していても、FilePath のレガシー拡張子が
         // 別 Workspace のもの（例: .ideanest）である不正 context をファイル I/O 前に拒否する。
         // 通常の TryPrepareOpen からは生成されないが、FileService 境界で防御する。
         if (!string.Equals(Path.GetExtension(context.FilePath), FileExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
                 $"prepared 読込の拡張子は {FileExtension} である必要があります。", nameof(context));
-        // (i) レガシー拡張子は従来経路（読込 1 回・挙動不変）
+        // (i) レガシー拡張子は path ベース読込（読込 1 回）
         return Load(context.FilePath);
     }
 
@@ -100,7 +98,7 @@ public class ProjectFileService
     {
         var project = JsonSerializer.Deserialize<Project>(payloadJson, Options)
             ?? throw new InvalidDataException("プロジェクトデータが無効です。");
-        // v2.14.4 FM-4: 現行より新しい schema を無警告で読み込み → 上書き保存で未知フィールドを失う経路を防ぐ
+        // 現行より新しい schema を無警告で読み込み → 上書き保存で未知フィールドを失う経路を防ぐ
         SchemaVersionGuard.EnsureNotNewer(project.Version, Project.CurrentSchemaVersion, "NoteNest");
         if (envelope != null)
             SchemaVersionGuard.EnsureEnvelopeConsistent(
@@ -115,13 +113,13 @@ public class ProjectFileService
 
     public void Save(string path, Project project) => Save(path, project, createBackup: true);
 
-    /// <summary>v2.16.6 TD-64: createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
+    /// <summary>createBackup=false の場合、正本は更新するが .bak は更新しない（自動保存向け）。</summary>
     public void Save(string path, Project project, bool createBackup)
     {
         var json = NestSuiteWorkspaceEnvelope.IsEnvelopePath(path)
             ? SerializeWrapped(project)
             : SerializePayload(project);
-        // v2.16.6 TD-64: createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
+        // createBackup=false（自動保存）では .bak を更新せず atomic write のみ行う
         if (createBackup)
             AtomicFileWriter.WriteAllTextWithBackup(path, json, Encoding.UTF8);
         else
