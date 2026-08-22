@@ -2,7 +2,7 @@
 
 ## 基本方針
 
-- **ErrorLogService は Error のみを扱う。** Info / Warning ログは追加しない（guideline の共通制約）
+- **ErrorLogService は Error のみを扱う。** Info / Warning ログは追加しない
 - **ユーザー本文（ノート・カード・チャット本文など）は記録しない。** 記録するのはメタデータ（操作名・例外型・メッセージ・スタックトレース・対象ファイルパス）のみ
 - **ログ書き込み失敗でアプリ本体を止めない。** 例外は外へ投げず、`Debug.WriteLine` に留める。ユーザー向けダイアログは出さない
 - **保存先は互換性のため変更しない**（LT-3 / `compatibility-identifiers-audit.md` の A 分類）:
