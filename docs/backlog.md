@@ -165,7 +165,6 @@ TD-1〜TD-99 のうち未完了は下表のみで、他はすべて完了・見�
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | 現行 UI から到達できないことを確認済みの資産として、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述を、削除または導線復活のいずれかへ確定する。**着手トリガーは成立済み**: 削除条件だった「初回空状態の一行ガイドの実装により同種の初回案内ニーズが軽量な形で充足されること」は既に満たされている。**実装主体: 通常エンジニアで実装可能** | C |
 | TD-96 | 到達不能な旧エクスポート／プロジェクト情報ダイアログ導線の判断 | 点検の結果、`DialogService.ShowExportOptions()` + `ExportDialog` + `MainViewModel.Export` + `ExportService.Export`（`SanitizeFileName` / `GetExtension` は現役）と、`DialogService.ShowProjectInfo()` + `ProjectInfoDialog` が現行 UI のどのメニューからも到達しないことを確認した（現行の書き出しは NoteNest 右ペインの Markdown エクスポートと移行パックのみ）。また `MainViewModel.AddTaskCommand` → `AddTask` は、唯一の呼出元だった WPF ハンドラの削除により XAML からも束縛されない状態にある。いずれも利用者向け機能の導線判断であり、削除には既存テスト（`ExportServiceTests` / `MarkdownExportTests` / `NoteNestFormatRoundTripTests` の `ProjectInfo`）の扱いを決める必要がある。**着手トリガー: 各導線を「削除」「復活」のいずれにするかの方針判断が行われたとき。タスク機能については `docs/development/notenest-task-reduction-policy.md` の縮退方針の更新が前提。実装主体: 通常エンジニアで実装可能** | C |
 
 ---

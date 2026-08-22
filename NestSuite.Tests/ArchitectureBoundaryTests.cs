@@ -68,7 +68,6 @@ public class ArchitectureBoundaryTests
         "new StartDialog",
         "new ExportDialog",
         "new ProjectInfoDialog",
-        "new TutorialWindow",
         "typeof(MainWindow)",
         "new MainWindow",
         // v1.5.5: WorkspaceView should not own DialogService or resolve its host window directly
