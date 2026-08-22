@@ -2,7 +2,6 @@ namespace NestSuite.TempNest;
 
 /// <summary>
 /// 「続きから」表示条件・recent files上位抽出のWPF非依存ロジック。
-/// docs/planning/at1-continue-start-panel-design-review.md の確定方針に基づく最小実装。
 /// Shell（NestSuiteShellWindow）はここから判定結果だけを受け取り、実際のUI・タブ操作・
 /// ファイルI/Oは一切行わない（表示条件や上位抽出のためにファイルへアクセスしない）。
 /// </summary>

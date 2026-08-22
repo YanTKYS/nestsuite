@@ -17,8 +17,6 @@
 完了した項番は **欠番** として扱い、再利用しない。  
 実装履歴を確認する場合は `docs/release-notes.md` を検索する。
 
-v2.18.23（TD-89）で全未完了項目の採用・見送り・着手トリガーを総点検した。各項目の分類理由・削除履歴は `docs/planning/backlog-adoption-trigger-review.md` を参照。
-
 ---
 
 ## 2. 採番・追記ルール
@@ -72,19 +70,19 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 
 ## 3. NestSuite Shell 改善
 
-SH-1 は v2.16.11、SH-15 は v2.16.3、SH-19 は v2.16.4、SH-28 は v2.16.5、SH-29 は v2.16.9、SH-30 は v2.16.10、SH-34 は v2.16.21、SH-37 は v2.18.3、SH-38 は v2.18.5、SH-39 は v2.18.15、SH-40（AT-1 フェーズ1）は v2.18.17、SH-41（AT-2 フェーズ1）は v2.18.18、SH-42（魅力向上施策の実機回帰・総点検）は v2.18.19、SH-43（`.txt` 対応の最小プレーンテキスト Workspace 追加）は v2.19.0、SH-44（Shell横断検索のEscapeクローズ・フォーカス復帰）は v2.19.9、SH-45（アイコン・記号のみボタンのAutomationProperties.Name補完）は v2.19.14 で実装済み（欠番。表示・Click・Command・Tab順は変更せず、記号のみで操作目的が伝わらないボタンへ具体的な操作名を付与し、状態依存ボタン（IdeaNestのピン留め・アーカイブ切替、NoteNest右ペイン開閉）はToolTipと同じ文言を状態に追従させた。可視テキストを持つ通常ボタン・MenuItemへの機械的付与、AutomationIdの全画面整理、K-6のアクセスキー重複解消は今回実装しておらず、対応する場合は新 ID を採番する）。SH-46（Shellファイルメニュー・タブContextMenuのアクセスキー重複解消）は v2.19.15 で実装済み（欠番。ファイルメニューの「名前を付けて保存」を`_N`から`_V`へ、タブContextMenuの「このタブへ戻す」を`_R`から`_B`へ変更し、各メニュー階層内のアクセスキーを一意にした。表示文言・メニュー順序・Clickハンドラ・Command・InputGestureText・保存処理・タブ操作ロジック・SH-45で付与したAutomationPropertiesは変更していない。これによりキーボード・アクセシビリティ横断レビューのK-1〜K-6が全件完了した）。SH-24（タブのクイックスイッチャー強化）は v2.18.23 の総点検（TD-89）で見送り（欠番。既存の Ctrl+Tab / Ctrl+1〜9 / タブ一覧オーバーフローで到達でき、タブ過多で切替に迷う実利用報告もないため。再提案時は新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/backlog-adoption-trigger-review.md` 参照。
+完了・見送りにより欠番となった SH 項番: SH-1 / SH-15 / SH-19 / SH-24 / SH-28 / SH-29 / SH-30 / SH-34 / SH-37〜SH-46。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | **本行は参照ポインタであり、実体・着手トリガー・実装方針は LT-9 フェーズ2 を正本とする**（解除対象拡張・個別解除は LT-9 フェーズ2 へ吸収済み。二重管理しない）。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する（FAQ / ユーザーガイドへの案内は反映済み）。LT-9 フェーズ2 のトリガー成立時に本行も同時に完了扱いとする | C |
 
-TD-88（v2.18.22）で抽出された Shell の小修正候補は backlog へ登録せず、`docs/planning/keyboard-accessibility-cross-review.md` §9 の version 分割表で管理する（着手時に新 ID を採番）。うち横断検索の Escape クローズ＋フォーカス戻り（K-1）は SH-44（v2.19.9）で対応済み。K-2（マーカー一覧・アウトバウンドリンク一覧・被リンク一覧のキーボード対応）のうちマーカー一覧部分は L26（v2.19.10）、アウトバウンドリンク一覧・被リンク一覧部分は L27（v2.19.11）で対応済み。K-2 は全部分完了。タスクグループ開閉・タスクコメント表示のキーボード対応（K-3）は L28（v2.19.12）で対応済み。ChatNestメッセージコンテナのフォーカス可能化・既存ContextMenuへのキーボード導線（K-4）は CH-19（v2.19.13）で対応済み。アイコン・記号のみボタンへのAutomationProperties.Name補完（K-5）は SH-45（v2.19.14）で対応済み。Shellファイルメニュー・タブContextMenuのアクセスキー重複解消（K-6）は SH-46（v2.19.15）で対応済み。これでK-1〜K-6は全件完了した。
+TD-88（v2.18.22）で抽出された Shell の小修正候補は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。うち横断検索の Escape クローズ＋フォーカス戻り（K-1）は SH-44（v2.19.9）で対応済み。K-2（マーカー一覧・アウトバウンドリンク一覧・被リンク一覧のキーボード対応）のうちマーカー一覧部分は L26（v2.19.10）、アウトバウンドリンク一覧・被リンク一覧部分は L27（v2.19.11）で対応済み。K-2 は全部分完了。タスクグループ開閉・タスクコメント表示のキーボード対応（K-3）は L28（v2.19.12）で対応済み。ChatNestメッセージコンテナのフォーカス可能化・既存ContextMenuへのキーボード導線（K-4）は CH-19（v2.19.13）で対応済み。アイコン・記号のみボタンへのAutomationProperties.Name補完（K-5）は SH-45（v2.19.14）で対応済み。Shellファイルメニュー・タブContextMenuのアクセスキー重複解消（K-6）は SH-46（v2.19.15）で対応済み。これでK-1〜K-6は全件完了した。
 
 ---
 
 ## 4. TempNest 改善
 
-TN-3 は v2.18.0 で実装済み（欠番）。TN-4（保存間隔・パスのカスタマイズ）は v2.18.23 の総点検（TD-89）で見送り（欠番。設定項目の増加が TempNest の軽さ・設定最小方針と逆行し、同期フォルダ配置の実利用要望も観測されていないため。要望が実際に報告されたら新 ID で再評価する）。TN-7（Workspace への投入）は同総点検で LK-2 / LK-3 へ吸収（欠番。同一構想の重複管理を解消）。詳細は `docs/planning/backlog-adoption-trigger-review.md` 参照。
+TN-3 は v2.18.0 で実装済み（欠番）。TN-4（保存間隔・パスのカスタマイズ）は v2.18.23 の総点検（TD-89）で見送り（欠番。設定項目の増加が TempNest の軽さ・設定最小方針と逆行し、同期フォルダ配置の実利用要望も観測されていないため。要望が実際に報告されたら新 ID で再評価する）。TN-7（Workspace への投入）は同総点検で LK-2 / LK-3 へ吸収（欠番。同一構想の重複管理を解消）。詳細は `docs/release-notes.md` 参照。
 
 現在、TempNest 単独の未完了項目はない。TempNest の「何も考えず書ける」軽さの維持を最優先とし、設定・機能の追加は抑制する。
 
@@ -95,7 +93,7 @@ TN-3 は v2.18.0 で実装済み（欠番）。TN-4（保存間隔・パスの�
 **現在の保存スキーマは変更しない。** NoteNest 保存スキーマは `1.4.2` を維持する。  
 スキーマ変更を伴う項目は実装前に `docs/architecture/schema-versioning-policy.md`（FM-1）を確認すること。
 
-L8・L20 は v2.16.8 で実装済み（欠番）。L23 は v2.18.1 で実装済み（欠番）。L25 は v2.18.5 で実装済み（欠番）。M19 は v2.18.6 で実装済み（欠番）。L24 は v2.18.7 で実装済み（欠番）。M14 は v2.18.9 で実装済み（欠番）。M18 は v2.18.21 の設計レビューで見送りと判断し完了（欠番。将来トリガー成立時は `docs/planning/notenest-xaml-pane-split-design-review.md` を設計正本として新ID採番）。M7（ノートブック名修飾リンク）・M8（正規表現検索）は v2.18.23 の総点検（TD-89）で見送り（欠番。実利用要望がなく、リンク解決変更・認知負荷増のコストが利便に見合わないため）。H3（ノートリンクの視覚的ハイライト）は同総点検で RJ-11 へ移動（欠番。エディタ部品差し替えが前提となり WPF 標準 TextBox 方針と衝突するため恒久見送り）。L4 は v2.19.3 で実装済み（欠番。編集メニューにワードラップ ON/OFF トグルを追加。PlainTextWorkspace への適用・Workspace/ファイルごとの個別設定・横スクロール位置永続化・行番号復活は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。M15 は v2.19.4 で実装済み（欠番。右ペインのマーカー一覧・タスク一覧へ全件コピーボタンを追加。右ペイン絞り込み（L10）・CSV/JSON出力・コピー形式設定・一括削除・一括完了は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。L10 は v2.19.6 で実装済み（欠番。右ペイン上部にマーカー・タスク共通の絞り込み欄を追加し、M15 の全件コピーを絞り込み後の表示項目に連動させた。絞り込み文字列の保存・検索履歴・複数条件・正規表現・AND/OR切替・項目別検索指定・ハイライト・検索結果件数の常設強化・タスク機能再拡張は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。L26 は v2.19.10 で実装済み（欠番。右ペインのマーカー一覧を ItemsControl から WPF 標準 ListBox へ変更し、Tab到達・上下キー選択・Enterキーでの対象ノートへのジャンプに対応した。マウスクリックでのジャンプは既存の MarkerClickCommand をそのまま使用しており、Enter キーからも同じ処理を呼び出す形で共通化した。`docs/planning/keyboard-accessibility-cross-review.md` K-2 のうちマーカー一覧部分のみを対象とし、アウトバウンドリンク一覧・被リンク一覧・互換タスク一覧のキーボード対応は今回実装していない。マーカーの複数選択・単体コピー・編集・削除・並べ替えや選択状態の永続化も今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。L27 は v2.19.11 で実装済み（欠番。右ペインの「からのリンク」「へのリンク」一覧を ItemsControl から WPF 標準 ListBox へ変更し、Tab到達・上下キー選択・Enterキーでの対象ノートへのジャンプに対応した。マウスクリックでの移動は既存の`NavigateToNote`をそのまま使用しており、Enter キーからは共通処理（`TryNavigateOutboundLink`／`TryNavigateBacklink`）経由で同じ処理を呼び出す形で共通化した。リンク切れ項目はEnterで移動せず例外も発生しない。`docs/planning/keyboard-accessibility-cross-review.md` K-2 の残り（アウトバウンドリンク一覧・被リンク一覧）を対象とし、これで K-2 は全部分完了した。リンク一覧の検索・並び替え・単体コピー・修復・編集・削除、選択状態の永続化は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。L28 は v2.19.12 で実装済み（欠番。右ペインの互換タスク表示について、タスクグループ見出し・完了済みタスクセクション見出しを Border＋MouseBinding から WPF 標準 ToggleButton へ変更し、Tabで到達・Enter/Spaceで開閉できるようにした。開閉状態の変更経路は既存の `ToggleGroupCommand`／`ToggleCompletedSectionCommand` のまま（マウス・キーボードとも同じCommandを呼ぶ）。タスクタイトルも TextBlock から Button へ変更し、Tab到達・Enterでの既存コメント表示切替（`SelectTask`）に対応した。既存のマウスダブルクリック操作・タスクCheckBoxのSpace操作は変更していない。`docs/planning/keyboard-accessibility-cross-review.md` K-3 を対象とした。タスク新規追加・編集UI・期限・担当者・優先度・一括操作・検索・絞り込み等のタスク機能再拡張は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/keyboard-accessibility-cross-review.md` 参照。
+完了・見送りにより欠番となった NoteNest 項番: L4 / L8 / L10 / L20 / L23〜L28 / M7 / M8 / M14 / M15 / M18 / M19、および H3（RJ-11 へ移動）。詳細は `docs/release-notes.md` 参照。
 
 ### 低難易度
 
@@ -105,7 +103,7 @@ L8・L20 は v2.16.8 で実装済み（欠番）。L23 は v2.18.1 で実装済�
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| M13 | 左ペインのノート手動並び替え | 左ペインでノートをドラッグして表示順を変更し `order` フィールドとして保存する。`.notenest` スキーマ変更を伴う。**着手トリガー: M14 の表示専用ソートでは足りないという実利用の声が具体例つきで報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/planning/storage-compatibility-migration-distribution-review.md` §7・§15 に従う。実装主体: 着手時に小規模設計レビュー（スキーマ変更範囲の確定）を経て通常エンジニア実装** | C |
+| M13 | 左ペインのノート手動並び替え | 左ペインでノートをドラッグして表示順を変更し `order` フィールドとして保存する。`.notenest` スキーマ変更を伴う。**着手トリガー: M14 の表示専用ソートでは足りないという実利用の声が具体例つきで報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/architecture/schema-versioning-policy.md` に従う。実装主体: 着手時に小規模設計レビュー（スキーマ変更範囲の確定）を経て通常エンジニア実装** | C |
 
 ---
 
@@ -113,11 +111,11 @@ L8・L20 は v2.16.8 で実装済み（欠番）。L23 は v2.18.1 で実装済�
 
 **単体アプリとしての新規機能開発は原則凍結。** NestSuite Workspace としての改善・不具合修正・統合調整に限定する。
 
-ID-15 は v2.18.2 で実装済み（欠番）。ID-14 は v2.18.8 で実装済み（欠番）。ID-6 は v2.18.14 で実装済み（欠番）。ID-10 は v2.18.16 で実装済み（欠番、Markdown 出力のみ。CSV は今回未実装）。ID-5（複数選択・一括操作）・ID-13（簡易統計）は v2.18.23 の総点検（TD-89）で見送り（欠番。ID-5 は単体新機能凍結方針と衝突し複数選択モデルの導入コストが大きく実利用要望なし。ID-13 は ID-14 の色チップ件数表示で実質充足し常設情報の追加は認知負荷軽減方針と逆行するため。再提案時は新 ID を採番する）。ID-4 は v2.19.1 でTD-88必須範囲（Enterでフォーカス中カードのプレビューを開く）のみ実装済み（欠番。矢印キーでのカード間移動・Space ピン留め・Delete 削除は今回実装しておらず、実利用の声が確認された場合のみ新 ID を採番する）。ID-7 は v2.19.5 で実装済み（欠番。カードタイトル・本文プレビュー内の検索語一致箇所ハイライト。タグ・プレビュー画面・編集画面へのハイライト拡大、一致箇所への自動スクロール、本文プレビュー切り出し位置変更、複数検索語・正規表現検索・検索履歴・ハイライト色設定は今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/backlog-adoption-trigger-review.md` 参照。
+完了・見送りにより欠番となった IdeaNest 項番: ID-4 / ID-5 / ID-6 / ID-7 / ID-10 / ID-13 / ID-14 / ID-15。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| ID-8 | カードの手動並び替え（任意ソート順） | ドラッグ＆ドロップでカードの表示順を手動指定して保持する。`.ideanest` スキーマ変更を伴う。**着手トリガー: 既存の並び順・シャッフルでは目的の配置にできないという実利用の声が具体例つきで報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/planning/storage-compatibility-migration-distribution-review.md` §7・§15 に従う。実装主体: 着手時に小規模設計レビューを経て通常エンジニア実装** | C |
+| ID-8 | カードの手動並び替え（任意ソート順） | ドラッグ＆ドロップでカードの表示順を手動指定して保持する。`.ideanest` スキーマ変更を伴う。**着手トリガー: 既存の並び順・シャッフルでは目的の配置にできないという実利用の声が具体例つきで報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/architecture/schema-versioning-policy.md` に従う。実装主体: 着手時に小規模設計レビューを経て通常エンジニア実装** | C |
 | ID-12 | タグフィルタの複数選択（AND 絞り込み） | 現在は 1 タグのみ絞り込み可能。タグを複数選択して AND 絞り込みができるようにする。保存形式変更なし。**着手トリガー: 1 タグ絞り込みでは目的のカードへ到達できない実利用の具体例が報告された場合（ID-14 件数表示の実利用を見てから）。実装主体: 通常エンジニアで実装可能** | C |
 
 ---
@@ -129,27 +127,27 @@ ID-15 は v2.18.2 で実装済み（欠番）。ID-14 は v2.18.8 で実装済�
 CH-11 は v2.18.10 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
 CH-18 は v2.18.11 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
 CH-16 は v2.18.12 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
-CH-17（長文送信前プレビュー/確認導線）は v2.18.23 の総点検（TD-89）で見送り（欠番。インライン編集・削除が既にあり誤送信の回復コストが低く、条件付き確認 UI は入力フローの軽さ・認知負荷軽減方針と逆行するため。実際の誤送信報告が複数観測されたら新 ID で再評価する）。CH-19 は v2.19.13 で実装済み（欠番。過去メッセージの表示コンテナを`Focusable="True"`／`KeyboardNavigation.IsTabStop="True"`でキーボードフォーカス可能にし、Tab到達・Shift+F10／コンテキストメニューキーによる既存ContextMenu（本文コピー・編集・削除・会話コピー等）へのキーボード導線を追加した。ContextMenuはマウス右クリック用と共用のまま新設しておらず、`PlacementTarget.DataContext`経由の操作対象一致という既存契約も変更していない。メッセージ一覧のListBox化・矢印キー移動・Enter編集開始・Delete直接削除・独自並び替えショートカットは今回実装しておらず、実利用要望が確認された場合のみ新 ID を採番する）。詳細は `docs/release-notes.md` と `docs/planning/keyboard-accessibility-cross-review.md` 参照。
+完了・見送りにより欠番となった ChatNest 項番: CH-11 / CH-16 / CH-17 / CH-18 / CH-19。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| CH-12 | 発言者の追加・カスタマイズ | 現在の 4 発言者に加えユーザー定義の発言者を追加できるようにする。`.chatnest` スキーマへの影響を伴う。発言者 4 種の固定は「思考の型」としての価値でもあり安易に崩さない。**着手トリガー: 4 種では表現できない用途の実利用の声が具体例つきで複数報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/planning/storage-compatibility-migration-distribution-review.md` §7・§15 に従う。実装主体: 着手時に小規模設計レビューを経て通常エンジニア実装** | C |
+| CH-12 | 発言者の追加・カスタマイズ | 現在の 4 発言者に加えユーザー定義の発言者を追加できるようにする。`.chatnest` スキーマへの影響を伴う。発言者 4 種の固定は「思考の型」としての価値でもあり安易に崩さない。**着手トリガー: 4 種では表現できない用途の実利用の声が具体例つきで複数報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/architecture/schema-versioning-policy.md` に従う。実装主体: 着手時に小規模設計レビューを経て通常エンジニア実装** | C |
 
-TD-88（v2.18.22）で抽出されたメッセージ単体操作（編集・削除・単体コピー・並び替え）のキーボード導線は backlog へ登録せず、`docs/planning/keyboard-accessibility-cross-review.md` §9 の version 分割表で管理する（着手時に新 ID を採番）。
+TD-88（v2.18.22）で抽出されたメッセージ単体操作（編集・削除・単体コピー・並び替え）のキーボード導線は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。
 
 ---
 
 ## 8. タブ間連携
 
-**親構想**: Workspace 間の連携は「明示的な手動転送」のみを扱う（自動連携・共通転送基盤の先行構築はしない）。TN-3（TempNest 昇格、v2.18.0 実装済み）が最初の 1 本であり、**2 本目以降は下記トリガー成立まで実装しない**。着手時は 1 version 1 本とし、LK-4 を第一候補とする（`docs/planning/attractiveness-review-2026.md` §7）。
+**親構想**: Workspace 間の連携は「明示的な手動転送」のみを扱う（自動連携・共通転送基盤の先行構築はしない）。TN-3（TempNest 昇格、v2.18.0 実装済み）が最初の 1 本であり、**2 本目以降は下記トリガー成立まで実装しない**。着手時は 1 version 1 本とし、LK-4 を第一候補とする（
 
-**共通の着手トリガー（いずれか成立で第一候補から着手）**: (1) TN-3 の昇格導線が実際に使われている兆候（利用者の言及・要望）が観測された (2) 転送共通ヘルパー（`docs/planning/review7-fable5.md` §4.1）の設計レビューが完了した。
+**共通の着手トリガー（いずれか成立で第一候補から着手）**: (1) TN-3 の昇格導線が実際に使われている兆候（利用者の言及・要望）が観測された (2) 転送共通ヘルパー（`docs/release-notes.md` §4.1）の設計レビューが完了した。
 
-**トリガー (2) は v2.20.1 / TD-92 で成立済み（転送共通ヘルパー設計レビュー完了）。** 設計正本は `docs/planning/workspace-manual-transfer-helper-design.md`（責務境界・転送データ契約 `WorkspaceTransferContent{Title,Body}`・転送先識別（WorkspaceKind + タブ Id）・受入方法（interface を作らず VM cast + delegate）・結果契約 `WorkspaceTransferResult` 5 値・dirty / save / エラー責務・LK-4 の Title/Body マッピングと IdeaNest タブ 0/1/複数件時の挙動・TN-3 との関係・却下案を確定済み）。**LK-4 は v2.21.0 で初回実装済み（欠番）。** LK-4 は同設計に基づき ChatNest メッセージ ContextMenu へ「IdeaNestカードに追加(_I)」を追加し、既存の IdeaNest タブへカードとして手動転送できるようにした（新規 IdeaNest タブは自動生成しない・IdeaNest のみ既存経路で dirty・転送元 ChatNest は不変・自動保存/自動タブ切替なし）。**LK-4-1 は v2.21.1 で実装済み（欠番。LK-4 で追加した `WorkspaceTransferTargetDialog` の `AutomationProperties.Name` が内部 `AutomationId` 文字列のまま設定されていた箇所を、v2.19.14 SH-45 以降の方針に沿って利用者向けの読み上げ名へ補正した。`AutomationId`・転送仕様・UI 構成・キーボード操作・dirty/save 契約は変更していない）。** **LK-3 は v2.22.0 で実装済み（欠番）。** LK-3 は LK-4 と同じ共通ヘルパー（`EnumerateTransferTargets`・`TransferToWorkspaceTab`・`WorkspaceTransferTargetDialog`・`IdeaNestWorkspaceViewModel.AddCardFromTransfer`）をそのまま再利用し、TempNest 各スロットの既存操作行（コピー／クリア／NoteNestへ昇格の並び）へ「IdeaNestカードに追加」ボタンを追加した。転送内容は `Title = slot.Title`（空なら null）／`Body = slot.Body` で、共通ヘルパーへ余計な付加情報（日時・スロット番号・ヘッダ等）は一切加えない。**転送内容の有効判定を「Body 必須」から「Title または Body のいずれかがあれば有効」へ最小補正した**（`TransferToWorkspaceTab` の `InvalidContent` 判定。IdeaNest の通常カード追加 `CommitAdd` が Title のみでも有効である契約と揃えるための決定。LK-4 は常に `Title=null` で呼ぶため、この補正は LK-4 の挙動を変えない＝回帰なし）。IdeaNest タブ 0 件では自動生成しない・1 件では直接追加・複数件では既存ダイアログで明示選択・Detached IdeaNest も対象・自動保存/自動タブ切替なし、という LK-4 と同じ方針を踏襲する。転送成功後は TN-3 と同じ考え方（既定「残す」の確認ダイアログ）で元スロットを消去するか利用者に確認し、失敗・キャンセル時は元スロットを一切変更しない。TN-3・LK-4 の実装・挙動は変更していない。**LK-4 と LK-3 の 2 本で共通ヘルパーが実際に再利用された（実装コード上の実利用実績）。** これを理由に新たな汎用化（LK-5 相当の横断クイック投入等）へ自動着手はしない。詳細は `docs/release-notes.md` 参照。LK-2 は v2.22.0 時点ではまだ未着手のまま backlog に残っていたが、v2.23.0 で LK-4 / LK-3 実装で実際に共通だった部分だけを再利用して実装した。
+転送共通ヘルパーの設計正本は `docs/planning/workspace-manual-transfer-helper-design.md`。新しい転送を追加する場合も、共通化するのは転送内容（Title / Body）と転送先解決までとし、UI 文言・ダイアログ・保存・session 操作は各導線側に置く。
 
-**LK-2 は v2.23.0 で実装済み（欠番）。** LK-2 は LK-3 / LK-4 と同じ共通ヘルパー（`EnumerateTransferTargets`・`TransferToWorkspaceTab`・`WorkspaceTransferTargetDialog`）をそのまま再利用し、TempNest 各スロットの既存操作行（コピー／クリア／新規NoteNestへ昇格／IdeaNestカードに追加の並び）へ「既存NoteNestへ追加」ボタンを追加した。転送内容は `Title = slot.Title`（空なら null）／`Body = slot.Body` で、共通ヘルパーへ余計な付加情報（日時・スロット番号・ヘッダ等）は一切加えない。受入 API は `MainViewModel.CreateNoteFromTransfer(string? title, string content)`（新規オーバーロード）で、Title 指定時はそれをそのまま使い、未指定（null／空白）時は TN-3 と同じ既存のタイトル生成規則（`PromotedNoteTitleGenerator`）にフォールバックする。重複タイトルは既存の一意化ロジック（`MakeUniqueNoteTitle`）でそのまま連番化する。既存の `CreateNoteFromTransfer(string)`（TN-3 が使う）はこの新オーバーロードへ `title: null` で委譲するだけの薄いラッパーへ変更し、TN-3 の挙動（フォールバックタイトル生成・重複時連番化・本文そのまま設定）は変更していない。NoteNest タブ 0 件では自動生成しない・1 件では直接追加・複数件では既存ダイアログで明示選択・Detached NoteNest も対象・自動保存/自動タブ切替なし、という LK-3/LK-4 と同じ方針を踏襲する。転送成功後は TN-3・LK-3 と同じ考え方（既定「残す」の確認ダイアログ）で元スロットを消去するか利用者に確認し、失敗・キャンセル時は元スロットを一切変更しない。TN-3・LK-3・LK-4 の実装・挙動は変更していない。これで TN-3（新規NoteNest）・LK-3（IdeaNest）・LK-2（既存NoteNest）の 3 本で共通ヘルパーが実際に再利用された。これを理由に新たな汎用化（LK-5 相当の横断クイック投入等）へ自動着手はしない。詳細は `docs/release-notes.md` 参照。
+LK-2 / LK-3 / LK-4 は実装済み（欠番）。いずれも Shell 側の共通ヘルパー（`EnumerateTransferTargets` / `TransferToWorkspaceTab` / `WorkspaceTransferTargetDialog`）を再利用しており、TN-3（TempNest → 新規 NoteNest タブ昇格）は共通ヘルパーへ寄せていない。詳細は `docs/release-notes.md` 参照。
 
-LK-1（NoteNest ↔ IdeaNest 双方向連携)は v2.18.23 の総点検（TD-89）で LT-6（クロス Workspace リンク）へ吸収（欠番。双方向リンクは LT-6 の全文検索・リンク基盤と同一構想であり重複管理を解消）。**LK-5（選択テキストの横断クイック投入）は同総点検で見送り（欠番。個別転送導線の実績が 1 本もない段階で汎用化を持つのは早すぎるため。転送導線が 2 本以上実装され、かつ実際に利用された実績が確認できた時点で新 ID で再評価する。LK-4 / LK-3 / LK-2 の 3 本が v2.23.0 時点で実装済みだが、これは「実装された」に過ぎず「実際に利用された実績」ではないため、LK-5 相当の再評価トリガーはまだ成立しない）。** TN-7（TempNest スロットから Workspace へ投入）は LK-2 / LK-3 へ吸収済み。詳細は `docs/planning/backlog-adoption-trigger-review.md` 参照。
+LK-1（NoteNest ↔ IdeaNest 双方向連携）は LT-6 へ吸収（欠番）。
 
 **TD-93（v2.24.0）で TN-3・LK-4・LK-3・LK-2 の横断総点検・回帰確認を実施した（欠番。新しい転送機能は追加していない）。** 共通ヘルパー（`WorkspaceTransferContent`/`WorkspaceTransferTarget`/`WorkspaceTransferResult`/`EnumerateTransferTargets`/`TransferToWorkspaceTab`）が引き続き最小責務に留まっていること、TN-3 を共通化しない判断が妥当であること、0/1/複数件・Detached・dirty/save契約・ErrorLog Error-only方針に回帰がないことを確認した。`WorkspaceTransferTargetDialog` の一覧 `AutomationProperties.Name` が転送先種別（IdeaNest/NoteNest）によらず「転送先のIdeaNestタブ一覧」に固定されていた点（LK-2 で NoteNest 転送にも同ダイアログが再利用されるようになったための取り残し）と、TempNest スロットの「コピー」「クリア」「新規NoteNestへ昇格」ボタンの `AutomationProperties.Name` が可視テキストではなく内部 `AutomationId` 文字列のまま設定されていた点（SH-45/LK-4-1 の既存方針から外れていた既存コード）の 2 件を最小補正した。それ以外の重複（LK-4/LK-3/LK-2 導線の 0/1/複数件分岐・result switch の類似構造）は「各転送の UX 差が読みやすい・責務が明確・変更頻度が低い」ため共通化しなかった。詳細は `docs/release-notes.md` 参照。**LK-5 相当の再評価トリガー（実際に利用された実績）は今回も観測されておらず、成立していない。**
 
@@ -163,20 +161,20 @@ LK-1（NoteNest ↔ IdeaNest 双方向連携)は v2.18.23 の総点検（TD-89�
 スキーマ変更を伴う実装は `docs/architecture/schema-versioning-policy.md` の方針に従うこと（v2.10.2 整備）。
 
 SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧 FM-2 より移管）。  
-**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/development/workspace-file-extension-unification.md` 参照）。
+**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/architecture/schema-versioning-policy.md` 参照）。
 **FM-3**（`.nestsuite` のファイル関連付け追加）は v2.14.6 で実装済み（欠番。`docs/operations/file-association.md` 参照）。
 
 ---
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-77 は v2.17.9、TD-78 は v2.17.3、TD-79 は v2.17.4、TD-80 は v2.17.5、TD-81 は v2.17.6、TD-82 は v2.17.7、TD-82-1 は v2.17.8、TD-84 は v2.18.13、TD-86 は v2.18.20、TD-88 は v2.18.22、TD-89 は v2.18.23、TD-90 は v2.18.24、TD-87 は v2.19.2、TD-91 は v2.20.0、TD-92 は v2.20.1、TD-93 は v2.24.0、TD-94 は v2.24.1、TD-95 は v2.25.0 で完了済み（欠番）。TD-92 は Workspace 間手動転送の共通ヘルパー設計レビュー（設計 version・production code 変更なし）で、成果物は `docs/planning/workspace-manual-transfer-helper-design.md`。これにより「タブ間連携」セクションの共通着手トリガー (2)「転送共通ヘルパーの設計レビューが完了した」が成立し、LK-4 が次の実装候補として着手可能になった。LK-4 は v2.21.0 で初回実装済み（欠番。ChatNest 発言 → IdeaNest カード化。詳細は §8「タブ間連携」・`docs/release-notes.md` 参照）。LK-3 は v2.22.0 で実装済み（欠番。TempNest スロット → IdeaNest カード化。LK-4 の共通ヘルパーを再利用。詳細は §8「タブ間連携」・`docs/release-notes.md` 参照）。LK-2 は v2.23.0 で実装済み（欠番。TempNest スロット → 既存 NoteNest タブへノート追加。LK-3/LK-4 の共通ヘルパーを再利用。詳細は §8「タブ間連携」・`docs/release-notes.md` 参照）。TD-93 は TN-3・LK-4・LK-3・LK-2 の横断総点検・回帰確認（新規実装なし）で、共通ヘルパーの責務境界・TN-3 を共通化しない判断・dirty/save/ErrorLog 契約に回帰がないことを確認し、`WorkspaceTransferTargetDialog` の一覧 AutomationName と TempNest スロットボタンの AutomationName の 2 件のみ最小補正した。詳細は §8「タブ間連携」・`docs/release-notes.md` 参照。TD-94 はテストスイートの棚卸しで、docs 文言・実装コード文字列へ過剰に結合した低価値な静的テストを縮退した（production code 変更なし。CI 実測でテスト件数 3637→3062・実行時間 13 秒→2 秒、テストファイル 198→184）。今後のテスト追加・削除基準は `docs/development/test-suite-policy.md` を正本とする。TD-91 はキーボード・アクセシビリティ横断レビュー（K-1〜K-6、SH-44/L26/L27/L28/CH-19/SH-45/SH-46）の総点検・回帰確認で、新規実装は行っていない。K-1〜K-6が現行`main`上で競合なく共存し主要操作のキーボード完結性・マウス操作共存・dirty非影響・保存形式非影響に問題がないことを確認し、レビューを正式に完了とした。詳細は `docs/planning/keyboard-accessibility-cross-review.md` §12 参照。TD-87 は recent files 破損時の quarantine 退避＋ErrorLog 記録のみを実装しており、TempNest（ST-4a）の同型対応は今回実装していない（実利用要望や事故が確認された場合のみ新 ID を採番する）。TD-83 は v2.19.7 で完了済み（欠番。完了済み editor 設計文書・旧入口READMEのarchive/削除候補を個別再判定した。`docs/design/notenest-editor-h0-reassessment.md` と `docs/operations/operation-note.md` は `docs/archive/completed-designs/` へ移設し、`docs/integration/README.md` / `docs/migration/README.md` は archive済み文書の移設先索引として参照され続けているため削除せず維持した。判定理由の詳細は `docs/planning/docs-inventory-and-archive-policy.md` を参照）。詳細は `docs/release-notes.md` 参照。TD-95 は production source（`.cs` と `.xaml` の両方）の横断点検で、履歴コメントの現行化・到達不能コードの削除（`AddTaskMenu_Click` / `IExporter` 等）・BCL 標準への置換（`ReadOnlySpan<byte>.StartsWith` / `Any`）を行った（利用者向け挙動・保存形式の変更なし。未使用の C# public メンバーは dead code として削除。production `.cs` は 243→242 ファイル・23575→23420 行、`.xaml` は 29 ファイル・コメントブロック 287→285）。今後の production コメント方針は `docs/development/nestsuite-development-guidelines.md` §3 を正本とする。
+TD-1〜TD-97 のうち未完了は下表のみで、他はすべて完了・見送り済みの欠番。詳細は `docs/release-notes.md` 参照。
 
-**TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了した。全ユーザー向け Open 経路（共通 Open・種別別 Open・起動引数/関連付け・最近ファイル・pipe/二重起動転送・session 復元）で `.nestsuite` 読込は 1 回、保存後内部状態同期（`SavedWorkspaceStateUpdater`）・NoteNest ViewModel タブ同期（`SyncNoteNestTabForViewModel`）は 0 回になった。既に判定済み・信頼できる WorkspaceKind とファイルパスの組み合わせをファイル I/O なしで確認する `NestSuiteTabFactory.IsPathCompatibleWithResolvedKind` を追加し、保存直後・ViewModel 同期の内部経路はこれと `FromResolvedKind` へ切り替えた（利用者が任意のファイルを開く入口は引き続き `TryPrepareOpen` → `LoadPrepared` → `EnsureKind` → schema 検証を使う）。詳細な実装経緯は `docs/release-notes.md`（v2.16.32〜v2.16.39）と `docs/archive/completed-designs/nestsuite-double-read-design-review.md` を参照。
+**TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了（欠番）。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | `docs/development/tutorial-assets-liveness.md`（TD-84 で作成）の死活判定B（到達不能だが再利用可能）を踏まえ、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述 / `docs/testing/test-scenarios.md` の対応手順を、削除または導線復活のいずれかへ確定する。**着手トリガーは成立済み**: 同文書の削除条件のうち「AT-5（初回空状態の一行ガイド）の実装により同種の初回案内ニーズが軽量な形で充足された場合」が、AT-5 の実装（SH-39 / v2.18.15）で満たされていることを TD-95 の点検で確認した。TD-95 では本項の範囲（テスト・docs を含む複数ファイルの削除）を別目的として扱い、実施していない。**実装主体: 通常エンジニアで実装可能** | C |
+| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | 現行 UI から到達できないことを確認済みの資産として、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述を、削除または導線復活のいずれかへ確定する。**着手トリガーは成立済み**: 同文書の削除条件のうち「AT-5（初回空状態の一行ガイド）の実装により同種の初回案内ニーズが軽量な形で充足された場合」が、AT-5 の実装（SH-39 / v2.18.15）で満たされていることを TD-95 の点検で確認した。TD-95 では本項の範囲（テスト・docs を含む複数ファイルの削除）を別目的として扱い、実施していない。**実装主体: 通常エンジニアで実装可能** | C |
 | TD-96 | 到達不能な旧エクスポート／プロジェクト情報ダイアログ導線の判断 | TD-95 の点検で、`DialogService.ShowExportOptions()` + `ExportDialog` + `MainViewModel.Export` + `ExportService.Export`（`SanitizeFileName` / `GetExtension` は現役）と、`DialogService.ShowProjectInfo()` + `ProjectInfoDialog` が現行 UI のどのメニューからも到達しないことを確認した（現行の書き出しは NoteNest 右ペインの Markdown エクスポートと移行パックのみ）。また `MainViewModel.AddTaskCommand` → `AddTask` は、唯一の呼出元だった WPF ハンドラを TD-95 で削除した結果、XAML からも束縛されない状態になっている。いずれも利用者向け機能の導線判断であり、削除には既存テスト（`ExportServiceTests` / `MarkdownExportTests` / `NoteNestFormatRoundTripTests` の `ProjectInfo`）の扱いを決める必要があるため、リファクタリング version では実施しない。**着手トリガー: 各導線を「削除」「復活」のいずれにするかの方針判断が行われたとき。タスク機能については `docs/development/notenest-task-reduction-policy.md` の縮退方針の更新が前提。実装主体: 通常エンジニアで実装可能** | C |
 
 ---
@@ -187,15 +185,15 @@ TD-1〜TD-63、TD-64〜TD-76 は完了済み（欠番）。TD-77 は v2.17.9、T
 実装する段階になった場合は該当体系の prefix で新規項番を採番し、LT 項目の概要に関連 ID を追記する。  
 `LT-` 番号は再利用しない。
 
-LT-1（`.nestsuite` 統合コンテナ形式）・LT-5（大規模な共通データモデル化）・LT-7（ナレッジグラフ）・LT-8（Day / Week Review）・LT-10（テンプレート機能）は v2.18.23 の総点検（TD-89）で見送り（欠番）。理由: LT-1/LT-5 は現行の 1タブ1ファイル方式で支障が観測されておらず観測可能な着手トリガーを設定できない、LT-7 は前提（LT-5/LT-6）のうち LT-5 が見送りとなり連鎖、LT-8 は前提となる期限機能がタスク縮退方針（§12 の M2 見送り方針）と衝突、LT-10 は AT-3 で「テンプレート機構は作らない」と確定済みかつ実利用要望なし。LT-12（ErrorLogService ローテーション）は最小実装済み（v2.14.0 TD-57）で残件（UI・設定画面）が設定最小方針と逆行するため役割終了として整理（欠番。ログ量が実際に問題化したら `docs/development/error-log-policy.md` に従い新 ID で扱う）。詳細は `docs/planning/backlog-adoption-trigger-review.md` 参照。
+完了・見送りにより欠番となった LT 項番: LT-1 / LT-5 / LT-7 / LT-8 / LT-10。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 保留理由 / 再検討条件 |
 |----|------|------|----------------------|
-| LT-2 | SQLite 補助インデックス方式 | JSON 正本を維持しつつ横断検索・リンク解析・統計表示のために再生成可能な SQLite インデックスを補助的に持つ方式を検討する（旧 FM-2 より移管）。既存の `.notenest` / `.ideanest` / `.chatnest` を SQLite に置き換えることは対象外 | **保留継続・採用候補（v2.13.7 TD-54 feasibility 実施済み）**: `SQLitePCLRaw.bundle_winsqlite3`（OS 同梱 SQLite）方式なら追加ネイティブDLL・自己展開なしで単一EXE方針を維持できる見込み。Windows 実機での publish 成果物検証と winsqlite3 の FTS5 可否確認が未実施のため保留。**着手トリガー: SH-41 方式（逐次読み）の横断検索が実測で性能・件数限界に達した場合（LT-6 と同一トリガー）**。成立時は `docs/development/sqlite-index-feasibility.md` §7 の検証とセットで着手する。エキスパート設計後に通常エンジニア実装 |
+| LT-2 | SQLite 補助インデックス方式 | JSON 正本を維持しつつ横断検索・リンク解析・統計表示のために再生成可能な SQLite インデックスを補助的に持つ方式を検討する（旧 FM-2 より移管）。既存の `.notenest` / `.ideanest` / `.chatnest` を SQLite に置き換えることは対象外 | **保留継続・採用候補（v2.13.7 TD-54 feasibility 実施済み）**: `SQLitePCLRaw.bundle_winsqlite3`（OS 同梱 SQLite）方式なら追加ネイティブDLL・自己展開なしで単一EXE方針を維持できる見込み。Windows 実機での publish 成果物検証と winsqlite3 の FTS5 可否確認が未実施のため保留。**着手トリガー: SH-41 方式（逐次読み）の横断検索が実測で性能・件数限界に達した場合（LT-6 と同一トリガー）**。成立時は、採用判断の前に Windows 実機で次を確認すること（一時ブランチで行い merge しない）: (a) `Microsoft.Data.Sqlite.Core` + `SQLitePCLRaw.bundle_winsqlite3` を追加し release.yml と同一フラグで `dotnet publish` した成果物が EXE 1 個のままか、(b) EXE サイズ増、(c) クリーン環境の起動で `%TEMP%\.net\` へ展開が発生しないか、(d) 対象 OS の winsqlite3 で FTS5 が使えるか。エキスパート設計後に通常エンジニア実装 |
 | LT-3 | 設定キー / ProgId / AppData パス整理 | `NoteNest_*` 系の Mutex 名・Pipe 名・AppData パスなどの互換性識別子整理。現在は互換維持のため変更していない | **保留継続(v2.13.8 TD-55 棚卸し完了）**: 全識別子を A（維持）/ B（移行設計つきで変更可）/ C（変更可）/ D（保留）に分類済み（`docs/development/compatibility-identifiers-audit.md`）。AppData・永続ファイル名・ProgId・設定キー `NoteNestEditorFontSize` は既存互換のため当面維持。単純置換はしない。**着手トリガー: 識別子変更を必要とする具体的な変更要求（リブランド・パス衝突等）が実際に発生した場合**。成立時は同文書 §3 の移行段階案に従う。互換性識別子変更のためエキスパート設計後に通常エンジニア実装 |
-| LT-4 | 複数 Window レイアウト保存 | detached window のレイアウト（位置・サイズ・タブ構成）を session として保存・復元する | `session.json` 形式変更を伴う可能性がある。SH-21 の延長として将来検討。**着手トリガー: 別ウィンドウ配置が再起動で失われることへの実利用の不満が具体例つきで報告された場合**。session 形式に関わるためエキスパート設計後に通常エンジニア実装（方針メモ: `docs/design/design-decisions.md` の LT-4 節） |
+| LT-4 | 複数 Window レイアウト保存 | detached window のレイアウト（位置・サイズ・タブ構成）を session として保存・復元する | `session.json` 形式変更を伴う可能性がある。SH-21 の延長として将来検討。**着手トリガー: 別ウィンドウ配置が再起動で失われることへの実利用の不満が具体例つきで報告された場合**。session 形式に関わるためエキスパート設計後に通常エンジニア実装（`session.json` へ `Windows[]` を別セクションとして足す想定。既存 `Tabs[]` の意味は変えない） |
 | LT-6 | クロス Workspace 双方向リンク / 全文検索 | Workspace をまたいだリンクと全文検索インデックス。旧 LK-1（NoteNest ↔ IdeaNest 双方向連携）を吸収（v2.18.23 TD-89） | インデックス設計・スキーマ変更を伴う。**着手トリガー: SH-41 方式の横断検索が実測で性能・件数限界に達し、かつ横断リンク・全文検索の実利用要望が観測された場合（LT-2 と同一トリガーで、LT-2 の検証とセットで着手）**。エキスパート再招集対象（複数 Workspace の状態正本・スキーマに関わるため） |
-| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。`docs/archive/expert-review/review4-fable5.md` の設計レビューに基づき段階的に扱う: **フェーズ1** = SH-34（v2.16.21 実装済み）として、復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。`docs/archive/expert-review/review5-fable5.md` の設計レビューで実装時の確定方針を固めた: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行 SH-34 の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した（`docs/archive/expert-review/review4-fable5.md`、`docs/archive/expert-review/review5-fable5.md` で再確認）。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（`docs/archive/expert-review/review5-fable5.md`、いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、v2.16.22 のユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること（詳細: `docs/design/design-decisions.md` §56）。設計確定済みのため、トリガー成立後は通常エンジニアで実装可能 |
+| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。段階的に扱う: **フェーズ1** = SH-34（v2.16.21 実装済み）として、復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。実装時の確定方針: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行 SH-34 の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、v2.16.22 のユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること。設計確定済みのため、トリガー成立後は通常エンジニアで実装可能 |
 | LT-11 | パフォーマンス自己診断 | 大量ノート・カード・発言時の応答性を計測・表示する | **開発者向け計測基盤は v2.13.9 TD-56 で整備済み**（`NestSuite.Tests/Performance/`、環境変数ゲートで通常 CI に影響なし。`docs/development/performance-measurement.md` 参照）。利用者向け自己診断 UI は未実装。**着手トリガー: 実利用で性能課題が実際に報告され、本基盤の数値で裏づけられた場合**。成立時は通常エンジニアで実装可能 |
 
 ---

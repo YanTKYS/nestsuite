@@ -7,6 +7,25 @@
 
 ---
 
+## v2.25.1 — TD-97 docs 正本の縮退・統合・簡素化
+
+- **TD-97: `docs/` を「今の NestSuite を開発・利用・運用するために読む必要がある正本」だけへ縮退した。production の振る舞い・保存形式・互換性契約の変更はない。** 目的は文書の分類整理ではなく、**読まなければならない文書の数と正本の数を減らすこと**。判断基準は一貫して「この文書は、独立した Markdown ファイルとして今日必要か」であり、「後から必要になるかもしれない」は残す理由にしていない。過去の設計・レビュー・調査の保存先は Git 履歴である。
+- **`docs/` の Markdown を 79 → 14 ファイル、総行数 28515 → 9894 行にした（release notes 6464 行を除くと 22051 → 3430 行）。** ディレクトリは `archive/` `design/` `integration/` `migration/` が消滅し、`architecture/` 3 → 1、`development/` 17 → 6、`planning/` 11 → 1、`testing/` 4 → 1 になった。**削除ファイルの一覧は Git 履歴が正本であり、ここへは転記しない。**
+- **削除（第 1 段階）**: 完了済みの設計・レビュー・調査（expert review 各回、`review-gemini.md`、各種 design review、`attractiveness-review-2026.md`、`sqlite-index-feasibility.md`、`save-flow-duplication.md` 等）、Classic NoteNest / リポジトリ改名などの移行計画、索引だけの README（`archive/README.md`・`design/README.md`・`integration/README.md`・`migration/README.md` 等）、履歴だけの文書（`nestsuite-release-checklist-history.md`・`attractiveness-regression-v2.18.19.md`・v0.1.1〜v2.0.0 の版別手動確認ログ `test-scenarios.md`）。**`docs/archive/` は退避先として廃止した。** archive は「削除の代わり」であり、読まれない文書を残す仕組みだったため、ディレクトリごと削除している。`docs/planning/docs-inventory-and-archive-policy.md` も、恒久ルールだけを開発ガイドラインと `docs/README.md` へ吸収して削除した。
+- **統合（第 2 段階）**: `nestsuite-designer-guidelines.md` を `nestsuite-development-guidelines.md` へ統合し、designer 固有のルール（UI テキスト規約・テーマ・アクセシビリティ・レイアウト方針）は §5 として残した。**静的テスト方針の二重正本を解消**し、`static-test-guidelines.md` を削除して、WPF `Window` をインスタンス化できないための例外的なソース走査の扱いを `test-suite-policy.md` §5.1 へ集約した（正本は `test-suite-policy.md`）。NoteNest エディタ関連の 3 文書（host / adapter / textbox-dependencies）は、現行の判断だけを残して削除した。Workspace の責務・XAML 構造の索引文書 4 本は、境界ルールを開発ガイドライン §12 へ吸収して削除した。`nestsuite-known-limitations.md` は利用ガイドの「既知の制約」へ、schema 変更の判断表と必須テスト一覧は `schema-versioning-policy.md` へ吸収した。開発ガイドラインは統合後で 865 行相当 → 316 行。
+- **簡素化（第 3 段階）**: 残した文書から、作成 version・backlog ID・過去の変更履歴・「以前は○○だった」「vX.X で○○した」の記述、繰り返しの規則、長い背景説明を削除した。リリース前チェックリストは見出しから `（v2.19.0 SH-43）` 形式の版・ID ラベルを外し（27 箇所）、確認項目そのものは減らしていない。`docs/README.md` は 30 行の入口（まず読むもの 4 件 / 作業に応じて読むもの 9 件）にして、docs 一覧・分類台帳としては使わないことを明記した。ルート `README.md` の文書表も、開発向けは `docs/README.md` へ委譲する形へ縮めた。
+- **保持した version 番号**: 現在の互換性契約であるもの（NoteNest schema `1.4.2`、`.nestsuite` wrapper `formatVersion 1.0`、ChatNest `v0.4.1` 保存形式互換、`v2.14.1〜v2.14.3` が書いた wrapper の payloadSchemaVersion 逆転、互換性識別子の旧名称）は、履歴ではなく現行の制約であるため version 番号を含んだまま残した。
+- **`docs/planning/workspace-manual-transfer-helper-design.md` は節番号を維持したまま 809 → 380 行へ縮小した。** production コメントが §7 / §8 / §9 / §10 / §13.5 / §14 を、`LK3TempNestToIdeaNestTransferTests` が §23 を参照しているため、節番号は現行の参照契約として扱っている。
+- **`docs/backlog.md`** は未着手・保留・トリガー待ち・見送り方針のみに戻した。完了済み項目の長い経緯説明（TD-59 の実装経緯等）は 1 行の欠番記述へ圧縮し、詳細は release notes を正本とした。未完了 24 項目の内容は変更していない。**「念のため」の新規 backlog 項目は追加していない。**
+- **新しい文書は 1 つも追加していない。** 棚卸し報告・削除一覧・新 docs 方針といった文書は作っていない（それ自体が次の棚卸し対象になるため）。
+- **リンク切れ 0 件。** `docs/` 配下・ルート `README.md` の相対 Markdown リンクはすべて解決する（`DocsLinkIntegrityTests`）。加えて、Markdown リンクではない本文中の `docs/…md` 参照も走査し、production コメント 5 ファイル・テストコメント 1 ファイル・`reference/legacy/README.md` の参照先を現存する文書へ修正した。**docs 本文を検証する新しい assert は追加していない。**
+- **過去バージョンのエントリ本文に登場する `docs/…md` パスは、当時の記述として書き換えていない。** release notes は履歴の正本であり、遡って現在の構成に合わせて修正すると記録として成立しなくなるため。現存する文書は `docs/README.md` を入口に確認する。
+- **production code の変更は、削除した文書を指していたコメントの参照先修正のみ。** 挙動・制御フロー・public API・保存処理の変更はない。
+- **保存・読込・dirty / save・session / draft・autosave・rollback・recent files・起動 / 二重起動・file association・Workspace transfer・Detached window・ErrorLog の挙動変更なし。NoteNest schema（`1.4.2`）・`.nestsuite` wrapper（`formatVersion 1.0`）・IdeaNest / ChatNest / TempNest / session / draft / UI settings 形式の変更なし。schema bump なし。外部依存の追加なし。**
+- **実機でしか確認できない項目はない**（本 version は docs と version 表記のみの変更で、UI・挙動を変更していないため）。
+
+---
+
 ## v2.25.0 — TD-95 production source 現行化・冗長実装の縮退
 
 - **TD-95: production source（`NestSuite/` 配下の `.cs` と `.xaml` の両方）を横断的に点検し、履歴コメント・dead code・冗長実装・独自再実装を縮退した。利用者向け挙動と保存形式は一切変更していない。** 目的は行数削減ではなく、「現在の処理を理解するために保持しなければならない概念」を減らすこと。

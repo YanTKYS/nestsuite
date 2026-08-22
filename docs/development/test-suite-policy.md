@@ -1,9 +1,7 @@
 # テストスイート方針 — 何をテストし、何をテストしないか
 
-> 作成: v2.24.1 / TD-94
 > 対象: `NestSuite.Tests/` に追加・変更するすべてのテスト
-> 関連: `docs/development/nestsuite-development-guidelines.md`（実装ルール全般）、
-> `docs/development/static-test-guidelines.md`（静的テストの既存基準）
+> 関連: `docs/development/nestsuite-development-guidelines.md`（実装ルール全般）
 
 ---
 

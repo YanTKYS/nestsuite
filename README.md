@@ -154,7 +154,7 @@ NoteNest / IdeaNest / ChatNest のタブをタブのコンテキストメニュ�
 | タブ並び替えはドラッグのみ | ドラッグ以外の並び替え（キーボード等）は未対応 |
 | セッション復元は保存済みファイルのみ | 未保存タブ・カーソル位置・ペイン状態は復元されない |
 
-詳細は [docs/design/nestsuite-known-limitations.md](docs/design/nestsuite-known-limitations.md) を参照してください。
+詳細は [docs/guide/nestsuite-user-guide.md](docs/guide/nestsuite-user-guide.md) の「既知の制約」を参照してください。
 
 ## ドキュメント
 
@@ -163,9 +163,5 @@ NoteNest / IdeaNest / ChatNest のタブをタブのコンテキストメニュ�
 | [docs/guide/nestsuite-user-guide.md](docs/guide/nestsuite-user-guide.md) | 利用ガイド（起動・操作・既知制約） |
 | [docs/release-notes.md](docs/release-notes.md) | バージョン別リリースノート |
 | [docs/backlog.md](docs/backlog.md) | 今後の実装候補 |
-| [docs/design/design-decisions.md](docs/design/design-decisions.md) | 設計判断の背景 |
-| [docs/design/nestsuite-known-limitations.md](docs/design/nestsuite-known-limitations.md) | 既知の制約一覧 |
-| [docs/architecture/workspace-detached-window.md](docs/architecture/workspace-detached-window.md) | 別ウィンドウ表示アーキテクチャ |
 | [docs/operations/file-association.md](docs/operations/file-association.md) | ファイル関連付けの設定手順 |
-| [docs/testing/nestsuite-release-checklist.md](docs/testing/nestsuite-release-checklist.md) | リリース前確認チェックリスト |
-| [docs/development/nestsuite-development-guidelines.md](docs/development/nestsuite-development-guidelines.md) | 開発ルール（開発者向け） |
+| [docs/README.md](docs/README.md) | 開発・運用文書の入口 |

@@ -4,8 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// SH-40 (AT-1 フェーズ1): TempNest上部の「続きから」導線。
-/// 設計根拠: docs/planning/at1-continue-start-panel-design-review.md。
+/// TempNest上部の「続きから」導線。
 /// Shellコンストラクター起因の起動分岐そのもの（Window構築が必要）は既存方針どおり
 /// 単体テスト対象外とし、判定ロジック（<see cref="ContinueFromPanelPolicy"/>）と
 /// 表示用データ・排他状態（<see cref="TempNestWorkspaceViewModel"/>）だけを確認する。
