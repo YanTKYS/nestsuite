@@ -3,6 +3,11 @@ bin/
 obj/
 TestResults/
 
+# Publish / release output (release workflow writes publish/, stage/, artifacts/)
+publish/
+stage/
+artifacts/
+
 # User-specific files
 *.user
 *.suo
@@ -10,11 +15,6 @@ TestResults/
 
 # NuGet
 *.nupkg
-project.lock.json
-packages/
 
 # Claude Code agent state
 .claude/worktrees/
-
-# Performance measurement results (TD-56: developer-only, never committed)
-artifacts/performance-results/

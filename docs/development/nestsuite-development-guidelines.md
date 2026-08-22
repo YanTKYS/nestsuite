@@ -20,6 +20,7 @@ NestSuite の開発で共通して守るルールの正本。**実装者と設�
 | 旧 NoteNest Classic へ戻さない | `--classic-notenest` / `MainWindow` / `StartDialog` は復元しない |
 | Workspace として扱う | NoteNest / IdeaNest / ChatNest / TempNest / PlainText は NestSuite 上の Workspace |
 | 1 version = 1 purpose | 複数の大きな変更を同時に入れない。docs 整理を機能実装へ便乗させない |
+| 棚卸しのための棚卸しをしない | 整理自体を目的とする version は原則作らず、実利用で見つかった問題・利用者要望・着手トリガーが成立した backlog を優先する |
 | 既存機能の回帰を避ける | 変更範囲外の動作を壊さない |
 | 実装範囲を勝手に広げない | backlog に記載のない機能を勝手に追加しない |
 | ユーザーに見える UI 変更は明示する | UI が変わる変更は release notes に明記する |
@@ -62,7 +63,12 @@ NestSuite の開発で共通して守るルールの正本。**実装者と設�
 
 ---
 
-## 4. 外部依存・通信
+## 4. ターゲット・外部依存・通信
+
+**正式ターゲットは .NET 8 WPF（`net8.0-windows`）で、配布形態は self-contained single-file。**
+`.NET Framework 4.8` は正式非対応で、その検証系は終了済みであり再開しない（backlog RJ-1 / RJ-5）。
+クロスプラットフォーム（Android / Mac / HTML / MAUI）も現時点で対象外とし、必要になった時点で
+その時の技術状況を改めて調査する。
 
 | ルール | 詳細 |
 |--------|------|
@@ -201,7 +207,7 @@ NestSuite の開発で共通して守るルールの正本。**実装者と設�
 - Workspace 間の直接依存（独立性を壊す変更）
 - 将来拡張のためだけの抽象化
 - ローカル dotnet build / dotnet test の必須化
-- release workflow の変更 / net48_test の再開
+- release workflow の変更 / .NET Framework 4.8 検証の再開
 - ErrorLog へ Error 以外（Info / Warning）を記録すること
 ```
 
