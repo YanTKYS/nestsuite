@@ -103,7 +103,7 @@ public class CH16OperationDiscoverabilityXamlTests
         Assert.DoesNotContain("ContextMenu", separatorBlock);
 
         var inputAreaIdx = src.IndexOf("ChatInputPanelBackgroundBrush", StringComparison.Ordinal);
-        var inputAreaEnd = src.IndexOf("<!-- CH-4:", inputAreaIdx, StringComparison.Ordinal);
+        var inputAreaEnd = src.IndexOf("<!-- 発言削除確認ダイアログ", inputAreaIdx, StringComparison.Ordinal);
         var inputAreaBlock = src.Substring(inputAreaIdx, inputAreaEnd - inputAreaIdx);
         Assert.DoesNotContain("StackPanel.ContextMenu", inputAreaBlock);
     }

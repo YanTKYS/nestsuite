@@ -9,7 +9,7 @@
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandSave_Executed"/>
     </Window.CommandBindings>
     <DockPanel>
-        <!-- v2.16.5 SH-28: 保存・エクスポート等の完了を伝える一時通知。AppShell 側と同じ表示方針。 -->
+        <!-- 保存・エクスポート等の完了を伝える一時通知。AppShell 側と同じ表示方針。 -->
         <Border DockPanel.Dock="Bottom" Height="22"
                 Background="{DynamicResource StatusBarBg}"
                 BorderBrush="{DynamicResource PaneBorder}"

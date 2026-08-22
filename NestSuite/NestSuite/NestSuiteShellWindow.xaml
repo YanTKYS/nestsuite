@@ -13,14 +13,14 @@
         MinHeight="500" MinWidth="870"
         WindowStartupLocation="CenterScreen">
     <Window.CommandBindings>
-        <!-- v1.16.1: Ctrl+S で SaveActiveTab() を実行する。ApplicationCommands.Save は Ctrl+S ジェスチャを内包する -->
+        <!-- Ctrl+S で SaveActiveTab() を実行する。ApplicationCommands.Save は Ctrl+S ジェスチャを内包する -->
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandSave_Executed"/>
-        <!-- v2.10.4 SH-20: Ctrl+Shift+S ですべて保存を実行する -->
+        <!-- Ctrl+Shift+S ですべて保存を実行する -->
         <CommandBinding Command="{x:Static local:NestSuiteShellWindow.SaveAllCommand}" Executed="CommandSaveAll_Executed"/>
-        <!-- v2.15.0 SH: Ctrl+Shift+F で Shell 横断検索パネルを開閉する -->
+        <!-- Ctrl+Shift+F で Shell 横断検索パネルを開閉する -->
         <CommandBinding Command="{x:Static local:NestSuiteShellWindow.CrossSearchCommand}" Executed="CommandCrossSearch_Executed"/>
     </Window.CommandBindings>
-    <!-- v2.14.11 SH-32: ルートに Background 未指定だと、子要素で覆われない隙間が
+    <!-- ルートに Background 未指定だと、子要素で覆われない隙間が
          Window既定の白色で透けて見える（ダークテーマ時に右ペイン折り畳みボタン周辺が
          白いバーになる不具合の原因）。AppBg を明示指定して背景を統一する。 -->
     <DockPanel Background="{DynamicResource AppBg}">
@@ -29,7 +29,7 @@
             <MenuItem Header="ファイル(_F)"
                       AutomationProperties.AutomationId="Shell.FileMenu"
                       AutomationProperties.Name="Shell.FileMenu">
-                <!-- v2.15.1 SH: 各 Nest の新規作成導線はここ（ファイル > 新規作成）とタブバーの
+                <!-- 各 Nest の新規作成導線はここ（ファイル > 新規作成）とタブバーの
                      ＋ ボタンへ集約する。ツールメニューからは各 Nest の起動・新規作成項目を削除した。 -->
                 <MenuItem Header="新規作成(_N)"
                           AutomationProperties.AutomationId="Shell.NewMenu"
@@ -46,7 +46,7 @@
                               AutomationProperties.AutomationId="Shell.MenuNewChatNest"
                               AutomationProperties.Name="Shell.MenuNewChatNest"
                               Click="MenuNewChatNest_Click"/>
-                    <!-- v2.19.0 SH-43: 通常の .txt を扱う最小プレーンテキスト Workspace。新しい Nest ではない。 -->
+                    <!-- 通常の .txt を扱う最小プレーンテキスト Workspace。新しい Nest ではない。 -->
                     <MenuItem Header="新規 テキスト — シンプルなプレーンテキスト編集(_T)"
                               AutomationProperties.AutomationId="Shell.MenuNewText"
                               AutomationProperties.Name="Shell.MenuNewText"
@@ -57,7 +57,7 @@
                     <MenuItem Header="（履歴なし）" IsEnabled="False"/>
                 </MenuItem>
                 <Separator/>
-                <!-- v2.16.10 SH-30: Save / SaveAll は Ctrl+S / Ctrl+Shift+S の CommandBinding.Executed に
+                <!-- Save / SaveAll は Ctrl+S / Ctrl+Shift+S の CommandBinding.Executed に
                      引き続き委譲しつつ、MenuItem 自体は Click ハンドラへ切り替えた。Command バインドのままだと
                      WPF の CanExecute 再照会で IsEnabled を手動制御できない（毎回上書きされる）ため。
                      ショートカットキーの動作・保存ロジックは変更していない。 -->
@@ -72,14 +72,14 @@
                 <Separator/>
                 <MenuItem Header="終了(_X)" Click="MenuExit_Click"/>
             </MenuItem>
-            <!-- v2.15.1 SH: ツールメニューは各 Nest の起動・新規作成導線ではなく、Shell の補助機能
+            <!-- ツールメニューは各 Nest の起動・新規作成導線ではなく、Shell の補助機能
                  （横断検索、将来的な横断タスクビュー・関連管理・振り返りダッシュボードなど）を置く場所とする。
                  各 Nest の新規作成は ファイル > 新規作成 とタブバーの ＋ ボタンに集約した。 -->
             <MenuItem Header="ツール(_T)"
                       AutomationProperties.AutomationId="Shell.ToolMenu"
                       AutomationProperties.Name="Shell.ToolMenu">
-                <!-- v2.15.0 SH: Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能） -->
-                <!-- v2.15.1 SH: 表示メニューから移動した。「表示切替」ではなく「作業補助ツール」であるため。 -->
+                <!-- Shell横断検索（開いているタブのみ対象。新規 Workspace ではなく Shell 機能）。
+                     「表示切替」ではなく「作業補助ツール」のため表示メニューではなくツールメニューに置く。 -->
                 <MenuItem Header="横断検索(_S)"
                           AutomationProperties.AutomationId="Shell.CrossSearchMenuItem"
                           AutomationProperties.Name="Shell.CrossSearchMenuItem"
@@ -106,8 +106,8 @@
                               IsCheckable="True"
                               Click="MenuThemeDark_Click"/>
                 </MenuItem>
-                <!-- v2.14.18 SH: NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類。
-                     NoteNest を開いていなくても変更できるよう、Workspace 内 ComboBox からメニューバーへ移動した。 -->
+                <!-- NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類。
+                     NoteNest を開いていなくても変更できるよう、Workspace 内ではなくメニューバーに置く。 -->
                 <MenuItem Header="本文フォント(_F)"
                           AutomationProperties.AutomationId="Shell.WorkspaceFontMenu"
                           AutomationProperties.Name="Shell.WorkspaceFontMenu">
@@ -147,7 +147,7 @@
                               IsCheckable="True"
                               Click="MenuWorkspaceFont_Click"/>
                 </MenuItem>
-                <!-- M14: NoteNest 左ペインのノート一覧表示順。NoteNest を開いていなくても変更できるよう
+                <!-- NoteNest 左ペインのノート一覧表示順。NoteNest を開いていなくても変更できるよう
                      本文フォントと同様にメニューバーへ置く。保存データの並び順は変更しない。 -->
                 <MenuItem Header="ノートの並び順(_O)"
                           AutomationProperties.AutomationId="Shell.NoteSortModeMenu"
@@ -174,7 +174,7 @@
                               AutomationProperties.Name="NoteNest.SortMode.Title"
                               Click="MenuNoteSortMode_Click"/>
                 </MenuItem>
-                <!-- v2.19.3 L4: NoteNest 本文エディタのワードラップ切替。NoteNest を開いていなくても
+                <!-- NoteNest 本文エディタのワードラップ切替。NoteNest を開いていなくても
                      変更できるよう、本文フォント・ノートの並び順と同様にメニューバーへ置く。
                      保存データ（本文・schema）は変更しない、表示専用の UI 設定。 -->
                 <MenuItem x:Name="NoteNestWordWrapMenuItem"
@@ -185,7 +185,7 @@
                           Click="MenuNoteNestWordWrap_Click"/>
             </MenuItem>
             <MenuItem Header="ヘルプ(_H)">
-                <!-- v2.16.10 SH-30: 常時有効なヘルプ項目は「無効理由」ではなく短い説明のみを付ける -->
+                <!-- 常時有効なヘルプ項目は「無効理由」ではなく短い説明のみを付ける -->
                 <MenuItem Header="キーボードショートカット(_K)"
                           AutomationProperties.AutomationId="Shell.KeyboardShortcutsMenuItem"
                           AutomationProperties.Name="Shell.KeyboardShortcutsMenuItem"
@@ -196,7 +196,7 @@
                           AutomationProperties.Name="Shell.BackupRestoreGuideMenuItem"
                           ToolTip="{x:Static svc:ShellCommandTooltipProvider.BackupRestoreGuideTooltip}"
                           Click="MenuBackupRestoreGuide_Click"/>
-                <!-- SH-37: 利用者が任意に開く読み取り専用の現在地サマリー。常設ステータスバー表示ではない。 -->
+                <!-- 利用者が任意に開く読み取り専用の現在地サマリー。常設ステータスバー表示ではない。 -->
                 <MenuItem Header="現在の状態(_S)"
                           AutomationProperties.AutomationId="Shell.StateSummaryMenuItem"
                           AutomationProperties.Name="Shell.StateSummaryMenuItem"
@@ -217,7 +217,7 @@
                 BorderBrush="{DynamicResource PaneBorder}"
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-                <!-- v2.13.3 SH-30: アクティブタブ（_selectedTab）を基準に RefreshWorkspaceStatus で更新する。
+                <!-- アクティブタブ（_selectedTab）を基準に RefreshWorkspaceStatus で更新する。
                      Window.DataContext（NoteNest 固有）への直接 Binding は行わない -->
                 <TextBlock x:Name="ShellStatusFileText"
                            AutomationProperties.AutomationId="Shell.StatusBar"
@@ -233,7 +233,7 @@
             </StackPanel>
         </Border>
 
-        <!-- v2.15.0 SH: Shell横断検索パネル（開いているタブのみが対象。表示状態・検索語・結果はどこにも永続化しない） -->
+        <!-- Shell横断検索パネル（開いているタブのみが対象。表示状態・検索語・結果はどこにも永続化しない） -->
         <Border x:Name="CrossSearchPanel"
                 DockPanel.Dock="Right"
                 Width="300"
@@ -243,10 +243,9 @@
                 BorderThickness="1,0,0,0">
             <DockPanel Margin="10">
                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <!-- v2.15.1 SH: 閉じるボタンが中央寄りに見える不具合を修正。
-                         旧実装は内側 DockPanel の最後の子（× ボタン）が LastChildFill により
-                         Dock="Right" を無視して残り領域いっぱいに広がっていたため、Grid 化して
-                         タイトル列（*）と閉じるボタン列（Auto）を明示的に分離し、右端に固定する。 -->
+                    <!-- DockPanel ではなく Grid で組む。DockPanel の LastChildFill は最後の子である
+                         × ボタンの Dock="Right" を無視して残り領域いっぱいに広げてしまい、閉じるボタンが
+                         中央寄りに見えるため。タイトル列（*）と閉じるボタン列（Auto）を明示的に分離する。 -->
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -271,7 +270,7 @@
                              Foreground="{DynamicResource PrimaryTextBrush}"
                              BorderBrush="{DynamicResource BorderBrush}"
                              Padding="4"/>
-                    <!-- SH-41 (AT-2 フェーズ1): 既定OFF・永続化しない。ON時だけ現在開いていない
+                    <!-- 既定OFF・永続化しない。ON時だけ現在開いていない
                          recent files上位5件も検索対象に含める。 -->
                     <CheckBox x:Name="CrossSearchIncludeRecentFilesCheckBox"
                               Content="最近のファイルも検索"
@@ -289,7 +288,7 @@
                 </StackPanel>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <!-- SH-41: 「開いているファイル」グループ。0件のときは見出しごと表示しない。 -->
+                        <!-- 「開いているファイル」グループ。0件のときは見出しごと表示しない。 -->
                         <TextBlock Text="開いているファイル" FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryTextBrush}"
                                    Margin="0,0,0,2"
@@ -315,7 +314,7 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                        <!-- SH-41: 「最近使ったファイル」グループ（未オープンrecent files。ON時のみ）。 -->
+                        <!-- 「最近使ったファイル」グループ（未オープンrecent files。ON時のみ）。 -->
                         <TextBlock Text="最近使ったファイル" FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryTextBrush}"
                                    Margin="0,8,0,2"
@@ -346,24 +345,24 @@
             </DockPanel>
         </Border>
 
-        <!-- メインエリア: Workspace 領域（v1.16.2: 左ツール選択カラムを廃止し全幅化） -->
+        <!-- メインエリア: Workspace 領域（全幅。左ツール選択カラムは持たない） -->
         <Grid>
             <Grid.RowDefinitions>
-                <!-- v1.16.4: Height="Auto" + MinHeight="50" でタブ（32px）とスクロールバー（~17px）が重ならないよう確保 -->
+                <!-- Height="Auto" + MinHeight="50" でタブ（32px）とスクロールバー（~17px）が重ならないよう確保 -->
                 <RowDefinition Height="Auto"/>
                 <!-- Workspace コンテンツ -->
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- v1.7.3: ファイル単位タブストリップ。ItemsSource は NestSuiteDocumentTab のコレクション -->
-            <!-- v2.2.0: DockPanel で「＋」ボタン（SH-5）を右端に追加 -->
+            <!-- ファイル単位タブストリップ。ItemsSource は NestSuiteDocumentTab のコレクション -->
+            <!-- DockPanel で「＋」ボタンを右端に配置する -->
             <Border Grid.Row="0"
                     MinHeight="50"
                     BorderBrush="{DynamicResource PaneBorder}"
                     BorderThickness="0,0,0,1">
                 <DockPanel>
-                    <!-- v2.2.0 SH-5: 新規タブ追加ボタン。クリックで NoteNest/IdeaNest/ChatNest 選択メニューを表示 -->
-                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
+                    <!-- 新規タブ追加ボタン。クリックで NoteNest/IdeaNest/ChatNest 選択メニューを表示 -->
+                    <!-- IconButton スタイルを適用する（Foreground/hover 未指定だとダークテーマで白浮きするため） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabAddButton"
                             AutomationProperties.Name="新規タブを追加"
@@ -375,7 +374,7 @@
                             ToolTip="新規タブを追加"
                             Click="TabAddButton_Click">
                         <Button.ContextMenu>
-                            <!-- v2.15.1 SH: ファイル > 新規作成 と同じ説明的表記を用いる -->
+                            <!-- ファイル > 新規作成 と同じ説明的表記を用いる -->
                             <ContextMenu>
                                 <MenuItem Header="新規 NoteNest — ノートをプロジェクト単位で管理(_N)"
                                           AutomationProperties.AutomationId="Shell.TabAddMenuNoteNest"
@@ -396,8 +395,8 @@
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
-                    <!-- v2.7.9 SH-6: タブ一覧ボタン。クリックで開いているタブをドロップダウン一覧表示 -->
-                    <!-- v2.14.11 SH-32: IconButton スタイル適用（Foreground/hover 未指定によるダークテーマ白浮きを解消） -->
+                    <!-- タブ一覧ボタン。クリックで開いているタブをドロップダウン一覧表示 -->
+                    <!-- IconButton スタイルを適用する（Foreground/hover 未指定だとダークテーマで白浮きするため） -->
                     <Button DockPanel.Dock="Right"
                             AutomationProperties.AutomationId="Shell.TabListButton"
                             AutomationProperties.Name="タブ一覧を開く"
@@ -428,7 +427,7 @@
                                 <StackPanel Orientation="Horizontal"/>
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
-                        <!-- v2.2.0 SH-7: Padding="0" / Stretch でアクセント帯を ListBoxItem 全幅に描画 -->
+                        <!-- Padding="0" / Stretch でアクセント帯を ListBoxItem 全幅に描画 -->
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="0"/>
@@ -440,17 +439,16 @@
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <!-- v1.9.9: ツールチップにツール種別・ファイルパス・保存状態を表示 -->
-                                <!-- v2.2.0 SH-7: 上部 3px に Workspace 種別カラーアクセントを追加 -->
-                                <!-- v2.4.0 SH-2: 右クリックコンテキストメニュー -->
+                                <!-- ツールチップにツール種別・ファイルパス・保存状態を表示 -->
+                                <!-- 上部 3px の Workspace 種別カラーアクセント -->
+                                <!-- 右クリックコンテキストメニュー -->
                                 <Grid ToolTip="{Binding TooltipText}">
                                     <Grid.ContextMenu>
                                         <ContextMenu>
-                                            <!-- v2.16.10 SH-30: 無効理由ツールチップを追加。CanClose/CanPin/IsPinned の
-                                                 判定条件は変更していない。ピン留め項目は、従来 Temp タブでは
-                                                 メニューごと非表示にしていたが、無効理由（「Temp タブはピン留めできません」）
-                                                 を表示できるよう、表示条件を PinActionVisible（!IsPinned）に変え、
-                                                 IsEnabled=CanPin で無効表示にする方式へ変更した。 -->
+                                            <!-- 無効な項目は隠さず、無効理由をツールチップで示す
+                                                 （例: Temp タブでは「Temp タブはピン留めできません」）。
+                                                 そのためピン留め項目の表示条件は PinActionVisible（!IsPinned）とし、
+                                                 有効・無効は IsEnabled=CanPin で表す。 -->
                                             <MenuItem Header="このタブを閉じる(_C)"
                                                       IsEnabled="{Binding CanClose}"
                                                       ToolTip="{Binding CloseMenuTooltip}"
@@ -468,11 +466,11 @@
                                                       ToolTip="{Binding UnpinMenuTooltip}"
                                                       ToolTipService.ShowOnDisabled="True"
                                                       Click="TabContextUnpin_Click"/>
-                                            <!-- v2.9.0 SH-21: NoteNest 未分離タブのみ別ウィンドウ表示を提供する -->
+                                            <!-- NoteNest 未分離タブのみ別ウィンドウ表示を提供する -->
                                             <MenuItem Header="別ウィンドウで表示(_D)"
                                                       Visibility="{Binding IsDetachable, Converter={StaticResource BoolToVis}}"
                                                       Click="TabContextDetach_Click"/>
-                                            <!-- v2.9.1 SH-21: 分離中タブはシェルへ戻す操作を提供する -->
+                                            <!-- 分離中タブはシェルへ戻す操作を提供する -->
                                             <MenuItem Header="このタブへ戻す(_B)"
                                                       Visibility="{Binding IsDetached, Converter={StaticResource BoolToVis}}"
                                                       Click="TabContextReturnDetached_Click"/>
@@ -492,13 +490,13 @@
                                                 VerticalAlignment="Center" Margin="12,0">
                                         <TextBlock Text="{Binding TabHeaderText}" FontSize="12"
                                                    VerticalAlignment="Center"/>
-                                        <!-- v2.2.0: 未保存マークを ● に変更（視認性向上） -->
+                                        <!-- 未保存マーク -->
                                         <TextBlock Text="●" FontSize="10"
                                                    VerticalAlignment="Center"
                                                    Foreground="{DynamicResource UnsavedBrush}"
                                                    Margin="4,0,0,0"
                                                    Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"/>
-                                        <!-- v1.7.6: タブ閉じるボタン。Tag に自身のタブモデルをバインドして渡す -->
+                                        <!-- タブ閉じるボタン。Tag に自身のタブモデルをバインドして渡す -->
                                         <Button Content="×" FontSize="10"
                                                 Margin="6,0,0,0" Padding="3,1"
                                                 VerticalAlignment="Center"
@@ -519,34 +517,33 @@
 
             <!-- Workspace コンテンツ（選択タブに対応する Workspace を表示） -->
             <Grid Grid.Row="1">
-                <!-- v1.10.2: Visibility="Collapsed" デフォルトにした。ActivateTab が表示を制御する。
-                     起動時にタブ未選択の瞬間 NoteNest Workspace が見えるちらつきを防ぐ。 -->
+                <!-- 既定は Visibility="Collapsed" とし、表示は ActivateTab が制御する。
+                     起動時にタブ未選択の瞬間 NoteNest Workspace が見えるちらつきを防ぐため。 -->
                 <views:NoteNestWorkspaceView x:Name="WorkspaceView"
                                              AutomationProperties.AutomationId="Shell.NoteNestWorkspace"
                                              AutomationProperties.Name="Shell.NoteNestWorkspace"
                                              Visibility="Collapsed"/>
-                <!-- v1.7.0: ChatNest 統合検証用 Workspace（ChatNest タブ選択時に表示） -->
+                <!-- ChatNest 統合検証用 Workspace（ChatNest タブ選択時に表示） -->
                 <chatnest:ChatNestWorkspaceView x:Name="ChatWorkspaceView"
                                                 AutomationProperties.AutomationId="Shell.ChatNestWorkspace"
                                                 AutomationProperties.Name="Shell.ChatNestWorkspace"
                                                 Visibility="Collapsed"/>
-                <!-- v1.8.0: IdeaNest 統合検証用 Workspace（IdeaNest タブ選択時に表示） -->
+                <!-- IdeaNest 統合検証用 Workspace（IdeaNest タブ選択時に表示） -->
                 <ideanest:IdeaNestWorkspaceView x:Name="IdeaNestWorkspaceView"
                                                 AutomationProperties.AutomationId="Shell.IdeaNestWorkspace"
                                                 AutomationProperties.Name="Shell.IdeaNestWorkspace"
                                                 ShowMenu="False" Visibility="Collapsed"/>
-                <!-- v2.6.0: TempNest 固定タブ Workspace（ファイル型でない内部 JSON 管理の一時メモ） -->
+                <!-- TempNest 固定タブ Workspace（ファイル型でない内部 JSON 管理の一時メモ） -->
                 <tempnest:TempNestWorkspaceView x:Name="TempNestWorkspaceView"
                                                 AutomationProperties.AutomationId="Shell.TempNestWorkspace"
                                                 AutomationProperties.Name="Shell.TempNestWorkspace"
                                                 Visibility="Collapsed"/>
-                <!-- v2.19.0 SH-43: 通常の .txt を扱う最小プレーンテキスト Workspace（PlainText タブ選択時に表示） -->
+                <!-- 通常の .txt を扱う最小プレーンテキスト Workspace（PlainText タブ選択時に表示） -->
                 <plaintext:PlainTextWorkspaceView x:Name="PlainTextWorkspaceView"
                                                   AutomationProperties.AutomationId="Shell.PlainTextWorkspace"
                                                   AutomationProperties.Name="Shell.PlainTextWorkspace"
                                                   Visibility="Collapsed"/>
-                <!-- v2.9.0 SH-21: 別ウィンドウ表示中の NoteNest タブ向けプレースホルダー -->
-                <!-- v2.9.1 SH-21: 説明文と「このタブへ戻す」ボタンを追加 -->
+                <!-- 別ウィンドウ表示中の NoteNest タブ向けプレースホルダー（説明文と「このタブへ戻す」ボタン） -->
                 <Grid x:Name="DetachedNoteNestPlaceholder" Visibility="Collapsed"
                       AutomationProperties.AutomationId="Shell.DetachedWorkspacePlaceholder"
                       AutomationProperties.Name="Shell.DetachedWorkspacePlaceholder"

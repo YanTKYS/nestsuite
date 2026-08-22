@@ -8,7 +8,7 @@
     <UserControl.Resources>
         <!-- ═══ Resources: Converters / Styles / DataTemplates ═══ -->
 
-        <!-- Converters（参照ソース ChatNest v0.4.1。Workspace で実際に使う 4 種のみ取り込み） -->
+        <!-- Converters（Workspace で実際に使う 4 種のみ） -->
         <cn:RadioConverter x:Key="RadioConverter"/>
         <cn:SpeakerBackgroundConverter x:Key="SpeakerBg"/>
         <cn:SpeakerAccentConverter x:Key="SpeakerAccent"/>
@@ -60,7 +60,7 @@
             <Setter Property="Padding" Value="20,9"/>
         </Style>
 
-        <!-- v1.16.5: 会話全体コピーボタン用スタイル -->
+        <!-- 会話全体コピーボタン用スタイル -->
         <Style x:Key="CopyButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
             <Setter Property="FontSize" Value="11"/>
@@ -100,7 +100,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- v2.7.11 CH-10: 発言単体コピーボタン。低透明度で常時表示し、ホバーで鮮明になる -->
+        <!-- 発言単体コピーボタン。低透明度で常時表示し、ホバーで鮮明になる -->
         <Style x:Key="MessageCopyButton" TargetType="Button">
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -126,7 +126,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- v2.7.11 CH-5: 検索バーボタン（前へ / 次へ / 閉じる） -->
+        <!-- 検索バーボタン（前へ / 次へ / 閉じる） -->
         <Style x:Key="SearchButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
             <Setter Property="FontSize" Value="12"/>
@@ -164,7 +164,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- v2.9.6: Foreground を明示し Dark テーマ非選択状態の視認性を確保する。
+        <!-- Foreground を明示し Dark テーマ非選択状態の視認性を確保する。
              IsChecked=True 時は Foreground=White で上書きされる。 -->
         <Style x:Key="SpeakerToggle" TargetType="RadioButton">
             <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, sans-serif"/>
@@ -196,13 +196,14 @@
             </Setter>
         </Style>
 
-        <!-- v2.3.0: DataType を MessageViewModel に変更。v2.7.11: CH-7 speaker chip / CH-10 copy / CH-5 search highlight。v2.10.9: CH-13 drag handle。v2.10.20: CH-15 context menu。v2.18.10: CH-11 日付区切り -->
+        <!-- 発言 1 件のテンプレート。日付区切り・ドラッグハンドル・発言者チップ・時刻・コピーボタン・
+             吹き出し・右クリックメニューをこの順で並べる。DataType は MessageViewModel。 -->
         <DataTemplate x:Key="MessageTemplate" DataType="{x:Type cn:MessageViewModel}">
-          <!-- CH-11: 外側は日付区切り＋メッセージ本体の縦積みだけを担う。ContextMenu・選択/検索ハイライト・
+          <!-- 外側は日付区切り＋メッセージ本体の縦積みだけを担う。ContextMenu・選択/検索ハイライト・
                ドラッグ透過は内側のメッセージ用 StackPanel だけへ適用し、区切りへは広げない。 -->
           <StackPanel>
-            <!-- CH-11: 日付区切り。表示専用（.chatnest へ保存しない）。選択・右クリック・ドラッグ対象にしない -->
-            <!-- CH-18: 通常のメッセージ間余白（16,3）より一段広い余白にし、日付区切りが会話全体の
+            <!-- 日付区切り。表示専用（.chatnest へ保存しない）。選択・右クリック・ドラッグ対象にしない -->
+            <!-- 通常のメッセージ間余白（16,3）より一段広い余白にし、日付区切りが会話全体の
                  タイムラインの節目であることを視覚的に伝える。区切りの計算・保存ロジックは変更しない -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
@@ -220,7 +221,7 @@
                         Background="{DynamicResource BorderBrush}"/>
             </StackPanel>
 
-            <!-- CH-19: メッセージコンテナ自体をフォーカス可能化し、TabキーとShift+F10／コンテキスト
+            <!-- メッセージコンテナ自体をフォーカス可能化し、TabキーとShift+F10／コンテキスト
                  メニューキーによる既存ContextMenuへのキーボード到達を可能にする。ContextMenuはこの
                  StackPanelにそのまま残しており、PlacementTarget.DataContextは変更していないため、
                  マウス右クリック・Shift+F10のどちらで開いても操作対象は一致する（WPF標準の
@@ -236,7 +237,7 @@
                         AutomationProperties.Name="{Binding AccessibleSummary}"
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
 
-                <!-- CH-5: 現在の検索結果に背景ハイライト。CH-13: ドラッグ中は半透明 -->
+                <!-- 現在の検索結果に背景ハイライト。ドラッグ中は半透明 -->
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
                         <Setter Property="Background" Value="Transparent"/>
@@ -251,14 +252,14 @@
                     </Style>
                 </StackPanel.Style>
 
-                <!-- CH-4/CH-6: 右クリックで編集・削除。CH-15: 会話操作・時刻表示を追加 -->
+                <!-- 右クリックで編集・削除・会話操作・時刻表示 -->
                 <StackPanel.ContextMenu>
                     <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                         <MenuItem Header="本文をコピー(_C)" Command="{Binding CopyMessageCommand}"/>
                         <MenuItem Header="編集(_E)" Command="{Binding BeginEditCommand}"/>
                         <MenuItem Header="削除(_D)" Command="{Binding RequestDeleteCommand}"/>
-                        <!-- LK-4 (v2.21.0): 発言単体を IdeaNest カードへ手動転送する。TD-92 設計どおり
-                             常に有効（IdeaNest タブの有無は Shell 側が受け取ってから判定する）。 -->
+                        <!-- 発言単体を IdeaNest カードへ手動転送する。常に有効にしておき、
+                             IdeaNest タブの有無は Shell 側が受け取ってから判定する。 -->
                         <MenuItem Header="IdeaNestカードに追加(_I)" Command="{Binding TransferToIdeaNestCommand}"/>
                         <Separator/>
                         <MenuItem Header="会話をコピー(_K)"
@@ -276,7 +277,7 @@
                     </ContextMenu>
                 </StackPanel.ContextMenu>
 
-                <!-- CH-13: ドラッグ並び替えハンドル（ホバーで鮮明、ドラッグで並び替え）。CH-16: AutomationProperties.Name を追加 -->
+                <!-- ドラッグ並び替えハンドル（ホバーで鮮明、ドラッグで並び替え） -->
                 <TextBlock Text="⠿"
                            FontSize="14"
                            Cursor="SizeNS"
@@ -298,13 +299,13 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- CH-7: 発言者チップ + 時刻 + CH-10 コピーボタン -->
-                <!-- CH-18: 下マージンをわずかに広げ、発言者ラベル行と本文の間に小さな間隔を設ける -->
+                <!-- 発言者チップ + 時刻 + コピーボタン -->
+                <!-- 下マージンをわずかに広げ、発言者ラベル行と本文の間に小さな間隔を設ける -->
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Top"
                             Margin="0,6,7,4">
-                    <!-- CH-7: 発言者ラベルをチップ形状で表示（背景色 + ボーダー + 太字） -->
-                    <!-- CH-18: 本文（FontSize 13）より小さく・太字にすることで、発言者を本文より弱い
+                    <!-- 発言者ラベルをチップ形状で表示（背景色 + ボーダー + 太字） -->
+                    <!-- 本文（FontSize 13）より小さく・太字にすることで、発言者を本文より弱い
                          視覚階層に保ったまま維持する。色・配置・意味は変更しない -->
                     <Border Background="{Binding Speaker, Converter={StaticResource SpeakerBg}}"
                             BorderBrush="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
@@ -318,7 +319,7 @@
                                    Foreground="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
                                    VerticalAlignment="Center"/>
                     </Border>
-                    <!-- CH-8: タイムスタンプ非表示時は Collapsed。ShowTimestamps は UserControl の DataContext (ChatNestWorkspaceViewModel) が持つ -->
+                    <!-- タイムスタンプ非表示時は Collapsed。ShowTimestamps は UserControl の DataContext (ChatNestWorkspaceViewModel) が持つ -->
                     <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}"
                                FontSize="10"
                                Foreground="{DynamicResource MutedTextBrush}"
@@ -327,13 +328,13 @@
                                Visibility="{Binding DataContext.ShowTimestamps, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 </StackPanel>
 
-                <!-- 吹き出し。CH-5: IsSearchCurrent で全辺ボーダー表示 -->
+                <!-- 吹き出し。IsSearchCurrent のとき全辺にボーダーを表示する -->
                 <Border Background="{Binding Speaker, Converter={StaticResource SpeakerBg}}"
                         BorderBrush="{Binding Speaker, Converter={StaticResource SpeakerAccent}}"
                         CornerRadius="8"
                         Padding="10,6"
                         MaxWidth="460">
-                    <!-- CH-18: 左の発言者アクセント（3px）に加え、上下右も極細（1px）にして
+                    <!-- 左の発言者アクセント（3px）に加え、上下右も極細（1px）にして
                          メッセージ本文の境界をわずかに補強する。強い枠線・影は使わない -->
                     <Border.Style>
                         <Style TargetType="Border">
@@ -365,7 +366,7 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <!-- CH-6: 編集モード（IsEditing=true のとき表示） -->
+                        <!-- 編集モード（IsEditing=true のとき表示） -->
                         <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
                             <TextBox Text="{Binding EditingText, UpdateSourceTrigger=PropertyChanged}"
                                      TextWrapping="Wrap"
@@ -406,7 +407,7 @@
     </UserControl.Resources>
 
     <!-- ═══ MAIN LAYOUT ═══ -->
-    <!-- v2.7.11: Row 0 = CH-5 検索バー（非表示時は高さゼロ）、Row 1 = チャットログ、Row 2 = 入力エリア -->
+    <!-- Row 0 = 検索バー（非表示時は高さゼロ）、Row 1 = チャットログ、Row 2 = 入力エリア -->
     <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -414,7 +415,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ========== CH-5: 検索バー ========== -->
+        <!-- ========== 検索バー ========== -->
         <Border Grid.Row="0"
                 Background="{DynamicResource ChatSearchBarBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
@@ -479,7 +480,7 @@
                       Padding="0,8,0,8"
                       Background="Transparent"
                       ScrollChanged="ChatScrollViewer_ScrollChanged">
-            <!-- CH-15: 空エリア右クリックメニュー -->
+            <!-- 空エリア右クリックメニュー -->
             <ScrollViewer.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="会話をコピー(_K)" Command="{Binding CopyConversationCommand}"/>
@@ -509,7 +510,7 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- CH-13: ドラッグ挿入位置インジケーター（ScrollViewer と同セル・上レイヤー）-->
+        <!-- ドラッグ挿入位置インジケーター（ScrollViewer と同セル・上レイヤー）-->
         <Canvas Grid.Row="1" IsHitTestVisible="False">
             <Rectangle x:Name="DragInsertionIndicator"
                        Height="2"
@@ -549,7 +550,7 @@
                        Margin="0,6,0,0"/>
         </StackPanel>
 
-        <!-- CH-3: 最新へボタン（過去発言を読んでいるときのみ表示） -->
+        <!-- 最新へボタン（過去発言を読んでいるときのみ表示） -->
         <Button x:Name="ScrollToBottomButton"
                 AutomationProperties.AutomationId="ChatNest.ScrollToBottomButton"
                 AutomationProperties.Name="ChatNest.ScrollToBottomButton"
@@ -567,7 +568,7 @@
                 Click="ScrollToBottomButton_Click"/>
 
         <!-- ========== INPUT AREA ========== -->
-        <!-- CH-18: 会話一覧との境界を明確にするため、検索バー下端の境界線（BorderThickness="0,0,0,1"）と
+        <!-- 会話一覧との境界を明確にするため、検索バー下端の境界線（BorderThickness="0,0,0,1"）と
              対になる上端の細い境界線を追加する。既存の DynamicResource（BorderBrush）を再利用し、
              新しい固定色や太い区切りは追加しない -->
         <Border Grid.Row="2"
@@ -584,7 +585,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Speaker selector + shortcut hint (v1.16.5; CH-15: copy buttons moved to context menu) -->
+                <!-- Speaker selector（コピー操作は右クリックメニュー側にある） -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -597,9 +598,9 @@
                                    Foreground="{DynamicResource SecondaryTextBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
-                        <!-- CH-16: 常時表示していたショートカットヒント文（「Ctrl + ← / → で切り替え」）は
-                             ShortcutHelpProvider（ヘルプのショートカット一覧）と内容が重複していたため、
-                             各ボタンの Tooltip へ寄せて常時表示の占有を減らす。ショートカット自体は変更しない -->
+                        <!-- 発言者切替のショートカット（Ctrl + ← / →）はヒント文を常時表示せず、各ボタンの
+                             Tooltip に置く。ヘルプのショートカット一覧（ShortcutHelpProvider）と重複するうえ、
+                             常時表示は入力エリアの領域を占有するため。 -->
                         <RadioButton Style="{StaticResource SpeakerToggle}"
                                      AutomationProperties.AutomationId="ChatNest.SpeakerSelf"
                                      AutomationProperties.Name="ChatNest.SpeakerSelf"
@@ -630,8 +631,8 @@
                                      GroupName="Speaker"/>
                     </StackPanel>
 
-                    <!-- CH-8: コピー状態テキスト（CH-15: CheckBox/ボタン群を右クリックメニューへ移動。
-                         CH-16: 常時表示のショートカットヒント文を撤去し Tooltip/ヘルプへ整理） -->
+                    <!-- コピー状態テキスト。操作系は右クリックメニュー、ショートカットの案内は
+                         Tooltip とヘルプに置き、この行には常時表示のヒント文を出さない。 -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 VerticalAlignment="Center" Margin="12,0,6,0">
                         <TextBlock Text="{Binding CopyStatusText}"
@@ -664,7 +665,7 @@
                             BorderThickness="1"
                             CornerRadius="8"
                             Margin="0,0,10,0">
-                        <!-- CH-16: 送信・改行ショートカットは既存のまま。初回利用時に分かるよう Tooltip / HelpText へ追加 -->
+                        <!-- 送信・改行ショートカットは初回利用時に分かるよう Tooltip / HelpText で案内する -->
                         <TextBox x:Name="InputBox"
                                  AutomationProperties.AutomationId="ChatNest.InputBox"
                                  AutomationProperties.Name="ChatNest.InputBox"
@@ -712,7 +713,7 @@
             </Grid>
         </Border>
 
-        <!-- CH-4: 発言削除確認ダイアログ（オーバーレイ）-->
+        <!-- 発言削除確認ダイアログ（オーバーレイ）-->
         <Grid Grid.Row="0" Grid.RowSpan="3"
               Visibility="{Binding IsDeleteConfirmVisible, Converter={StaticResource BoolToVis}}">
             <!-- 半透明バックドロップ -->

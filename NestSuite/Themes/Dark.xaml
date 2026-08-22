@@ -20,7 +20,7 @@
     <SolidColorBrush x:Key="CommentBadgeBg"       Color="#7A5500"/>
     <SolidColorBrush x:Key="CommentBadgeFg"       Color="#FFD580"/>
 
-    <!-- v2.14.3 M12: note star (favorite) indicator。WarningBrush の橙・未保存表示と混同しない金色系 -->
+    <!-- note star (favorite) indicator。WarningBrush の橙・未保存表示と混同しない金色系 -->
     <SolidColorBrush x:Key="NoteStarIndicator" Color="#E0B84C"/>
 
     <!-- unsaved state -->
@@ -35,7 +35,7 @@
 
 
     <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
-    <!-- v2.9.6: Dark テーマで各マーカー種別が識別しやすいよう色を見直した。
+    <!-- Dark テーマで各マーカー種別を識別しやすくするため、
          FIXME(赤) > TODO(アンバー) > NOTE(緑) > NoteLink(青) の優先順位に対応した色相を付与する。 -->
     <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#2D2714"/>
     <SolidColorBrush x:Key="MarkerLineHighlightTodoBrush"  Color="#372E00"/>
@@ -78,7 +78,7 @@
     <SolidColorBrush x:Key="AppFg"    Color="#E0E0E0"/>
     <SolidColorBrush x:Key="EditorBg" Color="#1E1E1E"/>
 
-    <!-- SH-10 semantic theme resources -->
+    <!-- Semantic theme resources -->
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1E1E1E"/>
     <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#252526"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2D2D30"/>

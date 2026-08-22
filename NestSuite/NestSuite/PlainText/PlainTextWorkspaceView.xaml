@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              AutomationProperties.AutomationId="PlainText.WorkspaceRoot"
              AutomationProperties.Name="PlainText.WorkspaceRoot">
-    <!-- v2.19.0 SH-43: 最小プレーンテキスト編集 Workspace。単一の TextBox のみで構成する。
+    <!-- 最小プレーンテキスト編集 Workspace。単一の TextBox のみで構成する。
          ステータスバー・行番号・列番号・文字数・改行コード選択・文字コード選択 UI は追加しない。 -->
     <Grid Background="{DynamicResource AppBg}">
         <TextBox x:Name="EditorBox"

@@ -278,7 +278,7 @@
                                                     <Ellipse Fill="{Binding Name, Converter={StaticResource IdeaColorNameToBrush}}"
                                                              Stroke="#D1D5DB" StrokeThickness="1" />
                                                 </Border>
-                                                <!-- ID-14: 色フィルタチップへのカード枚数表示（保存しない派生値） -->
+                                                <!-- 色フィルタチップへのカード枚数表示（保存しない派生値） -->
                                                 <TextBlock Text="{Binding Count}"
                                                            FontSize="10"
                                                            Foreground="{DynamicResource IdeaTextSecondaryBrush}"
@@ -313,7 +313,7 @@
                 <TextBlock Grid.Column="0" Text=""
                            Foreground="{DynamicResource IdeaTextSecondaryBrush}"
                            FontSize="12" VerticalAlignment="Center" />
-                <!-- ID-6: 削除・アーカイブ直後だけ「元に戻す」を一時表示する。常設ボタンは追加しない -->
+                <!-- 削除・アーカイブ直後だけ「元に戻す」を一時表示する。常設ボタンは追加しない -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                     <TextBlock Text="{Binding StatusMessage}"
                                Foreground="{DynamicResource IdeaTextSecondaryBrush}"
@@ -445,7 +445,7 @@
                                                 <DataTrigger Binding="{Binding IsArchived}" Value="True">
                                                     <Setter Property="Opacity" Value="0.86" />
                                                 </DataTrigger>
-                                                <!-- ID-15: 新規カード作成後の位置フィードバック（一時選択）。既存の
+                                                <!-- 新規カード作成後の位置フィードバック（一時選択）。既存の
                                                      キーボードフォーカス強調（IdeaAccentBrush）と同じアクセント色を再利用する。 -->
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BorderBrush" Value="{DynamicResource IdeaAccentBrush}" />
@@ -518,7 +518,7 @@
                                                             <Setter Property="IsHitTestVisible" Value="True" />
                                                             <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
                                                         </DataTrigger>
-                                                        <!-- ID-9: show footer buttons when card has keyboard focus -->
+                                                        <!-- show footer buttons when card has keyboard focus -->
                                                         <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
                                                             <Setter Property="Opacity" Value="1" />
                                                             <Setter Property="IsHitTestVisible" Value="True" />
