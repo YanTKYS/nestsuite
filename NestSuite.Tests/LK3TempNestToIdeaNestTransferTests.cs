@@ -10,8 +10,7 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// v2.22.0 LK-3: TempNest スロット → IdeaNest カード化。
-/// 設計正本 docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1、§23 実装結果）に対する
-/// 実装の回帰確認。
+/// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、
 /// <see cref="LK4ChatNestToIdeaNestTransferTests"/> と同じ方針で、インスタンス化を伴わないリフレクション

@@ -11,8 +11,7 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// v2.21.0 LK-4: ChatNest 発言 → IdeaNest カード化。
-/// 設計正本 docs/planning/workspace-manual-transfer-helper-design.md（TD-92 / v2.20.1）に対する
-/// 実装の回帰確認。
+/// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、本リポジトリの
 /// 既存テスト（例: <c>WorkspaceTabHelperTests</c>）と同じ方針で、インスタンス化を伴わないリフレクション

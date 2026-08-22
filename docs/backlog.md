@@ -49,7 +49,7 @@
 - `LT-` / `RJ-` も採番済み番号は再利用しない
 - 完了時は `docs/release-notes.md` に backlog ID と実装内容を記録する
 
-### 運用ルール（v2.18.23 TD-89 で追加）
+### 運用ルール
 
 - **着手トリガーのない長期候補を追加しない**。トリガーは「実利用で同一不満が報告された」「実測で基準を超過した」など観測可能な条件で書く（「必要になったら検討」は不可）
 - **完了済み・見送り済み ID を再利用しない**。見送り項目を再検討する場合は新 ID を採番する
@@ -76,13 +76,15 @@ NoteNest Workspace の改善では「WPF 標準 TextBox の範囲内かどうか
 |----|------|------|--------|
 | SH-35 | InvalidFormat 等の恒久 pending entry への案内・解除拡張検討 | **本行は参照ポインタであり、実体・着手トリガー・実装方針は LT-9 フェーズ2 を正本とする**（解除対象拡張・個別解除は LT-9 フェーズ2 へ吸収済み。二重管理しない）。当面は、ファイルを修復する・単体で開いて `.bak` 復元案内を見る・不要なら削除して FileNotFound 化して解除する、という間接経路で許容する（FAQ / ユーザーガイドへの案内は反映済み）。LT-9 フェーズ2 のトリガー成立時に本行も同時に完了扱いとする | C |
 
-TD-88（v2.18.22）で抽出された Shell の小修正候補は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。うち横断検索の Escape クローズ＋フォーカス戻り（K-1）は SH-44（v2.19.9）で対応済み。K-2（マーカー一覧・アウトバウンドリンク一覧・被リンク一覧のキーボード対応）のうちマーカー一覧部分は L26（v2.19.10）、アウトバウンドリンク一覧・被リンク一覧部分は L27（v2.19.11）で対応済み。K-2 は全部分完了。タスクグループ開閉・タスクコメント表示のキーボード対応（K-3）は L28（v2.19.12）で対応済み。ChatNestメッセージコンテナのフォーカス可能化・既存ContextMenuへのキーボード導線（K-4）は CH-19（v2.19.13）で対応済み。アイコン・記号のみボタンへのAutomationProperties.Name補完（K-5）は SH-45（v2.19.14）で対応済み。Shellファイルメニュー・タブContextMenuのアクセスキー重複解消（K-6）は SH-46（v2.19.15）で対応済み。これでK-1〜K-6は全件完了した。
+Shell の小修正候補は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。
 
 ---
 
 ## 4. TempNest 改善
 
-TN-3 は v2.18.0 で実装済み（欠番）。TN-4（保存間隔・パスのカスタマイズ）は v2.18.23 の総点検（TD-89）で見送り（欠番。設定項目の増加が TempNest の軽さ・設定最小方針と逆行し、同期フォルダ配置の実利用要望も観測されていないため。要望が実際に報告されたら新 ID で再評価する）。TN-7（Workspace への投入）は同総点検で LK-2 / LK-3 へ吸収（欠番。同一構想の重複管理を解消）。詳細は `docs/release-notes.md` 参照。
+完了・見送りにより欠番となった TN 項番: TN-3 / TN-4 / TN-7。詳細は `docs/release-notes.md` 参照。
+
+**TN-4（保存間隔・保存パスのカスタマイズ）は見送り方針を維持する。** 設定項目の増加が TempNest の軽さ・設定最小方針と逆行するため。同期フォルダ配置の要望が実利用で報告されたら新 ID で再評価する。
 
 現在、TempNest 単独の未完了項目はない。TempNest の「何も考えず書ける」軽さの維持を最優先とし、設定・機能の追加は抑制する。
 
@@ -124,45 +126,37 @@ TN-3 は v2.18.0 で実装済み（欠番）。TN-4（保存間隔・パスの�
 
 **単体アプリとしての新規機能開発は原則凍結。** NestSuite Workspace としての改善・不具合修正・統合調整に限定する。
 
-CH-11 は v2.18.10 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
-CH-18 は v2.18.11 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
-CH-16 は v2.18.12 で実装済み（欠番）。詳細は `docs/release-notes.md` 参照。
 完了・見送りにより欠番となった ChatNest 項番: CH-11 / CH-16 / CH-17 / CH-18 / CH-19。詳細は `docs/release-notes.md` 参照。
 
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
 | CH-12 | 発言者の追加・カスタマイズ | 現在の 4 発言者に加えユーザー定義の発言者を追加できるようにする。`.chatnest` スキーマへの影響を伴う。発言者 4 種の固定は「思考の型」としての価値でもあり安易に崩さない。**着手トリガー: 4 種では表現できない用途の実利用の声が具体例つきで複数報告され、かつ FM-1 準拠の最小スキーマ設計が成立した場合。schema 変更時の判断基準・必須テストは `docs/architecture/schema-versioning-policy.md` に従う。実装主体: 着手時に小規模設計レビューを経て通常エンジニア実装** | C |
 
-TD-88（v2.18.22）で抽出されたメッセージ単体操作（編集・削除・単体コピー・並び替え）のキーボード導線は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。
+メッセージ単体操作（編集・削除・単体コピー・並び替え）のキーボード導線は backlog へ登録せず、必要になった時点で新 ID を採番して扱う。
 
 ---
 
 ## 8. タブ間連携
 
-**親構想**: Workspace 間の連携は「明示的な手動転送」のみを扱う（自動連携・共通転送基盤の先行構築はしない）。TN-3（TempNest 昇格、v2.18.0 実装済み）が最初の 1 本であり、**2 本目以降は下記トリガー成立まで実装しない**。着手時は 1 version 1 本とし、LK-4 を第一候補とする（
+**親構想**: Workspace 間の連携は「明示的な手動転送」のみを扱う（自動連携・共通転送基盤の先行構築はしない）。
 
-**共通の着手トリガー（いずれか成立で第一候補から着手）**: (1) TN-3 の昇格導線が実際に使われている兆候（利用者の言及・要望）が観測された (2) 転送共通ヘルパー（`docs/release-notes.md` §4.1）の設計レビューが完了した。
+転送共通ヘルパーの契約正本は `NestSuite/NestSuite/NestSuiteShellWindow.WorkspaceTransfer.cs`。新しい転送を追加する場合も、共通化するのは転送内容（Title / Body）と転送先解決までとし、UI 文言・ダイアログ・保存・session 操作は各導線側に置く。
 
-転送共通ヘルパーの設計正本は `docs/planning/workspace-manual-transfer-helper-design.md`。新しい転送を追加する場合も、共通化するのは転送内容（Title / Body）と転送先解決までとし、UI 文言・ダイアログ・保存・session 操作は各導線側に置く。
+完了・吸収により欠番となった LK 項番: LK-1（LT-6 へ吸収）/ LK-2 / LK-3 / LK-4。詳細は `docs/release-notes.md` 参照。
 
-LK-2 / LK-3 / LK-4 は実装済み（欠番）。いずれも Shell 側の共通ヘルパー（`EnumerateTransferTargets` / `TransferToWorkspaceTab` / `WorkspaceTransferTargetDialog`）を再利用しており、TN-3（TempNest → 新規 NoteNest タブ昇格）は共通ヘルパーへ寄せていない。詳細は `docs/release-notes.md` 参照。
+TempNest → 新規 NoteNest タブ昇格は共通ヘルパーへ寄せていない（各転送の UX 差が読みやすく、責務が明確で、変更頻度も低いため）。この判断は維持する。
 
-LK-1（NoteNest ↔ IdeaNest 双方向連携）は LT-6 へ吸収（欠番）。
-
-**TD-93（v2.24.0）で TN-3・LK-4・LK-3・LK-2 の横断総点検・回帰確認を実施した（欠番。新しい転送機能は追加していない）。** 共通ヘルパー（`WorkspaceTransferContent`/`WorkspaceTransferTarget`/`WorkspaceTransferResult`/`EnumerateTransferTargets`/`TransferToWorkspaceTab`）が引き続き最小責務に留まっていること、TN-3 を共通化しない判断が妥当であること、0/1/複数件・Detached・dirty/save契約・ErrorLog Error-only方針に回帰がないことを確認した。`WorkspaceTransferTargetDialog` の一覧 `AutomationProperties.Name` が転送先種別（IdeaNest/NoteNest）によらず「転送先のIdeaNestタブ一覧」に固定されていた点（LK-2 で NoteNest 転送にも同ダイアログが再利用されるようになったための取り残し）と、TempNest スロットの「コピー」「クリア」「新規NoteNestへ昇格」ボタンの `AutomationProperties.Name` が可視テキストではなく内部 `AutomationId` 文字列のまま設定されていた点（SH-45/LK-4-1 の既存方針から外れていた既存コード）の 2 件を最小補正した。それ以外の重複（LK-4/LK-3/LK-2 導線の 0/1/複数件分岐・result switch の類似構造）は「各転送の UX 差が読みやすい・責務が明確・変更頻度が低い」ため共通化しなかった。詳細は `docs/release-notes.md` 参照。**LK-5 相当の再評価トリガー（実際に利用された実績）は今回も観測されておらず、成立していない。**
-
-現在、「タブ間連携」単独の未完了項目はない。実際に利用された実績が確認できるまで、LK-5 相当の横断的な汎用転送基盤へは着手しない。
+現在、「タブ間連携」単独の未完了項目はない。**着手トリガー: 既存 4 導線が実際に利用された実績が確認された場合。** それまで横断的な汎用転送基盤へは着手しない。
 
 ---
 
 ## 9. ファイル形式・マイグレーション
 
 **現在の保存スキーマは変更しない。** NoteNest 保存スキーマは `1.4.2` を維持する。  
-スキーマ変更を伴う実装は `docs/architecture/schema-versioning-policy.md` の方針に従うこと（v2.10.2 整備）。
+スキーマ変更を伴う実装は `docs/architecture/schema-versioning-policy.md` の方針に従うこと。
 
 SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧 FM-2 より移管）。  
-**FM-1**（Workspace ファイル拡張子 `.nestsuite` 統一）は v2.14.1 で実装済み（欠番。`docs/architecture/schema-versioning-policy.md` 参照）。
-**FM-3**（`.nestsuite` のファイル関連付け追加）は v2.14.6 で実装済み（欠番。`docs/operations/file-association.md` 参照）。
+完了により欠番となった FM 項番: FM-1（拡張子 `.nestsuite` 統一）/ FM-2（LT-2 へ移管）/ FM-3（`.nestsuite` のファイル関連付け）。
 
 ---
 
@@ -170,12 +164,10 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 TD-1〜TD-97 のうち未完了は下表のみで、他はすべて完了・見送り済みの欠番。詳細は `docs/release-notes.md` 参照。
 
-**TD-59**（`.nestsuite` オープン時の二重読込・二重パース解消）は TD-59a〜TD-59b-5（v2.16.32〜v2.16.39）で完了（欠番）。
-
 | No | 項目 | 概要 | 優先度 |
 |----|------|------|--------|
-| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | 現行 UI から到達できないことを確認済みの資産として、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述を、削除または導線復活のいずれかへ確定する。**着手トリガーは成立済み**: 同文書の削除条件のうち「AT-5（初回空状態の一行ガイド）の実装により同種の初回案内ニーズが軽量な形で充足された場合」が、AT-5 の実装（SH-39 / v2.18.15）で満たされていることを TD-95 の点検で確認した。TD-95 では本項の範囲（テスト・docs を含む複数ファイルの削除）を別目的として扱い、実施していない。**実装主体: 通常エンジニアで実装可能** | C |
-| TD-96 | 到達不能な旧エクスポート／プロジェクト情報ダイアログ導線の判断 | TD-95 の点検で、`DialogService.ShowExportOptions()` + `ExportDialog` + `MainViewModel.Export` + `ExportService.Export`（`SanitizeFileName` / `GetExtension` は現役）と、`DialogService.ShowProjectInfo()` + `ProjectInfoDialog` が現行 UI のどのメニューからも到達しないことを確認した（現行の書き出しは NoteNest 右ペインの Markdown エクスポートと移行パックのみ）。また `MainViewModel.AddTaskCommand` → `AddTask` は、唯一の呼出元だった WPF ハンドラを TD-95 で削除した結果、XAML からも束縛されない状態になっている。いずれも利用者向け機能の導線判断であり、削除には既存テスト（`ExportServiceTests` / `MarkdownExportTests` / `NoteNestFormatRoundTripTests` の `ProjectInfo`）の扱いを決める必要があるため、リファクタリング version では実施しない。**着手トリガー: 各導線を「削除」「復活」のいずれにするかの方針判断が行われたとき。タスク機能については `docs/development/notenest-task-reduction-policy.md` の縮退方針の更新が前提。実装主体: 通常エンジニアで実装可能** | C |
+| TD-85 | 旧チュートリアル資産（TutorialWindow）の削除判断 | 現行 UI から到達できないことを確認済みの資産として、`TutorialWindow.xaml(.cs)` / `tutorial.png` / `DialogService.ShowTutorial()` / `ArchitectureBoundaryTests.cs` の関連記述を、削除または導線復活のいずれかへ確定する。**着手トリガーは成立済み**: 削除条件だった「初回空状態の一行ガイドの実装により同種の初回案内ニーズが軽量な形で充足されること」は既に満たされている。**実装主体: 通常エンジニアで実装可能** | C |
+| TD-96 | 到達不能な旧エクスポート／プロジェクト情報ダイアログ導線の判断 | 点検の結果、`DialogService.ShowExportOptions()` + `ExportDialog` + `MainViewModel.Export` + `ExportService.Export`（`SanitizeFileName` / `GetExtension` は現役）と、`DialogService.ShowProjectInfo()` + `ProjectInfoDialog` が現行 UI のどのメニューからも到達しないことを確認した（現行の書き出しは NoteNest 右ペインの Markdown エクスポートと移行パックのみ）。また `MainViewModel.AddTaskCommand` → `AddTask` は、唯一の呼出元だった WPF ハンドラの削除により XAML からも束縛されない状態にある。いずれも利用者向け機能の導線判断であり、削除には既存テスト（`ExportServiceTests` / `MarkdownExportTests` / `NoteNestFormatRoundTripTests` の `ProjectInfo`）の扱いを決める必要がある。**着手トリガー: 各導線を「削除」「復活」のいずれにするかの方針判断が行われたとき。タスク機能については `docs/development/notenest-task-reduction-policy.md` の縮退方針の更新が前提。実装主体: 通常エンジニアで実装可能** | C |
 
 ---
 
@@ -189,12 +181,12 @@ TD-1〜TD-97 のうち未完了は下表のみで、他はすべて完了・見�
 
 | No | 項目 | 概要 | 保留理由 / 再検討条件 |
 |----|------|------|----------------------|
-| LT-2 | SQLite 補助インデックス方式 | JSON 正本を維持しつつ横断検索・リンク解析・統計表示のために再生成可能な SQLite インデックスを補助的に持つ方式を検討する（旧 FM-2 より移管）。既存の `.notenest` / `.ideanest` / `.chatnest` を SQLite に置き換えることは対象外 | **保留継続・採用候補（v2.13.7 TD-54 feasibility 実施済み）**: `SQLitePCLRaw.bundle_winsqlite3`（OS 同梱 SQLite）方式なら追加ネイティブDLL・自己展開なしで単一EXE方針を維持できる見込み。Windows 実機での publish 成果物検証と winsqlite3 の FTS5 可否確認が未実施のため保留。**着手トリガー: SH-41 方式（逐次読み）の横断検索が実測で性能・件数限界に達した場合（LT-6 と同一トリガー）**。成立時は、採用判断の前に Windows 実機で次を確認すること（一時ブランチで行い merge しない）: (a) `Microsoft.Data.Sqlite.Core` + `SQLitePCLRaw.bundle_winsqlite3` を追加し release.yml と同一フラグで `dotnet publish` した成果物が EXE 1 個のままか、(b) EXE サイズ増、(c) クリーン環境の起動で `%TEMP%\.net\` へ展開が発生しないか、(d) 対象 OS の winsqlite3 で FTS5 が使えるか。エキスパート設計後に通常エンジニア実装 |
-| LT-3 | 設定キー / ProgId / AppData パス整理 | `NoteNest_*` 系の Mutex 名・Pipe 名・AppData パスなどの互換性識別子整理。現在は互換維持のため変更していない | **保留継続(v2.13.8 TD-55 棚卸し完了）**: 全識別子を A（維持）/ B（移行設計つきで変更可）/ C（変更可）/ D（保留）に分類済み（`docs/development/compatibility-identifiers-audit.md`）。AppData・永続ファイル名・ProgId・設定キー `NoteNestEditorFontSize` は既存互換のため当面維持。単純置換はしない。**着手トリガー: 識別子変更を必要とする具体的な変更要求（リブランド・パス衝突等）が実際に発生した場合**。成立時は同文書 §3 の移行段階案に従う。互換性識別子変更のためエキスパート設計後に通常エンジニア実装 |
+| LT-2 | SQLite 補助インデックス方式 | JSON 正本を維持しつつ横断検索・リンク解析・統計表示のために再生成可能な SQLite インデックスを補助的に持つ方式を検討する（旧 FM-2 より移管）。既存の `.notenest` / `.ideanest` / `.chatnest` を SQLite に置き換えることは対象外 | **保留継続・採用候補（feasibility 調査済み）**: `SQLitePCLRaw.bundle_winsqlite3`（OS 同梱 SQLite）方式なら追加ネイティブDLL・自己展開なしで単一EXE方針を維持できる見込み。Windows 実機での publish 成果物検証と winsqlite3 の FTS5 可否確認が未実施のため保留。**着手トリガー: SH-41 方式（逐次読み）の横断検索が実測で性能・件数限界に達した場合（LT-6 と同一トリガー）**。成立時は、採用判断の前に Windows 実機で次を確認すること（一時ブランチで行い merge しない）: (a) `Microsoft.Data.Sqlite.Core` + `SQLitePCLRaw.bundle_winsqlite3` を追加し release.yml と同一フラグで `dotnet publish` した成果物が EXE 1 個のままか、(b) EXE サイズ増、(c) クリーン環境の起動で `%TEMP%\.net\` へ展開が発生しないか、(d) 対象 OS の winsqlite3 で FTS5 が使えるか。エキスパート設計後に通常エンジニア実装 |
+| LT-3 | 設定キー / ProgId / AppData パス整理 | `NoteNest_*` 系の Mutex 名・Pipe 名・AppData パスなどの互換性識別子整理。現在は互換維持のため変更していない | **保留継続（識別子の棚卸し完了）**: 全識別子を A（維持）/ B（移行設計つきで変更可）/ C（変更可）/ D（保留）に分類済み（`docs/development/compatibility-identifiers-audit.md`）。AppData・永続ファイル名・ProgId・設定キー `NoteNestEditorFontSize` は既存互換のため当面維持。単純置換はしない。**着手トリガー: 識別子変更を必要とする具体的な変更要求（リブランド・パス衝突等）が実際に発生した場合**。成立時は同文書 §3 の移行段階案に従う。互換性識別子変更のためエキスパート設計後に通常エンジニア実装 |
 | LT-4 | 複数 Window レイアウト保存 | detached window のレイアウト（位置・サイズ・タブ構成）を session として保存・復元する | `session.json` 形式変更を伴う可能性がある。SH-21 の延長として将来検討。**着手トリガー: 別ウィンドウ配置が再起動で失われることへの実利用の不満が具体例つきで報告された場合**。session 形式に関わるためエキスパート設計後に通常エンジニア実装（`session.json` へ `Windows[]` を別セクションとして足す想定。既存 `Tabs[]` の意味は変えない） |
-| LT-6 | クロス Workspace 双方向リンク / 全文検索 | Workspace をまたいだリンクと全文検索インデックス。旧 LK-1（NoteNest ↔ IdeaNest 双方向連携）を吸収（v2.18.23 TD-89） | インデックス設計・スキーマ変更を伴う。**着手トリガー: SH-41 方式の横断検索が実測で性能・件数限界に達し、かつ横断リンク・全文検索の実利用要望が観測された場合（LT-2 と同一トリガーで、LT-2 の検証とセットで着手）**。エキスパート再招集対象（複数 Workspace の状態正本・スキーマに関わるため） |
-| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。段階的に扱う: **フェーズ1** = SH-34（v2.16.21 実装済み）として、復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。実装時の確定方針: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行 SH-34 の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、v2.16.22 のユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること。設計確定済みのため、トリガー成立後は通常エンジニアで実装可能 |
-| LT-11 | パフォーマンス自己診断 | 大量ノート・カード・発言時の応答性を計測・表示する | **開発者向け計測基盤は v2.13.9 TD-56 で整備済み**（`NestSuite.Tests/Performance/`、環境変数ゲートで通常 CI に影響なし。`docs/development/performance-measurement.md` 参照）。利用者向け自己診断 UI は未実装。**着手トリガー: 実利用で性能課題が実際に報告され、本基盤の数値で裏づけられた場合**。成立時は通常エンジニアで実装可能 |
+| LT-6 | クロス Workspace 双方向リンク / 全文検索 | Workspace をまたいだリンクと全文検索インデックス。旧 LK-1（NoteNest ↔ IdeaNest 双方向連携）を吸収 | インデックス設計・スキーマ変更を伴う。**着手トリガー: SH-41 方式の横断検索が実測で性能・件数限界に達し、かつ横断リンク・全文検索の実利用要望が観測された場合（LT-2 と同一トリガーで、LT-2 の検証とセットで着手）**。エキスパート再招集対象（複数 Workspace の状態正本・スキーマに関わるため） |
+| LT-9 | セッション復元の選択的復元 | セッション復元時に開くタブをユーザーが選択できるようにする。段階的に扱う: **フェーズ1**（実装済み）= 復元失敗通知と FileNotFound 再試行解除確認を 1 ダイアログに統合。**フェーズ2** = 失敗 entry 専用の小さな選択 UI。実装時の確定方針: 失敗 entry が **2 件以上の場合のみ**フェーズ2 UI を表示し、**1 件の場合は現行の挙動を維持**する（FileNotFound なら Yes/No MessageBox、それ以外なら OK 通知）。FileNotFound だけでなく InvalidFormat / AccessDenied / SchemaVersionTooNew も解除対象に含め、SH-35 の解除対象拡張・個別解除をこのフェーズに吸収する。解除は非破壊（ファイル・`.bak` は削除されず、開き直せば session に戻る）。初期値は全て未チェック、「すべて選択」ボタンは設けない。解除対象は FilePath 集合で扱い、パス比較は既存の `NestSuiteOpenFilePolicy.IsSameFile` に統一する。**フェーズ2 は現時点では実装しない**（下記トリガー成立まで backlog に留める）。**フェーズ3** = 成功タブを含むフル選択復元。需要や起動性能課題が実測されるまで凍結 | フェーズ1・2 は既存の `Tabs[]` / `FilePaths[]` / 起動時の復元試行結果で完結し、`session.json` 形式変更は不要と判明した。失敗理由は session.json に保存せず、起動時の復元試行から都度得る。フェーズ3 に進む場合のみ形式変更を伴う可能性がある。**フェーズ2 の着手トリガー（いずれか成立で着手）**: (1) FileNotFound の all-or-nothing 解除で、外したくないものまで外れた／外せなかった、という実利用フィードバックがある (2) InvalidFormat / AccessDenied / SchemaVersionTooNew 等の恒久 nag が、ユーザーガイド記載の間接経路では不十分、という実利用フィードバックがある (3) SH-35 の解除対象拡張を実装する判断がされた。**実装時の技術的制約**: 復元失敗通知はメインウィンドウ `Show()` 前・コンストラクター内で発火するため、カスタム `Window.ShowDialog()` で未表示 Window を `Owner` に設定すると `InvalidOperationException` になる。フェーズ2実装時のカスタムダイアログは `Owner` を設定せず `CenterScreen` で表示すること。設計確定済みのため、トリガー成立後は通常エンジニアで実装可能 |
+| LT-11 | パフォーマンス自己診断 | 大量ノート・カード・発言時の応答性を計測・表示する | **開発者向け計測基盤は整備済み**（`NestSuite.Tests/Performance/`、環境変数ゲートで通常 CI に影響なし。`docs/development/performance-measurement.md` 参照）。利用者向け自己診断 UI は未実装。**着手トリガー: 実利用で性能課題が実際に報告され、本基盤の数値で裏づけられた場合**。成立時は通常エンジニアで実装可能 |
 
 ---
 
@@ -206,14 +198,14 @@ TD-1〜TD-97 のうち未完了は下表のみで、他はすべて完了・見�
 
 | No | 方針 | 概要 | 見送り理由 |
 |----|------|------|------------|
-| RJ-1 | .NET Framework 4.8 版の正式採用見送り | v2.7.0〜v2.7.2 の `net48_test` 検証で実機起動は確認できたが複数 DLL 構成となる。`NestSuite.Net48Test/` は検証履歴として保持するが通常ビルド・リリースからは参照しない | 単一 EXE 配布方針（RJ-5）と衝突。Costura.Fody / ILRepack 等の単一 EXE 化手段が確立された場合のみ再検討 |
+| RJ-1 | .NET Framework 4.8 版の正式採用見送り | `net48_test` 検証で実機起動は確認できたが複数 DLL 構成となる。`NestSuite.Net48Test/` は検証履歴として保持するが通常ビルド・リリースからは参照しない | 単一 EXE 配布方針（RJ-5）と衝突。Costura.Fody / ILRepack 等の単一 EXE 化手段が確立された場合のみ再検討 |
 | RJ-2 | 外部クラウド / 外部 API 前提の機能 | AI 要約・自動タグ付け・クラウド同期・CRDT 共同編集など外部通信を前提とする機能全般 | ローカルファースト・閉域方針と衝突する |
 | RJ-3 | 保存形式を安易に変更する案 | スキーマ設計・互換読み込み・マイグレーション方針なしで既存保存形式を変更することは行わない | 後方互換・ユーザーデータ保護のため。変更する場合は FM-1 方針（`docs/architecture/schema-versioning-policy.md`）に従うこと |
 | RJ-4 | 追加依存が重い案 | WebView2・高機能 Markdown エディタ・外部ライブラリを安易に追加する案 | 配布サイズ・ライセンス・安定性への影響が大きい。個別に必要性・費用対効果を評価してから判断する |
 | RJ-5 | 単体 EXE 配布方針に反する案 | 複数 DLL 構成・インストーラー必須などの配布形態 | 現行の単一 EXE 配布方針を維持する |
 | RJ-6 | MainViewModel の Workspace 固有プロパティ切り出し / DI 導入 / Attached Behavior 導入 | アーキテクチャ大規模改変系の提案 | XAML バインディングへの影響が広範。DI 全面導入は過剰・費用対効果不明確。Attached Behavior の適用箇所が限定的。当面は現行設計を維持する |
-| RJ-7 | H4: マーカー行の表示／非表示 | エディタ内の `[TODO]` / `[FIXME]` / `[NOTE]` を含む行を一時的に非表示にする機能 | 要望取り下げ（v2.5.5 整理）。表示本文と保存本文の分離が必要で `EditorContent` TwoWay バインドの前提が崩れるリスクも大きい |
+| RJ-7 | H4: マーカー行の表示／非表示 | エディタ内の `[TODO]` / `[FIXME]` / `[NOTE]` を含む行を一時的に非表示にする機能 | 要望取り下げ。表示本文と保存本文の分離が必要で `EditorContent` TwoWay バインドの前提が崩れるリスクも大きい |
 | RJ-8 | 高機能 Markdown エディタ全面移行 | エディタ部品の差し替えによる Markdown プレビュー・シンタックスハイライト等の全面移行 | 安定性優先。WPF 標準 TextBox 方針を維持する（エディタ部品差し替えの再判定でも結論は変わらなかった） |
 | RJ-9 | 画像 / リッチメディア管理・添付ファイル管理 | 画像貼り付け・添付ファイル管理・リッチメディア埋め込み | 単一 JSON ファイル方針と合わない。ファイルサイズ増大・管理コスト増大 |
 | RJ-10 | M2: マーカーからタスクを作成する機能の見送り | M2（マーカー一覧からタスクを作成する機能）は見送りである。マーカー一覧からタスクを作成する機能は当面採用しない。マーカーからタスクへの自動・半自動変換も同様に当面採用しない。既存タスク機能を今回削除するわけではないが、拡張する方向には進めない | タスク機能を縮退・軽量化する方針と衝突するため。NoteNest は本文・マーカー・リンクを中心に扱い、タスク管理機能を増やしすぎない。将来再検討する場合も M2 を復活させず、新しい backlog ID で扱う |
-| RJ-11 | H3: エディタ部品差し替えを前提とする視覚拡張（ノートリンクの色付き表示等）の見送り | エディタ内の `[[ノート名]]` を色付き表示する等、WPF 標準 TextBox では安全に実装できず高機能エディタ部品への差し替えが前提となる視覚拡張は採用しない（v2.18.23 TD-89 で旧 H3 を移動） | RJ-8（WPF 標準 TextBox 方針の維持）と同根。行ハイライト相当の需要は H3b（TODO/FIXME/NOTE 行ハイライト、v2.8.1〜v2.8.4 実装済み）で充足している。将来エディタ方針自体を見直す場合のみ新 ID で再評価する |
+| RJ-11 | H3: エディタ部品差し替えを前提とする視覚拡張（ノートリンクの色付き表示等）の見送り | エディタ内の `[[ノート名]]` を色付き表示する等、WPF 標準 TextBox では安全に実装できず高機能エディタ部品への差し替えが前提となる視覚拡張は採用しない | RJ-8（WPF 標準 TextBox 方針の維持）と同根。行ハイライト相当の需要は TODO / FIXME / NOTE 行ハイライト（実装済み）で充足している。将来エディタ方針自体を見直す場合のみ新 ID で再評価する |

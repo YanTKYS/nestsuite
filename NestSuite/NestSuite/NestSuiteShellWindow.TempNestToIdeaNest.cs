@@ -6,7 +6,7 @@ namespace NestSuite;
 
 /// <summary>
 /// TempNest スロット → IdeaNest カード化。
-/// 設計正本: docs/planning/workspace-manual-transfer-helper-design.md §14。
+/// 転送契約は <see cref="NestSuiteShellWindow.WorkspaceTransfer.cs"/> の共通ヘルパーが正本。
 ///
 /// <para>ChatNest → IdeaNest（<see cref="NestSuiteShellWindow.ChatNestToIdeaNest.cs"/>）と同じ共通ヘルパー
 /// （<c>EnumerateTransferTargets</c>・<c>TransferToWorkspaceTab</c>・<c>WorkspaceTransferTargetDialog</c>・

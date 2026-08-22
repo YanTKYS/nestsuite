@@ -23,7 +23,6 @@
 | [development/error-log-policy.md](development/error-log-policy.md) | ErrorLog へ記録するかどうか判断するとき |
 | [development/performance-measurement.md](development/performance-measurement.md) | 性能を実測するとき |
 | [development/notenest-task-reduction-policy.md](development/notenest-task-reduction-policy.md) | NoteNest のタスク機能を触るとき |
-| [planning/workspace-manual-transfer-helper-design.md](planning/workspace-manual-transfer-helper-design.md) | Workspace 間手動転送を触るとき |
 | [operations/file-association.md](operations/file-association.md) | ファイル関連付けの設定・確認 |
 
 **この README を docs 一覧にしない。** 上表以外の文書が必要になったらリポジトリ内を検索する。
