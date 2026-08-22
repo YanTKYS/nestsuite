@@ -12,6 +12,8 @@ namespace NestSuite;
 /// <summary>
 /// Workspace を Shell から分離して表示する別ウィンドウ。
 /// 同一プロセス内の追加 Window として生成し、同じ ViewModel を共有する。
+/// ViewModel は Shell 側 session が単一所有する。分離中も複製しない（複製すると
+/// 未保存状態・dirty 判定が二重管理になり、保存で片方の編集が失われるため）。
 /// NoteNest / IdeaNest 両方に対応するため WorkspaceHost に UIElement を受け取る形に変更。
 /// </summary>
 public partial class DetachedWorkspaceWindow : Window, IWorkspaceDialogHost

@@ -267,7 +267,7 @@ schema version（例: `Project.CurrentSchemaVersion`）を更新する際は、�
 
 1. `Project.CurrentSchemaVersion`（`Project.cs`）
 2. `ApplicationVersionTests.NoteNestSchemaVersion_IsPinned` のリテラル
-3. `docs/development/nestsuite-development-guidelines.md` §3 の schema 表記
+3. `docs/development/nestsuite-development-guidelines.md` §2 の schema 表記
 4. 本文書と `docs/guide/nestsuite-user-guide.md` の現行 version 表記
 5. release notes に bump 理由を記載
 
@@ -276,7 +276,7 @@ schema version（例: `Project.CurrentSchemaVersion`）を更新する際は、�
 ## 参照
 
 - `docs/backlog.md` — FM-1 および schema 変更を伴う候補一覧
-- `docs/development/nestsuite-development-guidelines.md` — §3 保存形式・スキーマ
+- `docs/development/nestsuite-development-guidelines.md` — §2 保存形式・互換性・ターゲット
 - `docs/guide/nestsuite-user-guide.md` — 既知の制約
 - `NestSuite/Models/Project.cs` — `CurrentSchemaVersion` 定数
 - `NestSuite/Services/AtomicFileWriter.cs` — 通常保存の atomic write 実装

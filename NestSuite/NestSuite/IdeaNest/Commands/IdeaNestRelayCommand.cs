@@ -3,6 +3,11 @@ using System.Windows.Input;
 
 namespace NestSuite.IdeaNest.Commands;
 
+/// <summary>
+/// IdeaNest Workspace 用の RelayCommand。IdeaNest モジュール内に閉じた実装として保持する。
+/// Shell の <see cref="NestSuite.ViewModels.RelayCommand"/> と重複して見えるが、Workspace が
+/// Shell 実装へ依存しないための意図的な分離であり、重複だけを理由に統一しない。
+/// </summary>
 public class IdeaNestRelayCommand : ICommand
 {
     private readonly Action<object?> _execute;

@@ -7,6 +7,16 @@
 
 ---
 
+## v2.25.3 — TD-99 開発ガイドラインの縮退・プロンプト標準契約の軽量化
+
+- **TD-99: `docs/development/nestsuite-development-guidelines.md` を 16 節 321 行から 8 節 258 行へ再構成し、重複ルールと他文書の再掲を削除した。** 「共通禁止事項」節は各ルールを本来の節へ一本化して廃止し、二重管理をやめた。
+- **他の正本へ任せる範囲を明確にした。** テスト詳細（命名・ソース走査・XAML・behavior 優先度）は `test-suite-policy.md`、schema 変更手順は `schema-versioning-policy.md`、ErrorLog は `error-log-policy.md`、個別機能の設計判断は production code とそのコメントを正本とし、冒頭の一覧から参照する。
+- **docs / backlog / release notes / PR・Git の役割分担を 1 箇所へ統合した。** release notes は「何が変わったか」の概要（目安 1 version 5 項目程度）を記録し、実装詳細・検証詳細・変更ファイル一覧・判断過程は PR / Git 履歴へ委ねる。完了報告を release notes へコピーしない。`release-note-detail.md` 等の詳細履歴文書は標準運用として導入しない。
+- **個別プロンプトへ共通規約を再掲しない方針を明記した。** 標準テンプレートを目的・実装・非対象・完了条件だけへ最小化し、Out of scope は誤って広げやすい隣接領域だけを書く方式にした。完了報告は 4 項目（実装内容 / build・test・CI 結果 / 保存形式・互換性への影響 / 未確認事項）へ縮退した。通常エンジニアとエキスパートの区分は「保存形式・データ保護・複数責務をまたぐ大きな設計変更は実装前に設計レビューする」という一般原則へ縮退した。
+- **production の振る舞い・保存形式（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` ほか）・schema・UI の変更なし。外部依存の追加なし。** production 変更は、ガイドラインから外した設計判断（Detached Window の ViewModel 単一所有・Workspace ごとの RelayCommand 分離）を doc コメントへ移した 2 ファイルのみ。
+
+---
+
 ## v2.25.2 — TD-98 リポジトリ残存資産・歴史的成果物の縮退
 
 - **TD-98: リポジトリ全体（`src` / `tests` / `docs` の外側を含む）の歴史的成果物を最終整理した。**
