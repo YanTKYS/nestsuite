@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9, §17):
+/// v2.16.37 TD-59b-3:
 /// <see cref="ShellFileOpenPlanner.Plan"/> → 各 FileService の <c>LoadPrepared</c> →
 /// <see cref="NestSuiteTabFactory.FromResolvedKind"/> の合成を、WPF ウィンドウを生成せずに検証する。
 /// 実ファイルが存在しなくても成功することで、open operation 全体を通して `.nestsuite` の

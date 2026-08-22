@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.35 TD-59b-2 (nestsuite-double-read-design-review.md §8.6, §10, §16):
+/// v2.16.35 TD-59b-2:
 /// 3 Workspace の <c>LoadPrepared</c> にまたがる誤配線シナリオを横断的に確認する。
 /// 各 FileService 単体の LoadPrepared テストは ProjectFileServiceTests / IdeaNestFileServiceTests /
 /// ChatNestFileServiceTests にある。ここでは以下の 3 つの安全性マトリクスだけを扱う。

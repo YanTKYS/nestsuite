@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.15 TD-67 (review1-fable5.md R-7): MultipleOpenFailureMessageBuilder の単体テスト。
+/// v2.16.15 TD-67: MultipleOpenFailureMessageBuilder の単体テスト。
 /// UI 非依存の string builder のため、WPF Window を起動せず実際の挙動を検証できる。
 /// </summary>
 public class MultipleOpenFailureMessageBuilderTests
@@ -143,7 +143,7 @@ public class MultipleOpenFailureMessageBuilderTests
         Assert.Contains("このファイル形式は NestSuite では開けません", message);
     }
 
-    // ── v2.16.19 TD-71 (review2-fable5.md 新リスク②): InvalidFormat 時の .bak 詳細案内 ──────
+    // ── v2.16.19 TD-71: InvalidFormat 時の .bak 詳細案内 ──────
 
     [Fact]
     public void Build_ContainsInvalidFormat_AppendsBakDetailHint()

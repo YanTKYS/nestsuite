@@ -454,7 +454,7 @@ public class NestSuiteShellTabTests
         Assert.Equal(typeof(TextBlock), field!.FieldType);
     }
 
-    // ── v2.16.8 L8 (review1-fable5.md R-5): バックアップ復元ガイドのクリックハンドラ ──
+    // ── v2.16.8 L8: バックアップ復元ガイドのクリックハンドラ ──
 
     [Fact]
     public void NestSuiteShellWindow_HasMenuBackupRestoreGuideClickHandler()

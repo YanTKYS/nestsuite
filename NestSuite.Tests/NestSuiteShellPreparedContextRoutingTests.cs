@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.37 TD-59b-3 (nestsuite-double-read-design-review.md §9): Shell の prepared context 経路への
+/// v2.16.37 TD-59b-3: Shell の prepared context 経路への
 /// 切替を型シグネチャで確認する。<see cref="NestSuiteShellWindow"/> は WPF Window のため、
 /// 既存方針（private routing を直接テストするために production API を public 化しない）に合わせ、
 /// ここでは狭い範囲の contract test に留める。実際の read 回数・分岐挙動は

@@ -67,7 +67,7 @@ public class SessionFormatSchemaRegressionTests : IDisposable
     }
 
     // ── v2.16.7 TD-65: session.json 形式が変わっていないことのゴールデンファイル確認 ──
-    // review1-fable5.md の対応（復元失敗 entry の持ち越し・破損 session 診断）は
+    // 復元失敗 entry の持ち越し・破損 session 診断は
     // 既存の Tabs[] / FilePaths / ActiveFilePath の範囲内で行い、新しい top-level field は追加しない。
 
     [Fact]

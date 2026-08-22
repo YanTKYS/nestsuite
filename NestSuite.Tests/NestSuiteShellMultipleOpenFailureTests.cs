@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.15 TD-67 (review1-fable5.md R-7): 複数ファイルオープン失敗通知の配線をソーステキストで
+/// v2.16.15 TD-67: 複数ファイルオープン失敗通知の配線をソーステキストで
 /// 静的に確認する。NestSuiteShellWindow は WPF Window のため直接インスタンス化してテストしない、
 /// という既存方針（TD-66 の NestSuiteShellSessionPersistenceTests 等）に合わせる。
 /// </summary>

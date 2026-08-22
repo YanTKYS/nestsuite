@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.14 TD-66 (review1-fable5.md R-6): タブ変更時の session 随時保存の配線を
+/// v2.16.14 TD-66: タブ変更時の session 随時保存の配線を
 /// ソーステキストで静的に確認する。NestSuiteShellWindow は WPF Window のため直接
 /// インスタンス化してテストしない、という既存方針に合わせ、各呼び出し箇所が
 /// SaveSessionAfterTabChange を「実際に状態が変わった経路でのみ」呼んでいることを、

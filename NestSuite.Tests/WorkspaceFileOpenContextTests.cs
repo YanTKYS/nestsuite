@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.34 TD-59b-1 (nestsuite-double-read-design-review.md §8.1, §8.3, §8.4, §16, §17):
+/// v2.16.34 TD-59b-1:
 /// <see cref="WorkspaceFileOpenContext"/> / <see cref="PreloadedWorkspaceEnvelope"/> の生成境界、
 /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> の読込回数・failure 分類、
 /// <see cref="NestSuiteTabFactory.FromResolvedKind"/> の非読込タブ生成を確認する。

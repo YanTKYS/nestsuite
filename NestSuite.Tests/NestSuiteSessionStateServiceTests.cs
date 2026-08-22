@@ -122,7 +122,7 @@ public class NestSuiteSessionStateServiceTests : IDisposable
         Assert.Null(state.ActiveFilePath);
     }
 
-    // ── v2.16.7 TD-65 (review1-fable5.md R-4): 破損 session の診断性 ────────
+    // ── v2.16.7 TD-65: 破損 session の診断性 ────────
 
     [Fact]
     public void Load_CorruptedJson_QuarantinesOriginalFile_ToCorruptSuffix()

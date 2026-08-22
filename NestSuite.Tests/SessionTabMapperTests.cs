@@ -680,7 +680,7 @@ public class SessionTabMapperTests
         finally { File.Delete(brokenPath); }
     }
 
-    // v2.16.7 TD-65 (review1-fable5.md R-3): 存在しないファイルは無言スキップではなく、
+    // v2.16.7 TD-65: 存在しないファイルは無言スキップではなく、
     // 通知・持ち越し対象の失敗として報告するようになった（旧: SkipsSilently_NoFailureEntry）。
     [Fact]
     public void CreateRestoreTargets_MissingFile_ReportsFileNotFoundFailure()
@@ -886,7 +886,7 @@ public class SessionTabMapperTests
         Assert.Null(state.Tabs[1].WorkspaceKind);
     }
 
-    // ── v2.16.17 TD-69 (review2-fable5.md R-14): FilePaths[] は Tabs[] から導出 ──────────
+    // ── v2.16.17 TD-69: FilePaths[] は Tabs[] から導出 ──────────
 
     [Fact]
     public void CreateSessionState_FilePaths_IsDerivedFromTabsFilePath_ForOpenTabsAndPendingEntries()
@@ -958,7 +958,7 @@ public class SessionTabMapperTests
         Assert.DoesNotContain("filePaths.Add(", body);
     }
 
-    // ── v2.16.16 TD-68 (review1-fable5.md R-8): Tabs[].WorkspaceKind は UI 表示ヒント ─────
+    // ── v2.16.16 TD-68: Tabs[].WorkspaceKind は UI 表示ヒント ─────
     // 復元時の最終判定の信頼ソースではないことをテストで固定する。
 
     [Fact]
@@ -1192,7 +1192,7 @@ public class SessionTabMapperTests
         Assert.Contains("見つからないファイル以外は引き続き再試行されます", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
     }
 
-    // ── v2.16.19 TD-71 (review2-fable5.md 新リスク②): 復元失敗通知の .bak 詳細案内 ─────────
+    // ── v2.16.19 TD-71: 復元失敗通知の .bak 詳細案内 ─────────
     // v2.16.21 SH-34 で本文組み立てが SessionRestoreFailuresMessageBuilder へ移ったため、
     // ソーステキスト静的確認ではなく builder の実際の挙動でテストする。
 

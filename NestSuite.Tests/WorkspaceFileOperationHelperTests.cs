@@ -120,7 +120,7 @@ public class WorkspaceFileOperationHelperTests
             FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension));
     }
 
-    // ── v2.16.8 L20 (review1-fable5.md R-5): 読込失敗メッセージへの .bak 復元案内 ──
+    // ── v2.16.8 L20: 読込失敗メッセージへの .bak 復元案内 ──
 
     [Fact]
     public void ForLoad_JsonException_NoPath_ContainsGenericBackupHint()
