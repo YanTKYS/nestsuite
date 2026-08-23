@@ -7,6 +7,15 @@
 
 ---
 
+## v2.26.0 — 本稼働版リリース
+
+- **v2.26.0 を NestSuite の本稼働版として確定した。** 新機能追加・リファクタリング・backlog の先行実装は行っていない。
+- **ApplicationVersion を `2.26.0` へ更新した。** production の振る舞い・UI に変更はない。
+- **保存形式（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` ほか）・session 形式・schema の変更なし。外部依存の追加なし。**
+- **以降は実利用で確認された不具合・要望を起点に通常開発へ移行する。**
+
+---
+
 ## v2.25.5 — TD-96 到達不能な旧Export・ProjectInfo・AddTask導線の削除
 
 - 現行 UI から到達不能だった旧 Export・ProjectInfo ダイアログ導線を削除した。
