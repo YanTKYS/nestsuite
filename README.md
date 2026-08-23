@@ -1,10 +1,10 @@
 # NestSuite
 
-NoteNest / IdeaNest / ChatNest / TempNest を統合したローカル作業ツール（Windows デスクトップアプリ）
+NoteNest / IdeaNest / ChatNest / TempNest / PlainText を統合したローカル作業ツール（Windows デスクトップアプリ）
 
 ## 概要
 
-NestSuite は **4 つの Workspace** を 1 つのウィンドウで並行利用できる統合ローカル作業ツールです。各 Workspace はタブ単位で開き、ドラッグで並び替えられます。NoteNest / IdeaNest / ChatNest のタブは別ウィンドウに切り出して表示できます（v2.9.0〜）。
+NestSuite は **5 つの Workspace** を 1 つのウィンドウで並行利用できる統合ローカル作業ツールです。各 Workspace はタブ単位で開き、ドラッグで並び替えられます。NoteNest / IdeaNest / ChatNest のタブは別ウィンドウに切り出して表示できます（v2.9.0〜）。
 
 | Workspace | 概要 |
 |-----------|------|
@@ -12,6 +12,7 @@ NestSuite は **4 つの Workspace** を 1 つのウィンドウで並行利用�
 | **IdeaNest** | アイデアをカード形式で整理。タグ・フィルタ・インライン編集 |
 | **ChatNest** | チャット形式でブレスト記録。発言者切替・会話内検索 |
 | **TempNest** | 起動中常駐の 2×2 一時メモスロット。ファイル保存対象外 |
+| **PlainText** | 通常の `.txt` ファイルをそのまま編集する最小限の Workspace |
 
 新規保存 / 名前を付けて保存の標準拡張子は `.nestsuite` です（v2.14.1〜。1 タブ = 1 ファイルのまま、ファイル内容の種別で対応する Workspace を判定します）。旧来の `.notenest` / `.ideanest` / `.chatnest` は引き続き開けます（互換読み込み）。
 
@@ -20,7 +21,8 @@ NestSuite は **4 つの Workspace** を 1 つのウィンドウで並行利用�
 ## 動作環境
 
 - Windows 10 / 11
-- .NET 8.0 Desktop Runtime
+- **配布版（GitHub Releases の ZIP 内 `NestSuite.exe`）**: self-contained single-file 配布のため、.NET Desktop Runtime のインストールは不要です
+- **ソースから build する場合のみ**: .NET 8 SDK が必要です
 
 ## 起動方法
 
@@ -42,6 +44,7 @@ NestSuite.exe                    # NestSuite を起動（TempNest タブがア�
 NestSuite.exe project.notenest   # .notenest タブを開く
 NestSuite.exe notes.chatnest     # .chatnest タブを開く
 NestSuite.exe ideas.ideanest     # .ideanest タブを開く
+NestSuite.exe memo.txt           # PlainText タブを開く
 ```
 
 ### ファイル関連付け
@@ -98,6 +101,16 @@ NestSuite.exe ideas.ideanest     # .ideanest タブを開く
 - スロットごとにコピー・クリア
 - 変更を自動保存（`%APPDATA%\NoteNest\tempnest.json`）
 - セッション復元・最近ファイルの対象外
+
+### PlainText
+
+通常の `.txt` ファイルをそのまま編集する最小限のワークスペースです。構文強調・行番号・検索置換等は搭載していません。
+
+- `.txt` ファイルそのものが正本（NestSuite 独自情報は本文へ埋め込まない）
+- 対応文字コード：UTF-8（BOM あり/なし）・UTF-16（LE/BE）・UTF-32（LE/BE）
+- `.txt` の Windows ファイル関連付けは変更されません（NestSuite の起動引数として渡した場合のみ開きます）
+
+**保存形式：** `.txt`（`.nestsuite` wrapper へは変換しません）
 
 ## Workspace 別ウィンドウ表示
 
