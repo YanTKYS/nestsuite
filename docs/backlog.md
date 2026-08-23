@@ -161,11 +161,7 @@ SQLite 補助インデックス方式の検討は **LT-2** で管理する（旧
 
 ## 10. 技術的負債・保守性
 
-TD-1〜TD-99 のうち未完了は下表のみで、他はすべて完了・見送り済みの欠番。詳細は `docs/release-notes.md` 参照。
-
-| No | 項目 | 概要 | 優先度 |
-|----|------|------|--------|
-| TD-96 | 到達不能な旧エクスポート／プロジェクト情報ダイアログ導線の判断 | 点検の結果、`DialogService.ShowExportOptions()` + `ExportDialog` + `MainViewModel.Export` + `ExportService.Export`（`SanitizeFileName` / `GetExtension` は現役）と、`DialogService.ShowProjectInfo()` + `ProjectInfoDialog` が現行 UI のどのメニューからも到達しないことを確認した（現行の書き出しは NoteNest 右ペインの Markdown エクスポートと移行パックのみ）。また `MainViewModel.AddTaskCommand` → `AddTask` は、唯一の呼出元だった WPF ハンドラの削除により XAML からも束縛されない状態にある。いずれも利用者向け機能の導線判断であり、削除には既存テスト（`ExportServiceTests` / `MarkdownExportTests` / `NoteNestFormatRoundTripTests` の `ProjectInfo`）の扱いを決める必要がある。**着手トリガー: 各導線を「削除」「復活」のいずれにするかの方針判断が行われたとき。タスク機能については `docs/development/notenest-task-reduction-policy.md` の縮退方針の更新が前提。実装主体: 通常エンジニアで実装可能** | C |
+TD-1〜TD-99 はすべて完了・見送り済みの欠番で、未完了の項目はない。詳細は `docs/release-notes.md` 参照。
 
 ---
 

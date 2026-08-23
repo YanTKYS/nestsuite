@@ -215,8 +215,6 @@ public partial class MainViewModel
         }
     }
 
-    public string ProjectInfo => $"プロジェクト名: {_session.ProjectName}\nファイル: {_session.CurrentFilePath ?? "未保存"}\nノートブック: {_notes.Notebooks.Count}\nノート: {_notes.AllNotes.Count()}\nタスク: {_tasks.TaskGroups.Sum(group => group.Tasks.Count)}\nマーカー: {_markers.MarkerCount}\n最終保存: {(_session.LastSavedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "未保存")}";
-
     // XAML コマンド入口。処理本体は責務別 partial またはサービスへ委譲する。
     public ICommand NewProjectCommand { get; }
     public ICommand OpenProjectCommand { get; }
@@ -224,7 +222,6 @@ public partial class MainViewModel
     public ICommand SaveAsProjectCommand { get; }
     public ICommand ExitCommand { get; }
     public ICommand AddNotebookCommand { get; }
-    public ICommand AddTaskCommand { get; }
     public ICommand DeleteTaskCommand { get; }
     public ICommand ToggleGroupCommand { get; }
     public ICommand MarkerClickCommand { get; }

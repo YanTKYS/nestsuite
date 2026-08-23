@@ -1,7 +1,6 @@
 using System.Windows;
 using Microsoft.Win32;
 using NestSuite.Dialogs;
-using NestSuite.Models;
 using NestSuite.NoteNest.Editor;
 using NestSuite.ViewModels;
 
@@ -48,18 +47,6 @@ public sealed class DialogService
         return dialog.ShowDialog() == true
             ? (FontFamily: dialog.SelectedFontFamily, FontSize: dialog.SelectedFontSize)
             : null;
-    }
-
-    public ExportOptions? ShowExportOptions()
-    {
-        var dialog = new ExportDialog { Owner = _owner };
-        return dialog.ShowDialog() == true ? dialog.Options : null;
-    }
-
-    public string? SelectExportOutputPath(ExportOptions options, string defaultFileName)
-    {
-        var extension = ExportService.GetExtension(options.Format);
-        return SelectSaveFilePath($"{extension} ファイル (*{extension})|*{extension}", extension, defaultFileName);
     }
 
     public string? SelectProjectTextExportPath(string defaultFileName) =>
@@ -175,9 +162,6 @@ public sealed class DialogService
 
     public string? SelectMigrationPackImportFolder() =>
         SelectFolderPath("デバイス移行パックの展開先フォルダを選択してください");
-
-    public void ShowProjectInfo(string information) =>
-        new ProjectInfoDialog(information) { Owner = _owner }.ShowDialog();
 
     public void ShowFindReplace(ITextEditorAdapter editor, IEnumerable<NoteViewModel>? allNotes,
         Action<NoteViewModel>? navigateToNote, string lastSearchText, string lastReplaceText,

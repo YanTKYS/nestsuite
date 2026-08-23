@@ -55,7 +55,6 @@ public class DialogServiceBoundaryTests
 
         Assert.Contains(nameof(DialogService.SelectProjectOpenPath), methodNames);
         Assert.Contains(nameof(DialogService.SelectProjectSavePath), methodNames);
-        Assert.Contains(nameof(DialogService.SelectExportOutputPath), methodNames);
         Assert.Contains(nameof(DialogService.SelectProjectTextExportPath), methodNames);
         Assert.Contains(nameof(DialogService.SelectNotebookExportFolder), methodNames);
     }
