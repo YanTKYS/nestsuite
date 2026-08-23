@@ -14,7 +14,7 @@
 - **タスク新規追加の残存導線を削除した。** `MainViewModel.AddTaskCommand` と private `AddTask()` を削除した。タスク追加 UI は既に縮退方針（`docs/development/notenest-task-reduction-policy.md`）どおり UI から外れており、XAML からの束縛もなかった。既存タスクの保存・読込・互換表示・完了切替・編集・削除・移動と `TaskBoardViewModel.AddTask` は維持している。
 - **現役の書き出し機能は維持した。** NoteNest 右ペインの Markdown エクスポート・移行パック入出力、および `ExportService` の `SanitizeFileName` / `GetUniqueFilePath` / `BuildProjectText` / `BuildNotebookText` とテキスト出力は変更していない。整理は旧エクスポート専用コードの削除に留めた。
 - **削除対象だけを保証していたテストを整理した。** `NoteNestFormatExportTests`（全件が旧 `ExportService.Export` 専用）、`NoteNestFormatRoundTripTests.ProjectInfoContainsCurrentCountsAndSaveState`、`DialogServiceBoundaryTests` の `SelectExportOutputPath` 確認、`ArchitectureBoundaryTests` の `typeof(ExportOptions)` と型が存在しなくなった禁止パターン `"new ExportDialog"` / `"new ProjectInfoDialog"` を削除した。`ExportServiceTests` / `MarkdownExportTests` は現役機能のテストとして維持している。
-- **保存形式・schema・session 形式の変更なし（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` を維持）。既存 `.notenest` の ProjectInfo・Task データの保存・読込互換に影響なし。外部依存の追加なし。**
+- **保存形式・schema・session 形式の変更なし（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` を維持）。既存 `.notenest` の保存・読込互換、および Task データの互換性に影響なし。外部依存の追加なし。**
 
 ---
 
