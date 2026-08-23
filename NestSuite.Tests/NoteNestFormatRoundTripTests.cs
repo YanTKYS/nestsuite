@@ -156,17 +156,6 @@ public class NoteNestFormatRoundTripTests : IDisposable
         Assert.Contains("AutoSaved", File.ReadAllText(path));
     }
 
-    [Fact]
-    public void ProjectInfoContainsCurrentCountsAndSaveState()
-    {
-        var main = new MainViewModel();
-
-        Assert.Contains("プロジェクト名:", main.ProjectInfo);
-        Assert.Contains("ノートブック:", main.ProjectInfo);
-        Assert.Contains("タスク:", main.ProjectInfo);
-        Assert.Contains("最終保存:", main.ProjectInfo);
-    }
-
     // ── 保存・読込・回帰 (V146) ──────────────────────────────────────────
 
     [Fact]

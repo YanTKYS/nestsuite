@@ -44,13 +44,6 @@ public partial class MainViewModel
             _tasks.SetRelatedNote(task, null);
     }
 
-    private void AddTask(string groupKey)
-    {
-        var title = ShowInputDialog?.Invoke("タスク追加", "タスク名を入力してください:");
-        if (string.IsNullOrWhiteSpace(title)) return;
-        if (_tasks.AddTask(groupKey, title.Trim()) != null) StatusMessage = $"タスク「{title.Trim()}」を追加しました。";
-    }
-
     private void DeleteTask(TaskViewModel task)
     {
         if (_editor.EditingTask == task)

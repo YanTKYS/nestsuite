@@ -5,12 +5,6 @@ namespace NestSuite.ViewModels;
 
 public partial class MainViewModel
 {
-    public void Export(ExportOptions options, string outputPath)
-    {
-        var notebookId = SelectedNote == null ? null : FindNotebookOf(SelectedNote)?.Id;
-        _exports.Export(_lifecycle.CreateSnapshot(), options, outputPath, notebookId, SelectedNote?.Id);
-    }
-
     public void ExportProjectToText(string outputPath) =>
         _exports.ExportProjectToText(_lifecycle.CreateSnapshot(), outputPath);
 

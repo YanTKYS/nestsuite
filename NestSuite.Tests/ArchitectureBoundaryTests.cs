@@ -44,7 +44,6 @@ public class ArchitectureBoundaryTests
         typeof(NoteTask),
         typeof(TaskCollection),
         typeof(AppSettings),
-        typeof(ExportOptions),
     ];
 
     // FullName 部分一致で確認するため、ネストした generic 型も検出できる
@@ -66,8 +65,6 @@ public class ArchitectureBoundaryTests
         "new FolderBrowserDialog",
         "Application.Current",
         "new StartDialog",
-        "new ExportDialog",
-        "new ProjectInfoDialog",
         "typeof(MainWindow)",
         "new MainWindow",
         // v1.5.5: WorkspaceView should not own DialogService or resolve its host window directly

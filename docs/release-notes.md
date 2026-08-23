@@ -7,6 +7,14 @@
 
 ---
 
+## v2.25.5 — TD-96 到達不能な旧Export・ProjectInfo・AddTask導線の削除
+
+- 現行 UI から到達不能だった旧 Export・ProjectInfo ダイアログ導線を削除した。
+- UI から既に外れていたタスク新規追加の残存コードを削除し、既存 Task データの互換表示・編集等は維持した。
+- 現役の Markdown / テキスト出力・移行パック、保存形式・schema・session 形式には変更なし。
+
+---
+
 ## v2.25.4 — TD-85 旧TutorialWindow資産の削除
 
 - **TD-85: 現行 UI から到達できない旧チュートリアル資産を削除した。** `TutorialWindow.xaml(.cs)`・`tutorial.png`・`DialogService.ShowTutorial()`（唯一の呼出元だった導線は既にない）を削除し、`ArchitectureBoundaryTests` の禁止コールサイトパターンから型が存在しなくなった `"new TutorialWindow"` を除いた。
