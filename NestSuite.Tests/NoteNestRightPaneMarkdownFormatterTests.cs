@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.4 M15: 右ペイン（マーカー一覧・タスク一覧）一括コピー用 Markdown 生成の単体テスト。
+/// M15: 右ペイン（マーカー一覧・タスク一覧）一括コピー用 Markdown 生成の単体テスト。
 /// Clipboard・通知・View操作は含まない純粋関数のみを対象とする。
 /// </summary>
 public class NoteNestRightPaneMarkdownFormatterTests

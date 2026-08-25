@@ -70,7 +70,7 @@ public class TaskBoardViewModelTests
         Assert.Null(task.LinkedNoteId);
     }
 
-    // v2.13.4 M16: 既存タスクが1件もない場合に右ペインのタスク欄を互換表示しないための判定
+    // M16: 既存タスクが1件もない場合に右ペインのタスク欄を互換表示しないための判定
     [Fact]
     public void HasAnyTasks_FalseWhenAllGroupsEmpty_TrueAfterAddingToAnyGroup()
     {

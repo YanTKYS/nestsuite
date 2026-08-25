@@ -1,15 +1,7 @@
 # スキーマバージョンアップ方針（FM-1）
 
-v2.10.2 で整備した、NestSuite の保存形式・スキーマ変更を安全に扱うための方針文書です。
-
----
-
-## 位置づけ
-
-- backlog `FM-1: スキーマバージョンアップ方針の整備` の成果物です
-- 将来の保存形式変更を安全に扱うための判断基準・手順を整理します
-- **現時点では保存形式変更なし。** この文書はルール整備であり、実際のスキーマ変更は行いません
-- 既存ファイルを壊さないことを最優先します
+NestSuite の保存形式・スキーマ変更を安全に扱うための判断基準・手順の正本。
+**既存ファイルを壊さないことを最優先する。**
 
 ---
 
@@ -55,7 +47,7 @@ v2.10.2 で整備した、NestSuite の保存形式・スキーマ変更を安�
 
 ### `.notenest`
 
-- 現在の schema は `1.4.2`（`Project.CurrentSchemaVersion` 定数で管理）（追記: v2.14.3 M12 で 1.4.1→1.4.2 patch bump（Note.IsStarred optional field 追加のみ）を実施済み、旧 1.4.1 はそのまま読める）
+- 現在の schema は `1.4.2`（`Project.CurrentSchemaVersion` 定数で管理）。`1.4.1` 以前も互換読み込みする
 - `Project.CurrentSchemaVersion` の更新は明示的な作業として扱い、release notes に必ず記載する
 - **採番基準（参考）:**
   - `1.4.2`: optional field 追加のみ。旧ファイルをそのまま読める
@@ -90,14 +82,13 @@ v2.10.2 で整備した、NestSuite の保存形式・スキーマ変更を安�
 - `session.json` は作業状態の復元用であり、ユーザーの文書データではない
 - 未保存タブ復元・detached layout 保存などは `session.json` 変更の候補
 - session 形式変更は文書スキーマ変更と分けて扱い、互いに影響しないようにする
-- 破損時は安全に無視・初期化できること（現行実装を維持）。v2.16.7 TD-65 以降は、破損読込を
-  ErrorLog（Error のみ）に記録し、可能であれば破損ファイルを `session.json.corrupt`
-  （既存なら日時付き）へ退避したうえで空 session として起動を継続する
-- 現在の構造は v2.16.3 SH-15 以降 `{ FilePaths: string[], ActiveFilePath: string, Tabs?: [{ FilePath, WorkspaceKind, IsPinned }] }`。旧 `{ FilePaths, ActiveFilePath }` も互換読み込みする
-- v2.16.7 TD-65: 復元に失敗した entry（存在しない・読めない `.nestsuite` 等）は、次回起動時にも
-  再試行できるよう、現在開いているタブと重複しない範囲で `Tabs[]` / `FilePaths` へ持ち越す。
-  この持ち越しも既存の `{ FilePath, WorkspaceKind, IsPinned }` 形式のまま行い、
-  `WorkspaceKind` はファイルを再度読めるまで `null` とする（新しい top-level field は追加しない）
+- 破損時は安全に無視・初期化できること。破損読込は ErrorLog（Error のみ）に記録し、可能であれば
+  破損ファイルを `session.json.corrupt`（既存なら日時付き）へ退避したうえで空 session として起動を継続する
+- 現在の構造は `{ FilePaths: string[], ActiveFilePath: string, Tabs?: [{ FilePath, WorkspaceKind, IsPinned }] }`。旧 `{ FilePaths, ActiveFilePath }` も互換読み込みする
+- 復元に失敗した entry（存在しない・読めない `.nestsuite` 等）は、次回起動時にも再試行できるよう、
+  現在開いているタブと重複しない範囲で `Tabs[]` / `FilePaths` へ持ち越す。持ち越しも既存の
+  `{ FilePath, WorkspaceKind, IsPinned }` 形式のまま行い、`WorkspaceKind` はファイルを再度読めるまで
+  `null` とする（この用途のために新しい top-level field を追加しない）
 
 ---
 
@@ -156,9 +147,8 @@ major bump（例: 1.4.1 → 2.0.0）
 ### 通常保存
 
 - `AtomicFileWriter` による tmp 書き込み → `File.Replace` または `File.Move` の方式を維持する（`ProjectFileService`・`ChatNestFileService`・`IdeaNestWorkspaceService` 共通）
-- **v2.14.5 FM-5 で 3 Workspace（NoteNest / IdeaNest / ChatNest）とも `AtomicFileWriter` の `File.Replace` 統合 `.bak`（保存先パス + `.bak`、単一世代）へ統一した。**
-  - IdeaNest は保存前 `File.Copy`（失敗を silent catch）方式を廃止した。ChatNest は従来バックアップなしだったが、今回新たに `.bak` を持つようになった。NoteNest は従来どおり変更なし
-  - 既存ファイルがあり `.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する。旧ファイルは壊れない（IdeaNest の旧 silent catch のように「バックアップだけ失敗して保存は成功扱い」にはしない）
+- **3 Workspace（NoteNest / IdeaNest / ChatNest）とも `AtomicFileWriter` の `File.Replace` 統合 `.bak`（保存先パス + `.bak`、単一世代）で統一する。**
+  - 既存ファイルがあり `.bak` を作成できない場合は `File.Replace` が例外を投げて保存自体が失敗する。旧ファイルは壊れない。「バックアップだけ失敗して保存は成功扱い」にはしない（silent catch を置かない）
   - 新規保存時（既存ファイルなし）は `.bak` を作らない（`File.Move` 経路）
   - `.nestsuite` パスでも同方針（`foo.nestsuite.bak`）で動作する
   - `.bak` のローテーション・世代管理・自動復元 UI は未実装（対象外）
@@ -191,9 +181,8 @@ schema bump / migration / backup / 利用者確認の要否は、変更の種類
 | 保存先パス・ファイル名変更（補助状態） | — | — | 旧パス読込 + 新パス保存の段階移行 | 推奨 | 不要 | 旧パス互換テスト |
 | Save As による形式変更（legacy ↔ wrapper） | 不要 | 不要 | 不要（別ファイルとして書くだけ） | 不要（元ファイル不変） | 利用者自身の操作 | 既存カバー済み |
 
-`optional field 追加` は NoteNest `IsStarred`（`1.4.1` → `1.4.2`）が先例で、
-backlog の M13 / ID-8 / CH-12 もこの想定。`必須 field 追加` 以降は現行に先例がなく、
-エキスパート設計を経てから実装する。
+`optional field 追加` は NoteNest `IsStarred`（`1.4.1` → `1.4.2`）が先例で、backlog の
+M13 / ID-8 / CH-12 もこの想定。`必須 field 追加` 以降は先例がなく、設計レビューを経てから実装する。
 
 ---
 
@@ -231,7 +220,7 @@ backlog の M13 / ID-8 / CH-12 もこの想定。`必須 field 追加` 以降は
 
 ---
 
-## 前方互換ガード（FM-4 v2.14.4 最小実装）
+## 前方互換ガード（FM-4）
 
 現行より新しい schema / payloadSchemaVersion を持つファイルは `SchemaVersionGuard`
 （`NestSuite/Services/SchemaVersionGuard.cs`）により読み込み失敗する。
@@ -247,19 +236,18 @@ backlog の M13 / ID-8 / CH-12 もこの想定。`必須 field 追加` 以降は
 - `.nestsuite` wrapper では、wrapper の `payloadSchemaVersion` と payload 内部の
   version フィールドの矛盾も確認する（`EnsureEnvelopeConsistent`）。矛盾と扱うのは
   payload 側が wrapper より新しい方向のみで、逆方向（wrapper の方が新しい）は許容する。
-  これは v2.14.1〜v2.14.3 のアプリが旧 payload を現行 payloadSchemaVersion で包んで
-  保存した、実在する正当なファイル形状に合わせるための意図的な非対称ルールである
+  旧 payload を現行 payloadSchemaVersion で包んで保存した実在の正当なファイル形状を
+  読めるようにするための、意図的な非対称ルールである
 - 対象: `.notenest` / `.ideanest` / `.chatnest` の各 Workspace 形式、および `.nestsuite`
   wrapper の `payloadSchemaVersion`
 
-**今回実装しないもの:**
+**採用していない対処と、その理由:**
 
-- read-only モード（新しい schema のファイルを読み取り専用で開く機能）は未実装
-- `JsonExtensionData` 属性による未知フィールドの round-trip 保持は将来候補。
-  実装すれば新旧アプリが混在する環境でも「知らないフィールドを保存時に削ってしまう」事故を
-  防げるが、対象モデル全型への波及（属性追加・シリアライズ挙動の見直し）と、
-  保存 JSON の安定性（キー順序・フォーマットの回帰）検証が別途必要になるため、
-  今回のスコープには含めない
+- read-only モード（新しい schema のファイルを読み取り専用で開く）は持たない。読み込みを止めて
+  元ファイルに触れないことを優先する
+- `JsonExtensionData` による未知フィールドの round-trip 保持は入れていない。新旧アプリ混在時に
+  「知らないフィールドを保存時に削る」事故は防げるが、対象モデル全型への属性追加と保存 JSON の
+  安定性（キー順序・フォーマット）検証が伴うため、必要が生じた時点で設計から始める
 
 ## schema bump 時の更新箇所チェックリスト
 
@@ -277,6 +265,6 @@ schema version（例: `Project.CurrentSchemaVersion`）を更新する際は、�
 
 - `docs/backlog.md` — FM-1 および schema 変更を伴う候補一覧
 - `docs/development/nestsuite-development-guidelines.md` — §2 保存形式・互換性・ターゲット
-- `docs/guide/nestsuite-user-guide.md` — 既知の制約
+- `docs/guide/nestsuite-user-guide.md` — 利用者向けの保存形式・復元の説明
 - `NestSuite/Models/Project.cs` — `CurrentSchemaVersion` 定数
 - `NestSuite/Services/AtomicFileWriter.cs` — 通常保存の atomic write 実装

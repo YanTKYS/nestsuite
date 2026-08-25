@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.12 ID-9: IdeaNest カードの hover/focus 視覚フィードバック強化の回帰確認。
+/// ID-9: IdeaNest カードの hover/focus 視覚フィードバック強化の回帰確認。
 /// 表示状態（hover/focus）は .ideanest ファイルに保存されないこと、
 /// 既存のカード操作コマンドが維持されること、カードサイズ切替が引き続き機能することを検証する。
 /// </summary>

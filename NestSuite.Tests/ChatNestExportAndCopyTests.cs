@@ -5,8 +5,8 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: ChatNestWorkspaceViewModelTests から、NestSuite/Markdown テキスト組み立てと
-/// コピーコマンドの CanExecute（v1.16.5: コピー機能）に関するテストを分割した。
+/// TD-63: ChatNestWorkspaceViewModelTests から、NestSuite/Markdown テキスト組み立てと
+/// コピーコマンドの CanExecute（コピー機能）に関するテストを分割した。
 /// </summary>
 public class ChatNestExportAndCopyTests
 {

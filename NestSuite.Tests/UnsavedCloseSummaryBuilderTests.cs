@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.9 SH-29: 終了時の未保存タブ件数サマリの、UI 非依存な判断・文言組み立てロジックのテスト。
+/// SH-29: 終了時の未保存タブ件数サマリの、UI 非依存な判断・文言組み立てロジックのテスト。
 /// 実 UI（MessageBox / NestSuiteShellWindow）は起動せず、ConfirmContinue に注入する
 /// delegate で「続ける / やめる」を模擬する。
 /// </summary>

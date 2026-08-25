@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.0 SH-43: PlainTextFileService の文字コード判定・改行コード判定・保存動作を確認する。
+/// SH-43: PlainTextFileService の文字コード判定・改行コード判定・保存動作を確認する。
 /// テスト文字列だけでなく、明示したバイト列で BOM・不正バイト列を再現する。
 /// </summary>
 public class PlainTextFileServiceTests : IDisposable
@@ -303,7 +303,7 @@ public class PlainTextFileServiceTests : IDisposable
     [Fact]
     public void Save_CreateBackupFalse_DoesNotCreateOrUpdateBak()
     {
-        // v2.16.6 TD-64 と同方針: 自動保存は正本のみ更新し既存の .bak を更新しない。
+        // TD-64 と同方針: 自動保存は正本のみ更新し既存の .bak を更新しない。
         var path = TempPath("nobak.txt");
         PlainTextFileService.Save(path, "v1", PlainTextEncodingKind.Utf8NoBom, PlainTextNewlineKind.None);
         PlainTextFileService.Save(path, "v2", PlainTextEncodingKind.Utf8NoBom, PlainTextNewlineKind.None, createBackup: true);

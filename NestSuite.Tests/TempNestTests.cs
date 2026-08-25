@@ -8,7 +8,7 @@ using System.IO;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.6.2: TempNest タブ定義・スロットモデル・スロット ViewModel の動作確認テスト。
+/// TempNest タブ定義・スロットモデル・スロット ViewModel の動作確認テスト。
 /// TempNestStoreService はファイルパスが固定のため Load() の戻り件数のみを検証する。
 /// </summary>
 public class TempNestTests
@@ -309,7 +309,7 @@ public class TempNestTests
         Assert.False(slot.HasFeedback);
     }
 
-    // ── TN-3 (v2.18.0): PromoteToNoteCommand CanExecute ──────────────────
+    // ── TN-3: PromoteToNoteCommand CanExecute ──────────────────
 
     [Fact]
     public void PromoteToNoteCommand_EmptyBody_IsDisabled()

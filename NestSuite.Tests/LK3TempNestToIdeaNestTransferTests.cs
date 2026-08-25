@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.22.0 LK-3: TempNest スロット → IdeaNest カード化。
+/// LK-3: TempNest スロット → IdeaNest カード化。
 /// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、

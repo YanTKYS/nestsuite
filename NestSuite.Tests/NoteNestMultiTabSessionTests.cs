@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.5〜v1.9.6: NoteNest 複数ファイルタブ対応の Session 独立性テスト。
+/// NoteNest 複数ファイルタブの Session 独立性テスト。
 ///
 /// <para>WPF を起動せずに <see cref="NestSuiteWorkspaceSession"/> /
 /// <see cref="NestSuiteWorkspaceSessionManager"/> / <see cref="MainViewModel"/> のみを使って確認する。</para>
@@ -171,19 +171,19 @@ public class NoteNestMultiTabSessionTests
         Assert.False(NestSuiteOpenFilePolicy.IsSameFile(null, null));
     }
 
-    // ── v1.9.5: MainViewModel タイマー・イベント破棄確認 ─────────────────
+    // ── MainViewModel タイマー・イベント破棄確認 ─────────────────
 
     [Fact]
     public void MainViewModel_ImplementsIDisposable()
     {
-        // v1.9.5: DispatcherTimer リーク防止のため IDisposable を実装していることを確認
+        // DispatcherTimer リーク防止のため IDisposable を実装していることを確認
         Assert.True(typeof(IDisposable).IsAssignableFrom(typeof(MainViewModel)));
     }
 
     [Fact]
     public void MainViewModel_Dispose_DoesNotThrow()
     {
-        // v1.9.5: Dispose() が例外なく呼び出せることを確認
+        // Dispose() が例外なく呼び出せることを確認
         var vm = new MainViewModel();
         vm.Dispose();
     }
@@ -191,14 +191,14 @@ public class NoteNestMultiTabSessionTests
     [Fact]
     public void MainViewModel_Dispose_CanBeCalledTwice_WithoutError()
     {
-        // v1.9.5: 二重 Dispose を呼んでも例外が発生しないことを確認
+        // 二重 Dispose を呼んでも例外が発生しないことを確認
         // （DispatcherTimer.Stop() は複数回呼んでも安全）
         var vm = new MainViewModel();
         vm.Dispose();
         vm.Dispose();
     }
 
-    // ── v2.14.13 TD-61: 未保存ステータスタイマー停止の実効確認 ──────────
+    // ── TD-61: 未保存ステータスタイマー停止の実効確認 ──────────
     // 旧 NoteNest Classic 由来の自動保存タイマー（_autoSaveTimer）は撤去済み。
     // Dispose が停止すべき DispatcherTimer は未保存ステータス更新用の _unsavedTimer。
     // 現行の自動保存は NestSuiteShellWindow.AutoSave.cs（SH-33）が担う。
@@ -232,12 +232,12 @@ public class NoteNestMultiTabSessionTests
         Assert.False(GetUnsavedTimer(vm).IsEnabled); // 破棄後は停止
     }
 
-    // ── v1.9.6: タブ削除時の Session 削除確認 ────────────────────────────
+    // ── タブ削除時の Session 削除確認 ────────────────────────────
 
     [Fact]
     public void NoteNest_SessionManager_RemoveByTabId_DecreasesCount()
     {
-        // v1.9.6: CloseTab が _sessionManager.Remove を呼ぶことで Session が削除されることを確認
+        // CloseTab が _sessionManager.Remove を呼ぶことで Session が削除されることを確認
         var mgr = new NestSuiteWorkspaceSessionManager();
         using var vm = new MainViewModel();
         mgr.Add(new NestSuiteWorkspaceSession("tab-x", NestSuiteWorkspaceKind.NoteNest, vm));
@@ -251,7 +251,7 @@ public class NoteNestMultiTabSessionTests
     [Fact]
     public void NoteNest_SessionManager_Remove_ThenTryGet_ReturnsFalse()
     {
-        // v1.9.6: Session 削除後は TryGet が false を返すことを確認
+        // Session 削除後は TryGet が false を返すことを確認
         // 閉じたタブの Session が残らないことの基盤検証
         var mgr = new NestSuiteWorkspaceSessionManager();
         using var vm = new MainViewModel();
@@ -264,7 +264,7 @@ public class NoteNestMultiTabSessionTests
     [Fact]
     public void NoteNest_TwoSessions_InManager_RemoveOne_OtherRemains()
     {
-        // v1.9.6: 2 つの NoteNest Session がある場合、片方を削除してももう片方が残ることを確認
+        // 2 つの NoteNest Session がある場合、片方を削除してももう片方が残ることを確認
         var mgr = new NestSuiteWorkspaceSessionManager();
         using var vmA = new MainViewModel();
         using var vmB = new MainViewModel();
@@ -278,12 +278,12 @@ public class NoteNestMultiTabSessionTests
         Assert.True(ReferenceEquals(remaining!.WorkspaceViewModel, vmB));
     }
 
-    // ── v1.9.6: FilePath 保存独立性確認（タブA保存時にタブBが変わらない） ─
+    // ── FilePath 保存独立性確認（タブA保存時にタブBが変わらない） ─
 
     [Fact]
     public void NoteNest_SessionA_FilePathUpdate_DoesNotAffectSessionB_InManager()
     {
-        // v1.9.6: タブA保存時（FilePath 更新）がタブBの Session に影響しないことを確認
+        // タブA保存時（FilePath 更新）がタブBの Session に影響しないことを確認
         var mgr = new NestSuiteWorkspaceSessionManager();
         using var vmA = new MainViewModel();
         using var vmB = new MainViewModel();
@@ -301,7 +301,7 @@ public class NoteNestMultiTabSessionTests
     [Fact]
     public void NoteNest_SessionA_IsModifiedUpdate_DoesNotAffectSessionB_InManager()
     {
-        // v1.9.6: タブAの IsModified 変更がタブBの Session に影響しないことを確認
+        // タブAの IsModified 変更がタブBの Session に影響しないことを確認
         var mgr = new NestSuiteWorkspaceSessionManager();
         using var vmA = new MainViewModel();
         using var vmB = new MainViewModel();

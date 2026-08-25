@@ -10,7 +10,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.15.0 SH: Shell 横断検索（開いているタブのみ対象の最小実装）のロジック層テスト。
+/// Shell 横断検索（開いているタブのみ対象）のロジック層テスト。
 /// UI（ListBox・パネル）に依存せず、ShellSearchService.Search を直接検証する。
 /// </summary>
 public class ShellSearchServiceTests
@@ -200,8 +200,8 @@ public class ShellSearchServiceTests
     [Fact]
     public void Search_ResultCount_ExactlyMax_IsNotReportedAsTruncated()
     {
-        // レビュー指摘: 一致がちょうど MaxResults 件だっただけの場合、実際には切り詰めが
-        // 発生していないため isTruncated は false であるべき（「多すぎる」表示は誤り）。
+        // 一致がちょうど MaxResults 件のときは切り詰めが発生していないため isTruncated は false。
+        // ここを true にすると「多すぎる」表示が誤って出る（境界の off-by-one を防ぐ）。
         var vm = new IdeaNestWorkspaceViewModel();
         for (int i = 0; i < ShellSearchService.MaxResults; i++)
             vm.AllCards.Add(new IdeaCardViewModel(new Idea { Title = $"検索対象カード{i}", Body = "" }));

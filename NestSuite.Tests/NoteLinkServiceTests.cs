@@ -71,7 +71,7 @@ public class NoteLinkServiceTests
         Assert.Empty(links);
     }
 
-    // ── Edge cases (v2.8.6) ───────────────────────────────────────────────────
+    // ── Edge cases ───────────────────────────────────────────────────
 
     [Fact]
     public void ExtractAllLinks_DuplicateLink_ReturnsBothOccurrences()

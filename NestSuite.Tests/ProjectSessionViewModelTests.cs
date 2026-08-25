@@ -46,7 +46,7 @@ public class ProjectSessionViewModelTests
         Assert.Equal(new[] { "first.notenest", "second.notenest" }, session.RecentFiles.Select(file => file.FullPath));
     }
 
-    // ── v2.14.14 バグ修正: 未保存経過時間の異常値表示防止 ──────────────────
+    // ── バグ修正: 未保存経過時間の異常値表示防止 ──────────────────
     // 実機で観測された「未保存（1065313408分）」（DateTime.Now - DateTime.MinValue
     // 相当の桁数）の再現・回帰確認。_unsavedSince が未初期化のまま IsModified=true に
     // なった場合でも、異常な分数を表示せず「● 未保存」にフォールバックすることを固定する。

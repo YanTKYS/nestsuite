@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.14 SH-45: アイコン・記号のみで表示される操作ボタンへのAutomationProperties.Name補完の
+/// SH-45: アイコン・記号のみで表示される操作ボタンへのAutomationProperties.Name補完の
 /// 静的 UI/コード契約確認。表示・Click・Command・Tab順・保存形式は一切変更していないため、
 /// ここでは対象ボタンへNameが付与されたこと、既存の可視テキスト付き要素・装飾記号・K-6対象を
 /// 誤って変更していないことを確認する。
@@ -266,7 +266,7 @@ public class SH45IconButtonAutomationNameTests
     [InlineData(4)]
     public void TempNestSlotButtons_WithVisibleText_DoNotUseInternalIdAsAutomationName(int slot)
     {
-        // v2.24.0 TD-93 の補正: TempNest スロットの操作ボタンはいずれも可視テキストを持つため、
+        // TD-93 の補正: TempNest スロットの操作ボタンはいずれも可視テキストを持つため、
         // AutomationProperties.Name は付与せず WPF 既定どおり Content から導出させる。
         // 内部 AutomationId 文字列（TempNest.SlotX.CopyButton 等）がそのまま読み上げ名として
         // 使われる状態への逆戻りを防ぐ。AutomationId 自体はテスト・UI Automation 用に維持する。
@@ -357,11 +357,9 @@ public class SH45IconButtonAutomationNameTests
         Assert.DoesNotContain(".Save(", expandBody);
     }
 
-    // ── 11. K-6（アクセスキー重複）はSH-45の対象外だった ──────────────────
-    // SH-45時点では新規作成(_N)/名前を付けて保存(_N)、このタブへ戻す(_R)/右側のタブを
-    // 閉じる(_R) の重複は意図的に未修正のまま残していた。これらはK-6としてSH-46
-    // （v2.19.15）で解消済みのため、このテストはSH-45が新規作成(_N)自体を変更して
-    // いないことのみを確認する（重複の有無はSH46MenuAccessKeyTestsが検証する）。
+    // ── 11. アクセスキー重複はこのテストの対象外 ─────────────────────────
+    // 重複の有無は SH46MenuAccessKeyTests が検証する。ここでは新規作成(_N) の
+    // アクセスキー自体が変わっていないことだけを確認する。
 
     [Fact]
     public void SH45_DidNotTouchNewMenuMnemonic()

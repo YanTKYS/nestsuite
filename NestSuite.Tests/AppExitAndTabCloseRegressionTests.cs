@@ -8,8 +8,8 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.9.9: アプリ終了・タブクローズ確認フローの回帰テスト。
-/// v2.9.7 で導入した Save / Discard / Cancel 確認が後退しないことを固定する。
+/// アプリ終了・タブクローズ確認フローの回帰テスト。
+/// 終了・タブクローズ時の Save / Discard / Cancel 確認が後退しないことを固定する。
 /// CloseConfirmationService を使用する純粋ロジックテスト。WPF UI は対象外。
 /// </summary>
 public class AppExitAndTabCloseRegressionTests
@@ -218,7 +218,7 @@ public class AppExitAndTabCloseRegressionTests
     [Fact]
     public void NoteNestConfirmation_HasThreeChoices_NotTwoChoices()
     {
-        // v2.9.7 以降は Save / Discard / Cancel の 3 択。
+        // Save / Discard / Cancel の 3 択。
         // 旧ダイアログは Yes（保存せず閉じる）/ No（キャンセル）の 2 択だった。
         var decisions = Enum.GetValues<UnsavedChangeDecision>();
         Assert.Contains(UnsavedChangeDecision.Save,    decisions);

@@ -36,7 +36,7 @@ public class EditorStateViewModelTests
         Assert.Equal(18, editor.FontSize);
     }
 
-    // v2.14.16 BUG: FontFamily は NestSuite UI 設定駆動の表示専用値。
+    // FontFamily は NestSuite UI 設定駆動の表示専用値。
     // SavedFontFamily（Workspace ファイルへ書き戻す値）とは独立して扱われることを固定する。
 
     [Fact]
@@ -75,7 +75,7 @@ public class EditorStateViewModelTests
         Assert.False(changed);
     }
 
-    // ── v2.19.3 L4: NoteNest 本文エディタの折り返し表示（表示専用の UI 設定） ──
+    // ── L4: NoteNest 本文エディタの折り返し表示（表示専用の UI 設定） ──
 
     [Fact]
     public void WordWrap_DefaultsToTrue()

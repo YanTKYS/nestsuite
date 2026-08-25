@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.11 L27: NoteNest右ペイン・リンクタブ（からのリンク／へのリンク）の
+/// L27: NoteNest右ペイン・リンクタブ（からのリンク／へのリンク）の
 /// ItemsControl → ListBox 化（キーボード選択対応）の静的 UI/コード契約確認。
 /// リンク抽出・解決自体は NoteLinkPanelViewModelTests / BacklinkServiceTests で別途確認済みのため、
 /// ここではListBox化・Enterジャンプ・選択変更単体では遷移しないことなど、L27固有の契約のみを扱う。
@@ -323,7 +323,7 @@ public class L27LinkListKeyboardTests
         Assert.Contains("Click=\"CopyAllMarkers_Click\"", xaml);
     }
 
-    // ── 13. スクロール構造（案A：外側ScrollViewer維持、内部スクロール無効化） ─
+    // ── 13. スクロール構造（外側 ScrollViewer 維持・内部スクロール無効化） ─
 
     [Fact]
     public void LinkLists_DisableInternalScrolling_ToAvoidDoubleScrollbars()

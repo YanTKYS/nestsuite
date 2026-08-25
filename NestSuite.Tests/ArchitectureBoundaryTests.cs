@@ -8,9 +8,9 @@ namespace NestSuite.Tests;
 
 /// <summary>
 /// AppShell / Workspace 境界テスト。
-/// v1.5.1: シグネチャ（フィールド・プロパティ・コンストラクタ・メソッドパラメータ）ベースの依存確認
-/// v1.5.2: Model型追加・Window継承チェック追加・ソースファイル文字列チェック追加
-/// v1.5.5: Views/NoteNestWorkspaceView コードビハインドをソースチェック対象に追加
+/// シグネチャ（フィールド・プロパティ・コンストラクタ・メソッドパラメータ）ベースの依存確認
+/// Model型追加・Window継承チェック追加・ソースファイル文字列チェック追加
+/// Views/NoteNestWorkspaceView コードビハインドをソースチェック対象に追加
 /// </summary>
 public class ArchitectureBoundaryTests
 {
@@ -56,7 +56,7 @@ public class ArchitectureBoundaryTests
         "System.Windows.Forms.FolderBrowserDialog",
     ];
 
-    // ソースファイル内で禁止するコールサイトパターン（v1.5.2 追加、v1.5.5 追加）
+    // ソースファイル内で禁止するコールサイトパターン
     private static readonly string[] ForbiddenCallSitePatterns =
     [
         "MessageBox.Show",
@@ -67,7 +67,7 @@ public class ArchitectureBoundaryTests
         "new StartDialog",
         "typeof(MainWindow)",
         "new MainWindow",
-        // v1.5.5: WorkspaceView should not own DialogService or resolve its host window directly
+        // WorkspaceView should not own DialogService or resolve its host window directly
         "DialogService",
         "Window.GetWindow(",
     ];
@@ -151,14 +151,14 @@ public class ArchitectureBoundaryTests
         Assert.Empty(FindSignatureViolations(WorkspaceCoordinatorAndServiceTypes));
     }
 
-    // v1.5.2 追加：Model 型も確認対象へ
+    // Model 型も確認対象
     [Fact]
     public void WorkspaceModels_DoNotExposeAppShellTypesInSignatures()
     {
         Assert.Empty(FindSignatureViolations(WorkspaceModelTypes));
     }
 
-    // v1.5.2 追加：Window 継承確認
+    // Window 継承確認
     [Fact]
     public void WorkspaceTypes_DoNotInheritFromWindow()
     {
@@ -184,7 +184,7 @@ public class ArchitectureBoundaryTests
         _ = new ProjectSessionViewModel();
     }
 
-    // ======= ソースファイル文字列チェック（v1.5.2 追加）=======
+    // ======= ソースファイル文字列チェック =======
     // メソッド本体内のコールサイトをテキストレベルで検出する。
     // 本格的な IL 解析は行わず、パターン文字列の有無を確認する軽量チェック。
 

@@ -7,12 +7,20 @@ using NestSuite.ViewModels;
 
 namespace NestSuite.Services;
 
+/// <summary>
+/// `ui-settings.json` の内容そのもの。<b>プロパティ名がそのまま on-disk の JSON キーになる</b>
+/// （<c>JsonPropertyName</c> を付けていないため）ので、改名は既存ユーザーの設定を
+/// サイレントに初期化する。改名・削除は互換性影響として扱うこと
+/// （`docs/development/compatibility-identifiers-audit.md`）。
+/// </summary>
 public class UiSettings
 {
     public string LastSearchText { get; set; } = "";
     public string LastReplaceText { get; set; } = "";
     public double? FindReplaceLeft { get; set; }
     public double? FindReplaceTop { get; set; }
+    /// <summary>現在どこからも読まれない。行番号ガターを廃し現在位置表示へ置き換えたため。
+    /// 既存 `ui-settings.json` のキーを消さないために残している。</summary>
     public bool ShowLineNumbers { get; set; } = false;
     public AppTheme Theme { get; set; } = AppTheme.Light;
     public int MarkerSortOrderIndex { get; set; } = 0;
@@ -31,16 +39,16 @@ public class UiSettings
     public double NoteNestEditorFontSize { get; set; } = 14;
 
     /// <summary>
-    /// L21 で追加した NoteNest 限定のフォント種類設定。L22 で <see cref="WorkspaceEditorFontFamily"/>
-    /// へ発展的に移行したため新規の読み書きはしないが、既存 ui-settings.json との後方互換のため
-    /// フィールド自体とその既定値は維持する（<see cref="UiSettingsService.ResolveWorkspaceEditorFontFamily"/> 参照）。
+    /// NoteNest 限定だった頃のフォント種類設定。設定は <see cref="WorkspaceEditorFontFamily"/> へ
+    /// 一本化されており新規の書き込みはしないが、既存 `ui-settings.json` を持つ利用者の設定を
+    /// 引き継ぐ移行元として読み続ける（<see cref="UiSettingsService.ResolveWorkspaceEditorFontFamily"/> 参照）。
     /// </summary>
     public string NoteNestEditorFontFamily { get; set; } = "Yu Gothic UI";
 
     /// <summary>
     /// NoteNest / IdeaNest / ChatNest / TempNest 共通の本文・編集領域フォント種類設定。
     /// Workspace ファイル本体には保存せず、この ui-settings.json 上でのみ管理する。
-    /// 未設定（null）の場合は <see cref="NoteNestEditorFontFamily"/>（L21 の旧設定）を移行元として使う。
+    /// 未設定（null）の場合は <see cref="NoteNestEditorFontFamily"/> を移行元として使う。
     /// </summary>
     public string? WorkspaceEditorFontFamily { get; set; }
 
@@ -95,8 +103,8 @@ public class UiSettingsService
 
     /// <summary>
     /// NoteNest / IdeaNest / ChatNest / TempNest の本文・編集領域で選択可能なフォント種類
-    /// （端末非依存の主要候補に限定）。L21 の <see cref="ValidNoteNestEditorFontFamilies"/> に
-    /// BIZ UDMincho / UD Digi Kyokasho N-R を加えた Workspace 共通版。
+    /// （端末非依存の主要候補に限定）。NoteNest 限定版の
+    /// <see cref="ValidNoteNestEditorFontFamilies"/> より広い Workspace 共通の候補集合。
     /// </summary>
     public static readonly IReadOnlyList<string> ValidWorkspaceEditorFontFamilies =
     [
@@ -121,7 +129,7 @@ public class UiSettingsService
     /// <summary>
     /// 実際に適用する値を解決する。優先順位は次のとおり。
     /// 1. <see cref="UiSettings.WorkspaceEditorFontFamily"/>（新設定）が候補内なら、それを使う。
-    /// 2. なければ <see cref="UiSettings.NoteNestEditorFontFamily"/>（L21 の旧設定）を移行元として使う。
+    /// 2. なければ <see cref="UiSettings.NoteNestEditorFontFamily"/>（NoteNest 限定だった旧設定）を移行元として使う。
     /// 3. どちらも無効・未設定なら既定 <see cref="DefaultWorkspaceEditorFontFamily"/> を使う。
     /// 保存は常に新設定名（<see cref="UiSettings.WorkspaceEditorFontFamily"/>）へ行う（呼び出し側の責務）。
     /// </summary>

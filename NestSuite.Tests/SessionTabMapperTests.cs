@@ -8,7 +8,7 @@ using System.IO;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.14 TD-6: Tab と SessionState の変換境界の回帰確認テスト。
+/// TD-6: Tab と SessionState の変換境界の回帰確認テスト。
 /// </summary>
 public class SessionTabMapperTests
 {
@@ -101,7 +101,7 @@ public class SessionTabMapperTests
     [Fact]
     public void TryCreateRestoreTarget_UnknownExtension_IsSafeFalse()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        // SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var ok = SessionTabMapper.TryCreateRestoreTarget(
             @"C:\work\unknown.pdf",
             out _,
@@ -124,7 +124,7 @@ public class SessionTabMapperTests
     [Fact]
     public void CreateRestoreTargets_FiltersInvalidEntriesWithoutChangingOrder()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、
+        // SH-43: .txt は PlainText として対応済みになったため、
         // 「無効エントリとして除外される拡張子」の例は .pdf へ差し替えた。
         var state = new NestSuiteSessionState
         {
@@ -407,7 +407,7 @@ public class SessionTabMapperTests
     }
 
 
-    // ── v2.14.1 FM-1: .nestsuite セッション復元の種別判定 ──────────────
+    // ── FM-1: .nestsuite セッション復元の種別判定 ──────────────
 
     [Fact]
     public void TryCreateRestoreTarget_NestSuitePath_ResolvesKindFromEnvelope()
@@ -425,7 +425,7 @@ public class SessionTabMapperTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.16.38 TD-59b-4: TryPrepareOpen 化に伴う OpenContext / 読込回数の確認 ──────
+    // ── TD-59b-4: TryPrepareOpen 化に伴う OpenContext / 読込回数の確認 ──────
 
     [Theory]
     [InlineData("NoteNest", NestSuiteWorkspaceKind.NoteNest)]
@@ -653,7 +653,7 @@ public class SessionTabMapperTests
         Assert.Equal(1, readCalls);
     }
 
-    // ── v2.14.7 SH-31: 読めない .nestsuite の復元通知 ──────────────────
+    // ── SH-31: 読めない .nestsuite の復元通知 ──────────────────
 
     [Fact]
     public void CreateRestoreTargets_BrokenNestsuite_ReportsFailure_AndRestoresOthers()
@@ -680,7 +680,7 @@ public class SessionTabMapperTests
         finally { File.Delete(brokenPath); }
     }
 
-    // v2.16.7 TD-65: 存在しないファイルは無言スキップではなく、
+    // TD-65: 存在しないファイルは無言スキップではなく、
     // 通知・持ち越し対象の失敗として報告するようになった（旧: SkipsSilently_NoFailureEntry）。
     [Fact]
     public void CreateRestoreTargets_MissingFile_ReportsFileNotFoundFailure()
@@ -702,7 +702,7 @@ public class SessionTabMapperTests
     [Fact]
     public void CreateRestoreTargets_UnsupportedExtension_SkipsSilently()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        // SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var state = new NestSuiteSessionState
         {
             FilePaths = [@"C:\work\notes.pdf"]
@@ -748,7 +748,7 @@ public class SessionTabMapperTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.16.7 TD-65: Tabs[] 由来の復元失敗は IsPinned を保持する ─────────
+    // ── TD-65: Tabs[] 由来の復元失敗は IsPinned を保持する ─────────
 
     [Fact]
     public void CreateRestoreTargets_TabsShape_MissingFile_ReportsFailureWithPinnedState()
@@ -775,7 +775,7 @@ public class SessionTabMapperTests
         Assert.True(failure.IsPinned);
     }
 
-    // ── v2.16.7 TD-65: 復元失敗 entry の持ち越し（CreateSessionState） ─────
+    // ── TD-65: 復元失敗 entry の持ち越し（CreateSessionState） ─────
 
     [Fact]
     public void CreateSessionState_PendingRestoreEntries_AreAddedToFilePathsAndTabs()
@@ -886,7 +886,7 @@ public class SessionTabMapperTests
         Assert.Null(state.Tabs[1].WorkspaceKind);
     }
 
-    // ── v2.16.17 TD-69: FilePaths[] は Tabs[] から導出 ──────────
+    // ── TD-69: FilePaths[] は Tabs[] から導出 ──────────
 
     [Fact]
     public void CreateSessionState_FilePaths_IsDerivedFromTabsFilePath_ForOpenTabsAndPendingEntries()
@@ -958,7 +958,7 @@ public class SessionTabMapperTests
         Assert.DoesNotContain("filePaths.Add(", body);
     }
 
-    // ── v2.16.16 TD-68: Tabs[].WorkspaceKind は UI 表示ヒント ─────
+    // ── TD-68: Tabs[].WorkspaceKind は UI 表示ヒント ─────
     // 復元時の最終判定の信頼ソースではないことをテストで固定する。
 
     [Fact]
@@ -1192,8 +1192,8 @@ public class SessionTabMapperTests
         Assert.Contains("見つからないファイル以外は引き続き再試行されます", SessionRestoreFailuresMessageBuilder.ForgetFileNotFoundQuestion);
     }
 
-    // ── v2.16.19 TD-71: 復元失敗通知の .bak 詳細案内 ─────────
-    // v2.16.21 SH-34 で本文組み立てが SessionRestoreFailuresMessageBuilder へ移ったため、
+    // ── TD-71: 復元失敗通知の .bak 詳細案内 ─────────
+    // SH-34 で本文組み立てが SessionRestoreFailuresMessageBuilder へ移ったため、
     // ソーステキスト静的確認ではなく builder の実際の挙動でテストする。
 
     [Fact]

@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.13 TD-7: 終了・タブクローズ確認フローから分離した純粋判断ロジックのテスト。
+/// TD-7: 終了・タブクローズ確認フローから分離した純粋判断ロジックのテスト。
 /// </summary>
 public class CloseConfirmationServiceTests
 {

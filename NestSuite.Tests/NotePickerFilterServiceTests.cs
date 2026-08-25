@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.7: TD-17 — NotePickerDialog filter logic tests.
+// TD-17 — NotePickerDialog filter logic tests.
 public class NotePickerFilterServiceTests
 {
     private static NoteViewModel MakeNote(string title) =>

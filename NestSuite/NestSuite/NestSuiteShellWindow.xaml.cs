@@ -59,7 +59,7 @@ public partial class NestSuiteShellWindow : Window, IWorkspaceDialogHost
         _themeService.Apply(_currentTheme);
         _noteNestEditorFontSize = UiSettingsService.ValidateNoteNestEditorFontSize(uiSettings.NoteNestEditorFontSize);
         // NoteNest / IdeaNest / ChatNest / TempNest 共通のフォント種類設定。
-        // 新設 WorkspaceEditorFontFamily があればそれを使い、なければ L21 の旧設定
+        // WorkspaceEditorFontFamily があればそれを使い、なければ NoteNest 限定だった旧設定
         // NoteNestEditorFontFamily を移行元として使う（ResolveWorkspaceEditorFontFamily 参照）。
         _workspaceEditorFontFamily = UiSettingsService.ValidateWorkspaceEditorFontFamily(
             UiSettingsService.ResolveWorkspaceEditorFontFamily(uiSettings));

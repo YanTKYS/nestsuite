@@ -10,11 +10,12 @@ public class DialogServiceBoundaryTests
     [Fact]
     public void MainWindowAndMainViewModelDoNotOwnConcreteDialogTypes()
     {
-        // v1.19.3: MainWindow 削除により NestSuiteShellWindow で確認
+        // Shell / MainViewModel は具象ダイアログ型やファイルダイアログを直接保持しない
+        // （IWorkspaceDialogHost / DialogService 経由に限定する）。
         var mainWindowFields = typeof(NestSuite.NestSuiteShellWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
         var mainViewModelMembers = typeof(MainViewModel).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-        Assert.DoesNotContain(mainWindowFields, field => field.FieldType.Namespace == "NoteNest.Dialogs");
+        Assert.DoesNotContain(mainWindowFields, field => field.FieldType.Namespace == "NestSuite.Dialogs");
         Assert.DoesNotContain(mainViewModelMembers, member => GetMemberType(member)?.Namespace == "Microsoft.Win32");
     }
 

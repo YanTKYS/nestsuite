@@ -9,8 +9,8 @@
 |------|------|
 | [development/nestsuite-development-guidelines.md](development/nestsuite-development-guidelines.md) | 開発・設計ルールの正本。実装前に読む |
 | [backlog.md](backlog.md) | 未着手・保留・トリガー待ち・見送り方針 |
-| [release-notes.md](release-notes.md) | 完了履歴（version 別） |
-| [guide/nestsuite-user-guide.md](guide/nestsuite-user-guide.md) | 利用ガイド・既知の制約 |
+| [release-notes.md](release-notes.md) | version 別の変更履歴 |
+| [guide/nestsuite-user-guide.md](guide/nestsuite-user-guide.md) | 利用ガイド（操作の詳細・復元手順・制約） |
 
 ## 作業に応じて読むもの
 
@@ -18,7 +18,7 @@
 |------|--------------|
 | [development/test-suite-policy.md](development/test-suite-policy.md) | テストを追加・削除するとき |
 | [architecture/schema-versioning-policy.md](architecture/schema-versioning-policy.md) | 保存形式・schema を変更するとき |
-| [testing/nestsuite-release-checklist.md](testing/nestsuite-release-checklist.md) | リリース前確認 |
+| [testing/nestsuite-release-checklist.md](testing/nestsuite-release-checklist.md) | リリース前の実機確認 |
 | [development/compatibility-identifiers-audit.md](development/compatibility-identifiers-audit.md) | Mutex / Pipe / AppData パス等の互換性識別子を触るとき |
 | [development/error-log-policy.md](development/error-log-policy.md) | ErrorLog へ記録するかどうか判断するとき |
 | [development/performance-measurement.md](development/performance-measurement.md) | 性能を実測するとき |

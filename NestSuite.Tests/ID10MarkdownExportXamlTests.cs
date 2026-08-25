@@ -21,7 +21,7 @@ public class ID10MarkdownExportXamlTests
     {
         var src = ReadIdeaNestWorkspaceViewXaml();
         Assert.Contains("Command=\"{Binding ExportMarkdownCommand}\"", src);
-        // v2.18.19 SH-42: ID-10で実際にMarkdown出力するようになったため、
+        // SH-42: ID-10で実際にMarkdown出力するようになったため、
         // 「風」（それらしい、の意）を含む旧文言から実態に合う文言へ修正した。
         Assert.Contains("Markdownとして保存", src);
     }

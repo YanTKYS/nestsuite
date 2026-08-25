@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.9.6: DetachedWorkspaceWindow 最小幅・Dark テーマ視認性の回帰テスト。
+/// DetachedWorkspaceWindow 最小幅・Dark テーマ視認性の回帰テスト。
 /// WPF visual tree を必要とする項目は手動確認対象。
 /// </summary>
 public class DetachedWindowUxAndThemeTests
@@ -36,7 +36,7 @@ public class DetachedWindowUxAndThemeTests
     [Fact]
     public void DarkTheme_MarkerHighlightBrushes_AreDistinct()
     {
-        // v2.9.6: 各マーカー種別のハイライト色が互いに異なることを確認する。
+        // 各マーカー種別のハイライト色が互いに異なることを確認する。
         var darkXaml = Path.Combine(RepoRoot, "NestSuite", "Themes", "Dark.xaml");
         Assert.True(File.Exists(darkXaml), $"Dark.xaml not found: {darkXaml}");
 
@@ -94,7 +94,7 @@ public class DetachedWindowUxAndThemeTests
     [Fact]
     public void ChatNestWorkspaceView_SpeakerToggleStyle_HasExplicitForeground()
     {
-        // v2.9.6: SpeakerToggle スタイルに Foreground Setter が存在することを確認する。
+        // SpeakerToggle スタイルに Foreground Setter が存在することを確認する。
         var xamlPath = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "ChatNest", "ChatNestWorkspaceView.xaml");
         Assert.True(File.Exists(xamlPath), $"XAML not found: {xamlPath}");
 

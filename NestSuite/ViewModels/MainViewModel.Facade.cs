@@ -177,9 +177,9 @@ public partial class MainViewModel
     public static readonly IReadOnlyList<double> EditorFontSizeChoices = [12, 14, 16, 18, 20];
 
     /// <summary>
-    /// NoteNest 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。
-    /// L21 時点では NoteNest 限定の一覧だったが、Workspace 共通設定への拡大に伴い
-    /// IdeaNest / ChatNest / TempNest とも共有する <see cref="NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies"/> を参照する。
+    /// 本文エディタで選択可能なフォント種類。既定は先頭の "Yu Gothic UI"。
+    /// フォント種類は NoteNest 限定ではなく Workspace 共通設定なので、
+    /// IdeaNest / ChatNest / TempNest と同じ <see cref="NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies"/> を参照する。
     /// </summary>
     public static readonly IReadOnlyList<string> EditorFontFamilyChoices =
         NestSuite.Services.UiSettingsService.ValidWorkspaceEditorFontFamilies;

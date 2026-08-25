@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.9.1 SH-21: NoteNest / IdeaNest / ChatNest 別ウィンドウ表示 — タブ状態・フラグ・スキーマ整合のテスト。
+/// SH-21: NoteNest / IdeaNest / ChatNest 別ウィンドウ表示 — タブ状態・フラグ・スキーマ整合のテスト。
 /// Shell UI（WPF）を必要とするウィンドウ操作は対象外。
 /// </summary>
 public class DetachedWorkspaceTests

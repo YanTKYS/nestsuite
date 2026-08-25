@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.14.12 SH-33: <see cref="AutoSaveCandidatePolicy"/> の自動保存対象判定を固定する。
+/// SH-33: <see cref="AutoSaveCandidatePolicy"/> の自動保存対象判定を固定する。
 /// UI 非依存の純粋ロジックのため <c>NestSuiteShellWindow</c> を生成せず直接テストできる
 /// （Shell 上の private ヘルパーは WPF ウィンドウに依存するため直接テストしない、という
 /// 既存方針とは別に、この policy 自体は <see cref="NestSuiteOpenFilePolicy"/> と同じ位置づけ）。

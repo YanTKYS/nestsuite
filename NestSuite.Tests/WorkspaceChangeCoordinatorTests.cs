@@ -91,7 +91,7 @@ public class WorkspaceChangeCoordinatorTests
         Assert.Contains(changes, change => change.IsDataChanged);
     }
 
-    // v2.13.4 M16: タスクの追加/削除で HasAnyTasks・HasNoTasks が facade へ通知されることを確認する
+    // M16: タスクの追加/削除で HasAnyTasks・HasNoTasks が facade へ通知されることを確認する
     // （タスク欄を互換表示するかどうかの判定が、右ペイン UI へ正しく伝わるための回帰）
     [Fact]
     public void AddingTaskPublishesHasAnyTasksAndHasNoTasks()

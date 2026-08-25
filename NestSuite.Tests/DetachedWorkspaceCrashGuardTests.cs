@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.9.5 hotfix: DetachedWorkspaceWindow 閉鎖時の NoteNest 補完 NullReferenceException 修正の回帰テスト。
+/// DetachedWorkspaceWindow 閉鎖時に NoteNest 補完が NullReferenceException を起こさないことの回帰テスト。
 /// WPF UI（TextBox / Popup / visual tree 操作）を必要とするパスは手動確認対象。
 /// </summary>
 public class DetachedWorkspaceCrashGuardTests
@@ -15,7 +15,7 @@ public class DetachedWorkspaceCrashGuardTests
     [Fact]
     public void NoteTitleProvider_WhenDataContextIsNull_ReturnsEmpty()
     {
-        // v2.9.5 修正の provider ロジックと同等のラムダ。DataContext = null 時に空を返す。
+        // 本番 provider ロジックと同等のラムダ。DataContext = null 時に空を返す。
         object? dataContext = null;
         Func<IEnumerable<string>> provider = () =>
         {

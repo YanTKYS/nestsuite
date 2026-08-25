@@ -63,7 +63,7 @@ public class ProjectLifecycleServiceTests : IDisposable
     [Fact]
     public void CreateEmptyLoadsEmptyWorkspaceWithoutSampleData()
     {
-        // v1.20.0: サンプル無題.notenest で「新規プロジェクト」を押した場合の期待動作
+        // サンプル無題.notenest で「新規プロジェクト」を押した場合の期待動作
         var context = CreateContext();
 
         context.Lifecycle.CreateEmpty();
@@ -136,7 +136,7 @@ public class ProjectLifecycleServiceTests : IDisposable
         Assert.False(File.Exists(dataPath));
     }
 
-    // ── v2.16.35 TD-59b-2: OpenPrepared（設計文書 §8.6） ────────────────────
+    // ── TD-59b-2: OpenPrepared（設計文書 §8.6） ────────────────────
 
     [Fact]
     public void OpenPrepared_SetsCurrentFilePathToContextFilePath_AndTracksRecentFile()

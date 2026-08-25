@@ -11,7 +11,7 @@ public sealed class NoteChangeCoordinator
     /// <summary>
     /// ノートの追加・削除・タイトル・本文・スター変更、および project 再読込のいずれでも
     /// 再評価が必要な派生表示プロパティ名。<see cref="NotesChanged"/>（データ変更あり）と
-    /// <see cref="NotesReloaded"/>（L25: 読込のみ、データ変更なし）で同じ集合を再利用し、
+    /// <see cref="NotesReloaded"/>（読込のみ、データ変更なし）で同じ集合を再利用し、
     /// 複数箇所への重複を避ける。
     /// </summary>
     private static readonly string[] DerivedDisplayPropertyNames =

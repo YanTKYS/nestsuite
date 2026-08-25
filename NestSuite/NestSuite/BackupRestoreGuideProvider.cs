@@ -12,7 +12,7 @@ public static class BackupRestoreGuideProvider
 
     public static string GetGuideText() =>
         "NestSuite は、手動保存時に同じ場所へ「.bak」バックアップファイルを作成する場合があります。\n" +
-        "v2.16.6 以降、自動保存では .bak を更新しません。.bak は最後の手動保存時点の復元候補です。\n" +
+        "自動保存では .bak を更新しません。.bak は最後の手動保存時点の復元候補です。\n" +
         "\n" +
         "復元手順:\n" +
         "1. NestSuite で対象ファイルを閉じます。\n" +

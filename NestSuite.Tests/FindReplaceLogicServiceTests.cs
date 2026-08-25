@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.7: TD-17 — FindReplaceDialog logic tests.
+// TD-17 — FindReplaceDialog logic tests.
 public class FindReplaceLogicServiceTests
 {
     // ── SearchMatchSegments ────────────────────────────────────────────────

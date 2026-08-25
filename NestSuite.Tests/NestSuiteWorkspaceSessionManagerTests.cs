@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.1: NestSuiteWorkspaceSessionManager の動作テスト。
+/// NestSuiteWorkspaceSessionManager の動作テスト。
 ///
 /// <para>WPF ウィンドウを生成せずに Session 管理の正しさを確認する。
 /// ViewModel の実インスタンスは不要なため <see cref="object"/> で代替する。</para>
@@ -195,7 +195,7 @@ public class NestSuiteWorkspaceSessionManagerTests
     public void MultipleSessionsOfSameKind_CanShareSameViewModelReference()
     {
         // SessionManager 自体は VM の共有／独立を問わない。
-        // v1.9.2 以降: ChatNest/NoteNest/IdeaNest いずれもタブごとに独立 VM を生成する（Shell 側の責務）。
+        // ChatNest / NoteNest / IdeaNest いずれもタブごとに独立 VM を生成する（Shell 側の責務）。
         var sharedVm = new ChatNestWorkspaceViewModel();
         var s1 = new NestSuiteWorkspaceSession("tab-1", NestSuiteWorkspaceKind.ChatNest, sharedVm);
         var s2 = new NestSuiteWorkspaceSession("tab-2", NestSuiteWorkspaceKind.ChatNest, sharedVm);

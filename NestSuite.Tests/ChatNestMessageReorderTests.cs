@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: ChatNestWorkspaceViewModelTests から、発言ドラッグ並び替え（CH-13:
+/// TD-63: ChatNestWorkspaceViewModelTests から、発言ドラッグ並び替え（CH-13:
 /// MoveMessage）に関するテストを分割した。基本動作・IsDirty/WorkspaceModified・
 /// ID/timestamp/speaker/text の不変性・MessageModels 出力順との整合を扱う。
 /// </summary>

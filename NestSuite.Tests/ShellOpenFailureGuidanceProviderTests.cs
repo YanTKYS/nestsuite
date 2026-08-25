@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.11 SH-1: 起動時・外部オープン時のファイルオープン失敗に添える
+/// SH-1: 起動時・外部オープン時のファイルオープン失敗に添える
 /// 「NestSuite は起動している」ヒントの、UI 非依存の文言 helper のテスト。
 /// </summary>
 public class ShellOpenFailureGuidanceProviderTests

@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: NoteNestFormatSchemaRegressionTests から、.notenest / .nestsuite の
+/// TD-63: NoteNestFormatSchemaRegressionTests から、.notenest / .nestsuite の
 /// JSON トップレベル構造（キー存在・妥当性）に関するテストを分割した。
 /// </summary>
 public class NoteNestFormatStructureTests : IDisposable

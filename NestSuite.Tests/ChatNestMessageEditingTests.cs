@@ -8,9 +8,9 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: ChatNestWorkspaceViewModelTests から、投稿・発言者切替・クリア・読込・
+/// TD-63: ChatNestWorkspaceViewModelTests から、投稿・発言者切替・クリア・読込・
 /// 未保存状態（IsDirty / HasUnsavedChanges）の基本動作に関するテストを分割した。
-/// v1.7.0: ChatNest 統合検証用 Workspace ViewModel の最小動作確認。
+/// ChatNest 統合検証用 Workspace ViewModel の最小動作確認。
 /// UI（MessageBox）に依存しない経路のみを検証する。
 /// </summary>
 public class ChatNestMessageEditingTests
@@ -188,7 +188,7 @@ public class ChatNestMessageEditingTests
         Assert.False(vm.IsDirty);
     }
 
-    // ── v1.7.5: 案A — 入力中テキストの保存後の扱い ─────────────────────
+    // ── 入力中テキストの保存後の扱い ───────────────────────────
 
 
     [Fact]
@@ -223,7 +223,7 @@ public class ChatNestMessageEditingTests
     [Fact]
     public void MarkSaved_WhenInputTextRemains_HasUnsavedChangesIsTrue()
     {
-        // 案A: MarkSaved() は IsDirty のみ解消する。InputText が残っていれば HasUnsavedChanges = true のまま。
+        // MarkSaved() は IsDirty のみ解消する。InputText が残っていれば HasUnsavedChanges = true のまま。
         // → タブの IsModified・未保存マーカーが保存後も維持される。
         var vm = new ChatNestWorkspaceViewModel { InputText = "投稿済み" };
         vm.PostCommand.Execute(null); // IsDirty = true, InputText = ""

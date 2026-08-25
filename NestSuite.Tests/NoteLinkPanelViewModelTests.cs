@@ -137,7 +137,7 @@ public class NoteLinkPanelViewModelTests
         Assert.True(vm.HasNoBacklinks);
     }
 
-    // ── L27 (v2.19.11): 0件ListBoxへの不必要なTabフォーカスを避けるための判定 ──
+    // ── L27: 0件ListBoxへの不必要なTabフォーカスを避けるための判定 ──
 
     [Fact]
     public void HasOutboundLinks_FalseWhenNoteSelectedButNoLinks()

@@ -184,7 +184,7 @@ public class ProjectFileServiceTests : IDisposable
         Assert.False(File.Exists(_path + ".tmp"));
     }
 
-    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+    // ── FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
 
     [Fact]
     public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
@@ -226,7 +226,7 @@ public class ProjectFileServiceTests : IDisposable
         }
     }
 
-    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+    // ── FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
 
     [Fact]
     public void Save_NestSuitePath_ExistingFile_CreatesBak()
@@ -299,7 +299,7 @@ public class ProjectFileServiceTests : IDisposable
         finally { foreach (var f in new[] { path, path + ".tmp", path + ".bak" }) if (File.Exists(f)) File.Delete(f); }
     }
 
-    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+    // ── TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]
     public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
@@ -340,7 +340,7 @@ public class ProjectFileServiceTests : IDisposable
     [Fact]
     public void LoadPrepared_AdditionalFileIO_IsZero_ForMissingPath()
     {
-        // v2.16.35 §13: 実際には存在しない path の context でも成功することで、
+        // 実際には存在しない path の context でも成功することで、
         // 追加のファイル読込がゼロであることを証明する（追加読込があれば FileNotFoundException になる）。
         var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         _svc.Save(nestSuitePath, new Project { ProjectName = "ZeroIO" });
@@ -421,7 +421,7 @@ public class ProjectFileServiceTests : IDisposable
         Assert.Throws<ArgumentException>(() => _svc.LoadPrepared(context));
     }
 
-    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+    // ── TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
 
     [Fact]
     public void LoadPrepared_NoteNestKind_WrongLegacyExtension_Ideanest_ThrowsArgumentException_BeforeFileIO()
@@ -454,7 +454,7 @@ public class ProjectFileServiceTests : IDisposable
     [Fact]
     public void LoadPrepared_LegacyExtension_CorrectExtension_StillSucceeds_Regression()
     {
-        // v2.16.36 で拡張子ガードを追加しても、正しい組み合わせは従来どおり成功する。
+        // 拡張子ガードがあっても、正しい組み合わせは成功する。
         _svc.Save(_path, new Project { ProjectName = "RegressionCheck" });
         Assert.True(NestSuiteTabFactory.TryPrepareOpen(_path, out var context, out _));
 
@@ -466,7 +466,7 @@ public class ProjectFileServiceTests : IDisposable
     [Fact]
     public void LoadPrepared_PathMismatch_SameWorkspaceKind_ThrowsArgumentException_NotEnsureKind()
     {
-        // v2.16.35 §9: 同じ NoteNest 同士でも、path が envelope の読込元と一致しなければ検出する
+        // 同じ NoteNest 同士でも、path が envelope の読込元と一致しなければ検出する
         // （EnsureKind ではなく path 一致ガードで失敗すること・全文一致ではなくキーワードのみ確認）。
         var pathA = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-A.nestsuite");
         var pathB = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "-B.nestsuite");
@@ -492,7 +492,7 @@ public class ProjectFileServiceTests : IDisposable
     [Fact]
     public void LoadPrepared_SchemaVersionTooNew_ThrowsSchemaVersionTooNewException()
     {
-        // v2.16.35 §8.6 (e): TryPrepareOpen は probe 時点で too-new を検出して context を作らないため、
+        // TryPrepareOpen は probe 時点で too-new を検出して context を作らないため、
         // ここでは LoadPrepared 自身の防御（EnsureNotNewer の再確認）を reflection で直接検証する。
         var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "9.9.9", "{}");
@@ -506,7 +506,7 @@ public class ProjectFileServiceTests : IDisposable
     [Fact]
     public void LoadPrepared_WrapperPayloadSchemaMismatch_ThrowsInvalidDataException()
     {
-        // v2.16.35 §12: wrapper 宣言 schema と payload 側 schema の不整合検証（EnsureEnvelopeConsistent）が
+        // wrapper 宣言 schema と payload 側 schema の不整合検証（EnsureEnvelopeConsistent）が
         // prepared 経路でも維持されていることを確認する。
         var nestSuitePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nestsuite");
         var wrapped = NestSuiteWorkspaceEnvelope.Wrap("NoteNest", "1.0.0", """{"version":"1.2.0"}""");

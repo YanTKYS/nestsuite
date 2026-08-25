@@ -62,9 +62,10 @@
                    Visibility="{Binding ShouldShowGettingStartedHint, Converter={StaticResource BoolToVis}}"/>
 
         <!-- 通常タブの復元・作成が一切なかった起動時だけ、
-             recent files上位3件と保持中draft件数を表示する。AT-5とは同一領域で排他表示
-             （ShouldShowContinueFrom/ShouldShowGettingStartedHintが互いに排他になるよう
-             TempNestWorkspaceViewModel側で調整済み）。専用パネル・閉じる操作・手動再表示は持たない。 -->
+             recent files上位3件と保持中draft件数を表示する。直前の初回ガイドと同じ領域を使うため、
+             ShouldShowContinueFrom / ShouldShowGettingStartedHint は
+             TempNestWorkspaceViewModel側で互いに排他になるよう制御している。
+             専用パネル・閉じる操作・手動再表示は持たない。 -->
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
                     Margin="0,0,0,8"
                     AutomationProperties.AutomationId="TempNest.ContinueFrom"

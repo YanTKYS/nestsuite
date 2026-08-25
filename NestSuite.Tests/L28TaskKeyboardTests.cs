@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.12 L28: NoteNest右ペイン・互換タスク表示のキーボード対応（K-3）の
+/// L28: NoteNest右ペイン・互換タスク表示のキーボード対応（K-3）の
 /// 静的 UI/コード契約確認。タスク抽出・保存・チェック操作自体は既存テストで別途確認済みのため、
 /// ここではグループ見出し・完了済みセクション見出しのButton/ToggleButton化と、
 /// タスクタイトルのEnterによるコメント表示切替、CheckBoxとの非干渉など、L28固有の契約のみを扱う。

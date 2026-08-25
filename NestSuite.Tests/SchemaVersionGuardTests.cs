@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.14.4 FM-4: SchemaVersionGuard の数値比較・前方互換ガード動作を確認するテスト。
+/// FM-4: SchemaVersionGuard の数値比較・前方互換ガード動作を確認するテスト。
 ///
 /// <para>版数リテラルは現行の実 schema version とは無関係な仮の値を使う。
 /// 実 schema version をここに固定してしまうと、TD-58 の集約方針（schema version リテラルは

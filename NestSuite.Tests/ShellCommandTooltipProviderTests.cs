@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.10 SH-30: Shell 主要コマンドの有効/無効理由ツールチップ文言を組み立てる
+/// SH-30: Shell 主要コマンドの有効/無効理由ツールチップ文言を組み立てる
 /// ShellCommandTooltipProvider の単体テスト。UI（MenuItem/ToolTip 実体）は起動しない。
 /// </summary>
 public class ShellCommandTooltipProviderTests

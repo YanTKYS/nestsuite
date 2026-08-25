@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.15 TD-3-4: 保存成功後のタブ・Session 更新共通 helper の回帰確認テスト。
+/// TD-3-4: 保存成功後のタブ・Session 更新共通 helper の回帰確認テスト。
 /// </summary>
 public class SavedWorkspaceStateUpdaterTests
 {
@@ -133,7 +133,7 @@ public class SavedWorkspaceStateUpdaterTests
         Assert.DoesNotContain("IsModified", json);
     }
 
-    // ── v2.14.1 FM-1: .nestsuite 保存先の種別一致確認 ──────────────────
+    // ── FM-1: .nestsuite 保存先の種別一致確認 ──────────────────
 
     [Fact]
     public void TryCreate_NestSuiteSavedPath_MatchingKind_Succeeds()
@@ -153,12 +153,8 @@ public class SavedWorkspaceStateUpdaterTests
         finally { File.Delete(savedPath); }
     }
 
-    // v2.16.39 TD-59b-5: TryCreate は保存成功後の内部状態更新であり、保存直後にファイルを
-    // 再度開いて wrapper の kind を再検証しない契約へ変更した。旧
-    // TryCreate_NestSuiteSavedPath_KindMismatch_Fails（保存済み .nestsuite の wrapper 内容が
-    // currentTab.WorkspaceKind と食い違う場合に false を期待していた）は、この新しい契約のもとでは
-    // 成立しない前提を検証する形になるため、下記の「再読込しない」契約テストへ置き換えた
-    // （テストの削除ではなく、変更後の責務境界に合わせた更新）。
+    // TryCreate は保存成功後の内部状態更新であり、保存直後にファイルを再度開いて
+    // wrapper の kind を再検証しない。kind の食い違い検出は Open 側の責務。
     [Fact]
     public void TryCreate_NestSuiteSavedPath_UsesCurrentTabKindWithoutReopeningFile()
     {

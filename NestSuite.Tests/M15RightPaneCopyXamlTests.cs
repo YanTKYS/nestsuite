@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.4 M15: NoteNest右ペイン（マーカー一覧・タスク一覧）一括コピーの静的 UI 契約確認。
+/// M15: NoteNest右ペイン（マーカー一覧・タスク一覧）一括コピーの静的 UI 契約確認。
 /// Markdown 生成自体は NoteNestRightPaneMarkdownFormatterTests で別途確認する。
 /// </summary>
 public class M15RightPaneCopyXamlTests

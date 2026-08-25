@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.15.0: NestSuite セッション状態サービスのユニットテスト。
+/// NestSuite セッション状態サービスのユニットテスト。
 /// 保存・読込・永続化・エラー耐久性を確認する。
 /// </summary>
 public class NestSuiteSessionStateServiceTests : IDisposable
@@ -122,7 +122,7 @@ public class NestSuiteSessionStateServiceTests : IDisposable
         Assert.Null(state.ActiveFilePath);
     }
 
-    // ── v2.16.7 TD-65: 破損 session の診断性 ────────
+    // ── TD-65: 破損 session の診断性 ────────
 
     [Fact]
     public void Load_CorruptedJson_QuarantinesOriginalFile_ToCorruptSuffix()

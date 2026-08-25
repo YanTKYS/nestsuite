@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.15.0 SH: Shell 横断検索パネルの ViewModel テスト。
+/// Shell 横断検索パネルの ViewModel テスト。
 /// パネル状態（検索語・結果・メッセージ）はセッション内のみで保持し、永続化しないことを前提に検証する。
 /// </summary>
 public class ShellSearchPanelViewModelTests
@@ -62,8 +62,8 @@ public class ShellSearchPanelViewModelTests
     [Fact]
     public void SearchText_ExactlyMaxResults_DoesNotShowTruncationMessage()
     {
-        // レビュー指摘: 一致がちょうど MaxResults 件だっただけの場合、実際には切り詰められて
-        // いないので「結果が多すぎる」メッセージを出してはいけない。
+        // 一致がちょうど MaxResults 件のときは切り詰めが起きていないので、
+        // 「結果が多すぎる」メッセージを出してはいけない（境界の off-by-one を防ぐ）。
         var vm = new IdeaNestWorkspaceViewModel();
         for (int i = 0; i < ShellSearchService.MaxResults; i++)
             vm.AllCards.Add(new IdeaCardViewModel(new Idea { Title = $"検索対象{i}", Body = "" }));

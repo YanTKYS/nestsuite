@@ -8,9 +8,8 @@ internal static class TestPaths
     internal static readonly string RepoRoot =
         Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 
-    // TD-94 (v2.24.1): ReadBacklog() / ReadReleaseNotes() は削除した。
-    // backlog / release notes の日本語本文を xUnit から assert しない方針のため
-    //（方針: docs/development/test-suite-policy.md）。文書の正しさはレビューと Git 履歴で担保する。
+    // 文書本文を読み出すヘルパーはここへ足さない。backlog / release notes の日本語本文を
+    // xUnit から assert しない方針のため（docs/development/test-suite-policy.md）。
 }
 
 internal static class TestFactories

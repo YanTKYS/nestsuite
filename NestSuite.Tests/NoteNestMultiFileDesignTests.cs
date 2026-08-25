@@ -7,10 +7,10 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.4: NoteNest 複数ファイルタブ対応の設計固定テスト。
+/// NoteNest 複数ファイルタブ対応の設計固定テスト。
 ///
-/// <para>本格実装は v1.9.5 で行う。本テストは v1.9.4 で整理した設計の前提確認と
-/// 既存 ChatNest 複数タブ対応の回帰防止が目的。</para>
+/// <para>複数ファイルタブが前提とする不変条件と、既存 ChatNest 複数タブ対応の
+/// 回帰防止を目的とする。</para>
 ///
 /// <para>WPF を起動せずに <see cref="NestSuiteWorkspaceSession"/> ・
 /// <see cref="NestSuiteWorkspaceSessionManager"/> ・
@@ -63,7 +63,7 @@ public class NoteNestMultiFileDesignTests
 
     // ── 複数 NoteNest Session の独立性（案C の前提確認） ───────────────────
     //
-    // v1.9.5: NestSuiteWorkspaceSession が NoteNest ViewModel を独立して保持できることが
+    // NestSuiteWorkspaceSession が NoteNest ViewModel を独立して保持できることが
     // 案C（MainViewModel をタブごとに生成する方針）の基盤となる。
 
     [Fact]

@@ -10,7 +10,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.21.0 LK-4: ChatNest 発言 → IdeaNest カード化。
+/// LK-4: ChatNest 発言 → IdeaNest カード化。
 /// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、本リポジトリの
@@ -42,7 +42,7 @@ public class LK4ChatNestToIdeaNestTransferTests
         Assert.NotNull(type.GetProperty("SelectedTarget", InstanceNonPublic));
     }
 
-    // ── 4-1. LK-4-1 (v2.21.1): WorkspaceTransferTargetDialog の AutomationName 補正 ──
+    // ── 4-1. LK-4-1: WorkspaceTransferTargetDialog の AutomationName 補正 ──
 
     private static string ReadWorkspaceTransferTargetDialogXaml() =>
         File.ReadAllText(Path.Combine(RepoRoot, "NestSuite", "Dialogs", "WorkspaceTransferTargetDialog.xaml"));

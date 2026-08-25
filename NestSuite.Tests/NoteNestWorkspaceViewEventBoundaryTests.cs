@@ -5,19 +5,16 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.5.5: 共有ヘルパーの検索先を MainWindow → NoteNestWorkspaceView へ更新。
-/// DragDrop・ContextMenu ヘルパーは WorkspaceView のコードビハインドに移動済み。
+/// DragDrop・ContextMenu の共有ヘルパーが <see cref="NoteNestWorkspaceView"/> のコードビハインドに
+/// 明示的な名前で存在することを固定する。Shell 側へ引き上げず、NoteNest の View に閉じておく。
 /// </summary>
-public class MainWindowEventBoundaryTests
+public class NoteNestWorkspaceViewEventBoundaryTests
 {
     private static readonly BindingFlags PrivateStatic = BindingFlags.Static | BindingFlags.NonPublic;
-
-    // v1.19.3: MainWindow 削除により SemanticEventEntryPointsRemainAvailable を削除。
 
     [Fact]
     public void ContextMenuResolutionUsesExplicitlyNamedSharedHelper()
     {
-        // v1.5.5: helper moved to NoteNestWorkspaceView
         Assert.NotNull(typeof(NoteNestWorkspaceView).GetMethod("GetContextMenuDataContext", PrivateStatic));
         Assert.Null(typeof(NoteNestWorkspaceView).GetMethod("GetDataContext", PrivateStatic));
     }
@@ -25,7 +22,6 @@ public class MainWindowEventBoundaryTests
     [Fact]
     public void DragDropUsesSharedThresholdAndEffectHelpers()
     {
-        // v1.5.5: helpers moved to NoteNestWorkspaceView
         Assert.NotNull(typeof(NoteNestWorkspaceView).GetMethod("HasExceededDragThreshold", PrivateStatic));
         Assert.NotNull(typeof(NoteNestWorkspaceView).GetMethod("SetDragOverEffect", PrivateStatic));
     }

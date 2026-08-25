@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.14.1 FM-1: .nestsuite wrapper 形式の読み書き確認
+// FM-1: .nestsuite wrapper 形式の読み書き確認
 public class NestSuiteWorkspaceEnvelopeTests
 {
     [Fact]
@@ -161,7 +161,7 @@ public class NestSuiteWorkspaceEnvelopeTests
         }
     }
 
-    // ── v2.14.7 SH-31: DetectKindFromFile（理由つき判定） ──────────────
+    // ── SH-31: DetectKindFromFile（理由つき判定） ──────────────
 
     [Fact]
     public void DetectKindFromFile_ValidEnvelope_ReturnsNoneFailure_AndKindAndSchemaVersion()
@@ -221,7 +221,7 @@ public class NestSuiteWorkspaceEnvelopeTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.16.34 TD-59b-1: ReadFromFile（読込回数・failure 分類の test seam） ──
+    // ── TD-59b-1: ReadFromFile（読込回数・failure 分類の test seam） ──
 
     [Fact]
     public void ReadFromFile_ValidEnvelope_ReturnsEnvelope_AndNoneFailure_WithExactlyOneReadCall()

@@ -5,7 +5,7 @@ using NestSuite.Services;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.35 TD-59b-2: 不正な <see cref="WorkspaceFileOpenContext"/> / <see cref="PreloadedWorkspaceEnvelope"/>
+/// TD-59b-2: 不正な <see cref="WorkspaceFileOpenContext"/> / <see cref="PreloadedWorkspaceEnvelope"/>
 /// を生成するための reflection helper。production の internal コンストラクターへは
 /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> を経由せずアクセスするが、これはテストからの
 /// 誤配線シミュレーションのためだけであり、production 側の public 生成制限（<c>InternalsVisibleTo</c>

@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.5 SH-28: 保存・エクスポート・コピー等の完了フィードバックを統一する
+/// SH-28: 保存・エクスポート・コピー等の完了フィードバックを統一する
 /// ShellTransientStatus の挙動を確認する。UI timer の実時間待ちは行わず、
 /// 満了時と同じ後始末を行う Clear() を直接呼んで検証する。
 /// </summary>

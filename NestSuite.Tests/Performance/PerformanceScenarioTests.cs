@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests.Performance;
 
 /// <summary>
-/// v2.13.9 TD-56 (LT-11): 開発者向けの大量データ性能計測シナリオ。
+/// TD-56 (LT-11): 開発者向けの大量データ性能計測シナリオ。
 ///
 /// <para>環境変数 <c>NESTSUITE_PERF=1</c> が設定されているときだけ実測する。
 /// 未設定時は即 return するため、通常の dotnet test / CI では 0ms 相当で通過する。

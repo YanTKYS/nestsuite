@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.7 TD-3-2: WorkspaceTabHelper 共通化後の回帰確認テスト。
+/// TD-3-2: WorkspaceTabHelper 共通化後の回帰確認テスト。
 /// UI を起動しないリフレクションベースの静的確認。
 /// </summary>
 public class WorkspaceTabHelperTests

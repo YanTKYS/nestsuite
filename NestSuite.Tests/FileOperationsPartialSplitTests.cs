@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.18 TD-16: NestSuiteShellWindow.FileOperations.cs の責務分割を固定する構造テスト。
+/// TD-16: NestSuiteShellWindow.FileOperations.cs の責務分割を固定する構造テスト。
 /// </summary>
 public class FileOperationsPartialSplitTests
 {

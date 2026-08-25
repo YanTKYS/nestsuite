@@ -66,7 +66,7 @@ public class MarkerExtractorServiceTests
         Assert.Equal("spaces", results[0].Excerpt);
     }
 
-    // v2.14.19 バグ修正: 角括弧付きマーカーであっても行頭（または行頭の空白後）でなければ検出しない。
+    // バグ修正: 角括弧付きマーカーであっても行頭（または行頭の空白後）でなければ検出しない。
 
     [Fact]
     public void Extract_TodoWordAlone_NotMatched()

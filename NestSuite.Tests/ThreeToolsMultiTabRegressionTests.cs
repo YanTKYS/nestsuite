@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.8: 3ツール（NoteNest / ChatNest / IdeaNest）複数ファイルタブ対応後の回帰確認テスト。
+/// 3ツール（NoteNest / ChatNest / IdeaNest）複数ファイルタブ対応後の回帰確認テスト。
 /// 3ツールが SessionManager 上で独立して共存できること、相互干渉がないことを確認する。
 /// WPF を起動せずに <see cref="NestSuiteWorkspaceSessionManager"/> と各 ViewModel を使って確認する。
 /// </summary>

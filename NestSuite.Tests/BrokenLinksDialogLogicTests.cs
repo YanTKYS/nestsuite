@@ -6,7 +6,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.7: TD-17 — BrokenLinksDialog display logic tests.
+// TD-17 — BrokenLinksDialog display logic tests.
 public class BrokenLinksDialogLogicTests
 {
     private static NoteViewModel MakeNote(string title, string content = "") =>
