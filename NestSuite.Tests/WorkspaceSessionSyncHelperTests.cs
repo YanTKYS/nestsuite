@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.8 TD-3-3: セッション復元・タブ同期ヘルパー共通化後の回帰確認テスト。
+/// TD-3-3: セッション復元・タブ同期ヘルパー共通化後の回帰確認テスト。
 /// UI を起動しないリフレクションベースの静的確認。
 /// </summary>
 public class WorkspaceSessionSyncHelperTests
@@ -45,7 +45,7 @@ public class WorkspaceSessionSyncHelperTests
     [Fact]
     public void NestSuiteShellWindow_HasLoadWorkspaceFileAtMethod()
     {
-        // v2.16.38 TD-59b-4: session 復元専用の path 版 (NestSuiteWorkspaceKind, string) は撤去し、
+        // TD-59b-4: session 復元専用の path 版 (NestSuiteWorkspaceKind, string) は撤去し、
         // context 版だけを残した（session 復元も prepared context 経路へ切り替わったため）。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("LoadWorkspaceFileAt", InstanceNonPublic, null,
@@ -100,7 +100,7 @@ public class WorkspaceSessionSyncHelperTests
     [Fact]
     public void NestSuiteShellWindow_LoadInitialNoteNestFile_StillExists()
     {
-        // v2.16.37 TD-59b-3: LoadInitialFile が probe 済みの WorkspaceFileOpenContext を渡すため、
+        // TD-59b-3: LoadInitialFile が probe 済みの WorkspaceFileOpenContext を渡すため、
         // string path 版から context 版へシグネチャが変わった（LoadInitialFile 以外に呼び元が
         // ないため overload ではなく置き換え）。
         var method = typeof(NestSuiteShellWindow)

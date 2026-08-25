@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: NoteNestFormatSchemaRegressionTests から、ノート日時（作成/更新）と
+/// TD-63: NoteNestFormatSchemaRegressionTests から、ノート日時（作成/更新）と
 /// スター（お気に入り、M12 / V142）に関するテストを分割した。
 /// </summary>
 public class NoteNestFormatTimestampAndStarTests : IDisposable

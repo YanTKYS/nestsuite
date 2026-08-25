@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.15 TD-67: 複数ファイルオープン失敗通知の配線をソーステキストで
+/// TD-67: 複数ファイルオープン失敗通知の配線をソーステキストで
 /// 静的に確認する。NestSuiteShellWindow は WPF Window のため直接インスタンス化してテストしない、
 /// という既存方針（TD-66 の NestSuiteShellSessionPersistenceTests 等）に合わせる。
 /// </summary>
@@ -68,7 +68,7 @@ public class NestSuiteShellMultipleOpenFailureTests
     [Fact]
     public void OpenNestSuiteFile_HasNoSpecialCaseForSingleFileSelection()
     {
-        // 案B: 単一選択でも同じ loop・同じ builder を通す（既存構造どおり、rawPaths.Count による分岐を新設しない）。
+        // 単一選択でも複数選択と同じ loop・同じ builder を通す（rawPaths.Count による分岐を作らない）。
         var src = ReadFileOpenSource();
         var methodStart = src.IndexOf("private void OpenNestSuiteFile()", StringComparison.Ordinal);
         var methodEnd = src.IndexOf("public void LoadInitialFile(", methodStart, StringComparison.Ordinal);
@@ -95,7 +95,7 @@ public class NestSuiteShellMultipleOpenFailureTests
     public void NotifyRestoreFailures_SignatureIsUnchangedByTD67()
     {
         // TD-65 の session 復元失敗通知（NotifyRestoreFailures）のシグネチャは TD-67 で変更していない。
-        // v2.16.21 SH-34: 本文の組み立ては SessionRestoreFailuresMessageBuilder へ委譲するようになった
+        // SH-34: 本文の組み立ては SessionRestoreFailuresMessageBuilder へ委譲するようになった
         // （文言そのものは同 builder のテストで検証する）ため、ここではシグネチャと、
         // TD-67 の複数ファイルオープン専用の型を誤って混ぜていないことのみ確認する。
         var src = ReadSessionSource();

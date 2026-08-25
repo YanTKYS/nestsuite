@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.16 TD-13: timer / event 購読解除の回帰確認テスト。
+/// TD-13: timer / event 購読解除の回帰確認テスト。
 /// </summary>
 public class EventSubscriptionCleanupTests
 {

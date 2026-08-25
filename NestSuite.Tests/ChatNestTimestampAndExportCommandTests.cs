@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: ChatNestWorkspaceViewModelTests から、タイムスタンプ表示切替（CH-8）と
+/// TD-63: ChatNestWorkspaceViewModelTests から、タイムスタンプ表示切替（CH-8）と
 /// ExportConversationCommand（CH-9）に関するテストを分割した。
 /// </summary>
 public class ChatNestTimestampAndExportCommandTests

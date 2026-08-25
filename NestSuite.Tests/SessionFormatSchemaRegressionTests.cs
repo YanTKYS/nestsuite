@@ -66,7 +66,7 @@ public class SessionFormatSchemaRegressionTests : IDisposable
         Assert.Equal(state.ActiveFilePath, loaded.ActiveFilePath);
     }
 
-    // ── v2.16.7 TD-65: session.json 形式が変わっていないことのゴールデンファイル確認 ──
+    // ── TD-65: session.json 形式が変わっていないことのゴールデンファイル確認 ──
     // 復元失敗 entry の持ち越し・破損 session 診断は
     // 既存の Tabs[] / FilePaths / ActiveFilePath の範囲内で行い、新しい top-level field は追加しない。
 
@@ -104,7 +104,7 @@ public class SessionFormatSchemaRegressionTests : IDisposable
     [Fact]
     public void Session_OldFormatJson_WithoutTabs_StillLoads()
     {
-        // v2.16.3 SH-15 以前の旧形式（Tabs[] なし）。
+        // SH-15 以前の旧形式（Tabs[] なし）。
         var path = Path.Combine(_tempDir, "old-session.json");
         File.WriteAllText(path, """{"FilePaths":["/a.notenest","/b.chatnest"],"ActiveFilePath":"/a.notenest"}""");
         var svc = new NestSuiteSessionStateService(path);

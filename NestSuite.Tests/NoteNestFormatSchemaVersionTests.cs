@@ -6,8 +6,8 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: NoteNestFormatSchemaRegressionTests から、schema version 定数・
-/// 前方互換ガード（v2.14.4 FM-4）に関するテストを分割した。
+/// TD-63: NoteNestFormatSchemaRegressionTests から、schema version 定数・
+/// 前方互換ガード（FM-4）に関するテストを分割した。
 /// NoteNest (.notenest) / .nestsuite の schema version 判定の非変更を固定する。
 /// </summary>
 public class NoteNestFormatSchemaVersionTests : IDisposable
@@ -57,7 +57,7 @@ public class NoteNestFormatSchemaVersionTests : IDisposable
         Assert.Contains($"\"{Project.CurrentSchemaVersion}\"", File.ReadAllText(path));
     }
 
-    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+    // ── FM-4: schema version 前方互換ガード ───────────────────────
     //
     // LegacyNoteWithoutStarField_LoadsAsNotStarred / LegacySchemaNote_LoadThenSave_PreservesContentAndTasks
     // （NoteNestFormatTimestampAndStarTests / NoteNestFormatRoundTripTests）が既に legacy .notenest

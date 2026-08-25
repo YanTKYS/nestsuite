@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.14 TD-66: タブ変更時の session 随時保存の配線を
+/// TD-66: タブ変更時の session 随時保存の配線を
 /// ソーステキストで静的に確認する。NestSuiteShellWindow は WPF Window のため直接
 /// インスタンス化してテストしない、という既存方針に合わせ、各呼び出し箇所が
 /// SaveSessionAfterTabChange を「実際に状態が変わった経路でのみ」呼んでいることを、
@@ -149,8 +149,8 @@ public class NestSuiteShellSessionPersistenceTests
     [Fact]
     public void TryRestoreSession_StillSetsPendingSessionRestoreEntries_AndNotifiesFailures()
     {
-        // TD-65 の持ち越しロジック（_pendingSessionRestoreEntries の設定・NotifyRestoreFailures 呼び出し）が
-        // 今回の変更で壊れていないことを確認する。
+        // 復元失敗 entry の持ち越しロジック（_pendingSessionRestoreEntries の設定と
+        // NotifyRestoreFailures 呼び出し）が残っていることを確認する。
         var src = ReadSource("NestSuiteShellWindow.Session.cs");
         var methodStart = src.IndexOf("private bool TryRestoreSession()", StringComparison.Ordinal);
         Assert.True(methodStart >= 0);
@@ -187,11 +187,11 @@ public class NestSuiteShellSessionPersistenceTests
     [Fact]
     public void Constructor_CallsSaveSession_OnlyWhenTryRestoreSessionSucceeds()
     {
-        // v2.16.18 TD-70: TryRestoreSession() の戻り値を直接 if で見る形から、
+        // TD-70: TryRestoreSession() の戻り値を直接 if で見る形から、
         // 変数に保持して「復元成功、または起動中に FileNotFound の pending entry を
         // 解除した（_forgotFileNotFoundRestoreFailuresDuringStartup）」の広い条件へ変わった。
         // 初期タブ作成（旧 else if）は「復元していない場合のみ」という意味は変えていない。
-        // v2.16.28 TD-75b: 判定条件そのものは StartupRestoreSessionPolicy の単体テスト
+        // TD-75b: 判定条件そのものは StartupRestoreSessionPolicy の単体テスト
         // （SessionTabMapperTests.cs）で確認する。ここでは、コンストラクターがその判定結果に
         // 応じて SaveSession() を呼び、それが初期タブ作成より前にある、という配線のみを
         // 軽く確認する。
@@ -222,9 +222,9 @@ public class NestSuiteShellSessionPersistenceTests
     }
 
     // ── Temp タブが session 対象外の既存仕様（session.json 形式）を変更していないこと ──
-    // v2.16.28 TD-75b: private 実装（IsSessionPersistable）のソース文字列確認から、
-    // 公開 API CreateSessionState の出力確認へ置き換えた。実装の条件式や変数名を
-    // 書き換えても、Temp タブが session 出力から除外されている限り壊れない。
+    // private 実装（IsSessionPersistable）のソース文字列ではなく、公開 API
+    // CreateSessionState の出力で確認する。実装の条件式や変数名を書き換えても、
+    // Temp タブが session 出力から除外されている限り壊れない。
 
     [Fact]
     public void CreateSessionState_ExcludesTempTab_ButKeepsOrdinaryTabs()

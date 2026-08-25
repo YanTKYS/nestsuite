@@ -89,7 +89,7 @@ public class TaskGroupViewModelTests
         Assert.Equal("1/2", group.CountText);
     }
 
-    // v2.13.4 M16: 既存タスクがないグループを右ペインの互換表示から隠すための判定
+    // M16: 既存タスクがないグループを右ペインの互換表示から隠すための判定
     [Fact]
     public void HasTasks_FalseWhenEmpty_TrueAfterAdd_FalseAfterRemove()
     {

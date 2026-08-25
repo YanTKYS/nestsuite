@@ -5,7 +5,7 @@ namespace NestSuite;
 ///
 /// <para><b>引数仕様</b></para>
 /// <list type="bullet">
-///   <item>引数なし         → NestSuite 起動（無題 NoteNest タブ）</item>
+///   <item>引数なし         → NestSuite 起動（session 復元、なければ TempNest タブがアクティブ）</item>
 ///   <item>ファイルパス     → NestSuite 起動し、拡張子に応じてタブを開く</item>
 ///   <item>--nestsuite      → NestSuite 起動（互換フラグ。既定と同じ動作）</item>
 ///   <item>--nestsuite + パス → NestSuite 起動し、拡張子に応じてタブを開く</item>

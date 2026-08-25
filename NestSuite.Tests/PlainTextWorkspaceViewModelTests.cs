@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-/// <summary>v2.19.0 SH-43: PlainTextWorkspaceViewModel の dirty 契約を確認する。</summary>
+/// <summary>SH-43: PlainTextWorkspaceViewModel の dirty 契約を確認する。</summary>
 public class PlainTextWorkspaceViewModelTests
 {
     [Fact]

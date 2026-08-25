@@ -10,7 +10,7 @@ using System.Text.Json;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.8.2: IdeaNestFileService 定数の確認および
+/// IdeaNestFileService 定数の確認および
 /// IdeaNest モデルの [JsonPropertyName] 属性適用確認テスト。
 /// JSON キー名が IdeaNest v1.1.4 の camelCase 形式と互換であることを保証する。
 /// </summary>
@@ -59,7 +59,7 @@ public class IdeaNestFileServiceTests
         {
             File.WriteAllText(path, "{broken");
             Assert.ThrowsAny<JsonException>(() => IdeaNestFileService.Load(path));
-            // v2.14.4 FM-4: 数値として解釈できる「より新しい」version は SchemaVersionTooNewException の
+            // FM-4: 数値として解釈できる「より新しい」version は SchemaVersionTooNewException の
             // 対象になるため、ここでは数値比較の対象外（解釈不能）な garbage version で
             // 従来どおりの NotSupportedException 経路を確認する。
             File.WriteAllText(path, """{"version":"unsupported-version","ideas":[],"settings":{}}""");
@@ -128,12 +128,12 @@ public class IdeaNestFileServiceTests
         Assert.Equal(expectedJsonName, attr!.Name);
     }
 
-    // ── v2.13.6 TD-45: 保存失敗の契約確認 ────────────────────────────────
+    // ── TD-45: 保存失敗の契約確認 ────────────────────────────────
 
     [Fact]
     public void Save_ThrowsWhenParentPathIsAFile()
     {
-        // v2.13.6 TD-45: 保存失敗が例外として通知されることを固定する（Shell 共通保存コアの catch がこの契約に依存する）。
+        // TD-45: 保存失敗が例外として通知されることを固定する（Shell 共通保存コアの catch がこの契約に依存する）。
         // AtomicFileWriter.WriteAllText は保存先ディレクトリを自動作成するため、
         // 単に「存在しないディレクトリ」を指定しただけでは失敗しない。
         // 既存の「ファイル」を親ディレクトリとして使うことで Directory.CreateDirectory を確実に失敗させる。
@@ -178,7 +178,7 @@ public class IdeaNestFileServiceTests
         Assert.Equal(expectedJsonName, attr!.Name);
     }
 
-    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+    // ── FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
 
     [Fact]
     public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
@@ -205,7 +205,7 @@ public class IdeaNestFileServiceTests
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
     }
 
-    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+    // ── FM-4: schema version 前方互換ガード ───────────────────────
 
     [Fact]
     public void Load_NewerSchemaVersion_ThrowsSchemaVersionTooNewException()
@@ -232,7 +232,7 @@ public class IdeaNestFileServiceTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+    // ── FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
 
     [Fact]
     public void Save_ExistingFile_CreatesBakWithPreviousContent()
@@ -286,7 +286,7 @@ public class IdeaNestFileServiceTests
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
     }
 
-    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+    // ── TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
 
     [Fact]
     public void Save_CreateBackupFalse_DoesNotCreateBak()
@@ -337,7 +337,7 @@ public class IdeaNestFileServiceTests
         finally { File.Delete(path); File.Delete(path + ".bak"); File.Delete(path + ".tmp"); }
     }
 
-    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+    // ── TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]
     public void SerializeWrapped_ReturnsValidEnvelopeMatchesNestSuiteSaveAndDoesNotCreateFiles()
@@ -493,7 +493,7 @@ public class IdeaNestFileServiceTests
         Assert.Throws<ArgumentException>(() => IdeaNestFileService.LoadPrepared(context));
     }
 
-    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+    // ── TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
 
     [Fact]
     public void LoadPrepared_IdeaNestKind_WrongLegacyExtension_Notenest_ThrowsArgumentException_BeforeFileIO()

@@ -8,16 +8,10 @@ namespace NestSuite.Tests;
 /// <summary>
 /// Workspace 間手動転送（TN-3 / LK-4 / LK-3 / LK-2）の横断契約テスト。
 ///
-/// <para>TD-94 (v2.24.1) で、旧 <c>TD93WorkspaceTransferRegressionTests</c> から
-/// <b>実際に production code を実行する / 型情報を確認するテストだけ</b>を残して改名した。
-/// 削除したのは次の 3 種類（方針: <c>docs/development/test-suite-policy.md</c>）:</para>
-/// <list type="bullet">
-///   <item>production の <c>.cs</c> をテキストとして読み <c>Assert.Contains("ActivateTab")</c> 等で
-///         実装の書き方を固定していたもの（コメント追加・メソッド改名だけで誤検出し、
-///         別経路で同じ副作用を持ち込まれても検出できない）</item>
-///   <item>backlog / release notes / 設計文書の日本語本文を assert していたもの</item>
-///   <item>他のテストファイルが存在することを確認していた test-of-test</item>
-/// </list>
+/// <para>ここへ足してよいのは <b>実際に production code を実行する / 型情報を確認する</b>
+/// テストだけとする。production の <c>.cs</c> をテキストとして読んで実装の書き方を固定するもの、
+/// 文書の日本語本文を assert するもの、他のテストファイルの存在を確認する test-of-test は置かない
+/// （方針: <c>docs/development/test-suite-policy.md</c>）。</para>
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> でインスタンス化できないため、
 /// Shell 側はリフレクションによる API 契約確認に留め、実際の振る舞い確認は

@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.14.0: NestSuite 横断最近ファイルサービスのユニットテスト。
+/// NestSuite 横断最近ファイルサービスのユニットテスト。
 /// 最大 10 件・重複排除・先頭挿入・削除・クリア・永続化を確認する。
 /// </summary>
 public class NestSuiteRecentFilesServiceTests : IDisposable
@@ -130,7 +130,7 @@ public class NestSuiteRecentFilesServiceTests : IDisposable
         Assert.Empty(Directory.GetFiles(_dir, "nestsuite-recent-files.json.*.tmp"));
     }
 
-    // ── v1.14.1: 壊れたファイル・未対応拡張子の耐久性 ──
+    // ── 壊れたファイル・未対応拡張子の耐久性 ──
 
     [Fact]
     public void Load_CorruptedJson_ReturnsEmpty()
@@ -154,7 +154,7 @@ public class NestSuiteRecentFilesServiceTests : IDisposable
         Assert.Equal(updated, _svc.Load());
     }
 
-    // ── v2.19.2 TD-87: 破損時の診断性 ──
+    // ── TD-87: 破損時の診断性 ──
 
     [Fact]
     public void Load_CorruptedJson_QuarantinesOriginalFile_ToCorruptSuffix()

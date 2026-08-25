@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// ID-15 (v2.18.2): IdeaNest 新規カード作成後の位置フィードバック
+/// ID-15: IdeaNest 新規カード作成後の位置フィードバック
 /// （<see cref="IdeaNestWorkspaceViewModel.ApplyNewCardPositionFeedback"/>）の確認。
 /// 作成カードは <see cref="NestSuite.IdeaNest.Views.PreviewIdeaWindow"/> のモーダル表示を経由するため、
 /// ダイアログを介さずに検証できるよう <c>ApplyNewCardPositionFeedback</c> を直接呼び出す。

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// TD-77 (v2.17.9): IdeaNest Converter 群の ConvertBack 例外解消・共有 Brush 化の回帰。
+// TD-77: IdeaNest Converter 群の ConvertBack 例外解消・共有 Brush 化の回帰。
 public class IdeaNestConvertersTests
 {
     [Fact]

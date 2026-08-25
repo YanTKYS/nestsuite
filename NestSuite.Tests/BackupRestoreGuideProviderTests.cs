@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.8 L8: ヘルプメニュー「バックアップ復元ガイド」の
+/// L8: ヘルプメニュー「バックアップ復元ガイド」の
 /// 案内文言を確認するテスト。自動復元・自動コピーは行わず、案内のみであることを前提とする。
 /// </summary>
 public class BackupRestoreGuideProviderTests
@@ -54,7 +54,7 @@ public class BackupRestoreGuideProviderTests
     [Fact]
     public void GetGuideText_MentionsAutoSaveDoesNotUpdateBak()
     {
-        // v2.16.6 TD-64 の意味論（自動保存では .bak を更新しない）を前提として案内していること。
+        // TD-64 の意味論（自動保存では .bak を更新しない）を前提として案内していること。
         Assert.Contains("自動保存では .bak を更新しません", BackupRestoreGuideProvider.GetGuideText());
     }
 

@@ -5,7 +5,7 @@ using System.Text;
 namespace NestSuite.Tests.Performance;
 
 /// <summary>
-/// v2.13.9 TD-56: Stopwatch と GC.GetTotalMemory による計測結果を集め、
+/// TD-56: Stopwatch と GC.GetTotalMemory による計測結果を集め、
 /// artifacts/performance-results/ へ Markdown と CSV で出力する。
 /// 外部依存なし（BenchmarkDotNet は導入しない）。出力先は .gitignore 済み。
 /// </summary>

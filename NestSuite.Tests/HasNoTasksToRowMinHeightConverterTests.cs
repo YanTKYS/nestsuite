@@ -4,7 +4,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.13.5 M16 フォローアップ: 右ペインのタスク行の最小高さを、既存タスクの有無に応じて
+// M16 フォローアップ: 右ペインのタスク行の最小高さを、既存タスクの有無に応じて
 // 0（縮小可）/ 100（従来どおり）に切り替えるコンバーターの回帰。
 public class HasNoTasksToRowMinHeightConverterTests
 {
@@ -26,7 +26,7 @@ public class HasNoTasksToRowMinHeightConverterTests
         Assert.Equal(100.0, result);
     }
 
-    // TD-77 (v2.17.9): one-way 表示専用のため ConvertBack は例外ではなく Binding.DoNothing を返す。
+    // TD-77: one-way 表示専用のため ConvertBack は例外ではなく Binding.DoNothing を返す。
     [Fact]
     public void ConvertBack_ReturnsBindingDoNothing()
     {

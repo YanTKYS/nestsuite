@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// SH-37 (v2.18.3): 「現在の状態」サマリーの集計ロジックのうち、Shell の内部タブ・
+/// SH-37: 「現在の状態」サマリーの集計ロジックのうち、Shell の内部タブ・
 /// セッション管理から独立している <see cref="ShellStateSummaryCalculator"/> を確認する。
 /// Shell 自体（タブ数・未保存判定・pending restore）は既存 Shell ロジックをそのまま
 /// 再利用するだけであり、NestSuiteShellWindow を直接構築する単体テストは行わない

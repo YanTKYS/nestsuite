@@ -34,7 +34,7 @@
     <SolidColorBrush x:Key="SampleBannerFg"     Color="#FFD740"/>
 
 
-    <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
+    <!-- marker line highlight — opaque; canvas sits behind TextBox text -->
     <!-- Dark テーマで各マーカー種別を識別しやすくするため、
          FIXME(赤) > TODO(アンバー) > NOTE(緑) > NoteLink(青) の優先順位に対応した色相を付与する。 -->
     <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#2D2714"/>

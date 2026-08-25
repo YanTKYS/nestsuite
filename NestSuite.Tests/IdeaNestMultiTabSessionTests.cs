@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.7: IdeaNest 複数ファイルタブ対応の Session 独立性テスト。
+/// IdeaNest 複数ファイルタブ対応の Session 独立性テスト。
 ///
 /// <para>WPF を起動せずに <see cref="IdeaNestWorkspaceViewModel"/> /
 /// <see cref="NestSuiteWorkspaceSession"/> / <see cref="NestSuiteWorkspaceSessionManager"/> を使って確認する。</para>

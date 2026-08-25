@@ -7,8 +7,8 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.5 regression tests: NoteEditorHost line display and highlight behaviour.
-// Covers the logic layer of v2.8.1–v2.8.4 changes without requiring WPF layout.
+// Regression tests for NoteEditorHost line display and highlight behaviour.
+// Covers the logic layer without requiring WPF layout.
 public class NoteEditorHostHighlightRegressionTests
 {
     // ── 1. HighlightKind classification ──────────────────────────────────────
@@ -31,8 +31,8 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.Empty(MarkerLineDetector.Detect("x"));
     }
 
-    // v2.8.2 regression: HACK was removed from the marker system.
-    // v2.14.19: バグ修正で角括弧付き・行頭条件が必須になったため、除外確認も角括弧付き表記に更新した
+    // HACK is not a marker kind; only TODO / FIXME / NOTE are.
+    // バグ修正で角括弧付き・行頭条件が必須になったため、除外確認も角括弧付き表記に更新した
     // （HACK は角括弧付き・行頭であっても、既存マーカー種別に含まれないため対象外のまま）。
     [Fact]
     public void Classify_HackLine_ExcludedFromHighlightSystem()
@@ -46,7 +46,7 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.Empty(MarkerLineDetector.Detect("[hack] lowercase workaround"));
     }
 
-    // v2.14.19 バグ修正: マーカーは角括弧付き・行頭・大文字小文字区別ありに変更した
+    // バグ修正: マーカーは角括弧付き・行頭・大文字小文字区別ありに変更した
     // （NestSuite.Services.MarkerExtractorService と同一ルール）。
     [Theory]
     [InlineData("[TODO]",  LineHighlightKind.Todo)]
@@ -72,7 +72,7 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.Empty(MarkerLineDetector.Detect($"[{marker}] something here"));
     }
 
-    // v2.8.4 hotfix regression: "note" inside [[...]] title must not trigger Note kind.
+    // "note" inside a [[...]] link title must not trigger Note kind.
     [Theory]
     [InlineData("[[My Note]]")]
     [InlineData("see [[Some Note]] here")]
@@ -86,7 +86,7 @@ public class NoteEditorHostHighlightRegressionTests
         Assert.Equal(LineHighlightKind.NoteLink, result[0].Kind);
     }
 
-    // v2.14.19: 行頭に角括弧付き NOTE がなければ、文中の NOTE（単語単体）はもう Note の根拠にならない。
+    // 行頭に角括弧付き NOTE がなければ、文中の NOTE（単語単体）はもう Note の根拠にならない。
     // [[...]] が行内にあれば NoteLink として扱われる。
     [Fact]
     public void Classify_NoteKeywordOutsideBracket_WithoutLineStartMarker_IsNoteLink_NotNote()
@@ -105,7 +105,7 @@ public class NoteEditorHostHighlightRegressionTests
     }
 
     // ── 2. Priority: 行頭マーカー vs NoteLink ─────────────────────────────────
-    // v2.14.19: TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の優先順位という
+    // TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の優先順位という
     // 概念自体が成立しなくなった。引き続き意味を持つのは「行頭マーカーは [[NoteLink]] より優先される」
     // という関係のみ。
 

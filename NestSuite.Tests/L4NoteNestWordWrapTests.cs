@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.3 L4: NoteNest 本文エディタのワードラップ切替の静的 UI 契約確認。
+/// L4: NoteNest 本文エディタのワードラップ切替の静的 UI 契約確認。
 /// M14NoteSortModeXamlTests と同じ静的文字列テストのパターンで、メニュー配線・
 /// 全 NoteNest セッションへの伝播・新規タブへの適用・UI settings 永続化を固定する。
 /// bool→TextWrapping/HorizontalScrollBarVisibility の変換自体は

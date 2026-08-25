@@ -15,7 +15,7 @@ namespace NestSuite.Tests;
 /// タブ管理は NestSuiteShellTabTests、ファイル操作は NestSuiteShellNoteNestLaunchTests /
 /// NestSuiteShellChatNestLaunchTests / NestSuiteShellIdeaNestLaunchTests /
 /// NestSuiteShellStartupTabPolicyTests / NestSuiteShellOpenCommonTests /
-/// NestSuiteShellSaveFlowTests を参照（v2.16.13 TD-63 で分割）。
+/// NestSuiteShellSaveFlowTests を参照（TD-63 で分割）。
 /// </summary>
 public class NestSuiteShellTests
 {
@@ -49,7 +49,7 @@ public class NestSuiteShellTests
         Assert.Equal(typeof(NoteNestWorkspaceView), field!.FieldType);
     }
 
-    // v1.19.3: MainWindow 削除により NoteNest_StandaloneMainWindow_StillExists を削除。
+    // MainWindow 削除により NoteNest_StandaloneMainWindow_StillExists を削除。
 
     [Fact]
     public void NoteNestWorkspaceView_StillIsNotWindow()
@@ -78,7 +78,7 @@ public class NestSuiteShellTests
         Assert.NotNull(method);
     }
 
-    // ── v2.16.9 SH-29: 未保存タブ終了確認への件数サマリ ─────────────────
+    // ── SH-29: 未保存タブ終了確認への件数サマリ ─────────────────
 
     [Fact]
     public void NestSuiteShellWindow_HasGetUnsavedCloseConfirmationTargetsMethod()
@@ -92,7 +92,7 @@ public class NestSuiteShellTests
         Assert.Equal(typeof(List<UnsavedCloseTarget>), method.ReturnType);
     }
 
-    // ── v2.16.10 SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
+    // ── SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
 
     [Fact]
     public void NestSuiteShellWindow_HasRefreshCommandAvailabilityMethod()
@@ -125,9 +125,6 @@ public class NestSuiteShellTests
 
     // ── ツール選択領域・プレースホルダーの存在確認 ──────────────────────
 
-    // Note: ToolSelectorPanel (x:Name) は v1.16.2 でヘッダー移動により廃止。
-    // 旧テスト NestSuiteShellWindow_HasToolSelectorPanel は削除。
-
     [Fact]
     public void NestSuiteShellWindow_HasUnintegratedPlaceholderField()
     {
@@ -142,7 +139,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteShellWindow_HasChatWorkspaceViewField()
     {
-        // v1.7.0: XAML x:Name="ChatWorkspaceView" による ChatNest Workspace フィールドの存在・型確認
+        // XAML x:Name="ChatWorkspaceView" による ChatNest Workspace フィールドの存在・型確認
         var field = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.Name == "ChatWorkspaceView");
@@ -153,8 +150,8 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteShellWindow_ChatNestViewModels_ManagedBySessionManager_NotSingleField()
     {
-        // v1.9.2: ChatNest ViewModel はタブごとの独立インスタンスになった。
-        // v1.7.0 時点の単一 _chatNestViewModel フィールドは削除され、
+        // ChatNest ViewModel はタブごとの独立インスタンスになった。
+        // ChatNest の ViewModel は Shell の単一フィールドではなく、
         // OnClosing での破棄確認は _sessionManager 経由で全 ChatNest Session を走査する。
         var chatNestVmField = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
@@ -168,7 +165,7 @@ public class NestSuiteShellTests
         Assert.NotNull(sessionMgrField);
     }
 
-    // ── v1.6.4: ツール切替モデルの確認 ──────────────────────────────────
+    // ── ツール切替モデルの確認 ──────────────────────────────────
 
     [Fact]
     public void NestSuiteShellWindow_DefaultToolId_IsNoteNest()
@@ -196,12 +193,12 @@ public class NestSuiteShellTests
         Assert.Equal(typeof(NestSuite.ViewModels.MainViewModel), prop!.PropertyType);
     }
 
-    // ── v1.8.0: IdeaNest フィールドの型境界 ─────────────────────────────
+    // ── IdeaNest フィールドの型境界 ─────────────────────────────
 
     [Fact]
     public void NestSuiteShellWindow_HasIdeaNestWorkspaceViewField()
     {
-        // v1.8.0: XAML x:Name="IdeaNestWorkspaceView" による IdeaNest Workspace フィールドの存在・型確認
+        // XAML x:Name="IdeaNestWorkspaceView" による IdeaNest Workspace フィールドの存在・型確認
         var field = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.Name == "IdeaNestWorkspaceView");
@@ -212,10 +209,10 @@ public class NestSuiteShellTests
     }
 
     [Fact]
-    public void NestSuiteShellWindow_IdeaNestViewModelField_IsRemovedInV197()
+    public void NestSuiteShellWindow_HasNoSharedIdeaNestViewModelField()
     {
-        // v1.9.7: IdeaNest もタブごとに独立した ViewModel を持つため、共有 _ideaNestViewModel フィールドを削除した
-        // Session Manager 経由でタブごとの ViewModel を管理するため、クラスフィールドは不要
+        // IdeaNest はタブごとに独立した ViewModel を持ち、Session Manager 経由で管理する。
+        // Shell が共有フィールドを持つとタブ間で内容が混ざるため、フィールド自体を作らない
         var field = typeof(NestSuiteShellWindow)
             .GetFields(AllInstance)
             .FirstOrDefault(f => f.FieldType ==
@@ -254,18 +251,18 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteToolRegistry_IdeaNest_IsIntegrated()
     {
-        // v1.8.0: IdeaNest 統合検証段階として IsIntegrated=true
+        // IdeaNest 統合検証段階として IsIntegrated=true
         Assert.True(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.IdeaNestToolId));
     }
 
     [Fact]
     public void NestSuiteToolRegistry_ChatNest_IsIntegrated()
     {
-        // v1.7.0: ChatNest を統合検証段階として IsIntegrated=true に変更
+        // ChatNest を統合検証段階として IsIntegrated=true に変更
         Assert.True(NestSuiteToolRegistry.IsIntegrated(NestSuiteToolRegistry.ChatNestToolId));
     }
 
-    // ── v1.6.4 NestSuiteTool 定義確認 ────────────────────────────────────
+    // ── NestSuiteTool 定義確認 ───────────────────────────────────────────
 
     [Fact]
     public void NestSuiteToolRegistry_ToolDefinitions_ContainsThreeEntries()
@@ -295,7 +292,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteToolRegistry_IdeaNestDef_IsIntegrated()
     {
-        // v2.1.3: IdeaNest は正式統合済み
+        // IdeaNest は正式統合済み
         Assert.True(NestSuiteToolRegistry.IdeaNestDef.IsIntegrated);
         Assert.Equal("統合済み", NestSuiteToolRegistry.IdeaNestDef.StatusText);
     }
@@ -303,7 +300,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteToolRegistry_ChatNestDef_IsIntegrated()
     {
-        // v2.1.3: ChatNest は正式統合済み
+        // ChatNest は正式統合済み
         Assert.True(NestSuiteToolRegistry.ChatNestDef.IsIntegrated);
         Assert.Equal("統合済み", NestSuiteToolRegistry.ChatNestDef.StatusText);
     }
@@ -311,7 +308,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteToolRegistry_AllThreeTools_AreIntegrated()
     {
-        // v1.8.0: IdeaNest 統合検証段階追加により、全ツールが統合済みまたは統合検証段階
+        // IdeaNest 統合検証段階追加により、全ツールが統合済みまたは統合検証段階
         var unintegrated = NestSuiteToolRegistry.ToolDefinitions
             .Where(t => !t.IsIntegrated)
             .Select(t => t.Id)
@@ -319,12 +316,12 @@ public class NestSuiteShellTests
         Assert.Empty(unintegrated);
     }
 
-    // ── v1.8.1: ToolRegistry 回帰確認 ────────────────────────────────────
+    // ── ToolRegistry 回帰確認 ────────────────────────────────────
 
     [Fact]
     public void NestSuiteToolRegistry_IdeaNestDef_StatusText_IsIntegrationTest()
     {
-        // v2.1.3: IdeaNest は正式統合済み（StatusText="統合済み"）
+        // IdeaNest は正式統合済み（StatusText="統合済み"）
         Assert.True(NestSuiteToolRegistry.IdeaNestDef.IsIntegrated);
         Assert.Equal("統合済み", NestSuiteToolRegistry.IdeaNestDef.StatusText);
     }
@@ -332,7 +329,7 @@ public class NestSuiteShellTests
     [Fact]
     public void NestSuiteToolRegistry_AllThreeTools_NoteNestFirst()
     {
-        // v1.8.1: ツール定義の順序が NoteNest → IdeaNest → ChatNest のまま維持されていることを確認
+        // ツール定義の順序が NoteNest → IdeaNest → ChatNest のまま維持されていることを確認
         Assert.Equal(NestSuiteToolRegistry.NoteNestToolId, NestSuiteToolRegistry.ToolDefinitions[0].Id);
         Assert.Equal(NestSuiteToolRegistry.IdeaNestToolId, NestSuiteToolRegistry.ToolDefinitions[1].Id);
         Assert.Equal(NestSuiteToolRegistry.ChatNestToolId, NestSuiteToolRegistry.ToolDefinitions[2].Id);

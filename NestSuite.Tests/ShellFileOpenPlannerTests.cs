@@ -93,7 +93,7 @@ public class ShellFileOpenPlannerTests
         Assert.Equal(NestSuiteWorkspaceKind.NoteNest, decision.WorkspaceKind);
     }
 
-    // ── v2.16.37 TD-59b-3 / v2.16.38 TD-59b-4: 既定判定の TryPrepareOpen 化・OpenContext ──
+    // ── TD-59b-3 / TD-59b-4: 既定判定の TryPrepareOpen 化・OpenContext ──
 
     [Fact]
     public void Plan_NestSuiteFile_Default_LoadWorkspace_OpenContextMatchesDecision_WithExactlyOneReadCall()
@@ -208,7 +208,7 @@ public class ShellFileOpenPlannerTests
         Assert.Null(decision.OpenContext);
     }
 
-    // ── v2.16.38 TD-59b-4 §11: prepareOpen delegate 契約の防御 ──────────────
+    // ── TD-59b-4 §11: prepareOpen delegate 契約の防御 ──────────────
 
     [Fact]
     public void Plan_PrepareOpenReturnsSuccessWithNullContext_ThrowsInvalidOperationException()

@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.6 TD-3-1: WorkspaceFileHelper 共通化後の回帰確認テスト。
+/// TD-3-1: WorkspaceFileHelper 共通化後の回帰確認テスト。
 /// Shell 上の private ヘルパーは WPF ウィンドウに依存するため直接テストしない。
 /// FileErrorMessages と NestSuiteOpenFilePolicy の動作が共通化後も維持されることを確認する。
 /// </summary>
@@ -63,7 +63,7 @@ public class WorkspaceFileOperationHelperTests
         Assert.NotEmpty(FileErrorMessages.ForLoad(new InvalidOperationException("unknown")));
     }
 
-    // ── v2.14.4 FM-4: SchemaVersionTooNewException 専用文言 ────────────────
+    // ── FM-4: SchemaVersionTooNewException 専用文言 ────────────────
 
     [Fact]
     public void ForLoad_SchemaVersionTooNewException_ReturnsNewerVersionMessage_NotCorruptionMessage()
@@ -73,7 +73,7 @@ public class WorkspaceFileOperationHelperTests
         Assert.DoesNotContain("破損", message);
     }
 
-    // ── v2.14.7 SH-31: ForKindDetectionFailure 文言 ────────────────────────
+    // ── SH-31: ForKindDetectionFailure 文言 ────────────────────────
 
     [Fact]
     public void ForKindDetectionFailure_FileNotFound_ContainsNotFoundWording()
@@ -120,7 +120,7 @@ public class WorkspaceFileOperationHelperTests
             FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.UnsupportedExtension));
     }
 
-    // ── v2.16.8 L20: 読込失敗メッセージへの .bak 復元案内 ──
+    // ── L20: 読込失敗メッセージへの .bak 復元案内 ──
 
     [Fact]
     public void ForLoad_JsonException_NoPath_ContainsGenericBackupHint()
@@ -220,7 +220,7 @@ public class WorkspaceFileOperationHelperTests
             FileErrorMessages.ForKindDetectionFailure(WorkspaceKindDetectionFailure.SchemaVersionTooNew));
     }
 
-    // ── v2.16.11 SH-1: 起動時エラー時の案内改善 ─────────────────────────────
+    // ── SH-1: 起動時エラー時の案内改善 ─────────────────────────────
     // 既存の文言方針（見つかりません／権限／新しいバージョン等）は維持しつつ、
     // より具体的な必須ワードを固定する回帰テスト。
 
@@ -273,7 +273,7 @@ public class WorkspaceFileOperationHelperTests
     [Fact]
     public void ForKindDetectionFailure_InvalidFormat_BakHint_StillWorksAfterSH1()
     {
-        // v2.16.8 L20 の .bak 案内が SH-1 の変更で壊れていないことを固定する回帰テスト。
+        // L20 の .bak 案内が SH-1 の変更で壊れていないことを固定する回帰テスト。
         var dir = Path.Combine(Path.GetTempPath(), $"nestsuite-sh1-bakhint-{Guid.NewGuid():N}");
         Directory.CreateDirectory(dir);
         var path = Path.Combine(dir, "plan.nestsuite");
@@ -357,7 +357,7 @@ public class WorkspaceFileOperationHelperTests
             @"C:\Projects\notes.notenest"));
     }
 
-    // ── v2.14.2: IsDuplicateForSave（.nestsuite の WorkspaceKind 横断重複検出）回帰 ─
+    // ── IsDuplicateForSave（.nestsuite の WorkspaceKind 横断重複検出）回帰 ─
 
     [Fact]
     public void IsDuplicateForSave_LegacyExtension_DifferentKind_ReturnsFalse()

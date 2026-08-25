@@ -6,7 +6,7 @@ using NestSuite.Models;
 namespace NestSuite.Tests.Performance;
 
 /// <summary>
-/// v2.13.9 TD-56: 性能計測用の大量データを決定的に生成する。
+/// TD-56: 性能計測用の大量データを決定的に生成する。
 /// 乱数を使わず添字ベースの固定規則で生成するため、同じ規模なら毎回同じデータになり、
 /// 計測値の前後比較ができる。生成規則は docs/development/performance-measurement.md 参照。
 /// </summary>

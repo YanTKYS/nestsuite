@@ -29,7 +29,7 @@ public class MarkerLineDetectorTests
         Assert.Empty(MarkerLineDetector.Detect("Some plain text\nNo markers here\n"));
     }
 
-    // v2.14.19 バグ修正: マーカーは角括弧付き（[TODO] 等）かつ行頭（または行頭の空白後）の
+    // バグ修正: マーカーは角括弧付き（[TODO] 等）かつ行頭（または行頭の空白後）の
     // 場合のみ検出する。単語単体・文中の角括弧・部分一致は検出しない。
 
     [Fact]
@@ -118,7 +118,7 @@ public class MarkerLineDetectorTests
     [Fact]
     public void Detect_TodoLowercase_NotDetected()
     {
-        // v2.14.19: MarkerExtractorService と同じ大文字小文字区別ルールに揃えた。
+        // MarkerExtractorService と同じ大文字小文字区別ルールに揃えた。
         Assert.Empty(MarkerLineDetector.Detect("[todo] lowercase"));
     }
 
@@ -270,7 +270,7 @@ public class MarkerLineDetectorTests
     }
 
     // ── Priority: 行頭マーカー vs NoteLink ────────────────────────────────────
-    // v2.14.19: TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の
+    // TODO/FIXME/NOTE は行頭の1箇所しか判定対象にならないため、3種別間の
     // 「優先順位」という概念自体が成立しなくなった（同時に複数を行頭に置けないため）。
     // 引き続き意味を持つのは「行頭マーカーは、行内のどこかにある [[NoteLink]] より優先される」
     // という関係のみで、これを固定する。
@@ -372,7 +372,7 @@ public class MarkerLineDetectorTests
         Assert.Contains("NoteLinkLineHighlightBrush",    keys);
     }
 
-    // v2.8.3: canvas is now BEHIND the TextBox (ZIndex 1 < ZIndex 2=TextBox).
+    // canvas is now BEHIND the TextBox (ZIndex 1 < ZIndex 2=TextBox).
     // The brush must be fully opaque (no alpha channel) so it acts as the line
     // background rather than a semi-transparent overlay. An alpha prefix would
     // cause the "dimming after layout change" compositing artifact.

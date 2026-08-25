@@ -8,9 +8,9 @@
 - **保存先は互換性のため変更しない**（LT-3 / `compatibility-identifiers-audit.md` の A 分類）:
   `%APPDATA%\NoteNest\logs\nestsuite-error.log`
 
-## ローテーション方式（v2.14.0 TD-57）
+## ローテーション方式
 
-サイズベースの最小ローテーション。実装は `ErrorLogRotation`（`NestSuite/Services/ErrorLogRotation.cs`、public static — `AtomicFileWriter` と同じ「小さな公開ヘルパー + 直接テスト」の前例に従う）。
+サイズベースの最小ローテーション。実装は `ErrorLogRotation`（`NestSuite/Services/ErrorLogRotation.cs`）。`AtomicFileWriter` と同じく「小さな public static ヘルパーを直接テストする」形にしてある。
 
 | 項目 | 値 | 定義場所 |
 |------|-----|---------|
@@ -25,7 +25,7 @@
 
 - `ErrorLogRotationTests`: ローテーション本体（閾値未満・ファイルなし・世代シフト・最古削除・世代 0・ロック中の失敗耐性）
 - `ErrorLogServiceTests`: ログ出力内容 + ローテーション統合（`ErrorLogServiceTestHelper` は本番と同じ `ErrorLogRotation` を経由する）+ 保存先の互換固定
-- 本番 `ErrorLogService` は internal・パス固定のため、テストヘルパーが出力ロジックを再現している（既存方針）。ローテーション部分だけは本物の `ErrorLogRotation` を共有しており、複製していない
+- 本番 `ErrorLogService` は internal・パス固定のため、テストヘルパーが出力ロジックを再現している。ローテーション部分だけは本物の `ErrorLogRotation` を共有しており、複製していない
 
 ## 将来ログ量が問題になった場合の見直し観点
 

@@ -4,11 +4,8 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.0: 同一ツール複数ファイル対応の設計整理に伴う設計固定テスト。
-///
-/// <para>v1.9.0 は設計整理版であり、WorkspaceSession の本実装は行わない。
-/// ここでは将来実装が前提とする不変条件（タブ ID の一意性・二重オープン判定の比較方針・
-/// 拡張子判定の既存挙動）だけを固定し、後続バージョンでの回帰を検出できるようにする。</para>
+/// 同一ツール複数ファイル対応が前提とする不変条件（タブ ID の一意性・二重オープン判定の
+/// 比較方針・拡張子判定）を固定する。WorkspaceSession の実装詳細には踏み込まない。
 /// </summary>
 public class NestSuiteMultiFileTabsDesignTests
 {
@@ -76,7 +73,7 @@ public class NestSuiteMultiFileTabsDesignTests
     [Fact]
     public void MultipleTabs_SameWorkspaceKind_IsStillExpressible()
     {
-        // 設計の根幹：1 ツールから複数タブを表現できること（v1.7.2 から維持）
+        // 設計の根幹：1 ツールから複数タブを表現できること
         var a = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
         var b = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.ChatNest);
 
@@ -91,7 +88,7 @@ public class NestSuiteMultiFileTabsDesignTests
     [InlineData(".txt", NestSuiteWorkspaceKind.PlainText)]
     public void ExtensionResolution_IsUnchanged(string ext, NestSuiteWorkspaceKind expected)
     {
-        // 拡張子判定の既存挙動が v1.9.0 設計整理で変わっていないことを固定
+        // 拡張子から Workspace 種別への対応を固定する
         Assert.True(NestSuiteTabFactory.TryGetKind($"file{ext}", out var kind));
         Assert.Equal(expected, kind);
     }

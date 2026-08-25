@@ -25,7 +25,7 @@ public class NoteChangeCoordinatorTests
         Assert.Contains(nameof(MainViewModel.RelatedNoteChoices), published.PropertyNames);
     }
 
-    // v2.13.2 L19 回帰: ノートブックのリネーム・ノート移動は SelectedNote 自体を変えないため、
+    // L19 回帰: ノートブックのリネーム・ノート移動は SelectedNote 自体を変えないため、
     // EditorChangeCoordinator ではなく NoteChangeCoordinator 側で CurrentNotebookName を通知する必要がある。
     [Fact]
     public void RenamingNotebookPublishesCurrentNotebookName()

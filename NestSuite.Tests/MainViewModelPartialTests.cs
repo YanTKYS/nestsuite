@@ -4,7 +4,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.6: TD-14 — MainViewModel partial regression tests.
+// TD-14 — MainViewModel partial regression tests.
 // Covers delegation behaviours in Notes/Tasks/Editor partials that are not
 // already tested by the existing composition, facade, or sub-ViewModel tests.
 public class MainViewModelPartialTests
@@ -42,7 +42,7 @@ public class MainViewModelPartialTests
         Assert.False(main.AddNoteToNotebook(nb, "Existing"));
     }
 
-    // ── TN-3 (v2.18.0): CreateNoteFromTransfer ──────────────────────────
+    // ── TN-3: CreateNoteFromTransfer ──────────────────────────
 
     [Fact]
     public void CreateNoteFromTransfer_AddsNoteToFirstNotebook_WithBodyAsIs()
@@ -429,7 +429,7 @@ public class MainViewModelPartialTests
         Assert.Equal(16, main.EditorFontSize);
     }
 
-    // ── v2.19.3 L4: EditorWordWrap ファサード（NoteNest 本文エディタの折り返し表示） ──
+    // ── L4: EditorWordWrap ファサード（NoteNest 本文エディタの折り返し表示） ──
 
     [Fact]
     public void EditorWordWrap_DefaultsToTrue()
@@ -460,7 +460,7 @@ public class MainViewModelPartialTests
         Assert.False(main.IsModified);
     }
 
-    // ── v2.19.4 M15: 右ペイン一括コピーの有効判定（HasFilteredMarkers） ──────
+    // ── M15: 右ペイン一括コピーの有効判定（HasFilteredMarkers） ──────
     // 注: new MainViewModel() はサンプルプロジェクト（初期マーカーを含み得る）を読み込むため、
     // 「0件」の確認はフィルタで全種別を除外する形で行う（既存 Marker 系テストの baseline 方式に合わせる）。
 

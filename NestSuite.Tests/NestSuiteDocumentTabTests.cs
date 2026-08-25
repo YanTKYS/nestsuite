@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.7.2: ファイル単位タブの最小設計モデルを確認するテスト。
+/// ファイル単位タブの最小設計モデルを確認するテスト。
 ///
 /// NestSuite の最終タブはツール単位ではなくファイル／作業単位（NestSuiteDocumentTab）であることを
 /// 型・プロパティ・ファクトリ動作を通じて検証する。本格的な TabControl・ファイル I/O は対象外。
@@ -168,7 +168,7 @@ public class NestSuiteDocumentTabTests
         Assert.False(tab.ShowUnpinMenuItem);
     }
 
-    // ── v2.16.10 SH-30: 無効理由ツールチップ ─────────────────────────────
+    // ── SH-30: 無効理由ツールチップ ─────────────────────────────
 
     [Fact]
     public void DocumentTab_TempTab_PinActionVisible_TrueButDisabled_WithReasonTooltip()
@@ -245,7 +245,6 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TabFactory_CreateUntitled_IdeaNest_DisplayName_HasIdeaNestExtension()
     {
-        // IdeaNest は v1.7.2 では未統合だが、タブモデルは定義済み
         var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.IdeaNest);
 
         Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, tab.WorkspaceKind);
@@ -277,7 +276,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TabFactory_FromFilePath_UnknownExtension_Throws()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、
+        // SH-43: .txt は PlainText として対応済みになったため、
         // 真に未対応の拡張子（.pdf）へ差し替えた。
         Assert.Throws<ArgumentException>(() =>
             NestSuiteTabFactory.FromFilePath(@"C:\data\file.pdf"));
@@ -305,7 +304,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void WorkspaceKind_HasFiveValues_NoteNest_ChatNest_IdeaNest_Temp_PlainText()
     {
-        // v2.19.0 SH-43: PlainText（.txt）を追加。既存 4 種は変更なし。
+        // SH-43: PlainText（.txt）を追加。既存 4 種は変更なし。
         var values = Enum.GetValues<NestSuiteWorkspaceKind>();
         Assert.Equal(5, values.Length);
         Assert.Contains(NestSuiteWorkspaceKind.NoteNest, values);
@@ -364,7 +363,7 @@ public class NestSuiteDocumentTabTests
             other => Assert.NotEqual(other, actual));
     }
 
-    // ── v1.7.5: .notenest / .chatnest 拡張子の混同防止確認 ─────────────
+    // ── .notenest / .chatnest 拡張子の混同防止確認 ─────────────
 
     [Fact]
     public void TabFactory_FromFilePath_NoteNestExtension_IsNotChatNestKind()
@@ -395,12 +394,11 @@ public class NestSuiteDocumentTabTests
         Assert.Equal(NestSuiteWorkspaceKind.ChatNest, kind);
     }
 
-    // ── v1.7.8: IdeaNest 統合前の基盤確認 ──────────────────────────────────
+    // ── IdeaNest 統合前の基盤確認 ──────────────────────────────────
 
     [Fact]
     public void TabFactory_FromFilePath_IdeaNestExtension_ResolvesCorrectly()
     {
-        // v1.7.8: IdeaNest 統合検証（v1.8.0 予定）の前に、タブモデルが .ideanest を正しく扱えることを確認する
         var tab = NestSuiteTabFactory.FromFilePath(@"C:\ideas\brainstorm.ideanest");
 
         Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, tab.WorkspaceKind);
@@ -414,19 +412,19 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TabFactory_TryGetKind_IdeaNestExtension_ReturnsIdeaNest()
     {
-        // v1.7.8: .ideanest 拡張子が NestSuiteWorkspaceKind.IdeaNest に解決されることを確認する
+        // .ideanest 拡張子が NestSuiteWorkspaceKind.IdeaNest に解決されることを確認する
         var result = NestSuiteTabFactory.TryGetKind("project.ideanest", out var kind);
 
         Assert.True(result);
         Assert.Equal(NestSuiteWorkspaceKind.IdeaNest, kind);
     }
 
-    // ── v1.9.9: TooltipText ─────────────────────────────────────────────
+    // ── TooltipText ─────────────────────────────────────────────
 
     [Fact]
     public void TooltipText_NoteNest_SavedTab_ContainsKindAndPath()
     {
-        // v1.9.9: ツールチップにツール種別・ファイルパス・保存状態が含まれることを確認
+        // ツールチップにツール種別・ファイルパス・保存状態が含まれることを確認
         var tab = new NestSuiteDocumentTab
         {
             Id = "t", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest,
@@ -440,7 +438,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TooltipText_UntitledTab_ShowsUntitledAndUnsaved()
     {
-        // v1.9.9: 無題タブのツールチップに「未保存（無題）」と「保存済み」が含まれる
+        // 無題タブのツールチップに「未保存（無題）」と「保存済み」が含まれる
         var tab = new NestSuiteDocumentTab
         {
             Id = "u", WorkspaceKind = NestSuiteWorkspaceKind.ChatNest,
@@ -453,7 +451,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TooltipText_ModifiedTab_ShowsUnsavedState()
     {
-        // v1.9.9: IsModified=true のタブのツールチップに「未保存の変更あり」が含まれる
+        // IsModified=true のタブのツールチップに「未保存の変更あり」が含まれる
         var tab = new NestSuiteDocumentTab
         {
             Id = "m", WorkspaceKind = NestSuiteWorkspaceKind.IdeaNest,
@@ -466,7 +464,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TooltipText_SavedTab_ShowsSavedState()
     {
-        // v1.9.9: IsModified=false のタブのツールチップに「保存済み」が含まれ「未保存の変更あり」は含まれない
+        // IsModified=false のタブのツールチップに「保存済み」が含まれ「未保存の変更あり」は含まれない
         var tab = new NestSuiteDocumentTab
         {
             Id = "s", WorkspaceKind = NestSuiteWorkspaceKind.NoteNest,
@@ -482,12 +480,12 @@ public class NestSuiteDocumentTabTests
     [InlineData(NestSuiteWorkspaceKind.IdeaNest, "IdeaNest")]
     public void TooltipText_ContainsCorrectKindLabel_ForEachTool(NestSuiteWorkspaceKind kind, string expectedKindLabel)
     {
-        // v1.9.9: ツールチップにツール種別が正しく含まれることを3ツール横断で確認
+        // ツールチップにツール種別が正しく含まれることを3ツール横断で確認
         var tab = NestSuiteTabFactory.CreateUntitled(kind);
         Assert.Contains(expectedKindLabel, tab.TooltipText);
     }
 
-    // ── v2.14.1 FM-1: .nestsuite 種別判定 ──────────────────────────────
+    // ── FM-1: .nestsuite 種別判定 ──────────────────────────────
 
     [Fact]
     public void TryGetKind_NestSuiteFile_ResolvesKindFromEnvelope()
@@ -546,7 +544,7 @@ public class NestSuiteDocumentTabTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.14.7 SH-31: TryGetKind 理由つきオーバーロード ──────────────
+    // ── SH-31: TryGetKind 理由つきオーバーロード ──────────────
 
     [Fact]
     public void TryGetKind_WithFailure_LegacyExtension_ReturnsTrue_AndNoneFailure()
@@ -620,7 +618,7 @@ public class NestSuiteDocumentTabTests
     [Fact]
     public void TryGetKind_WithFailure_UnsupportedExtension_ReturnsFalse_AndUnsupportedExtension()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        // SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var result = NestSuiteTabFactory.TryGetKind(@"C:\data\file.pdf", out _, out var failure);
 
         Assert.False(result);
@@ -645,7 +643,7 @@ public class NestSuiteDocumentTabTests
         finally { File.Delete(path); }
     }
 
-    // ── v2.16.39 TD-59b-5: IsPathCompatibleWithResolvedKind（ファイル I/O なしの純粋判定） ──────
+    // ── TD-59b-5: IsPathCompatibleWithResolvedKind（ファイル I/O なしの純粋判定） ──────
 
     [Theory]
     [InlineData(NestSuiteWorkspaceKind.NoteNest)]

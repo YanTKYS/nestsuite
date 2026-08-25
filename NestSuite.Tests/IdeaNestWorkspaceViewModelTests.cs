@@ -480,7 +480,7 @@ public class IdeaNestWorkspaceViewModelTests
         Assert.Single(ideas);
     }
 
-    // ── v2.18.19 SH-42: 削除確認文言と実際のUndo無効化条件の整合 ────────────
+    // ── SH-42: 削除確認文言と実際のUndo無効化条件の整合 ────────────
 
     [Fact]
     public void DeleteConfirmationText_DoesNotOverclaim_AnyOtherOperationInvalidatesUndo()
@@ -555,7 +555,7 @@ public class IdeaNewCardInitialValueTests
     }
 }
 
-// ── v1.16.6: CardOperationsService — テキスト貼り付け・ファイル取り込みのカード作成確認 ───
+// ── CardOperationsService — テキスト貼り付け・ファイル取り込みのカード作成確認 ───
 
 public class CardOperationsServicePasteTests
 {
@@ -643,7 +643,7 @@ public class CardOperationsServicePasteTests
         Assert.Equal(fixedNow, ideas[0].UpdatedAt);
     }
 
-    // ── v1.16.8: ChatNest 転記形式の貼り付け ───────────────────────────────
+    // ── ChatNest 転記形式の貼り付け ───────────────────────────────
 
     [Fact]
     public void CommitAddFromText_ChatNestHeader_ExtractsTitleFromHeader()
@@ -740,7 +740,7 @@ public class CardDisplayViewModelTests
     private static CardDisplayViewModel Create() =>
         new CardDisplayViewModel(() => { }, () => { });
 
-    // v1.20.0: BodyPreviewMaxLines がカードサイズごとに正しい値を返す
+    // BodyPreviewMaxLines がカードサイズごとに正しい値を返す
     [Theory]
     [InlineData("small",  3)]
     [InlineData("medium", 5)]

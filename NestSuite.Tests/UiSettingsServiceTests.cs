@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.14.10 TD-60: UiSettingsService.Save の atomic write 化（tmp 経由 + UTF8Encoding(false)）の
+/// TD-60: UiSettingsService.Save の atomic write 化（tmp 経由 + UTF8Encoding(false)）の
 /// 回帰テスト。
 ///
 /// UiSettingsService.DataPath は private static readonly で `%APPDATA%\NoteNest\ui-settings.json`
@@ -95,7 +95,7 @@ public class UiSettingsServiceTests : IDisposable
         Assert.False(File.Exists(_path + ".tmp"));
     }
 
-    // ── v2.19.3 L4: NoteNest 本文エディタの折り返し表示（NoteNestWordWrap） ────
+    // ── L4: NoteNest 本文エディタの折り返し表示（NoteNestWordWrap） ────
 
     [Fact]
     public void NoteNestWordWrap_DefaultsToTrue_OnNewUiSettings()
@@ -106,7 +106,7 @@ public class UiSettingsServiceTests : IDisposable
     [Fact]
     public void Load_OldUiSettingsJsonWithoutWordWrapField_DefaultsToTrue()
     {
-        // v2.19.3 以前の ui-settings.json（NoteNestWordWrap フィールドなし）を想定。
+        // NoteNestWordWrap フィールドを持たない旧 ui-settings.json を想定。
         File.WriteAllText(_path, "{\"LastSearchText\":\"既存\"}");
         var service = new UiSettingsService(_path);
 

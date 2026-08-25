@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// TD-77 (v2.17.9): one-way 表示専用 Converter の ConvertBack 例外解消の回帰。
+// TD-77: one-way 表示専用 Converter の ConvertBack 例外解消の回帰。
 public class BoolToStrikethroughConverterTests
 {
     private readonly BoolToStrikethroughConverter _converter = new();

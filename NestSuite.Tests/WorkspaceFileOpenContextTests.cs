@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.34 TD-59b-1:
+/// TD-59b-1:
 /// <see cref="WorkspaceFileOpenContext"/> / <see cref="PreloadedWorkspaceEnvelope"/> の生成境界、
 /// <see cref="NestSuiteTabFactory.TryPrepareOpen"/> の読込回数・failure 分類、
 /// <see cref="NestSuiteTabFactory.FromResolvedKind"/> の非読込タブ生成を確認する。
@@ -85,7 +85,7 @@ public class WorkspaceFileOpenContextTests
     [Fact]
     public void TryPrepareOpen_UnsupportedExtension_Fails_WithZeroReadCalls()
     {
-        // v2.19.0 SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
+        // SH-43: .txt は PlainText として対応済みになったため、.pdf へ差し替えた。
         var readCalls = 0;
 
         var success = NestSuiteTabFactory.TryPrepareOpen(
@@ -98,7 +98,7 @@ public class WorkspaceFileOpenContextTests
         Assert.Equal(0, readCalls);
     }
 
-    // ── v2.16.35 TD-59b-2 §7: 空・不正 path の防御 ─────────────────────────
+    // ── TD-59b-2 §7: 空・不正 path の防御 ─────────────────────────
 
     [Fact]
     public void TryPrepareOpen_NullPath_ReturnsFalse_WithoutThrowing()

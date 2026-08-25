@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.17 TD-15: NestSuiteShellWindow.Tabs.cs の責務分割を固定する構造テスト。
+/// TD-15: NestSuiteShellWindow.Tabs.cs の責務分割を固定する構造テスト。
 /// </summary>
 public class TabPartialSplitTests
 {

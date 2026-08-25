@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.10 L26: NoteNest右ペイン・マーカー一覧の ItemsControl → ListBox 化（キーボード選択対応）の
+/// L26: NoteNest右ペイン・マーカー一覧の ItemsControl → ListBox 化（キーボード選択対応）の
 /// 静的 UI/コード契約確認。FilteredMarkers 自体のフィルタ・並び順ロジックは
 /// MarkerPanelViewModelTests / NoteNestRightPaneFilterTests で別途確認済みのため、ここでは
 /// ListBox化・Enterジャンプ・選択変更単体では遷移しないことなど、L26固有の契約のみを扱う。

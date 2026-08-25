@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.5.6: NoteNestWorkspaceView 切り出し後の公開 API 境界と
+/// NoteNestWorkspaceView 切り出し後の公開 API 境界と
 /// IWorkspaceDialogHost 契約の安定性を確認する回帰テスト。
 /// </summary>
 public class WorkspaceViewRegressionTests
@@ -80,8 +80,7 @@ public class WorkspaceViewRegressionTests
 
     // ── IWorkspaceDialogHost 境界 ─────────────────────────────────────
 
-    // v1.19.3: MainWindow 削除により MainWindow_ImplementsIWorkspaceDialogHost を削除。
-    // NestSuiteShellWindow_ImplementsIWorkspaceDialogHost は NestSuiteShellTests で確認。
+    // NestSuiteShellWindow_ImplementsIWorkspaceDialogHost は NestSuiteShellTests で確認する。
 
     [Theory]
     [InlineData("ShowInput")]

@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.37 TD-59b-3: Shell の prepared context 経路への
+/// TD-59b-3: Shell の prepared context 経路への
 /// 切替を型シグネチャで確認する。<see cref="NestSuiteShellWindow"/> は WPF Window のため、
 /// 既存方針（private routing を直接テストするために production API を public 化しない）に合わせ、
 /// ここでは狭い範囲の contract test に留める。実際の read 回数・分岐挙動は
@@ -37,7 +37,7 @@ public class NestSuiteShellPreparedContextRoutingTests
     [Fact]
     public void NestSuiteShellWindow_LoadWorkspaceFileAt_PathOverload_IsRemoved()
     {
-        // v2.16.38 TD-59b-4: session 復元も prepared context 経路へ切り替わったため、
+        // TD-59b-4: session 復元も prepared context 経路へ切り替わったため、
         // 暫定互換だった path 版 (NestSuiteWorkspaceKind, string) は撤去した。
         var method = typeof(NestSuiteShellWindow).GetMethod(
             "LoadWorkspaceFileAt", PrivateInstance, null, [typeof(NestSuiteWorkspaceKind), typeof(string)], null);
@@ -50,7 +50,7 @@ public class NestSuiteShellPreparedContextRoutingTests
     [InlineData("LoadChatNestFileAt")]
     public void NestSuiteShellWindow_LoadXFileAt_HasContextOverload_ButNotPathOverload(string methodName)
     {
-        // v2.16.38 TD-59b-4: session 復元専用だった path 版は撤去し、context 版だけを残した。
+        // TD-59b-4: session 復元専用だった path 版は撤去し、context 版だけを残した。
         var contextOverload = typeof(NestSuiteShellWindow).GetMethod(
             methodName, PrivateInstance, null, [typeof(WorkspaceFileOpenContext)], null);
         var pathOverload = typeof(NestSuiteShellWindow).GetMethod(
@@ -96,7 +96,7 @@ public class NestSuiteShellPreparedContextRoutingTests
     [Fact]
     public void NestSuiteShellWindow_OpenNoteNestFile_TakesNoParameters()
     {
-        // v2.16.37: probe を内部で行うため、公開シグネチャ自体は変わらない（引数なし）。
+        // probe を内部で行うため、公開シグネチャ自体は変わらない（引数なし）。
         var method = typeof(NestSuiteShellWindow).GetMethod("OpenNoteNestFile", PrivateInstance, null, [], null);
         Assert.NotNull(method);
     }

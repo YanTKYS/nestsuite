@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.14.0 TD-57 (LT-12): ErrorLogRotation のサイズベースローテーションの動作確認。
+/// TD-57 (LT-12): ErrorLogRotation のサイズベースローテーションの動作確認。
 /// </summary>
 public class ErrorLogRotationTests : IDisposable
 {

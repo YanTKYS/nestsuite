@@ -10,7 +10,7 @@ using System.Linq;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.9.8: AtomicFileWriter のロジック回帰テスト。
+/// AtomicFileWriter のロジック回帰テスト。
 /// ディレクトリ作成・新規作成・上書き・バックアップ・tmp 残留なし を確認する。
 /// </summary>
 public class AtomicFileWriterTests : IDisposable
@@ -94,7 +94,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Equal("updated",  File.ReadAllText(path,    Encoding.UTF8));
     }
 
-    // v2.14.5 FM-5: バックアップを作成できない場合は保存自体が失敗し、元ファイルが壊れないことを固定する。
+    // FM-5: バックアップを作成できない場合は保存自体が失敗し、元ファイルが壊れないことを固定する。
     // （IdeaNest の旧「保存前 File.Copy + silent catch」を廃止し、NoteNest / ChatNest と同じ
     // AtomicFileWriter の File.Replace 統合方式へ寄せたため、この契約がすべての Workspace 共通になった）
     [Fact]
@@ -137,7 +137,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.False(File.Exists(bakPath));
     }
 
-    // v2.14.10 TD-60: UiSettingsService.Save / TempNestStoreService.Save が使う
+    // TD-60: UiSettingsService.Save / TempNestStoreService.Save が使う
     // 「backupPath: null（.bak 世代管理なし）+ UTF8Encoding(false)（BOM なし）」の組み合わせを
     // helper 単位で固定する。DataPath が private static readonly で固定のため、両サービス自体の
     // Save() は直接テストできない（本タスクのスコープ外の production 変更が必要）。
@@ -182,7 +182,7 @@ public class AtomicFileWriterTests : IDisposable
     [Fact]
     public void IdeaNestWorkspaceService_Save_CreatesBackup()
     {
-        // v2.14.5 FM-5: IdeaNestWorkspaceService は保存前 File.Copy（silent catch）を廃止し、
+        // FM-5: IdeaNestWorkspaceService は保存前 File.Copy（silent catch）を廃止し、
         // AtomicFileWriter の File.Replace 統合 .bak 方式（NoteNest / ChatNest と同方針）へ移行した。
         var path = Path.Combine(_tempDir, "test.ideanest");
         var workspace = new NestSuite.IdeaNest.Models.Workspace
@@ -248,7 +248,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.True(File.Exists(path));
     }
 
-    // ── WriteAllTextWithRandomTemp (v2.14.8) ────────────────────────────────
+    // ── WriteAllTextWithRandomTemp ────────────────────────────────
 
     [Fact]
     public void WriteAllTextWithRandomTemp_NewFile_CreatesFile()
@@ -279,7 +279,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Empty(leftoverTmp);
     }
 
-    // ── WriteAllTextWithBackup (v2.14.8) ────────────────────────────────────
+    // ── WriteAllTextWithBackup ────────────────────────────────────
 
     [Fact]
     public void WriteAllTextWithBackup_ExistingFile_CreatesBakFile()
@@ -307,7 +307,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.False(File.Exists(bakPath));
     }
 
-    // ── v2.16.6 TD-64: backupPath なし書き込みは既存 .bak に触れない ──────────
+    // ── TD-64: backupPath なし書き込みは既存 .bak に触れない ──────────
 
     [Fact]
     public void WriteAllText_NoBackupPath_DoesNotTouchExistingBakFile()
@@ -482,10 +482,7 @@ public class AtomicFileWriterTests : IDisposable
         Assert.Equal(typeof(Exception), parameters[1].ParameterType);
     }
 
-    // TD-94 (v2.24.1): GuardNest 方針文書の本文 assert（PolicyDocument_* 5 件）は削除した。
-    // ErrorLog が Error のみを扱うという実際の契約は、上の
-    // ErrorLogService_HasNoLogInfoMethod / _HasNoLogWarningMethod /
-    // _HasLogMethod_WithOperationAndException が API レベルで固定しており、
-    // 文書に同じ単語が書かれているかどうかは production の振る舞いに影響しないため
-    //（方針: docs/development/test-suite-policy.md）。
+    // ErrorLog が Error のみを扱う契約は、上の ErrorLogService_HasNoLogInfoMethod /
+    // _HasNoLogWarningMethod / _HasLogMethod_WithOperationAndException が API レベルで固定する。
+    // 方針文書の本文を assert するテストはここへ足さない（docs/development/test-suite-policy.md）。
 }

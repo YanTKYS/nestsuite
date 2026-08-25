@@ -27,7 +27,7 @@
                 </Border.Style>
             </Border>
 
-            <!-- ZIndex 1: marker line highlight canvas (H3b) — TODO/FIXME/NOTE lines.
+            <!-- ZIndex 1: marker line highlight canvas — TODO/FIXME/NOTE lines.
                  Above background, below TextBox text. IsHitTestVisible=False preserves input. -->
             <Canvas x:Name="MarkerHighlightCanvas"
                     Panel.ZIndex="1"

@@ -5,7 +5,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.9.2: ChatNest 複数ファイルタブ対応の最小実装を確認するテスト。
+/// ChatNest 複数ファイルタブ対応の最小実装を確認するテスト。
 /// ChatNestWorkspaceViewModel がタブごとに独立していること、
 /// Session 経由でタブ別の状態を管理できることを WPF なしで確認する。
 /// </summary>
@@ -211,12 +211,12 @@ public class ChatNestMultiTabSessionTests
             @"C:\projects\meeting.chatnest"));
     }
 
-    // ── パス正規化後の二重オープン検出（v1.9.2 fix） ────────────────────────
+    // ── パス正規化後の二重オープン検出 ─────────────────────────────────────
 
     [Fact]
     public void OpenFilePolicy_AfterNormalization_RelativeAndAbsolute_AreSameFile()
     {
-        // v1.9.2 fix: Shell は IsSameFile に渡す前に Path.GetFullPath() で正規化する。
+        // Shell は IsSameFile に渡す前に Path.GetFullPath() で正規化する。
         // 相対パス（起動引数）と絶対パス（ファイルダイアログ）が同じファイルを指す場合、
         // 正規化後の比較で同一ファイルと判定できることを確認する。
         var relPath = "sample.chatnest";
@@ -270,7 +270,7 @@ public class ChatNestMultiTabSessionTests
         Assert.Equal(0, bCount);
     }
 
-    // ── v1.9.3 回帰確認テスト ─────────────────────────────────────────────
+    // ── 回帰確認テスト ───────────────────────────────────────────────────
 
     // Session 逆引きパターン（ReferenceEquals）の確認
     [Fact]
@@ -385,7 +385,7 @@ public class ChatNestMultiTabSessionTests
     }
 
     /// <summary>
-    /// v2.14.12 SH-33 レビュー対応: 自動保存が ChatNest の dirty 判定に
+    /// SH-33: 自動保存が ChatNest の dirty 判定に
     /// <c>HasUnsavedChanges</c> ではなく <c>IsDirty</c> を使う根拠となる契約を固定する。
     /// 投稿前の入力欄テキストが残っている間 HasUnsavedChanges は true のままだが、
     /// MarkSaved() 後の IsDirty は確実に false になる（= 永続化観点では「保存済み」）。

@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.7.4: ChatNestFileService の保存・読込動作を確認するテスト。
+/// ChatNestFileService の保存・読込動作を確認するテスト。
 /// ファイルシステムへの書き込みを伴うため、TempDir に出力して後始末する。
 /// </summary>
 public class ChatNestFileServiceTests : IDisposable
@@ -86,12 +86,12 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Equal("second", loaded[0].Text);
     }
 
-    // ── v2.13.6 TD-45: 保存失敗の契約確認 ────────────────────────────────
+    // ── TD-45: 保存失敗の契約確認 ────────────────────────────────
 
     [Fact]
     public void Save_ThrowsWhenParentPathIsAFile()
     {
-        // v2.13.6 TD-45: 保存失敗が例外として通知されることを固定する（Shell 共通保存コアの catch がこの契約に依存する）。
+        // TD-45: 保存失敗が例外として通知されることを固定する（Shell 共通保存コアの catch がこの契約に依存する）。
         // AtomicFileWriter.WriteAllText は保存先ディレクトリを自動作成するため、
         // 単に「存在しないディレクトリ」を指定しただけでは失敗しない。
         // 既存の「ファイル」を親ディレクトリとして使うことで Directory.CreateDirectory を確実に失敗させる。
@@ -239,7 +239,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Throws<FileNotFoundException>(() => ChatNestFileService.Load(path));
     }
 
-    // ── v2.14.1 FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
+    // ── FM-1: .nestsuite wrapper 経由の保存・読込 ─────────────────
 
     [Fact]
     public void SaveLoad_NestSuitePath_RoundTripsViaEnvelope()
@@ -264,7 +264,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Throws<InvalidDataException>(() => ChatNestFileService.Load(path));
     }
 
-    // ── v2.14.4 FM-4: schema version 前方互換ガード ───────────────────────
+    // ── FM-4: schema version 前方互換ガード ───────────────────────
 
     [Fact]
     public void Load_NewerVersion_ThrowsSchemaVersionTooNewException()
@@ -291,7 +291,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Throws<NestSuite.Services.SchemaVersionTooNewException>(() => ChatNestFileService.Load(path));
     }
 
-    // ── v2.14.5 FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
+    // ── FM-5: 保存バックアップ方針の 3 Workspace 統一 ──────────────
 
     [Fact]
     public void Save_ExistingFile_CreatesBakWithPreviousContent()
@@ -330,7 +330,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.DoesNotContain("second-message", bakContent);
     }
 
-    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+    // ── TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
 
     [Fact]
     public void Save_CreateBackupFalse_DoesNotCreateBak()
@@ -414,7 +414,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Equal("Legacy", ChatNestFileService.Load(path).Single().Text);
     }
 
-    // ── v2.16.35 TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
+    // ── TD-59b-2: LoadPrepared（設計文書 §8.6, §10） ─────────────
 
     [Fact]
     public void LoadPrepared_NestSuite_ViaTryPrepareOpen_MatchesDirectLoad()
@@ -497,7 +497,7 @@ public class ChatNestFileServiceTests : IDisposable
         Assert.Throws<ArgumentException>(() => ChatNestFileService.LoadPrepared(context));
     }
 
-    // ── v2.16.36 TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
+    // ── TD-59b-2-2: レガシー prepared 拡張子ガード補完 ─────────────
 
     [Fact]
     public void LoadPrepared_ChatNestKind_WrongLegacyExtension_Notenest_ThrowsArgumentException_BeforeFileIO()

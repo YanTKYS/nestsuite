@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// v2.8.7: TD-17 — InputDialog behavioral contract tests.
+// TD-17 — InputDialog behavioral contract tests.
 // InputDialog accepts any text as-is: no trimming, no validation, empty string allowed.
 public class InputDialogLogicTests
 {

@@ -7,8 +7,8 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.16.13 TD-63: NoteNestFormatSchemaRegressionTests から、保存・読込・自動保存・.bak
-/// バックアップ・最近使ったファイル・破損 JSON・SaveToPath 通知抑制契約（v2.14.12 SH-33）に
+/// TD-63: NoteNestFormatSchemaRegressionTests から、保存・読込・自動保存・.bak
+/// バックアップ・最近使ったファイル・破損 JSON・SaveToPath 通知抑制契約（SH-33）に
 /// 関する回帰テストを分割した。「保存/読込を経ても状態が正しく保たれるか」を中心に扱う。
 /// </summary>
 public class NoteNestFormatRoundTripTests : IDisposable
@@ -38,7 +38,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
         var note = context.Notes.AddNote(notebook, "リンク先")!;
         context.Editor.SelectNote(note);
         context.Editor.Content = "[TODO] 本文と [[リンク先]]";
-        // v2.14.16 BUG: FontFamily は NestSuite の UI 設定（NoteNestEditorFontFamily）駆動の
+        // FontFamily は NestSuite の UI 設定（NoteNestEditorFontFamily）駆動の
         // 表示専用値になったため、ここで直接変更しても Workspace ファイルの
         // settings.fontFamily には反映されない（SavedFontFamily ＝ 読込時点の値のみを書き戻す）。
         context.Editor.FontFamily = "Meiryo UI";
@@ -52,7 +52,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
 
         context.Lifecycle.Save(path);
 
-        // v2.14.16 BUG: 保存直後の payload に UI 設定駆動の FontFamily（"Meiryo UI"）が
+        // 保存直後の payload に UI 設定駆動の FontFamily（"Meiryo UI"）が
         // 書き込まれていないことを確認する（サンプルプロジェクトの既定 "Yu Gothic UI" のまま）。
         using (var savedJson = JsonDocument.Parse(File.ReadAllText(path)))
             Assert.Equal("Yu Gothic UI", savedJson.RootElement.GetProperty("settings").GetProperty("fontFamily").GetString());
@@ -66,7 +66,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
         Assert.Equal("保存するコメント", reloadedTask.Comment);
         Assert.Equal(reloadedNote.Id, reloadedTask.LinkedNoteId);
         Assert.Equal(reloadedNote.Id, context.Editor.SelectedNote?.Id);
-        // v2.14.16 BUG: FontFamily は Workspace 保存対象から分離したため、
+        // FontFamily は Workspace の保存対象ではないため、
         // 保存前に直接変更した "Meiryo UI" ではなく、ファイルの settings.fontFamily
         // （読込時点の既定 "Yu Gothic UI"）が復元される。
         Assert.Equal("Yu Gothic UI", context.Editor.FontFamily);
@@ -167,7 +167,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
         Assert.Null(session.CurrentFilePath);
     }
 
-    // v2.14.14 バグ修正: 既存ファイルを開いた直後、未保存表示に異常な分数（実機で観測された
+    // バグ修正: 既存ファイルを開いた直後、未保存表示に異常な分数（実機で観測された
     // 「未保存（1065313408分）」相当）が出ないことを回帰確認する。
     [Fact]
     public void Open_ExistingFile_DoesNotShowImplausibleUnsavedMinutes()
@@ -220,7 +220,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
         Assert.True(File.Exists(path + ".bak"));
     }
 
-    // ── v2.16.6 TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
+    // ── TD-64: 自動保存経路（createBackup: false）は .bak を更新しない ──
 
     [Fact]
     public void Save_CreateBackupFalse_DoesNotCreateBak()
@@ -407,7 +407,7 @@ public class NoteNestFormatRoundTripTests : IDisposable
         Assert.Contains(reloaded.Tasks.Today, t => t.Title == "タスク");
     }
 
-    // ── v2.14.12 SH-33: SaveToPath(path, notifyOnError) の通知抑制契約 ──────────
+    // ── SH-33: SaveToPath(path, notifyOnError) の通知抑制契約 ──────────
     //
     // Shell 側 TrySaveIdeaNestToPath/TrySaveChatNestToPath の notifyOnError 配線は
     // TrySaveWorkspaceToPath という同じヘルパーを経由しており、NoteNest 側の

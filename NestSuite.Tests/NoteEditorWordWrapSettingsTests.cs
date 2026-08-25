@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.3 L4: bool（折り返し設定）→ WPF TextBox 設定値への変換を確認する。
+/// L4: bool（折り返し設定）→ WPF TextBox 設定値への変換を確認する。
 /// WPF コントロールは生成しない純粋関数のみのテスト。
 /// </summary>
 public class NoteEditorWordWrapSettingsTests

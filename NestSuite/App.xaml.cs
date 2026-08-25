@@ -17,9 +17,9 @@ public partial class App : Application
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        // 既定起動は NestSuite。--nestsuite フラグも互換として維持（同じ動作）。
-        // --classic-notenest は廃止。未知フラグは無視して NestSuite を起動する。
-        // ファイルパス指定時は拡張子に応じて NoteNest / ChatNest / IdeaNest タブを開く。
+        // 起動ルートは NestSuite の 1 本だけ。既存のショートカット・スクリプトを壊さないため、
+        // --nestsuite を含む未知フラグは失敗させずに無視する。
+        // ファイルパス指定時は拡張子に応じて対応する Workspace タブを開く。
         var nestSuiteFilePath = StartupArgParser.GetFilePath(e.Args);
 
         // シングルインスタンス — 2 つ目以降のプロセスはファイルを転送して終了する

@@ -157,7 +157,7 @@ public partial class NoteEditorHost : UserControl
         EditorStatusBar.Text = $"現在位置: {lineIndex + 1}行目 / {col + 1}列目  |  文字数 {charCount}  |  行数 {lineCount}";
     }
 
-    // ── H3b: Marker line highlights (TODO / FIXME / NOTE) ────────────────
+    // ── Marker line highlights (TODO / FIXME / NOTE) ─────────────────────
 
     private void NoteEditorHost_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {

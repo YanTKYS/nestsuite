@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.13 CH-19: ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線の
+/// CH-19: ChatNestメッセージコンテナのフォーカス可能化・ContextMenuキーボード導線の
 /// 静的 UI/コード契約確認。メッセージ抽出・保存・編集/削除/コピー処理自体のロジックは
 /// 変更していないため、ここではフォーカス可能化・既存ContextMenuの共有・
 /// 操作対象の一致（PlacementTarget.DataContext）・非対象キーの未追加など、CH-19固有の契約を扱う。
@@ -101,7 +101,7 @@ public class CH19MessageFocusContextMenuTests
     {
         var element = ExtractMessageContainerElement(ReadChatNestWorkspaceViewXaml());
         var menuItemCount = CountOccurrences(element, "<MenuItem ");
-        // 本文コピー・編集・削除・IdeaNestカードに追加（LK-4 v2.21.0 追加）・会話コピー・
+        // 本文コピー・編集・削除・IdeaNestカードに追加・会話コピー・
         // 会話Markdownコピー・NestSuite形式コピー・会話保存・時刻表示 の9項目。
         Assert.Equal(9, menuItemCount);
         Assert.Contains("Header=\"本文をコピー(_C)\"", element);

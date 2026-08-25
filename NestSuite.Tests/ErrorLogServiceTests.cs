@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.5: ErrorLogService と FileErrorMessages の動作確認テスト。
+/// ErrorLogService と FileErrorMessages の動作確認テスト。
 /// </summary>
 public class ErrorLogServiceTests : IDisposable
 {
@@ -124,7 +124,7 @@ public class ErrorLogServiceTests : IDisposable
         Assert.Contains("inner json error", content);
     }
 
-    // ── v2.14.0 TD-57 (LT-12): ローテーション連携 ─────────────────────────
+    // ── TD-57 (LT-12): ローテーション連携 ─────────────────────────
 
     [Fact]
     public void Log_RotatesOversizedLog_AndWritesToFreshCurrentFile()
@@ -262,7 +262,7 @@ internal static class ErrorLogServiceTestHelper
         {
             var dir = Path.GetDirectoryName(logPath)!;
             Directory.CreateDirectory(dir);
-            // v2.14.0 TD-57: 本番と同じ ErrorLogRotation を経由する（ローテーションは本物を検証する）
+            // TD-57: 本番と同じ ErrorLogRotation を経由する（ローテーションは本物を検証する）
             ErrorLogRotation.RotateIfNeeded(logPath, maxSizeBytes, maxGenerations);
 
             var sb = new System.Text.StringBuilder();

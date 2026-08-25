@@ -4,7 +4,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.11 CH-5・CH-7・CH-10 の ViewModel 動作検証。
+/// CH-5・CH-7・CH-10 の ViewModel 動作検証。
 /// CH-7（発言者チップ）は純粋 XAML スタイルのため ViewModel テスト対象外。
 /// </summary>
 public class ChatNestUxTests

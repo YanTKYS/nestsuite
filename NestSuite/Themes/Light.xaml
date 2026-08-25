@@ -34,7 +34,7 @@
     <SolidColorBrush x:Key="SampleBannerFg"     Color="#7A6000"/>
 
 
-    <!-- H3b: marker line highlight — opaque; canvas sits behind TextBox text -->
+    <!-- marker line highlight — opaque; canvas sits behind TextBox text -->
     <SolidColorBrush x:Key="MarkerLineHighlightBrush"      Color="#FFF2CC"/>
     <SolidColorBrush x:Key="MarkerLineHighlightTodoBrush"  Color="#FFF0D6"/>
     <SolidColorBrush x:Key="MarkerLineHighlightFixmeBrush" Color="#FFE5E5"/>

@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.0 SH-43: PlainTextWorkspace（.txt）の Workspace 起動導線（開く・保存・起動時読込・
+/// SH-43: PlainTextWorkspace（.txt）の Workspace 起動導線（開く・保存・起動時読込・
 /// タブ閉じ確認・PropertyChanged ハンドラ・別ウィンドウ・種別判定）に関する
 /// リフレクションベースの静的存在確認テスト。WPF ウィンドウは起動しない
 /// （NestSuiteShellChatNestLaunchTests / NestSuiteShellNoteNestLaunchTests と同じ方針）。
@@ -142,7 +142,7 @@ public class NestSuiteShellPlainTextLaunchTests
     [Fact]
     public void NestSuiteShellWindow_HasDetachTextTabMethod()
     {
-        // v2.19.0 SH-43: 別ウィンドウ化にも対応する（NoteNest/IdeaNest/ChatNest と対称）。
+        // SH-43: 別ウィンドウ化にも対応する（NoteNest/IdeaNest/ChatNest と対称）。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("DetachTextTab",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
@@ -167,7 +167,7 @@ public class NestSuiteShellPlainTextLaunchTests
     [Fact]
     public void NestSuiteShellWindow_HasSaveTextForTabIdMethod()
     {
-        // v2.19.0 SH-43: 別ウィンドウ内の Ctrl+S 用（DetachedWorkspaceWindow から呼ばれる）。
+        // SH-43: 別ウィンドウ内の Ctrl+S 用（DetachedWorkspaceWindow から呼ばれる）。
         var method = typeof(NestSuiteShellWindow)
             .GetMethod("SaveTextForTabId", BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(method);

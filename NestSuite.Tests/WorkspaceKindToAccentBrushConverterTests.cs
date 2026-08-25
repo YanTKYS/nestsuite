@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NestSuite.Tests;
 
-// TD-77 (v2.17.9): 呼び出しごとの Brush 生成を止め、凍結済み共有 Brush を返すことの回帰。
+// TD-77: 呼び出しごとの Brush 生成を止め、凍結済み共有 Brush を返すことの回帰。
 public class WorkspaceKindToAccentBrushConverterTests
 {
     private readonly WorkspaceKindToAccentBrushConverter _converter = new();

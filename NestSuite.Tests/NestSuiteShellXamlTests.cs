@@ -13,16 +13,9 @@ public class NestSuiteShellXamlTests
 
     // ── SH-25: Shell 上部バー削除・メニュー導線整理 ──────────────────────
 
-    // TD-75e (v2.16.31): TD-75d (v2.16.30) で
-    // Delete candidate と判断された、SH-25（v2.10.21）の削除決定ガード 2 件
-    // （ShellXaml_DoesNotContain_TopBarLaunchButtons / _NoteExportMenuItems）を削除した。
-    // 削除決定から十分に安定しており、現行導線は下の ShellXaml_NewMenu_HasDescriptions /
-    // NoteNestWorkspaceViewXaml_Contains_ExportContextMenu の positive 確認が引き続き保証する。
-
     [Fact]
     public void ShellXaml_NewMenu_HasDescriptions()
     {
-        // SH-25 で追加した説明文は、v2.15.1 でツールメニューからファイル > 新規作成へ移動した。
         var src = ReadShellXaml();
         Assert.Contains("ノートをプロジェクト単位で管理", src);
         Assert.Contains("アイデアをカード形式で整理", src);
@@ -40,7 +33,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("ExportAllNotesMarkdownSave_Click", src);
     }
 
-    // ── v2.14.18 SH: Workspace共通フォント設定をメニューバーへ移動 ────────
+    // ── Workspace 共通フォント設定（メニューバー配下） ───────────────────
 
     [Fact]
     public void ShellXaml_WorkspaceFontMenu_ContainsAllCandidates()
@@ -63,7 +56,7 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void NoteNestWorkspaceViewXaml_DoesNotContain_EditorFontFamilyComboBox()
     {
-        // v2.14.18 SH: NoteNest 上部ツールバーのフォント種類 ComboBox はメニューバーへ移動したため廃止した。
+        // フォント種類の選択導線はメニューバーに一本化する。NoteNest 上部ツールバーへ戻さない。
         var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.xaml");
         var src = File.ReadAllText(path);
         Assert.DoesNotContain("EditorFontFamilyChoices", src);
@@ -73,7 +66,7 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void NoteNestWorkspaceViewXaml_StillContains_EditorFontSizeComboBox()
     {
-        // フォントサイズ ComboBox は今回の対象外。維持されていることを固定する。
+        // フォント種類と違い、フォントサイズ ComboBox は NoteNest ツールバーに残す。
         var path = Path.Combine(RepoRoot, "NestSuite", "NestSuite", "NoteNest", "Views", "NoteNestWorkspaceView.xaml");
         var src = File.ReadAllText(path);
         Assert.Contains("EditorFontSizeChoices", src);
@@ -82,11 +75,7 @@ public class NestSuiteShellXamlTests
 
     // ── ID-14: IdeaNest 新規カードのサンプル表示削減 ──────────────────────
 
-    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
-    // PreviewIdeaWindowXaml_DoesNotContain_TagExampleText（ID-14, v2.10.22 の文言削減決定
-    // ガード）を削除した。古い文言削減決定であり、特定サンプル文言の再発リスクは実質的にない。
-
-    // ── v2.15.0 SH: Shell横断検索の最小実装 ──────────────────────────────
+    // ── Shell 横断検索 ───────────────────────────────────────────────────
 
     [Fact]
     public void ShellXaml_ContainsCrossSearchMenuItem_WithShortcutText()
@@ -113,16 +102,14 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void ShellXaml_DoesNotIntroduce_SearchNestWorkspace()
     {
-        // v2.15.0 SH: 横断検索は Shell の補助機能であり、新規 SearchNest Workspace ではない
+        // 横断検索は Shell の補助機能であり、新規 SearchNest Workspace ではない
         var src = ReadShellXaml();
         Assert.DoesNotContain("SearchNestWorkspaceView", src);
     }
 
-    // ── v2.15.1 SH: 横断検索導線・メニュー整理・タブ移動ショートカット調整 ─
+    // ── 横断検索導線・メニュー整理・タブ移動ショートカット ──────────────
 
-    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
-    // ShellXaml_ViewMenu_NoLongerContainsCrossSearchMenuItem（横断検索メニューが表示メニューに
-    // 重複配置されていないことの確認）を削除した。現行導線（ツールメニュー配下）は
+    // 現行導線（ツールメニュー配下）は
     // 下の ShellXaml_ToolMenu_ContainsCrossSearchMenuItem の positive 確認が引き続き保証する。
 
     [Fact]
@@ -140,7 +127,7 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void ShellXaml_ToolMenu_ContainsMigrationPackMenuItems()
     {
-        // v2.15.3 SH: デバイス移行パックは新 Workspace ではなく Shell 補助機能としてツールメニューへ配置する。
+        // デバイス移行パックは新 Workspace ではなく Shell 補助機能としてツールメニューへ配置する。
         var src = ReadShellXaml();
         var toolMenuStart = src.IndexOf("Header=\"ツール(_T)\"", StringComparison.Ordinal);
         var viewMenuStart = src.IndexOf("Header=\"表示(_V)\"", StringComparison.Ordinal);
@@ -151,13 +138,6 @@ public class NestSuiteShellXamlTests
         Assert.Contains("デバイス移行パックをエクスポート", toolMenuSection);
         Assert.Contains("デバイス移行パックをインポート", toolMenuSection);
     }
-
-    // TD-75e (v2.16.31): TD-75d で Delete candidate と判断された
-    // ShellXaml_ToolMenu_NoLongerContainsPerNestLaunchItems（各 Nest 起動項目がツールメニューに
-    // 残っていないことの確認、v2.15.1）を削除した。現行導線（ファイル > 新規作成 + タブバー）は
-    // 下の ShellXaml_FileNewMenu_ContainsPerNestDescriptiveLabelsAndAutomationIds /
-    // ShellXaml_TabAddButtonMenu_ContainsPerNestDescriptiveLabels の positive 確認が
-    // 引き続き保証する。
 
     [Fact]
     public void ShellXaml_FileNewMenu_ContainsPerNestDescriptiveLabelsAndAutomationIds()
@@ -189,8 +169,8 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void ShellXaml_CrossSearchPanelCloseButton_IsPinnedToGridEdgeColumn()
     {
-        // v2.15.1 SH: 閉じるボタンが中央寄りに見えていた不具合を修正。
-        // ヘッダーを Grid 化し、閉じるボタンを Auto 幅の右端カラム（Grid.Column="1"）へ固定した。
+        // 閉じるボタンが中央寄りに見えないよう、ヘッダーを Grid 化し
+        // 閉じるボタンを Auto 幅の右端カラム（Grid.Column="1"）へ固定している。
         var src = ReadShellXaml();
         var buttonIndex = src.IndexOf("CrossSearchCloseButton_Click", StringComparison.Ordinal);
         Assert.True(buttonIndex >= 0, "CrossSearchCloseButton_Click が見つからない");
@@ -203,7 +183,7 @@ public class NestSuiteShellXamlTests
     }
 
 
-    // ── v2.16.4 SH-19: キーボードショートカット一覧 ─────────────────────
+    // ── SH-19: キーボードショートカット一覧 ─────────────────────
 
     [Fact]
     public void ShellXaml_HelpMenu_ContainsKeyboardShortcutsMenuItem()
@@ -223,7 +203,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Title=\"キーボードショートカット\"", src);
     }
 
-    // ── v2.16.8 L8: バックアップ復元ガイド ─────────
+    // ── L8: バックアップ復元ガイド ─────────
 
     [Fact]
     public void ShellXaml_HelpMenu_ContainsBackupRestoreGuideMenuItem()
@@ -250,7 +230,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Title=\"バックアップ復元ガイド\"", src);
     }
 
-    // ── v2.16.10 SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
+    // ── SH-30: Shell コマンドの有効/無効理由ツールチップ統一 ────
 
     [Fact]
     public void ShellXaml_SaveMenuItems_HaveShowOnDisabled()
@@ -271,7 +251,7 @@ public class NestSuiteShellXamlTests
     [Fact]
     public void ShellXaml_SaveMenuItems_UseClickHandlersNotCommandBinding()
     {
-        // v2.16.10 SH-30: Command バインドのままだと WPF の CanExecute 再照会で
+        // SH-30: Command バインドのままだと WPF の CanExecute 再照会で
         // 手動 IsEnabled 制御ができないため、Click ハンドラへ切り替えた。
         // Ctrl+S / Ctrl+Shift+S は Window.CommandBindings 側で引き続き処理する。
         var src = ReadShellXaml();
@@ -320,7 +300,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("ToolTipService.ShowOnDisabled=\"True\"", src);
     }
 
-    // ── L23 (v2.18.1): 空状態での次操作ガイド ─────────────────────────────
+    // ── L23: 空状態での次操作ガイド ─────────────────────────────
 
     [Fact]
     public void NoteNestWorkspaceViewXaml_HasAllFourEmptyStateElements()
@@ -372,7 +352,7 @@ public class NestSuiteShellXamlTests
         Assert.Contains("Binding FilteredMarkers", src);
     }
 
-    // ── SH-37 (v2.18.3): Shell操作の現在地サマリー表示 ────────────────────
+    // ── SH-37: Shell操作の現在地サマリー表示 ────────────────────
 
     [Fact]
     public void ShellXaml_HelpMenu_HasStateSummaryMenuItem()
@@ -439,7 +419,7 @@ public class NestSuiteShellXamlTests
         return File.ReadAllText(path);
     }
 
-    // ── v2.19.3 L4: NoteNest 本文エディタのワードラップ切替メニュー ───────
+    // ── L4: NoteNest 本文エディタのワードラップ切替メニュー ───────
 
     [Fact]
     public void ShellXaml_ContainsNoteNestWordWrapMenuItem_Checkable()

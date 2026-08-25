@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.1 ID-4 (TD-88必須範囲): IdeaNest カード一覧で、フォーカス中のカードに対する
+/// ID-4 (TD-88必須範囲): IdeaNest カード一覧で、フォーカス中のカードに対する
 /// Enter キーがプレビューを開くことの確認。実際のプレビュー表示処理
 /// （<see cref="NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel.PreviewIdeaCommand"/>）は
 /// 既存のマウスクリック経路（<c>OnCardMouseLeftButtonUp</c>）と共有しており、
@@ -83,7 +83,7 @@ public class IdeaNestCardEnterPreviewTests
     [Fact]
     public void UserControl_InputBindings_UnchangedByThisVersion()
     {
-        // v2.19.1 ID-4: 新しいグローバルショートカットは追加していない
+        // ID-4: 新しいグローバルショートカットは追加していない
         // （既存の Ctrl+Shift+N/C/R のみ維持）。
         var xaml = ReadWorkspaceViewXaml();
         Assert.Contains("Modifiers=\"Ctrl+Shift\" Key=\"N\"", xaml);

@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.0 SH-43: PlainText（.txt）が既存の共通 Open 計画・タブ生成・session mapper・
+/// SH-43: PlainText（.txt）が既存の共通 Open 計画・タブ生成・session mapper・
 /// 自動保存対象判定へ正しく合流していることを確認する。独自の並行 Open 経路を持たないことの回帰。
 /// </summary>
 public class PlainTextTabIntegrationTests : IDisposable
@@ -109,7 +109,7 @@ public class PlainTextTabIntegrationTests : IDisposable
     [Fact]
     public void Tab_PlainText_IsNotRegisteredInToolRegistry()
     {
-        // v2.19.0 SH-43: PlainText は Nest ではないため NestSuiteToolRegistry に登録しない。
+        // SH-43: PlainText は Nest ではないため NestSuiteToolRegistry に登録しない。
         var tab = NestSuiteTabFactory.CreateUntitled(NestSuiteWorkspaceKind.PlainText);
         Assert.DoesNotContain(NestSuiteToolRegistry.ToolDefinitions, t => t.Id == tab.ToolId);
     }
@@ -213,7 +213,7 @@ public class PlainTextTabIntegrationTests : IDisposable
     [Fact]
     public void UnopenedRecentFileLoader_TxtFile_IsSkippedSafely_NoDocument()
     {
-        // v2.19.0 SH-43: PlainTextWorkspace の本文は初期実装で横断検索の対象へ含めない。
+        // SH-43: PlainTextWorkspace の本文は初期実装で横断検索の対象へ含めない。
         // .txt を候補に含めても例外にならず、Document=null（検索対象外）として安全にスキップされること。
         var path = TempPath("unopened.txt");
         PlainTextFileService.Save(path, "not searched", PlainTextEncodingKind.Utf8NoBom, PlainTextNewlineKind.None);
@@ -230,7 +230,7 @@ public class PlainTextTabIntegrationTests : IDisposable
     [Fact]
     public void FileAssociationService_DoesNotRegisterTxtExtension()
     {
-        // v2.19.0 SH-43: Windows 標準の .txt 関連付けを奪わないため、初期実装では .txt を
+        // SH-43: Windows 標準の .txt 関連付けを奪わないため、初期実装では .txt を
         // ファイル関連付け対象へ追加しない（NestSuite EXE への引数渡しでは開ける）。
         Assert.DoesNotContain(FileAssociationService.AssociationTargets, t => t.Ext == ".txt");
     }

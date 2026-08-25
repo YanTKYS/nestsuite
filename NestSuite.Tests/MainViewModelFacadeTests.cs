@@ -67,7 +67,7 @@ public class MainViewModelFacadeTests
             main.MarkerPanel.MarkerCount);
     }
 
-    // v2.13.2 L19 回帰: ノートブックのリネームは SelectedNote 自体を変えないため、
+    // L19 回帰: ノートブックのリネームは SelectedNote 自体を変えないため、
     // MainViewModel まで CurrentNotebookName の PropertyChanged が届くことを確認する。
     [Fact]
     public void RenamingSelectedNotesNotebookUpdatesCurrentNotebookName()
@@ -85,7 +85,7 @@ public class MainViewModelFacadeTests
         Assert.Equal("新名", main.CurrentNotebookName);
     }
 
-    // v2.13.4 M16: タスク欄の互換表示切替（HasAnyTasks/HasNoTasks）が MainViewModel まで届くことを確認する。
+    // M16: タスク欄の互換表示切替（HasAnyTasks/HasNoTasks）が MainViewModel まで届くことを確認する。
     // 新規 MainViewModel はサンプルプロジェクト（既存タスクあり）を読み込むため、
     // まず既存タスクをすべて削除して HasAnyTasks == false の状態を作ってから検証する。
     [Fact]

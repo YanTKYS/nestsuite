@@ -7,7 +7,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.10.5 M10: NoteNest Markdown エクスポート — NoteNestMarkdownExportService の単体テスト + 回帰テスト。
+/// M10: NoteNest Markdown エクスポート — NoteNestMarkdownExportService の単体テスト + 回帰テスト。
 /// </summary>
 public class MarkdownExportTests
 {
@@ -182,7 +182,7 @@ public class MarkdownExportTests
         Assert.True(vm.HasAnyNotes);
     }
 
-    // ── v2.16.10 SH-30: Markdown エクスポートの無効理由ツールチップ ──────
+    // ── SH-30: Markdown エクスポートの無効理由ツールチップ ──────
 
     [Fact]
     public void MarkdownExportSelectedNoteTooltip_MatchesHasSelectedNote()

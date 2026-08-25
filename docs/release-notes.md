@@ -1,9 +1,19 @@
 ## release notes の役割
 
-- 完了済み backlog ID は release notes で管理する
+- 各バージョンには「そのリリースで何が変わったか」の概要だけを書く。目安は 5 項目程度
+- 対応した backlog ID・保存形式・session 形式・schema の変更有無は明記する（backlog ID で完了 version を追跡できるようにするため）
 - 完了済み項目は backlog.md に残さない
-- 各バージョンには、対応した backlog ID、変更概要、保存形式変更有無、session 形式変更有無、schema 変更有無を記録する
-- backlog ID で検索すれば、該当バージョンと実装内容を追跡できるようにする
+- 仕様説明の再掲・実装詳細・変更ファイル一覧・検証の経緯は書かない（正本は README / docs と Git 履歴）
+
+---
+
+## v2.26.1 — README・docs・コメントの情報量整理
+
+- **README を「今何ができるか・どう使うか」中心に整理した。** 過去バージョンの注記と未実装機能の列挙を削除し、「既知の制限」表は実害につながる注意事項（同一ファイルの同時編集、`.bak` の性質、PlainText の対応文字コード、シングルインスタンス）へ置き換えた。自動保存・下書き・`.bak` の関係を追記した。
+- **現行実装と食い違っていた文書を修正した。** リリース前確認チェックリストの行番号ガター確認（撤去済み機能）と IdeaNest の `.bak` 事前コピー記述、利用ガイドのタブツールチップ例・セッション復元の記述を現行実装に合わせた。チェックリストは version ごとに積み上がっていた機能別確認手順を落とし、毎リリース通す恒久項目のみへ再構成した（1368 → 174 行）。
+- **docs から version 由来の経緯記述を外した。** schema / ErrorLog / 互換性識別子 / ファイル関連付けの各正本を現在形へ書き換え、backlog の欠番一覧・開発ガイドラインとの重複ルールを整理した。release notes からは仕様の再掲・変更ファイル一覧・「変更しなかったもの」の列挙・将来計画表を削除した（過去エントリ分で 6530 → 5822 行）。
+- **ソースコメントを現行化した。** production から backlog ID を除去し、起動引数・ツール定義・UI 設定の説明を実装と一致させた。テストコメントの release version 参照 519 件を削除し（保存形式互換を説明する 3 件は維持）、削除済みテストの記録コメントと version を含むテストメソッド名を整理した。`DialogServiceBoundaryTests` が旧 namespace `NoteNest.Dialogs` を見ていて常に成立していたガードを `NestSuite.Dialogs` へ修正した。
+- **production の振る舞い・保存形式（NoteNest schema `1.4.2` / `.nestsuite` `formatVersion 1.0` ほか）・session 形式・schema の変更なし。外部依存の追加なし。** 利用者が目にする変更は、バックアップ復元ガイドの文言から version 表記が消えた点のみ。
 
 ---
 
@@ -3811,30 +3821,9 @@ v1.8.3 での `.ideanest` ファイル保存・読込実装に向けた設計・
 - 未保存状態の扱い
 - v1.8.3 実装チェックリスト
 
-### 追加したテスト（`IdeaNestFileServiceTests.cs` 新規・25 件）
-
-| テスト | 内容 |
-|--------|------|
-| `FileExtension_IsExpected` | `FileExtension = ".ideanest"` を確認 |
-| `SchemaVersion_IsExpected` | `SchemaVersion = "1.1.4"` を確認 |
-| `Idea_Property_HasJsonPropertyNameAttribute` | `Idea` 全 9 プロパティの camelCase キー名確認（Theory） |
-| `Workspace_Property_HasJsonPropertyNameAttribute` | `Workspace` 全 4 プロパティの camelCase キー名確認（Theory） |
-| `WorkspaceSettings_Property_HasJsonPropertyNameAttribute` | `WorkspaceSettings` 全 10 プロパティの camelCase キー名確認（Theory） |
-
 ### 変更しなかったもの
 
-- `.ideanest` UI 保存・読込（v1.8.3 で対応予定）
-- `NestSuiteShellWindow` ファイルメニューの IdeaNest ケース（引き続き未対応ダイアログを表示）
-- `IdeaNestWorkspaceService`（既存の Save/Load ロジックはそのまま）
 - NoteNest 保存スキーマ（`1.4.1` のまま）
-
-### v1.8.3 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.8.3 | `.ideanest` 保存・読込の最小対応（ファイルダイアログ・タブ状態ワイヤリング） |
-| v1.8.4 | `.ideanest` 保存／読込・起動時指定の回帰確認と小修正 |
-| 将来 | 複数 IdeaNest タブ（N17）・MainViewModel Workspace Facade 分離（N6） |
 
 ---
 
@@ -3875,45 +3864,9 @@ v1.8.0 で追加した IdeaNest 統合（3 つ目の Workspace）が、既存の
 | `StartupArgParserTests` | `.ideanest` 起動引数テスト 2 件追加 |
 | `NestSuiteShellTests` | IdeaNest 統合後回帰確認テスト 9 件追加（DirtyRequested 削除確認・LoadFromWorkspace 確認・拡張子誤認テスト等） |
 
-### 回帰確認結果
-
-| 項目 | 結果 |
-|------|------|
-| 引数なし起動（NoteNest 単体版） | 変更なし ✓ |
-| `.notenest` 単独指定起動（NoteNest 単体版） | 変更なし ✓ |
-| `--nestsuite` 起動（NestSuite） | 変更なし ✓ |
-| `--nestsuite sample.notenest` | 変更なし ✓ |
-| `--nestsuite sample.chatnest` | 変更なし ✓ |
-| `--nestsuite sample.ideanest` | 未対応エラーを表示してアプリ継続 ✓ |
-| NoteNest タブ表示・切替 | 変更なし ✓ |
-| ChatNest タブ表示・切替 | 変更なし ✓ |
-| IdeaNest タブ表示・切替 | 変更なし ✓ |
-| IdeaNest タブを閉じる（未保存確認） | 変更なし ✓ |
-| IdeaNest ファイルメニュー（未対応表示） | 変更なし ✓ |
-| ChatNest 保存（名前を付けて・上書き） | 変更なし ✓ |
-| ChatNest 読込 | 変更なし ✓ |
-| NoteNest 保存スキーマ | `1.4.1` 変更なし ✓ |
-| `.ideanest` を NoteNest / ChatNest として誤認しない | 変更なし ✓ |
-
 ### 変更しなかったもの
 
-- `.ideanest` 保存・読込（v1.8.x では未対応）
-- IdeaNest の AppShell 側移植
-- 起動時 `.ideanest` ファイル指定の本格対応
-- 同一ツール複数ファイル対応（将来改善）
-- タブ復元（将来改善）
-- 共通プロジェクトファイル形式（将来改善）
-- NoteNest 保存形式・スキーマ（`1.4.1` のまま）
-
-### v1.8.2 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.8.2 | IdeaNest 保存／読込方針の整理（`.ideanest` 形式検討） |
-| v1.8.3 | `.ideanest` 保存／読込の最小対応 |
-| v1.8.4 | `.ideanest` 起動時読込の最小対応 |
-| 将来 | 同一ツール複数ファイルの独立 ViewModel 管理（N17） |
-| 将来 | タブ復元 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -3949,17 +3902,6 @@ IdeaNest タブを選択すると `IdeaNestWorkspaceView` が表示され、カ�
 - アプリバージョン: `1.7.8` → `1.8.0`
 - `NestSuiteToolRegistry.IdeaNestDef.IsIntegrated`: `false` → `true`（統合検証段階）
 
-### 追加したファイル（35 件）
-
-| 分類 | ファイル |
-|------|---------|
-| Models | `Idea.cs`, `Workspace.cs`, `WorkspaceSettings.cs` |
-| Commands | `IdeaNestRelayCommand.cs` |
-| Converters | `IdeaBoolToVisibilityConverter.cs`, `IdeaColorNameToBrushConverter.cs`, `IdeaHexStringToBrushConverter.cs`, `IdeaStringIsEmptyToVisibilityConverter.cs` |
-| Services | `IdeaNestWorkspaceService.cs`, `CardOperationsService.cs`, `TagManagementService.cs`, `TagSyncService.cs` |
-| ViewModels | `IdeaNestViewModelBase.cs`, `IdeaNestWorkspaceViewModel.cs`, `IdeaNestWorkspaceUiService.cs`, `IdeaCardViewModel.cs`, `CardDisplayViewModel.cs`, `EditIdeaViewModel.cs`, `FilterViewModel.cs`, `TagItemViewModel.cs`, `TagPanelViewModel.cs`, `SortOptionViewModel.cs`, `ColorFilterItemViewModel.cs` |
-| Views | `IdeaNestResources.xaml`, `IdeaNestWorkspaceView.xaml/.cs`, `EditIdeaWindow.xaml/.cs`, `IdeaConfirmWindow.xaml/.cs`, `IdeaPromptWindow.xaml/.cs`, `PreviewIdeaWindow.xaml/.cs`, `TagManagementWindow.xaml/.cs` |
-
 ### 変更したファイル（6 件）
 
 | ファイル | 変更内容 |
@@ -3973,12 +3915,7 @@ IdeaNest タブを選択すると `IdeaNestWorkspaceView` が表示され、カ�
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー（引数なし → `MainWindow`）
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- ChatNest 統合（変更なし）
-- `.ideanest` 保存・読込（v1.8.0 では未対応）
-- 複数 IdeaNest タブ（未対応）
-- 共通プロジェクト形式（未対応）
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4020,31 +3957,6 @@ ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, I
 
 **修正：** `Clear()` の後、`tab.Id` で再取得してから `ReplaceTab` を呼ぶ。
 
-### 回帰確認結果
-
-| 項目 | 結果 |
-|------|------|
-| 引数なし起動（NoteNest 単体版） | 変更なし |
-| `.notenest` 単独指定起動（NoteNest 単体版） | 変更なし |
-| `--nestsuite` 起動（NestSuite） | 変更なし |
-| `--nestsuite sample.notenest` | 変更なし |
-| `--nestsuite sample.chatnest` | 変更なし |
-| NoteNest タブ表示・切替 | 変更なし |
-| ChatNest タブ表示・切替 | 変更なし |
-| IdeaNest 未統合プレースホルダー表示 | 変更なし |
-| タブを閉じる操作 | 変更なし |
-| ChatNest 保存（名前を付けて・上書き） | 変更なし |
-| ChatNest 読込（`OpenChatNestFile`） | stale record バグを修正 |
-| ChatNest 新規（`NewChatNestSession`） | stale record バグを修正 |
-| NoteNest 保存スキーマ | `1.4.1` 変更なし |
-| ファイルメニュー分岐（NoteNest / ChatNest / IdeaNest） | 変更なし |
-| アプリ終了時の未保存確認 | 変更なし |
-
-### 追加したテスト（`NestSuiteDocumentTabTests.cs` に 2 件追加）
-
-- `TabFactory_FromFilePath_IdeaNestExtension_ResolvesCorrectly` — `.ideanest` の `FromFilePath` が正しく解決されることを確認（v1.8.0 IdeaNest 統合前の基盤確認）
-- `TabFactory_TryGetKind_IdeaNestExtension_ReturnsIdeaNest` — `.ideanest` 拡張子が `IdeaNest` に解決されることを確認
-
 ### IdeaNest 統合前の状態確認
 
 - `NestSuiteWorkspaceKind.IdeaNest` はモデルとして定義済み ✓
@@ -4057,19 +3969,7 @@ ReplaceTab(current, NestSuiteTabFactory.FromFilePath(path) with { Id = tab.Id, I
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest（未統合のまま・統合は v1.8.0 で予定）
-- タブ復元（未実装のまま）
-- 複数ファイル同時オープン（未実装のまま）
-
-### v1.8.0 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.8.0 | IdeaNest 統合検証 |
-| v1.8.1 | IdeaNest 統合後の回帰確認・小修正 |
-| 将来 | タブ復元・複数ファイル同時オープン・`.ideanest` 保存形式確立 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4117,21 +4017,7 @@ v1.6.3 以降、`LoadInitialFile` は `.notenest` のみを受け付けていた
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー（引数なし・`.notenest` 単独指定）
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- ChatNest の `.chatnest` 保存・読込（メニュー操作）
-- タブを閉じる操作
-- IdeaNest（未統合のまま）
-- タブ復元（未実装のまま）
-- 複数ファイル同時オープン（未実装のまま）
-
-### v1.7.8 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.8 | 起動時 `.chatnest` 指定の回帰確認・小修正 |
-| v1.8.0 | IdeaNest 統合検証 |
-| 将来 | タブ復元・複数ファイル同時オープン・`.ideanest` 対応 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4176,24 +4062,9 @@ TabStrip の各タブに × ボタンを追加した（`NestSuiteShellWindow.xam
 確認ダイアログを挟まずに新規プロジェクトを作成する公開メソッド。
 NestSuite がタブ閉じ操作でユーザー確認を完了済みの場合に呼ぶ。
 
-### 追加したテスト（`NestSuiteShellTests.cs`）
-
-- `NestSuiteShellWindow_HasCloseTabMethod` — `CloseTab(NestSuiteDocumentTab)` が宣言されていることを確認
-- `NestSuiteShellWindow_HasIsClosingTabField` — `_isClosingTab` フィールドが宣言されていることを確認
-
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest タブの閉じ操作（未保存確認なし、単純削除）
-- 複数 NoteNest タブの独立した ViewModel 管理（`WorkspaceView` は 1 つのまま）
-
-### v1.7.7 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.7 | 複数 NoteNest タブの独立した ViewModel 管理 |
-| v1.8.0 | IdeaNest 統合検証 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4240,18 +4111,6 @@ v1.7.3〜v1.7.4 で追加したファイル単位タブ UI と ChatNest `.chatne
 - `TabFactory_FromFilePath_ChatNestExtension_IsNotNoteNestKind` — `.chatnest` は NoteNest に誤解釈されない
 - `TabFactory_TryGetKind_ChatNestExtension_ReturnsCorrectKind` — `.chatnest` の拡張子判定確認
 
-### 回帰確認結果（コード確認）
-
-| 項目 | 結果 |
-|------|------|
-| NoteNest 単体版の起動フロー | 変更なし |
-| `.notenest` 保存スキーマ | `1.4.1` 変更なし |
-| `MainViewModel` / `MainWindow` | 変更なし |
-| ファイルメニュー分岐（NoteNest / ChatNest / IdeaNest） | v1.7.4 fix 済みの `switch` ディスパッチを維持 |
-| IdeaNest 選択時のファイル操作 | 「未統合」情報ダイアログ表示（v1.7.4 fix より継続） |
-| ChatNest 保存後の TabStrip ` *` 表示 | `SetChatNestTabPath` 修正により正常化 |
-| OnClosing の InputText 破棄確認 | v1.7.4 fix 済みを維持 |
-
 ### 仕様確定事項（案A）
 
 `.chatnest` ファイルは投稿済みメッセージ（`Messages` コレクション）のみを保存対象とする。
@@ -4262,20 +4121,7 @@ v1.7.3〜v1.7.4 で追加したファイル単位タブ UI と ChatNest `.chatne
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest（未統合のまま）
-- タブ復元・複数ファイル同時編集
-- 共通プロジェクトファイル形式
-
-### v1.7.6 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.6 | タブを閉じる操作の最小対応（閉じボタン・未保存確認・最後の 1 枚） |
-| v1.7.7 | 複数 NoteNest タブの独立した ViewModel 管理 |
-| v1.8.0 | IdeaNest 統合検証 |
-| 将来 | タブ復元・複数ファイル同時編集の本格実装 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4291,46 +4137,6 @@ tmp+replace パターンにより書き込み中断でもファイルが壊れ�
 ファイルメニューのコマンドバインディングを Click ハンドラに変更し、選択中タブのツール種別に応じて
 NoteNest 操作と ChatNest 操作を自動でディスパッチする。
 
-### 変更したファイル
-
-#### 新規: `NoteNest/NestSuite/ChatNest/ChatNestFileService.cs`
-
-- `.chatnest` ファイルの `Save(path, messages)` / `Load(path)` を提供する静的サービス
-- `Save`: `ChatSessionData`（`version`, `messages`）を JSON シリアライズし、tmp+replace パターンで書き込む
-- `Load`: JSON を読み込み `Message` リストを返す。`"要約"` → `"結論"` 互換マッピング・未知の発言者はスキップ
-- `FileExtension = ".chatnest"`, `FileVersionString = "0.4.1"` を定数として公開
-
-#### `NoteNest/Services/DialogService.cs`
-
-- `SelectChatNestOpenPath()` を追加（`.chatnest` フィルタ付き `OpenFileDialog`）
-- `SelectChatNestSavePath(defaultFileName)` を追加（`.chatnest` フィルタ付き `SaveFileDialog`）
-
-#### `NoteNest/NestSuite/NestSuiteShellWindow.xaml`
-
-- ファイルメニューのコマンドバインディングを Click ハンドラに変更
-  - `Command="{Binding NewProjectCommand}"` → `Click="MenuNew_Click"` 等、4 項目変更
-  - メニュー見出しを「新規プロジェクト」→「新規」、「プロジェクトを開く」→「開く」に変更（ツール共通化に合わせて）
-
-#### `NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs`
-
-- `SetChatNestTabPath(path)` — 保存後にタブモデルをファイルパスで更新
-- `TrySaveChatNestToPath(path)` — 指定パスへ保存し、失敗時はエラーダイアログを表示して false を返す
-- `SaveChatNestFile()` — 上書き保存（パスなければ名前を付けて保存へ委譲）
-- `SaveChatNestFileAs()` — 名前を付けて保存（ダイアログでパスを選択）
-- `OpenChatNestFile()` — ファイルを開く（変更があれば破棄確認）
-- `NewChatNestSession()` — 新規セッション（変更があれば破棄確認）
-- `MenuNew_Click`, `MenuOpen_Click`, `MenuSave_Click`, `MenuSaveAs_Click` — 選択ツール ID でディスパッチ
-- `OnClosing` 更新: ChatNest にファイルパスがある場合は「保存しますか？（Yes/No/Cancel）」を表示
-
-#### 新規: `NoteNest.Tests/ChatNestFileServiceTests.cs`
-
-18 件のテストを追加：
-- `FileExtension_IsExpected` / `FileVersionString_IsExpected` — 定数確認
-- `Save_*` 5 件 — ファイル生成・tmp ファイルなし・JSON フィールド・上書き
-- `Load_*` 7 件 — 空リスト・件数・Id・Speaker・Text・CreatedAt・"要約"互換
-- `Load_SkipsUnknownSpeaker` — 未知発言者のスキップ
-- `Load_ThrowsInvalidDataException_*` / `Load_ThrowsException_WhenFileNotFound` — エラー系
-
 ### ディスパッチ方式
 
 選択中タブが ChatNest の場合は ChatNest 操作、それ以外（NoteNest・IdeaNest）は `MainViewModel` のコマンドへ委譲する。IdeaNest タブが選択されているときにファイルメニューを操作しても NoteNest の `ViewModel` コマンドが呼ばれるが、IdeaNest は現時点でプレースホルダーのため実害はない。
@@ -4345,17 +4151,7 @@ NoteNest 操作と ChatNest 操作を自動でディスパッチする。
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- `ChatNestWorkspaceViewModel`（`MarkSaved`, `LoadMessages`, `Clear` を既存のまま利用）
-- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
-
-### v1.7.5 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.5 | NoteNest タブを複数開く（同一ツール複数タブの UI 整備） |
-| v1.8.0 | IdeaNest 統合検証 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4370,35 +4166,6 @@ v1.7.2 で設計したファイル単位タブモデル（`NestSuiteDocumentTab`
 サイドバーはツール切替からタブランチャーに役割を変え、クリックで対応タブを作成またはフォーカスする。
 
 `.chatnest` 保存・複数 NoteNest タブの同時開示・IdeaNest 統合は v1.7.3 では行わない。
-
-### 変更したファイル
-
-#### `NoteNest/NestSuite/NestSuiteShellWindow.xaml`
-
-- Column 1 Grid に `RowDefinitions` を追加（Row 0 = 32px タブストリップ、Row 1 = Workspace コンテンツ）
-- Row 0 に `<ListBox x:Name="TabStrip">` を追加。水平 `StackPanel`・`ItemTemplate`（DisplayName 表示）・`SelectionChanged` イベントを設定
-- Row 1 に既存の WorkspaceView・ChatWorkspaceView・UnintegratedPlaceholder を移動
-- サイドバーコメントをタブランチャーの役割を反映した内容に更新
-
-#### `NoteNest/NestSuite/NestSuiteShellWindow.xaml.cs`
-
-- `using System.Collections.ObjectModel;` を追加
-- フィールド追加：`_tabs`（`ObservableCollection<NestSuiteDocumentTab>`）・`_selectedTab`・`_isActivatingTab`
-- `_selectedToolId` フィールドを削除し、`SelectedToolId` を computed property（`_selectedTab?.ToolId ?? DefaultToolId`）に変更
-- `SelectTool(string toolId)` を削除し、2 つのメソッドに置き換え：
-  - `ActivateTab(NestSuiteDocumentTab tab)` — タブをアクティブ化し Workspace・サイドバー・メニュー・ステータスバーを同期
-  - `EnsureTabForToolId(string toolId)` — 既存タブをフォーカス、なければ無題タブを新規作成してアクティブ化
-- `TabStrip_SelectionChanged` ハンドラを追加（`_isActivatingTab` ガードで `ActivateTab` との再帰を防止）
-- コンストラクタに `TabStrip.ItemsSource = _tabs`・初期 NoteNest タブ作成・`ActivateTab` 呼び出しを追加
-- `ToolBorder_MouseDown` / `MenuTool_Click` を `EnsureTabForToolId` に変更
-
-### 追加したテスト（`NestSuiteShellTests.cs`）
-
-3 件追加（合計 27 件）：
-
-- `NestSuiteShellWindow_HasTabStripField` — `TabStrip`（ListBox）フィールドの存在・型確認
-- `NestSuiteShellWindow_HasTabsCollectionField` — `_tabs`（ObservableCollection<NestSuiteDocumentTab>）フィールドの存在・型確認
-- `NestSuiteShellWindow_HasActivateTabMethod` — `ActivateTab(NestSuiteDocumentTab)` メソッドの存在確認
 
 ### サイドバーの役割変更（タブランチャー化）
 
@@ -4431,18 +4198,7 @@ v1.7.3 から：サイドバークリック → `EnsureTabForToolId(toolId)` →
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- `NestSuiteDocumentTab` モデルクラス（v1.7.2 のまま）
-- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
-
-### v1.7.4 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.4 | ChatNest の `.chatnest` 保存／読込（NestSuite 側対応） |
-| v1.7.5 | NoteNest タブを複数開く（同一ツール複数タブの UI 整備） |
-| v1.8.0 | IdeaNest 統合検証 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4464,29 +4220,6 @@ NestSuite の最終タブを**ツール単位**ではなく**ファイル／作�
 
 IdeaNest 統合・`.chatnest` 保存／読込・本格的な TabControl 実装は v1.7.2 では行わない。
 
-### 追加したファイル（`NoteNest/NestSuite/`）
-
-- **`NestSuiteWorkspaceKind.cs`** — Workspace 種別 enum（NoteNest / ChatNest / IdeaNest）。
-  ツール定義（`NestSuiteTool`）とは別概念：タブが「何の Workspace か」を表す
-- **`NestSuiteDocumentTab.cs`** — ファイル単位タブの最小モデル（`sealed record`）。
-  `WorkspaceKind`・`DisplayName`・`FilePath`・`IsModified`・`IsUntitled`・`ToolId`（computed）を持つ
-- **`NestSuiteTabFactory.cs`** — タブ生成ファクトリの骨格。
-  `CreateUntitled(kind)` / `FromFilePath(path)` / `TryGetKind(path)` を提供する。
-  拡張子とタブの対応（`.notenest` / `.chatnest` / `.ideanest`）の唯一の情報源
-
-### 追加したテスト（`NestSuiteDocumentTabTests.cs`）
-
-- タブが Id・WorkspaceKind・DisplayName・FilePath・IsModified を持てる
-- `ToolId` が `WorkspaceKind` から正しく導出される（NoteNest / ChatNest / IdeaNest）
-- `IsUntitled` は FilePath が null のとき true
-- `IsModified` は `with` 式で非破壊更新できる（sealed record の特性）
-- 同一 WorkspaceKind の複数タブを区別できる（Id が別になる）
-- `NestSuiteTool` と `NestSuiteDocumentTab` が別型（混同しない設計）
-- `NestSuiteTabFactory.CreateUntitled` / `FromFilePath` / `TryGetKind` の動作
-- 未対応拡張子で `FromFilePath` が `ArgumentException` を投げる
-- `WorkspaceKind` が 3 値（NoteNest / ChatNest / IdeaNest）を持つ
-- `GetExtension` が各 WorkspaceKind に対応する拡張子を返す
-
 ### ファイル単位タブとツール定義の関係整理
 
 | 概念 | 型 | 意味 |
@@ -4506,19 +4239,7 @@ IdeaNest 統合・`.chatnest` 保存／読込・本格的な TabControl 実装�
 
 ### 変更しなかったもの
 
-- `NestSuiteShellWindow` の UI（ツール選択・Workspace 切替ロジック）は変更なし
-- NoteNest 単体版の通常起動フロー
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
-
-### v1.7.3 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.7.3 | ファイル単位タブ UI の最小骨格（TabControl・タブ切替の最小実装） |
-| v1.7.4 | ChatNest の `.chatnest` 保存／読込（NestSuite 側対応） |
-| v1.7.5 | NoteNest / ChatNest タブ状態の回帰確認 |
-| v1.8.0 | IdeaNest 統合検証 |
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4542,20 +4263,7 @@ v1.7.0 で行った ChatNest 統合検証の後、回帰確認と軽微な修正
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の通常起動フロー（引数なし → `StartDialog` → `MainWindow`、`.notenest` 指定 → `MainWindow`）
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- NoteNest 単体版 `MainWindow`・`MainViewModel`
-- ChatNest 参照ソース（`reference/external/chatnest-v0.4.1/` は直接編集しない）
-- ChatNest 保存・読込（メモリ内のみ。次段階の課題）
-- ファイル単位タブ（次段階の課題）
-- IdeaNest 統合（未統合のまま）
-
-### 次に進むべき候補
-
-- **ChatNest ファイル（`.chatnest`）保存／読込の NestSuite 対応** — AppShell 委譲か共通機構かを含む設計
-- **`MessageBox.Show` の `IWorkspaceDialogHost` 委譲** — 発言削除確認の本格抽象化
-- **ファイル単位タブ最小設計** — `[NoteNest: A.notenest] [ChatNest: 会議メモ.chatnest] …` の実現
-- **IdeaNest 統合準備** — IdeaNestWorkspaceView 構想の検討。v1.8.0 候補
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4608,33 +4316,13 @@ ChatNest の発言削除確認は参照ソースの挙動を維持し `MessageBo
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の既定起動フロー（引数なし → `StartDialog` → `MainWindow`、`.notenest` 指定 → `MainWindow`）
-- NoteNest 単体版 `MainWindow`・`MainViewModel`・`NoteNestWorkspaceView`
-- `.notenest` 保存スキーマ（`1.4.1` のまま）・NoteNest 保存形式
-- NestSuite 内 NoteNest のファイル操作（v1.6.3 で追加。NoteNest 選択時に維持）
-- IdeaNest の統合（未統合のまま）
-- 既定起動の NestSuite 化（行わない）
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ### ファイル単位タブ設計に関する記録
 
 - 最終的な NestSuite タブは `[NoteNest: A.notenest] [ChatNest: 会議メモ.chatnest] …` のような**ファイル／作業単位**を想定する（ツール単位タブは最終形にしない）
 - v1.7.0 のツール切替は、複数 Workspace を載せられるかの検証であり、ファイル単位タブの本格実装ではない
 - ChatNest 側に DataContext 単位の Workspace 差し替えが可能であることを確認した（ファイル単位タブ化を妨げない構造）
-
-### 次に進むべき事項
-
-- ChatNest ファイル（`.chatnest`）保存／読込を NestSuite 側でどう扱うか（AppShell 委譲か NestSuite 共通機構か）
-- 発言削除確認の `MessageBox` を `IWorkspaceDialogHost` 相当へ寄せるか
-- ファイル単位タブへ進む前の最小タブ設計（タブ＝ツール×ファイルの識別子設計）
-- IdeaNest 統合へ進む前の準備
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§35「v1.7.0 NestSuite ChatNest 統合検証の設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.7.0 行を追加、N11 完了を記載
-- `docs/backlog.md`：N11 完了記録を追加
-- `docs/test-scenarios.md`：§43「v1.7.0 NestSuite ChatNest 統合検証」追加
-- `README.md`：制限テーブルのバージョン見出しを v1.7.0 に更新、NestSuite ChatNest 検証を追記
 
 ---
 
@@ -4693,14 +4381,7 @@ NestSuite 内で「どのツールを選択しているか」「選択中ツー�
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
-- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
-- DataContext（引き続き `MainViewModel`）
-- `NoteNestWorkspaceViewModel` の新設なし
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest / ChatNest の実統合（本バージョン対象外）
-- `NestSuiteToolRegistry.AllTools`・`IsIntegrated()` 等の既存 API
-- NoteNest ファイルメニュー（ツール切替時も有効のまま・v1.7.0 で整理）
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ### v1.6.x 終点と v1.7.0 への移行
 
@@ -4711,14 +4392,6 @@ v1.6.4 をもって v1.6.x の開発を終了する。以下の状態が確立�
 - IdeaNest / ChatNest のプレースホルダーが機能する（v1.6.4）
 
 次のステップ（v1.7.0）：IdeaNest または ChatNest の統合検証を開始する。
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§33 ツールメニュー IsChecked 固定の補足更新、§34「v1.6.4 NestSuite ツール切替モデルの設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.6.4 行を追加、v1.6.x 候補を更新（v1.7.0 への移行を明示）
-- `docs/backlog.md`：N10 完了記録を追加、v1.6.x 終点と v1.7.0 移行方針を記載
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.6.4 に更新
 
 ---
 
@@ -4792,31 +4465,7 @@ NestSuite モード起動時にファイルパスを取得し、`shell.LoadIniti
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
-- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
-- DataContext（引き続き `MainViewModel`）
-- `NoteNestWorkspaceViewModel` の新設なし
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest / ChatNest の実統合（本バージョン対象外）
-- NestSuiteToolRegistry（変更なし）
-- StartDialog・最近使ったファイル・エクスポート（NestSuite 側への整理は将来課題）
-
-### v1.6.x 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.6.4 | NestSuite ツール切替モデル整理（ツール選択時に Workspace を切り替える最小モデルの試作） |
-| v1.6.5 | IdeaNest / ChatNest を載せるための前提条件整理 |
-| v1.7.0 | IdeaNest または ChatNest の最初の統合検証 |
-| 将来 | MainViewModel の Workspace Facade 分離（N6） |
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§33「v1.6.3 NestSuite ファイル操作整備の設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.6.3 行を追加、v1.6.x 候補を更新
-- `docs/backlog.md`：N9 完了記録を追加
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.6.3 に更新
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ---
 
@@ -4872,31 +4521,7 @@ NestSuiteToolRegistry の単体テスト 6 件と ToolSelectorPanel 存在確認
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
-- `--nestsuite` 起動分岐の動作（`StartupArgParser` は変更なし）
-- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
-- DataContext（引き続き `MainViewModel`）
-- `NoteNestWorkspaceViewModel` の新設なし
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest / ChatNest の実統合（本バージョン対象外）
-
-### v1.6.x 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.6.3 | NestSuite 内 NoteNest のファイル操作整理（新規・開く・保存・最近使ったファイルを NestSuite 側メニューから実行） |
-| v1.6.4 | NestSuite ツール切替モデル整理（ツール選択時に Workspace を切り替える最小モデルの試作） |
-| v1.6.5 | IdeaNest / ChatNest を載せるための前提条件整理 |
-| v1.7.0 | IdeaNest または ChatNest の最初の統合検証 |
-| 将来 | MainViewModel の Workspace Facade 分離（N6） |
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§32「v1.6.2 NestSuite 統合母体最小成立の設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.6.2 行を追加、v1.6.x 候補を更新
-- `docs/backlog.md`：N8 完了記録を追加、N9・N10 を追加
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.6.2 に更新
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ### バージョン
 
@@ -4952,28 +4577,7 @@ v1.6.0 で追加した `NestSuiteShellWindow` に対し、開発・検証用の�
 
 ### 変更しなかったもの
 
-- NoteNest 単体版の既定起動フロー（`StartDialog` → `MainWindow`）
-- `.notenest` ファイル関連付け・引数起動（`--nestsuite` なし時は従来どおり）
-- `MainWindow`・`IWorkspaceDialogHost`・`MainViewModel`（改名・分割なし）
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest / ChatNest の統合（本バージョン対象外）
-
-### v1.6.x 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.6.2 | NoteNest 単体版と NestSuite 版の起動切替をさらに検討 |
-| v1.6.3 | N6（MainViewModel Workspace Facade 分離）着手 |
-| v1.6.x | IdeaNest / ChatNest を載せる前提条件整理 |
-| 将来 | MainViewModel の Workspace Facade と AppShell 接続層への分割 |
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§31「v1.6.1 StartupArgParser と --nestsuite 設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.6.1 行を追加
-- `docs/backlog.md`：N7 を完了済みとして記載、v1.6.x 候補を更新
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.6.1 に更新
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ### バージョン
 
@@ -5027,30 +4631,7 @@ NestSuite 統合母体の最小構成として、`NestSuiteShellWindow` を追�
 
 ### 変更しなかったもの
 
-- NoteNest 単体版 `MainWindow`・`App.xaml.cs`・起動フロー
-- `IWorkspaceDialogHost` のシグネチャ
-- `MainViewModel`（改名・分割なし）
-- `NoteNestWorkspaceViewModel` の新設なし
-- `.notenest` 保存スキーマ（`1.4.1` のまま）
-- IdeaNest / ChatNest の統合（v1.6.0 対象外）
-
-### v1.6.x 以降の候補
-
-| バージョン候補 | 内容 |
-|--------------|------|
-| v1.6.1 | NestSuiteShellWindow の起動導線検討（App.xaml.cs から切り替える仕組みの試作） |
-| v1.6.2 | NoteNest 単体版と NestSuite 版の起動切替の検討 |
-| v1.6.3 | Workspace ホストの共通化・N6（MainViewModel Workspace Facade 分離）着手 |
-| v1.6.x | IdeaNest / ChatNest を載せる前提条件整理 |
-| 将来 | MainViewModel の Workspace Facade と AppShell 接続層への分割 |
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§30「v1.6.0 NestSuiteShellWindow 設計判断」追加
-- `docs/nestsuite-preparation.md`：進捗表に v1.6.0 行を追加
-- `docs/backlog.md`：N5 を完了済みとして記載、v1.6.x 候補を追加
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.6.0 に更新
+- NoteNest 保存スキーマ（`1.4.1` のまま）
 
 ### バージョン
 
@@ -5118,14 +4699,6 @@ Views/ を含むすべての対象ファイルで、以下の禁止パターン�
 
 NestSuite も WPF ベースの計画であるため、`IWorkspaceDialogHost` のメソッドシグネチャに `TextBox`・`MessageBoxImage`（WPF 型）を含む現形状を維持する。非 WPF への抽象化は現時点で不要。詳細は `docs/design-decisions.md` §29 を参照。
 
-### ドキュメント
-
-- `docs/design-decisions.md`：§29「v1.5.8 IWorkspaceDialogHost WPF 前提と v1.6.0 方向性」追加
-- `docs/nestsuite-preparation.md`：v1.5.x 進捗表に v1.5.8 行を追加、v1.6.0 計画セクションを追加
-- `docs/backlog.md`：N5・N6 を追加
-- `docs/release-notes.md`：本エントリを追加
-- `README.md`：制限テーブルのバージョン見出しを v1.5.8 に更新
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.8`
@@ -5157,12 +4730,6 @@ v1.5.7 時点のイベント配置を `docs/design-decisions.md` §28 に記録�
 - AppShell 側（MainWindow 系 partial）：Window lifecycle、起動、ファイル操作、エクスポート、ダイアログ、ショートカット
 - Workspace 側（NoteNestWorkspaceView 系）：左ペイン・エディタ・右ペイン内のすべての UI イベント
 - 委譲経路（MainWindow.NoteEvents → WorkspaceView.AddNotebook/AddNote 等）は適切と確認
-
-### ドキュメント
-
-- `docs/design-decisions.md`：§28「v1.5.7 AppShell / Workspace 間イベント境界の再確認」追加（イベント配置表・IWorkspaceDialogHost 役割整理）
-- `docs/nestsuite-preparation.md`：v1.5.x 進捗表に v1.5.6・v1.5.7 行を追加
-- `docs/release-notes.md`：本エントリを追加
 
 ### バージョン
 
@@ -5213,11 +4780,6 @@ v1.5.5 で `NoteNestWorkspaceView` が `DialogService` を `Window.GetWindow(thi
 - MainWindow が `IWorkspaceDialogHost` を実装していることの確認
 - `IWorkspaceDialogHost` インターフェースに 8 メソッドが存在することの確認
 
-### ドキュメント
-
-- `docs/release-notes.md`：本エントリを追加
-- `docs/test-scenarios.md`：§42 v1.5.6 WorkspaceView 切り出し後の回帰確認シナリオを追加
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.6`
@@ -5250,12 +4812,6 @@ v1.5.4 で確定した移行計画に基づき、`NoteNestWorkspaceView` を新�
 `GetWorkspaceSourceFiles()` に `Views/` ディレクトリスキャンを追加（`.g.cs` 除外）。
 WorkspaceView コードビハインドが禁止コールサイトパターンを含まないことを自動確認。
 
-### ドキュメント
-
-- `docs/nestsuite-preparation.md`：v1.5.x 進捗表に v1.5.5 を追加、N4 残課題を解消
-- `docs/design-decisions.md` は v1.5.4 §27 が移行計画を包括済みのため変更なし
-- `docs/backlog.md`：N4 を完了済みとして記載
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.5`
@@ -5284,12 +4840,6 @@ v1.5.5 での `NoteNestWorkspaceView` 実切り出しに備え、切り出し範
 
 **回帰確認チェックリスト：** 起動/ファイル操作（8 項目）・ノート操作（8 項目）・エディタ操作（7 項目）・タスク/マーカー操作（9 項目）・UI/設定（8 項目）・自動テスト（2 項目）を文書化。
 
-### ドキュメント
-
-- `docs/nestsuite-preparation.md`：「v1.5.5 実切り出し前の移行計画」セクションを追加（切り出し範囲・イベント移動候補・DataContext 方針・DialogService 注意点・手順案・回帰確認チェックリスト）
-- `docs/design-decisions.md`：§27 を追加（移行計画設計判断）
-- `docs/backlog.md`：N4 を「実切り出し（v1.5.5）」として更新
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.4`
@@ -5312,12 +4862,6 @@ backlog N3「NoteNestWorkspaceView 構想の設計」を実施した。
 - AppShell 側に残すもの：`Window`・`Menu`・`StatusBar`・`WindowEvents.cs`・`ProjectEvents.cs`・`ExportEvents.cs`・`DialogEvents.cs`
 - DataContext 候補を 3 案（A：MainViewModel 継続、B：NoteNestWorkspaceViewModel 新設、C：MainViewModel 分割）として整理。v1.5.x では案 A を継続
 - 実切り出し時の注意点（ContextMenuEvents の PlacementTarget 解決・DialogService の Owner 設定・検索置換ダイアログの帰属・AppShell 依存の持ち込み防止）を文書化
-
-### ドキュメント
-
-- `docs/nestsuite-preparation.md`：「NoteNestWorkspaceView 構想」セクションを追加（切り出し候補・AppShell残存範囲・DataContext 候補・実切り出し注意点・当面方針）
-- `docs/design-decisions.md`：§26 を追加（WorkspaceView 設計判断と主要課題）
-- `docs/backlog.md`：N3 を完了済みとして記載、N4 の説明に DataContext 選択肢を追記
 
 ### バージョン
 
@@ -5357,12 +4901,6 @@ v1.5.1 のシグネチャチェックに加え、ソースファイルのテキ�
   - `WorkspaceViewModels_CanBeInstantiatedWithoutWindowInfrastructure`（維持）
   - `WorkspaceSourceFiles_DoNotContainAppShellCallSites`（新規追加）
 
-### ドキュメント
-
-- `docs/nestsuite-preparation.md`：v1.5.x 進捗表を更新（N2 完了）、確認結果を追記
-- `docs/design-decisions.md`：§25 を追加（依存チェック強化の設計判断と残課題）
-- `docs/backlog.md`：N2 を完了済みとして記載
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.2`
@@ -5394,12 +4932,6 @@ backlog N1「AppShell / Workspace 境界の棚卸し」を実施した。
   - `WorkspaceCoordinatorsAndServices_DoNotExposeAppShellTypesInSignatures`
   - `WorkspaceViewModels_CanBeInstantiatedWithoutWindowInfrastructure`
 
-### ドキュメント
-
-- `docs/nestsuite-preparation.md`：v1.5.x 進め方の表を更新、残課題を整理
-- `docs/design-decisions.md`：§24 を追加（境界棚卸し設計判断と確認結果）
-- `docs/backlog.md`：N1 を完了済みとして記載、N2 の説明を更新
-
 ### バージョン
 
 - アプリケーションバージョン：`1.5.1`
@@ -5419,12 +4951,6 @@ NoteNestを将来的にNestSuiteへ統合しやすくするため、AppShell側�
 - AppShell側（将来的に置き換え対象）：`MainWindow`、`App.xaml.cs`、`StartDialog`、`RecentFilesService`、`UiSettingsService`、`ThemeService`、`DialogService`（ファイル選択・MessageBox部分）
 - Workspace側（NestSuiteへ持ち込み対象）：責務別ViewModel群、Coordinator群、Project services、`ExportService`、モデル層
 - Workspace系ViewModelが `Window`・`MessageBox`・`OpenFileDialog` を直接参照していないことを確認
-
-### ドキュメント
-
-- `docs/nestsuite-preparation.md` を大幅補強：AppShell / Workspace 境界の詳細、再利用・置き換え対象の列挙、`DialogService` の懸念点、v1.5.x での進め方
-- `docs/design-decisions.md` に §23 を追加：NestSuite対応境界の設計判断と `nestsuite-preparation.md` への参照
-- `docs/backlog.md` に NestSuite対応準備カテゴリを追加：N1〜N4 の候補を記載
 
 ### バージョン
 
@@ -5852,24 +5378,6 @@ v1.0.0 は **v0.9.0 時点の機能を初回安定版として確定** するリ
 - `README.md` / `docs/operation-note.md` / `docs/test-scenarios.md` / `docs/backlog.md` を v1.0.0 向けに整理
 - 「v0.9.x 試作段階」セクションを「保存形式の安定性について」に改め、v1.0.0 以降の後方互換方針を明記
 
-### v0.9.0 から引き継いだ機能
-
-- ノートブック・ノート・タスク・マーカーの統合管理（単一 `.notenest` ファイル）
-- アトミック保存（`.tmp` 書き出し→ `File.Replace()` → `.bak` 自動作成）
-- ノート間リンク `[[ノート名]]`、選択式リンク挿入、同名ノート防止
-- テキストエクスポート（プロジェクト全体・ノートブックごと）
-- タスクとノートの関連付け
-- ライト/ダークテーマ、行番号表示、検索／置換、ドラッグ移動
-- マーカー（`[TODO]` `[FIXME]` `[NOTE]`）の自動抽出と種別フィルタ
-
-### 既知の制限（v1.0.0 時点）
-
-- 自動保存は未実装。`Ctrl+S` での手動保存が前提
-- マーカー行の表示／非表示は未対応（`docs/backlog.md` 参照）
-- 同名ノートを含む既存 `.notenest` を読み込んだ場合、`[[ノート名]]` リンクは最初に見つかったノートへ解決される（v0.8.2 以降は同名ノート作成自体を禁止）
-- タスクコメント編集中はノートリンク挿入を無効化
-- Markdown プレビュー・シンタックスハイライト・画像貼り付け・共同編集・クラウド同期は対象外（`docs/backlog.md` 参照）
-
 ### 配布
 
 - Self-Contained 配布（`dotnet publish -r win-x64 --self-contained -c Release`）を採用
@@ -5905,23 +5413,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - `MainViewModel.BuildProject()` の保存バージョンを `0.9.0` に更新
 - `NoteNest.csproj` の `FileVersion` / `InformationalVersion` を `0.9.0` に更新
 
-### 動作確認した既存機能（回帰確認）
-
-- 保存・読込（新規・名前を付けて保存・上書き保存・キャンセル時）
-- `.bak` 作成、`.tmp` の自動クリーンアップ
-- 不正 JSON・空ファイルのエラー表示
-- ノート間リンク `[[ノート名]]` のジャンプ
-- タスクとノートの関連付け（保存・再読込・ノート削除時のクリア）
-- テキストエクスポート（プロジェクト全体・ノートブックごと、ファイル名安全化）
-- ライト/ダークテーマ切替、行番号表示、検索／置換、ドラッグ移動
-
-### 既知の制限（v0.9.0 時点）
-
-- 同名ノートが既存 `.notenest` に含まれる場合、`[[ノート名]]` リンクは最初に見つかったノートへ解決される（v0.8.2 以降は同名ノート作成自体を禁止）
-- 自動保存は未実装。`Ctrl+S` での手動保存が前提
-- マーカー行の表示／非表示は未対応（`docs/backlog.md` 参照）
-- タスクコメント編集中はノートリンク挿入を無効化
-
 ---
 
 ## v0.8.2 — ノートリンク挿入UI改善
@@ -5946,15 +5437,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - 右クリックしたノートをリンク先として、現在編集中の本文カーソル位置に `[[ノート名]]` を挿入
 - **右クリックしたノートへの画面遷移は行わない**
 - タスクコメント編集中は挿入不可（情報メッセージを表示）
-
-### コード変更
-
-- `NoteNest/Dialogs/NotePickerDialog.xaml` / `.xaml.cs`: ノート選択ダイアログを新規作成（`NotePickerItem` レコード型含む）
-- `NoteNest/ViewModels/MainViewModel.cs`: `IsNoteEditMode` / `NoteNameExists()` を追加；`AddNoteToNotebook()` / `RenameNote()` を `bool` 返却に変更し内部で重複チェックを実施；バージョンを `0.8.2` に更新
-- `NoteNest/Dialogs/NotePickerDialog.xaml.cs`: 同名ノートが存在する場合に確認ダイアログを表示
-- `NoteNest/MainWindow.xaml`: ノートコンテキストメニューに「このノートへのリンクを挿入」を追加、エディタコンテキストメニューの挿入項目に `IsEnabled` バインドを追加
-- `NoteNest/MainWindow.xaml.cs`: `InsertNoteLink_Click` を `NotePickerDialog` 使用に変更；`InsertNoteLinkFromNote_Click` に同名警告を追加；`InsertTextAtCaret` を抽出；4ハンドラを ViewModel の返値で分岐するよう簡略化
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.2` に更新
 
 ---
 
@@ -5986,15 +5468,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - タスク一覧・タスクコメント・タスクとノートの関連付け情報
 - マーカー集計・リンク一覧・バックリンク
 
-### コード変更
-
-- `NoteNest/Services/ExportService.cs`: エクスポートサービスを新規作成（`BuildProjectText` / `BuildNotebookText` / `SanitizeFileName` / `GetUniqueFilePath`）
-- `NoteNest/ViewModels/MainViewModel.cs`: `ExportProjectToText` / `ExportNotebooksToTextFiles` を追加
-- `NoteNest/MainWindow.xaml`: ファイルメニューにエクスポートサブメニューを追加
-- `NoteNest/MainWindow.xaml.cs`: `ExportProjectText_Click` / `ExportNotebooksText_Click` を追加
-- `NoteNest.Tests/ExportServiceTests.cs`: エクスポートサービスの単体テストを新規作成
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.1` に更新
-
 ---
 
 ## v0.8.0 — ノート間リンク・タスクとノートの関連付け
@@ -6015,16 +5488,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - タスク右クリック → 関連ノートを設定... でノート名指定により設定、クリアも可
 - 関連ノートを設定したタスクには 🔗 アイコンが表示される
 - タスクコメント編集時の上部バーで現在の関連ノートを確認、変更、開く、クリアできる
-
-### コード変更
-
-- `NoteNest/Services/NoteLinkService.cs`: `[[...]]` リンク抽出サービスを新規作成
-- `NoteNest/ViewModels/TaskViewModel.cs`: `HasRelatedNote` プロパティを追加
-- `NoteNest/ViewModels/MainViewModel.cs`: `FindNoteById` / `FindNoteByTitle` / `NavigateToNote` / `SetTaskRelatedNote` / `ClearTaskRelatedNote` / `EditingTaskRelatedNote` / `RelatedNoteChoices` などを追加
-- `NoteNest/MainWindow.xaml`: エディタ右クリックメニュー追加、タスクコメントモード用の関連ノートバー追加、タスク項目の 🔗 インジケーター・コンテキストメニュー拡張
-- `NoteNest/MainWindow.xaml.cs`: `SyncTreeSelectionCallback` / `TryOpenNoteLink` / `InsertNoteLink_Click` / `OpenRelatedNote_Click` / `SetRelatedNote_Click` / `ClearRelatedNote_Click` を追加
-- `NoteNest.Tests/NoteLinkServiceTests.cs`: `NoteLinkService` の単体テスト（9 件）を新規作成
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.8.0` に更新
 
 ---
 
@@ -6050,18 +5513,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - メニューバー・スクロールバー・ダイアログ（OS ネイティブ描画のため）
 - ツリービューの選択ハイライト色
 
-### コード変更
-
-- `NoteNest/Themes/Light.xaml`: ライトテーマブラシリソース辞書（新規）
-- `NoteNest/Themes/Dark.xaml`: ダークテーマブラシリソース辞書（新規）
-- `NoteNest/Models/AppTheme.cs`: `AppTheme` 列挙型（Light / Dark）を新規作成
-- `NoteNest/Services/ThemeService.cs`: 実行時テーマ切り替えサービスを新規作成
-- `NoteNest/App.xaml`: ブラシ定義を `MergedDictionaries` 経由のテーマファイルに移行、`IconButton` スタイルを `DynamicResource` 化
-- `NoteNest/MainWindow.xaml`: 全ブラシ参照を `StaticResource` → `DynamicResource` に変換（58 箇所）、テーマメニュー追加、エディタに明示的な背景・文字色を追加
-- `NoteNest/MainWindow.xaml.cs`: `InitializeComponent` 前にテーマを適用、テーマ切り替えハンドラを追加
-- `NoteNest/Services/UiSettingsService.cs`: `UiSettings` に `Theme` プロパティを追加
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.7.2` に更新
-
 ---
 
 ## v0.7.1 — 将来機能に備えたリファクタリング
@@ -6084,17 +5535,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 #### エクスポート機能の準備：インターフェイス定義
 - `IExporter` インターフェイスを `NoteNest.Services` 名前空間に追加（`FileFilter` / `DefaultExtension` / `Export(Project)` を定義）
 - 実装は含まない。将来の Markdown・PDF エクスポート実装の契約を確立
-
-### コード変更
-
-- `NoteNest/Models/TaskPriority.cs`: `TaskPriority` 列挙型を新規作成（None / Low / Medium / High）
-- `NoteNest/Models/NoteTask.cs`: Priority / DueDate / LinkedNoteId を追加
-- `NoteNest/ViewModels/TaskViewModel.cs`: Priority / DueDate / LinkedNoteId プロパティを公開
-- `NoteNest/Services/IExporter.cs`: エクスポートインターフェイスを新規作成
-- `NoteNest/App.xaml`: テーマ対応ブラシ 15 種を追加
-- `NoteNest/MainWindow.xaml`: ハードコードカラー → StaticResource 参照に全置換（計 19 箇所）
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.7.1` に更新
-- `BuildProject()` の保存バージョンを `"0.7.1"` に更新
 
 ---
 
@@ -6123,17 +5563,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - xUnit を使用したテストプロジェクト `NoteNest.Tests` を新規追加
 - テスト対象：`MarkerExtractorService.Extract()`、`ProjectFileService.Save()/Load()`、`TaskGroupViewModel` の各操作、`RecentFilesService.Add()`
 
-### コード変更
-
-- `ProjectFileService.Save()`: `.tmp` 書き込み → `File.Replace()` / `File.Move()` に変更
-- `MainWindow.xaml.cs`: `_uiSettings` フィールドを追加、起動時キャッシュ・終了時フォールバックに利用
-- `MainWindow.xaml.cs`: `OpenFindReplace()` が `_uiSettingsService.Load()` を再呼び出ししなくなった
-- `MainViewModel.ClearEditor()`: `_projectTodoCount` / `_projectFixmeCount` / `_projectNoteCount` のリセットと `ProjectMarkerSummary` 通知を追加
-- `NoteNest.Tests/`: xUnit テストプロジェクトを新規作成（`MarkerExtractorServiceTests`・`ProjectFileServiceTests`・`TaskGroupViewModelTests`・`RecentFilesServiceTests`）
-- `NoteNest.sln`: `NoteNest.Tests` をソリューションに追加
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.7.0` に更新
-- `BuildProject()` の保存バージョンを `"0.7.0"` に更新
-
 ---
 
 ## v0.6.0 — クロスグループタスク移動・ノートブック間ノート移動
@@ -6153,21 +5582,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - 移動後は左ツリービューの選択が移動先に自動同期
 - 移動元ノートブックからは削除され、移動先ノートブックの末尾に追加
 - 移動後も選択状態のノートとエディタ内容は維持される
-
-### コード変更
-
-- `TaskGroupViewModel`: `InsertTask(int index, TaskViewModel task)` メソッドを追加（PropertyChanged の配線付き）
-- `MainViewModel`: `MoveTaskToGroupAt()` を追加（同一グループ内並べ替えとクロスグループ移動を統合）
-- `MainViewModel`: `MoveNoteToNotebook()` を追加
-- `MainWindow.xaml`: ノートブックヘッダーに `AllowDrop` / `DragOver` / `Drop` を追加
-- `MainWindow.xaml`: ノートアイテム DockPanel に `PreviewMouseLeftButtonDown` / `PreviewMouseMove` を追加
-- `MainWindow.xaml`: タスクグループヘッダー Border に `AllowDrop` / `DragOver` / `Drop` を追加
-- `MainWindow.xaml.cs`: `NoteItem_PreviewMouseLeftButtonDown` / `PreviewMouseMove` ハンドラを追加
-- `MainWindow.xaml.cs`: `NotebookHeader_DragOver` / `NotebookHeader_Drop` ハンドラを追加
-- `MainWindow.xaml.cs`: `TaskGroupHeader_DragOver` / `TaskGroupHeader_Drop` ハンドラを追加
-- `MainWindow.xaml.cs`: `TaskItem_Drop` を `MoveTaskToGroupAt()` 呼び出しに変更
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.6.0` に更新
-- `BuildProject()` の保存バージョンを `"0.6.0"` に更新
 
 ---
 
@@ -6194,27 +5608,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - ON/OFF 状態はアプリ終了時に保存され、次回起動時に復元される（`ui-settings.json`）
 - 既知の制限：TextWrapping=Wrap 有効時、折り返しが発生した行では行番号とテキスト行の縦位置がずれる場合がある
 
-### コード変更
-
-- `MainViewModel`: `ShowLineNumbers` プロパティ・`ToggleLineNumbersCommand`・`ReorderTask()` を追加
-- `MainWindow.xaml`: サンプルバナーにアクションボタンを追加
-- `MainWindow.xaml`: 編集メニューに「行番号を表示」トグル項目を追加
-- `MainWindow.xaml`: エディタ Row を Grid(行番号ガター + TextBox)に変更
-- `MainWindow.xaml`: タスク DataTemplate に DragDrop イベントハンドラを追加
-- `MainWindow.xaml.cs`: タスクドラッグ系ハンドラ（PreviewMouseLeftButtonDown / PreviewMouseMove / DragOver / Drop）を追加
-- `MainWindow.xaml.cs`: 行番号系ハンドラ（EditorBox_Loaded / TextChanged / ScrollViewer同期）を追加
-- `MainWindow.xaml.cs`: 起動時に `ShowLineNumbers` を UiSettings から復元、終了時に保存
-- `UiSettingsService.cs`: `UiSettings` に `ShowLineNumbers` プロパティを追加
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.5.0` に更新
-- `BuildProject()` の保存バージョンを `"0.5.0"` に更新
-
-### 実装しなかった機能
-
-| 機能 | 理由 |
-|------|------|
-| グループをまたいだドラッグ移動 | 既存のコンテキストメニューで代替可能。ドロップ先グループの判定が複雑なため見送り |
-| 折り返し行に対応した行番号位置揃え | WPF 標準 TextBox では各視覚行の y 座標を安全に取得できないため。エディタ部品変更が前提になる |
-
 ---
 
 ## v0.4.0 — マーカーツリー同期・保存忘れ警告・検索状態の永続化
@@ -6238,20 +5631,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - 検索テキスト・置換テキスト・ダイアログ位置をアプリ終了時に保存
 - 次回起動・次回ダイアログ表示時に前回の入力内容と位置が復元される
 - 保存先：`%AppData%\NoteNest\ui-settings.json`
-
-### コード変更
-
-- `MainViewModel`: `UnsavedIndicatorText`・`IsUnsavedWarning` プロパティを追加
-- `MainViewModel`: `IsModified` セッターに `DispatcherTimer` 制御を追加（5 分超で警告）
-- `MainWindow.xaml.cs`: `SyncTreeSelection()` メソッドを追加（TreeView 外部選択 + BringIntoView）
-- `MainWindow.xaml.cs`: `NotebookTree_SelectedItemChanged` に二重呼び出し抑制ガードを追加
-- `MainWindow.xaml.cs`: `OpenFindReplace()` に `UiSettingsService` からの状態復元を追加
-- `MainWindow.xaml.cs`: `Window_Closing` に検索ダイアログ状態の保存処理を追加
-- `FindReplaceDialog.xaml.cs`: `SearchText`・`ReplaceText` プロパティ、`RestoreState()` メソッドを追加
-- `Services/UiSettingsService.cs`: 新規作成（ui-settings.json の読み書き）
-- `MainWindow.xaml`: ステータスバーの未保存テキストを `UnsavedIndicatorText` バインドに変更、`IsUnsavedWarning` DataTrigger を追加
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.4.0` に更新
-- `BuildProject()` の保存バージョンを `"0.4.0"` に更新
 
 ---
 
@@ -6279,27 +5658,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - タスクコメント編集中、エディタ本体の背景色を淡い黄色（`#FFFDE7`）に変更
 - タイトルバーの背景色変更（`#FFF8E1`）と合わせて、通常のノート編集との区別がより明確に
 
-### コード変更
-
-- `MarkerViewModel`: `SourceNote` プロパティ（NoteViewModel 参照）を追加
-- `MainViewModel`: `RefreshMarkers()` を全ノートスキャン版に変更（RefreshProjectMarkers を統合）
-- `MainViewModel`: `NavigateToMarker` コールバックを追加、`MarkerClickCommand` をコールバック経由に変更
-- `MainViewModel`: `SelectTask()` でマーカーをクリアしないよう変更（全ノート表示を維持）
-- `MainViewModel`: `RecentFiles` コレクション、`HasRecentFiles`、`OpenRecentCommand` を追加
-- `MainViewModel`: `RecordRecentFile()`、`OpenRecentFile()` プライベートメソッドを追加
-- `MainWindow.xaml`: エディタ TextBox に `IsTaskCommentMode` DataTrigger で背景色変更を追加
-- `MainWindow.xaml`: ファイルメニューに「最近使ったファイル」動的サブメニューを追加
-- `MainWindow.xaml.cs`: `NavigateToMarker` コールバックを配線（ノート切替 + Dispatcher 遅延ナビゲーション）
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.3.0` に更新
-- `BuildProject()` の保存バージョンを `"0.3.0"` に更新
-
-### 実装しなかった機能
-
-| 機能 | 理由 |
-|------|------|
-| マーカークリック時のツリービュー選択同期 | WPF TreeView の項目を外部から選択するには追加インフラが必要。次バージョンで検討 |
-| 保存忘れ確認の強化（タイムアウト） | DispatcherTimer 方式は実装可能だが、他の改善と優先度を比較して見送り |
-
 ---
 
 ## v0.2.0 — UX 改善・並べ替え・マーカーフィルタ
@@ -6326,25 +5684,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - ノート削除時にノートブック名を合わせて表示（例：「ノート「○○」（△△）を削除しますか？」）
 - 削除確認ダイアログに「この操作は取り消せません。」を追記
 
-### コード変更
-
-- `MainViewModel`: `FilterTodo` / `FilterFixme` / `FilterNote` プロパティ、`FilteredMarkers`・`FilteredMarkerCountText` 追加
-- `MainViewModel`: `MoveNoteUp()` / `MoveNoteDown()` / `MoveNotebookUp()` / `MoveNotebookDown()` 追加
-- `MainWindow.xaml`: ステータスバー未保存インジケーター、保存ボタン強調スタイル追加
-- `MainWindow.xaml`: ノート・ノートブックコンテキストメニューに上下移動項目追加
-- `MainWindow.xaml`: マーカーセクションにフィルタ行追加、`FilteredMarkers` バインド
-- `MainWindow.xaml.cs`: `MoveNoteUp_Click` / `MoveNoteDown_Click` / `MoveNotebookUp_Click` / `MoveNotebookDown_Click` 追加
-- `MainWindow.xaml.cs`: `FindNotebookTitleOf()` ヘルパー追加、削除確認メッセージ改善
-- `NoteNest.csproj`: `FileVersion` / `InformationalVersion` を `0.2.0` に更新
-- `BuildProject()` の保存バージョンを `"0.2.0"` に更新
-
-### 実装しなかった機能
-
-| 機能 | 理由 |
-|------|------|
-| 保存忘れ確認の強化（タイムアウト） | 実装コストに対して利便性が限定的。v0.3.0 以降で検討 |
-| タスクのドラッグ並べ替え | WPF の標準コントロールでは追加ライブラリが必要 |
-
 ---
 
 ## v0.1.4 — v0.2.0 に向けた棚卸し・ドキュメント整理
@@ -6358,11 +5697,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - `README.md` を現バージョン対応に全面更新：ノート・タスク・マーカーの責務、対象外機能、詳細ドキュメントへの導線を整理
 - `docs/operation-note.md` を更新：v0.1.x 試作段階の注意事項を追加、制限テーブルを v0.1.4 対応に更新
 - `docs/test-scenarios.md` を更新：v0.1.4 時点の確認観点まとめを追加
-
-### コード変更
-
-- `BuildProject()` の保存バージョンを `"0.1.4"` に更新
-- `NoteNest.csproj` の `FileVersion` / `InformationalVersion` を `0.1.4` に更新
 
 ### 機能追加
 
@@ -6390,14 +5724,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 #### タスクコメント編集の発見性改善
 - タスクタイトルにマウスオーバーすると「ダブルクリックでコメントを追加」と表示
 - コメントがすでにある場合は「ダブルクリックでコメントを編集」と表示
-
----
-
-### 実装しなかった機能
-
-| 機能 | 理由 |
-|------|------|
-| 完了非表示設定の保存 | グループヘッダーの表示状態と同じく UI 状態として扱い、起動のたびにリセットで十分と判断 |
 
 ---
 
@@ -6438,21 +5764,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 
 ---
 
-### 実装しなかった機能
-
-以下は v0.1.2 では実装対象外です。
-
-| 機能 | 理由 |
-|------|------|
-| マーカー行の表示／非表示 | WPF 標準 TextBox では本文消失・保存不整合リスクがあるため |
-| 画像貼り付け | NoteNest は軽量テキスト管理ツールであり、画像対応は設計方針と合わないため |
-| 共同編集 | ローカル単一ファイル管理の思想と合わないため |
-| 文字数表示 | 現時点の主要価値ではないため |
-
-マーカー行の表示／非表示要望は `docs/backlog.md` に将来検討事項として記録済み。
-
----
-
 ## v0.1.1 — マーカー機能改善
 
 **リリース日：** 2026-05-31
@@ -6470,12 +5781,6 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
   - ノート名の横に「●」マークを表示（過度に目立たないサイズ・色）
   - マーカーがなくなった場合はマークが自動的に消える
   - 「●」にマウスオーバーすると「このノートにはマーカーがあります」と表示
-
----
-
-### 未実装・今後の候補
-
-（v0.1.0 の未実装内容から変更なし）
 
 ---
 
@@ -6524,7 +5829,3 @@ v0.9.0 は新機能追加ではなく、v1.0.0 候補に進む前の **総点検
 - 未保存変更がある場合の確認ダイアログ
 
 ---
-
-### 未実装・今後の候補
-
-詳細は [docs/backlog.md](backlog.md) を参照してください。

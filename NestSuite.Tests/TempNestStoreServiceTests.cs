@@ -8,7 +8,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.14.10 TD-60: TempNestStoreService.Save の atomic write 化（tmp 経由 + UTF8Encoding(false)）の
+/// TD-60: TempNestStoreService.Save の atomic write 化（tmp 経由 + UTF8Encoding(false)）の
 /// 回帰テスト。
 ///
 /// TempNestStoreService.DataPath は private static readonly で `%APPDATA%\NoteNest\tempnest.json`

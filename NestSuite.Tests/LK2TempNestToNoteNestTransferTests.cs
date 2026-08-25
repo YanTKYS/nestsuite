@@ -9,7 +9,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.23.0 LK-2: TempNest スロット → 既存 NoteNest タブへ新規ノートとして追加。
+/// LK-2: TempNest スロット → 既存 NoteNest タブへ新規ノートとして追加。
 /// 転送契約（NestSuiteShellWindow.WorkspaceTransfer.cs）に対する実装の回帰確認。
 ///
 /// <para>Shell（<see cref="NestSuiteShellWindow"/>）は WPF <c>Window</c> であり、

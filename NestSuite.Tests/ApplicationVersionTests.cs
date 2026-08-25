@@ -7,19 +7,17 @@ namespace NestSuite.Tests;
 /// <summary>
 /// アプリバージョン・保存 schema version の production contract を固定する。
 ///
-/// <para>TD-94 (v2.24.1): 「他のテストクラスが特定文字列を含まないこと」を走査していた
-/// 2 件（<c>ApplicationVersion_IsNotTested_InOtherTestClasses</c> /
-/// <c>CurrentSchemaVersionLiteral_IsNotHardcoded_InOtherTestClasses</c>）は削除した。
-/// テストコードそのものを検査する test-of-test であり、失敗しても利用者影響・データ破損・
-/// 互換性破壊のいずれも起きないため（方針: <c>docs/development/test-suite-policy.md</c>）。
-/// バージョン確認をここへ集約する運用方針自体は開発ルール側で維持する。</para>
+/// <para>バージョンリテラルの確認はこのクラスへ集約する（開発ルール §6）。他のテストクラスが
+/// リテラルを持たないことを走査するテストは置かない。テストコード自体を検査しても
+/// 利用者影響・データ破損・互換性破壊は検出できないため
+/// （方針: <c>docs/development/test-suite-policy.md</c>）。</para>
 /// </summary>
 public class ApplicationVersionTests
 {
     [Fact]
     public void ApplicationVersion_UsesAssemblyInformationalVersion()
     {
-        Assert.Equal("2.26.0", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.26.1", MainViewModel.ApplicationVersion);
     }
 
     [Fact]
@@ -27,13 +25,13 @@ public class ApplicationVersionTests
     {
         var viewModel = new MainViewModel();
 
-        Assert.EndsWith(" - ver2.26.0", viewModel.WindowTitle);
+        Assert.EndsWith(" - ver2.26.1", viewModel.WindowTitle);
     }
 
     [Fact]
     public void ApplicationAndSchemaVersionsAreManagedBySeparateSources()
     {
-        Assert.Equal("2.26.0", MainViewModel.ApplicationVersion);
+        Assert.Equal("2.26.1", MainViewModel.ApplicationVersion);
         Assert.Equal("1.4.2", Project.CurrentSchemaVersion);
     }
 

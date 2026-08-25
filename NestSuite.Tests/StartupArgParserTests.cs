@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v1.6.3: 起動引数解析の単体テスト。UI なし・WPF 不要。
+/// 起動引数解析の単体テスト。UI なし・WPF 不要。
 /// </summary>
 public class StartupArgParserTests
 {
@@ -28,7 +28,7 @@ public class StartupArgParserTests
     }
 
     // ── --nestsuite フラグ未指定ケース（IsNestSuiteMode は --nestsuite 検出専用。
-    //    v1.11.0 以降の既定 NestSuite 起動判定とは別） ─────────────────────
+    //    既定の NestSuite 起動判定とは別） ─────────────────────────────────
 
     [Fact]
     public void IsNestSuiteMode_WithNoArgs_ReturnsFalse()
@@ -48,7 +48,7 @@ public class StartupArgParserTests
         Assert.False(StartupArgParser.IsNestSuiteMode(["--help"]));
     }
 
-    // ── 同時指定（v1.6.3 以降: NestSuite モードでファイルを開く）─────────
+    // ── 同時指定（NestSuite モードでファイルを開く）──────────────────────
 
     [Fact]
     public void IsNestSuiteMode_WithNestSuitePlusFilePath_ReturnsTrue()
@@ -97,12 +97,12 @@ public class StartupArgParserTests
         Assert.Equal("project.json", StartupArgParser.GetFilePath(["--nestsuite", "project.json"]));
     }
 
-    // ── v1.7.7: .chatnest 起動引数 ───────────────────────────────────────
+    // ── .chatnest 起動引数 ───────────────────────────────────────
 
     [Fact]
     public void GetFilePath_WithNestSuitePlusChatNestFilePath_ReturnsPath()
     {
-        // v1.7.7: --nestsuite sample.chatnest 起動時にファイルパスが取得できることを確認
+        // --nestsuite sample.chatnest 起動時にファイルパスが取得できることを確認
         Assert.Equal("sample.chatnest",
             StartupArgParser.GetFilePath(["--nestsuite", "sample.chatnest"]));
     }
@@ -110,11 +110,11 @@ public class StartupArgParserTests
     [Fact]
     public void IsNestSuiteMode_WithNestSuitePlusChatNestFilePath_ReturnsTrue()
     {
-        // v1.7.7: --nestsuite sample.chatnest でも NestSuite モードと判定される
+        // --nestsuite sample.chatnest でも NestSuite モードと判定される
         Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.chatnest"]));
     }
 
-    // ── v1.8.4: .ideanest 起動引数回帰確認 ───────────────────────────────
+    // ── .ideanest 起動引数回帰確認 ───────────────────────────────
 
     [Fact]
     public void GetFilePath_WithNestSuitePlusIdeaNestFilePath_ReturnsPath()
@@ -127,37 +127,37 @@ public class StartupArgParserTests
     [Fact]
     public void IsNestSuiteMode_WithNestSuitePlusIdeaNestFilePath_ReturnsTrue()
     {
-        // v1.8.1: --nestsuite sample.ideanest でも NestSuite モードと判定される
+        // --nestsuite sample.ideanest でも NestSuite モードと判定される
         Assert.True(StartupArgParser.IsNestSuiteMode(["--nestsuite", "sample.ideanest"]));
     }
 
-    // ── v1.11.0: 既定 NestSuite 起動パターンの確認 ──────────────────────
+    // ── 既定 NestSuite 起動パターンの確認 ──────────────────────
 
     [Fact]
     public void GetFilePath_WithNoArgsDefaultNestSuite_ReturnsNull()
     {
-        // v1.11.0: 引数なし → GetFilePath = null → NestSuite が無題タブを作成
+        // 引数なし → GetFilePath = null → NestSuite が無題タブを作成
         Assert.Null(StartupArgParser.GetFilePath([]));
     }
 
     [Fact]
     public void GetFilePath_WithNotenestOnly_ReturnsPath()
     {
-        // v1.11.0: NoteNest.exe sample.notenest → GetFilePath = "sample.notenest" → NestSuite で開く
+        // NoteNest.exe sample.notenest → GetFilePath = "sample.notenest" → NestSuite で開く
         Assert.Equal("sample.notenest", StartupArgParser.GetFilePath(["sample.notenest"]));
     }
 
     [Fact]
     public void GetFilePath_WithChatnestOnly_ReturnsPath()
     {
-        // v1.11.0: NoteNest.exe sample.chatnest → GetFilePath = "sample.chatnest" → NestSuite で開く
+        // NoteNest.exe sample.chatnest → GetFilePath = "sample.chatnest" → NestSuite で開く
         Assert.Equal("sample.chatnest", StartupArgParser.GetFilePath(["sample.chatnest"]));
     }
 
     [Fact]
     public void GetFilePath_WithIdeanestOnly_ReturnsPath()
     {
-        // v1.11.0: NoteNest.exe sample.ideanest → GetFilePath = "sample.ideanest" → NestSuite で開く
+        // NoteNest.exe sample.ideanest → GetFilePath = "sample.ideanest" → NestSuite で開く
         Assert.Equal("sample.ideanest", StartupArgParser.GetFilePath(["sample.ideanest"]));
     }
 

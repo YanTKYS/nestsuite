@@ -6,7 +6,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.7.10 L9/L12: エディタ周辺レイアウト・フォントサイズ設定の確認テスト。
+/// L9/L12: エディタ周辺レイアウト・フォントサイズ設定の確認テスト。
 /// UI を起動しないリフレクションベースまたはサービス直接呼び出しによる静的確認。
 /// </summary>
 public class EditorLayoutTests
@@ -130,12 +130,12 @@ public class EditorLayoutTests
         Assert.Equal(family, loaded!.NoteNestEditorFontFamily);
     }
 
-    // ── L22: EditorFontFamilyChoices（Workspace 共通設定への拡大） ────────
+    // ── EditorFontFamilyChoices（Workspace 共通のフォント候補） ───────────
 
     [Fact]
     public void EditorFontFamilyChoices_ContainsExpectedValues()
     {
-        // v2.14.17 L22: BIZ UDMincho / UD Digi Kyokasho N-R を追加した Workspace 共通の候補一覧。
+        // 候補一覧は UiSettingsService.ValidWorkspaceEditorFontFamilies と同一順序で公開する。
         var choices = MainViewModel.EditorFontFamilyChoices;
         Assert.Equal(
             ["Yu Gothic UI", "Meiryo UI", "MS Gothic", "BIZ UDGothic", "BIZ UDMincho", "UD Digi Kyokasho N-R", "Consolas"],
@@ -168,11 +168,9 @@ public class EditorLayoutTests
         Assert.Equal("Consolas", main.Editor.FontFamily);
     }
 
-    // ── L22: 他 Workspace への Workspace 共通フォント適用の確認 ───────────
-    // v2.14.17 L22 で NoteNest 限定だったフォント種類設定を IdeaNest / ChatNest / TempNest の
-    // 本文・編集領域へ拡大した。L21 時点の「他 Workspace に FontFamily 概念が存在しない」という
-    // 制約は本リリースの意図（Workspace 共通化）と矛盾するため、
-    // 「反映されるが Workspace ファイル保存対象にはならない」という新仕様のテストへ更新する。
+    // ── 他 Workspace への共通フォント適用 ────────────────────────────────
+    // フォント種類は Workspace 共通の表示設定であり、IdeaNest / ChatNest / TempNest の
+    // 本文・編集領域にも反映される。ただし各 Workspace の保存ファイルへは混入させない。
 
     [Theory]
     [InlineData(typeof(NestSuite.IdeaNest.ViewModels.IdeaNestWorkspaceViewModel))]
@@ -244,7 +242,7 @@ public class EditorLayoutTests
         Assert.Equal("", vm.Slot1.Body);
     }
 
-    // ── L22: WorkspaceEditorFontFamily（共通設定）デフォルト値・移行・候補 ──
+    // ── WorkspaceEditorFontFamily（共通設定）デフォルト値・移行・候補 ─────
 
     [Fact]
     public void UiSettings_WorkspaceEditorFontFamily_DefaultIsNull()
@@ -336,7 +334,7 @@ public class EditorLayoutTests
         Assert.Equal(family, loaded!.WorkspaceEditorFontFamily);
     }
 
-    // ── L22: IdeaNest / ChatNest / TempNest 保存形式へのフォント設定混入なし ──
+    // ── IdeaNest / ChatNest / TempNest 保存形式へのフォント設定混入なし ───
 
     [Fact]
     public void IdeaNestWorkspaceSettings_HasNoFontFamilyMember()

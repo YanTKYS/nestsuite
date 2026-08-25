@@ -3,7 +3,7 @@ using Xunit;
 namespace NestSuite.Tests;
 
 /// <summary>
-/// v2.19.15 SH-46: Shellファイルメニュー・タブContextMenuのアクセスキー重複解消の
+/// SH-46: Shellファイルメニュー・タブContextMenuのアクセスキー重複解消の
 /// 静的 UI 契約確認。表示文言・Clickハンドラ・Command・メニュー順序・保存/タブ処理ロジックは
 /// 一切変更していないため、ここではアクセスキーの一意性・変更前後の対応関係のみを確認する。
 /// </summary>
